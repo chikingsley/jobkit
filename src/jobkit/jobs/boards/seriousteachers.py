@@ -20,17 +20,26 @@ returns the newest/featured subset cheaply; ``fetch_all`` does the bounded full 
 Applications are gated behind a login form (``/te2/login/<jobId>/<employerId>``); employer emails
 are Cloudflare-obfuscated and not exposed, so ``apply_email`` is left blank and the apply URL is
 stored in ``fields["apply_url"]`` instead.
+
+With teacher-account credentials (``SERIOUSTEACHERS_EMAIL``/``SERIOUSTEACHERS_PASSWORD``, from the
+environment or the repo ``.env``), the login is a plain ASP.NET form POST — no browser needed —
+and each gated apply link resolves server-side to its real destination: usually the on-site
+respond form (``/te2/respond/<jobId>/<employerId>``), occasionally an external employer site.
+``_collect`` resolves these automatically when credentials are present.
 """
 
 from __future__ import annotations
 
+import os
 import re
+from pathlib import Path
 from urllib.parse import urljoin
 
+import httpx
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-from jobkit.jobs.http import fetch
+from jobkit.jobs.http import USER_AGENT, fetch
 from jobkit.jobs.models import JobPosting
 
 BOARD = "seriousteachers"
@@ -46,6 +55,61 @@ DEFAULT_LIMIT = 15
 DEFAULT_MAX_PAGES = 50
 DESCRIPTION_MAX = 1200
 MAX_FIELD_LABEL_LEN = 40
+
+LOGIN_URL = f"{BASE}/te2/login"
+TOKEN_RE = re.compile(r'name="__RequestVerificationToken"[^>]*value="([^"]+)"')
+ENV_EMAIL = "SERIOUSTEACHERS_EMAIL"
+ENV_PASSWORD = "SERIOUSTEACHERS_PASSWORD"  # noqa: S105
+
+
+def _credentials() -> tuple[str, str] | None:
+    """Teacher-account credentials from the environment, falling back to the repo ``.env``."""
+    env = dict(os.environ)
+    if ENV_EMAIL not in env or ENV_PASSWORD not in env:
+        for line in Path(".env").read_text().splitlines() if Path(".env").exists() else []:
+            key, sep, value = line.partition("=")
+            if sep:
+                env.setdefault(key.strip(), value.strip())
+    email, password = env.get(ENV_EMAIL), env.get(ENV_PASSWORD)
+    return (email, password) if email and password else None
+
+
+def login() -> httpx.Client | None:
+    """Return a logged-in session, or ``None`` when no credentials are configured.
+
+    Plain ASP.NET form POST: GET the login page for the antiforgery token + cookie,
+    then POST credentials; success is a 302 to the teacher panel.
+    """
+    creds = _credentials()
+    if creds is None:
+        return None
+    client = httpx.Client(headers={"User-Agent": USER_AGENT}, timeout=30)
+    token = TOKEN_RE.search(client.get(LOGIN_URL).text)
+    if token is None:
+        msg = "seriousteachers login page had no __RequestVerificationToken"
+        raise RuntimeError(msg)
+    response = client.post(
+        LOGIN_URL,
+        data={
+            "email": creds[0],
+            "password": creds[1],
+            "idjob": "0",
+            "idemployer": "0",
+            "__RequestVerificationToken": token.group(1),
+        },
+    )
+    if response.status_code != 302:  # noqa: PLR2004
+        msg = (
+            f"seriousteachers login failed (HTTP {response.status_code}) — "
+            f"check {ENV_EMAIL}/{ENV_PASSWORD}"
+        )
+        raise RuntimeError(msg)
+    return client
+
+
+def resolve_apply(client: httpx.Client, apply_url: str) -> str:
+    """Follow a gated apply link with a logged-in session to its real destination."""
+    return str(client.get(apply_url, follow_redirects=True).url)
 
 
 def _attr(tag: Tag, name: str) -> str:
@@ -164,10 +228,20 @@ def _parse_detail(job_id: str, html: str) -> JobPosting:
 
 
 def _collect(job_ids: list[str], limit: int) -> list[JobPosting]:
-    return [
+    postings = [
         _parse_detail(job_id, fetch(f"{BASE}/job_details/{job_id}/0/"))
         for job_id in job_ids[:limit]
     ]
+    client = login()
+    if client is not None:
+        try:
+            for posting in postings:
+                gated = posting.fields.get("apply_url", "")
+                if APPLY_RE.search(gated):
+                    posting.fields["apply_url"] = resolve_apply(client, gated)
+        finally:
+            client.close()
+    return postings
 
 
 def fetch_listings(limit: int = DEFAULT_LIMIT) -> list[JobPosting]:

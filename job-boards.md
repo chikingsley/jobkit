@@ -20,7 +20,7 @@ Be polite: real User-Agent (the `http.fetch` helper sets one), low request rate,
 | Board | URL | Read | Bulk (entire set?) | Apply | Status |
 |---|---|---|---|---|---|
 | ANESL | https://cafe.anesl.com/joblist.aspx | curl | **Yes — full DB** (~4,005 jobs, ~41 postback pages @ size 100) | via `hr@anesl.com` (their matching system) | ✅ `anesl` |
-| SeriousTeachers | https://www.seriousteachers.com | curl (needs full UA) | Partial — no pagination (~10/page); full set only via country×subject cross-crawl (~500 reqs) | login-gated form (`apply_url` captured) | ✅ `seriousteachers` |
+| SeriousTeachers | https://www.seriousteachers.com | curl (needs full UA) | Partial — no pagination (~10/page); full set only via country×subject cross-crawl (~500 reqs) | headless login (creds in `.env`) resolves each gated link → on-site respond form or external employer site; no emails exposed | ✅ `seriousteachers` |
 | ESL Cafe — modern board | https://www.eslcafe.com/jobs/* | **JSON API** | **Yes** — paginated listing API across all 3 boards (korea/china/international) | email / external form (often a Google Form) | ✅ `eslcafe-modern` |
 | Ajarn | https://www.ajarn.com/recruitment/jobs | curl | **Yes** — full board on one page (~142 jobs; `?page=N` returns the same set) | direct employer email (CF-obfuscated, decoded) | ✅ `ajarn` |
 | TEFL.com | https://www.tefl.com/job-seeker/ | curl | **Yes** — `?pageNo=N` pagination (~175 jobs across ~18 pages); detail pages carry JSON-LD `JobPosting` | on-site, login-gated (`apply_url` captured) | ✅ `tefl` |
