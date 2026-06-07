@@ -33,6 +33,8 @@ from __future__ import annotations
 import os
 import re
 import sys
+import time
+import urllib.error
 from http import HTTPStatus
 from pathlib import Path
 from urllib.parse import urljoin
@@ -57,6 +59,7 @@ DEFAULT_LIMIT = 15
 DEFAULT_MAX_PAGES = 50
 DESCRIPTION_MAX = 1200
 MAX_FIELD_LABEL_LEN = 40
+SLEEP_SECONDS = 1.0
 
 LOGIN_URL = f"{BASE}/te2/login"
 ENV_EMAIL = "SERIOUSTEACHERS_EMAIL"
@@ -137,6 +140,19 @@ def resolve_apply(client: httpx.Client, apply_url: str) -> str:
 def _warn(message: str) -> None:
     """Non-fatal adapter diagnostics to stderr (stdout is reserved for CLI output)."""
     sys.stderr.write(f"seriousteachers: {message}\n")
+
+
+def _fetch_page(url: str) -> str:
+    """``fetch`` that tolerates dead pages during crawls: warn and return "" instead of raising.
+
+    Some country x subject list pages and stale detail pages 404; a single dead page
+    must not abort a ~500-request crawl.
+    """
+    try:
+        return fetch(url)
+    except urllib.error.URLError as exc:
+        _warn(f"skipping {url} ({exc})")
+        return ""
 
 
 def _attr(tag: Tag, name: str) -> str:
@@ -255,10 +271,13 @@ def _parse_detail(job_id: str, html: str) -> JobPosting:
 
 
 def _collect(job_ids: list[str], limit: int) -> list[JobPosting]:
-    postings = [
-        _parse_detail(job_id, fetch(f"{BASE}/job_details/{job_id}/0/"))
-        for job_id in job_ids[:limit]
-    ]
+    postings = []
+    for index, job_id in enumerate(job_ids[:limit]):
+        if index:
+            time.sleep(SLEEP_SECONDS)
+        html = _fetch_page(f"{BASE}/job_details/{job_id}/0/")
+        if html:
+            postings.append(_parse_detail(job_id, html))
     try:
         client = login()
     except (RuntimeError, httpx.HTTPError) as exc:
@@ -272,6 +291,7 @@ def _collect(job_ids: list[str], limit: int) -> list[JobPosting]:
             gated = posting.fields.get("apply_url", "")
             if not APPLY_RE.search(gated):
                 continue
+            time.sleep(SLEEP_SECONDS)
             try:
                 posting.fields["apply_url"] = resolve_apply(client, gated)
             except (RuntimeError, httpx.HTTPError) as exc:
@@ -310,12 +330,14 @@ def fetch_all(max_pages: int = DEFAULT_MAX_PAGES, limit: int | None = None) -> l
     for country_id in _country_ids(home):
         if pages_used >= max_pages:
             break
-        ids.extend(jid for jid in _job_ids(fetch(_list_url(country_id))) if jid not in ids)
+        time.sleep(SLEEP_SECONDS)
+        ids.extend(jid for jid in _job_ids(_fetch_page(_list_url(country_id))) if jid not in ids)
         pages_used += 1
         for subject_id in SUBJECT_IDS:
             if pages_used >= max_pages:
                 break
-            more = _job_ids(fetch(_list_url(country_id, subject_id)))
+            time.sleep(SLEEP_SECONDS)
+            more = _job_ids(_fetch_page(_list_url(country_id, subject_id)))
             ids.extend(jid for jid in more if jid not in ids)
             pages_used += 1
     return _collect(ids, len(ids) if limit is None else limit)
