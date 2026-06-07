@@ -1,7 +1,7 @@
 # Reflective Teaching, Peer Observation, and Growing on the Job
 
-
 ## What Reflective Teaching Means
+
 Reflective teaching means thinking carefully about what happens in the classroom, both in terms of the teaching itself and in terms of how learners respond, and then trying to improve it. The definition is straightforward, but the habit it describes takes genuine discipline to build. A teacher who reflects is not replaying the lesson in memory; she is examining it with specific questions in mind, looking for patterns that can inform what she does next.
 
 Four questions give that examination its shape. Were the goals of the session met, and if not, why not? What worked well and what did not? Did learners behave as expected, and what might explain any surprises? How can future sessions be reorganized to give students better opportunities to learn? Consider a teacher named Marta who notices that her intermediate students fell silent during a pair activity she had expected to generate lively conversation. Running through these four questions after class, she realizes the task instructions were clear but the topic was unfamiliar, so students had nothing to say. That diagnosis points directly toward a practical adjustment for the following week.
@@ -11,6 +11,7 @@ The questions work because they are open rather than evaluative. They do not ask
 Good teachers, the source makes clear, are always learning: from their students, from their own trial and error, from peers and colleagues, from mentors and supervisors, and from academic information in their field. This learning does not stop after the first few years in the classroom. It continues throughout a teacher's career, which is why the source describes it as lifelong learning and ongoing professional development. Reflective teaching practice is one tool that supports this continuous process, giving the individual teacher a structured way to keep learning from her own experience, lesson by lesson, rather than waiting for an external evaluation to tell her what to change.
 
 ## The Teacher Diary: A Practical Reflection Routine
+
 A teacher diary is a journal in which, after each lesson, the teacher writes notes about what happened in class that day. The entry may include the teacher's own reactions and feelings, as well as observations about how students responded. Over time, these notes tend to generate questions about what the teacher has observed, and those questions become the engine of genuine professional growth. The diary is personal and informal; it is not a report written for an administrator.
 
 One practical point stands out: diary writing requires discipline and regularity, but it need not be a lengthy process. A teacher named Maria, for example, might spend ten minutes after her last class on a Friday writing three short paragraphs about a grammar activity that confused her intermediate students. That brief habit, repeated consistently, produces far more insight than an occasional long entry written when something dramatic occurs.
@@ -26,6 +27,7 @@ The fourth category, Overall, draws the entry together. The central question is 
 The source closes the diary framework with a creative prompt that stands apart from the structured questions. The teacher is asked to find a metaphor or image that captures the essence of the lesson: a river, a bird with a broken wing, a candy with a sour middle, a sunrise on a summer day. The prompt then asks what that image will lead to tomorrow. Associative thinking of this kind can surface feelings and perceptions that straightforward questions miss, because a teacher who writes "today's lesson was like a car that stalled at every red light" has already identified something important, even before she can name it analytically. The metaphor becomes a starting point for the more structured reflection that follows in the next entry.
 
 ## Recordings, Portfolios, and Other Reflection Tools
+
 The diary is one tool among several, and teachers who want to deepen their reflective practice have other options available to them.
 
 Video or audio recordings of lessons, followed by systematic analysis, give a teacher direct access to what happened in the classroom rather than what she remembers happening. Memory is selective, and a recording does not edit. A teacher who suspects, as the observed teacher in the peer observation video did, that she speaks too fast can watch the recording and hear precisely where her pace became a problem. The follow-up analysis is the indispensable step; a recording left unwatched is a file and nothing more.
@@ -39,6 +41,7 @@ Classroom assessment techniques turn students into a source of information about
 These tools do not operate in isolation from one another. Reflective practice is also an integral part of formative peer observation, the process examined in the next section of this unit. A teacher who has already developed the habit of examining her own lessons through a diary, a recording, or a portfolio brings that same analytical attention to the experience of observing a colleague's class and to the debriefing conversation that follows.
 
 ## Peer Observation as Colleague, Not Evaluator
+
 Classroom observation takes two distinct forms, and the difference between them shapes everything about how a teacher experiences being watched. Summative observation is an evaluation: an administrator or supervisor rates the teacher being observed, and the results feed directly into decisions about job retention, promotion, or salary increases. Formative observation exists to help teachers become better teachers and more knowledgeable professionals. Peer observation is one specific kind of formative observation, defined here as teachers observing each other's classes in order to improve their teaching ability and get new ideas about teaching. Because the purpose is improvement rather than judgment, the atmosphere in the room and the conversation afterward can be entirely different.
 
 The source identifies three concrete advantages that peer observation holds over other forms of professional review. First, the observer is already familiar with the teaching situation, including its goals and its limitations; a colleague who teaches in the same building, with the same curriculum and the same student population, does not need to be briefed on institutional constraints that an outside evaluator might miss entirely. Second, because the observation is not recorded for administrative purposes, the teacher being observed can attempt new approaches or examine genuine weaknesses without the fear that a failed experiment will appear in a personnel file. Third, when peer observation is practiced consistently across a school, it tends to build a stronger, more supportive atmosphere among the faculty as a whole.
@@ -54,6 +57,7 @@ T: Both, if you can. That would help me see it more clearly.
 That kind of focused, negotiated agreement before the observation begins is what separates a productive peer review from an uncomfortable visit that leaves both teachers uncertain about what was accomplished.
 
 ## The Three-Step Peer Observation Process
+
 The pre-observation meeting follows a clear sequence of questions drawn from the Peer Observation Guide for Formative Review. The observer asks what class will be taught, what the teaching point of the lesson is, and how the lesson fits into a larger sequence of work. A teacher named Marta, for instance, might explain that her intermediate students have spent two weeks on academic paragraph structure and that the observed lesson is the first time they will attempt a full argumentative essay under timed conditions. That context tells the observer what to expect and prevents misreadings of deliberate instructional choices. The observer also asks about the teacher's perceptions of the group, because knowing that six students have very limited listening proficiency, for example, shapes how the observer interprets the teacher's decision to repeat instructions word for word rather than paraphrase them.
 
 The most consequential part of the pre-observation meeting is agreeing on a focus. The observed teacher must have an important voice in deciding what the observer will watch for. A teacher named David might ask his observer to pay attention to whether his instructions are landing clearly before students begin independent work, and to note how long the transition from individual writing to peer feedback takes. The observer's job is to gather information on those specific points, not to conduct a general audit of everything that happens in the room. This agreement protects the observed teacher from feeling surveilled and gives the observer a concrete task that produces useful data.
@@ -67,6 +71,7 @@ Positive comments come before suggestions for improvement, and they should be sp
 The debriefing ends on a courteous note. In the source's video example, the observed teacher thanked her observer and invited her back. That small exchange is not mere politeness; it confirms that the process felt safe enough to repeat, which is the condition on which all future improvement depends.
 
 ## Turning Reflection into One Concrete Change
+
 The temptation after any observation or diary entry is to draw up an ambitious list of changes and attempt them all at once. The source's action plan for both modules points in a different direction. Each plan asks the teacher to choose one practice, analyze it, set a realistic timeline, and then check back with colleagues to see how it is working. The unit of change is deliberately small.
 
 Teacher #1 in the video answer key illustrates what this looks like in practice. She makes small, incremental changes in her classroom, and she is deliberate and purposeful about each one, explaining to students what is shifting and why. She does not redesign her teaching wholesale; she adjusts one element, watches what happens, and moves from there. A teacher following her example might decide, after writing a diary entry, that her instructions during group tasks are unclear. Rather than rethinking her entire approach to classroom management, she rewrites the instructions for one activity, teaches it, and notes whether students stayed on task more readily.
@@ -126,7 +131,6 @@ The source is explicit that checking in with colleagues to exchange ideas and ma
 
    *Answer: Priya should confine her feedback to the agreed focus on transitions and not raise concerns about error correction or board work. The unit states that an observer who watched a specific focus 'has no business raising concerns about his board work or his error correction technique, however valid those concerns might be.' Raising unrequested issues would shift the conversation from collaborative improvement to a general audit, undermining the trust that makes honest peer observation possible. If Priya believes the other issues are significant, she could ask David at the end of the debrief whether he would like to make them the focus of a future observation cycle.*
    *Anchor: "An observer who watched David's transitions has no business raising concerns about his board work or his error correction technique"*
-
 
 ## References
 

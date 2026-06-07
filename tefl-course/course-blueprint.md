@@ -15,6 +15,7 @@ The pre-production master plan (2026-06-07). Every unit named, sourced, and stat
 Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-question anchored quiz. Module ends with a test that re-asks 2 questions from earlier modules (spaced retrieval, practicing what §M5 teaches). ~2 study-hours per unit + module tests + final ≈ 120 hours. Target text volume ~170–210k words (teacherrecord claims 120hr at ~210k).
 
 ### M1 — The TEFL World (5 units, ~9h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 1.1 | The world of TEFL: markets, learners, contexts | companion (From Observation to Action) + original | 🟡 |
@@ -24,6 +25,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 1.5 | First lessons: setting the stage, icebreakers | companion + original | 🟡 |
 
 ### M2 — English Grammar for Teachers I (5 units, ~10h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 2.1 | Grammatical terms and parts of speech | grammar facts + owner textbooks (reference) | 🔴 |
@@ -33,6 +35,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 2.5 | Common learner errors by L1 background | facts + original examples | 🔴 |
 
 ### M3 — English Grammar for Teachers II (6 units, ~11h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 3.1 | Modal verbs | grammar facts | 🔴 |
@@ -43,6 +46,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 3.6 | Functional language and idiom | grammar facts + companion | 🟡 |
 
 ### M4 — Teaching Methods (5 units, ~10h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 4.1 | The communicative approach and its rivals (a short honest history) | companion + Gregg (1984) ⭐ | 🟡 ⭐ |
@@ -52,6 +56,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 4.5 | Teaching grammar: explicit vs implicit, the verdict | Norris & Ortega (2000), Spada & Tomita (2010), Goo et al. (2015), Kang et al. (2019) ⭐ + State Dept M2 🎬 | ✅ ⭐ |
 
 ### M5 — Vocabulary (4 units, ~8h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 5.1 | How vocabulary is learned: retrieval beats re-reading | Karpicke & Roediger (2008) ⭐ | 🟡 ⭐ |
@@ -60,6 +65,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 5.4 | Building language awareness | State Dept M2 🎬 | ✅ |
 
 ### M6 — Phonology & Pronunciation (4 units, ~8h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 6.1 | The sounds of English: phonological awareness | facts + original | 🔴 |
@@ -68,6 +74,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 6.4 | Teaching pronunciation | companion + original | 🟡 |
 
 ### M7 — Receptive Skills: Listening & Reading (4 units, ~8h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 7.1 | Teaching listening | companion + VOA materials (PD) | 🟡 |
@@ -76,6 +83,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 7.4 | Authentic materials | State Dept M8 🎬 | ✅ |
 
 ### M8 — Productive Skills: Speaking & Writing (5 units, ~10h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 8.1 | Teaching speaking | companion + communicative activities | 🟡 |
@@ -85,6 +93,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 8.5 | Integrating the four skills | State Dept M3 🎬 | ✅ |
 
 ### M9 — Feedback & Error Correction (3 units, ~6h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 9.1 | Giving feedback and correcting errors | **PILOT — built** (State Dept M5 🎬 + Lyster & Saito, Li ⭐) | ✅ ⭐ |
@@ -92,6 +101,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 9.3 | Mistakes, errors, and what they tell you | State Dept M5 + companion | ✅ |
 
 ### M10 — Lesson Planning & Materials (6 units, ~12h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 10.1 | Lesson aims | companion + standard practice | 🟡 |
@@ -102,6 +112,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 10.6 | Teaching with limited resources | State Dept corpus + companion | ✅ |
 
 ### M11 — Classroom Management (5 units, ~10h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 11.1 | Managing large classes | State Dept M6 🎬 | ✅ |
@@ -111,6 +122,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 11.5 | Culture and its implications | companion + original | 🟡 |
 
 ### M12 — Knowing Your Learners (4 units, ~8h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 12.1 | Individual learner differences | State Dept M11 🎬 | ✅ |
@@ -119,6 +131,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 12.4 | Motivation | companion + original | 🟡 |
 
 ### M13 — Assessment & Testing (3 units, ~6h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 13.1 | Choosing assessment tasks | companion + benchmark | 🟡 |
@@ -126,6 +139,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | 13.3 | Writing good tests (and why testing teaches) | Karpicke & Roediger (2008) ⭐ + original | 🟡 ⭐ |
 
 ### M14 — Specializations & The Working Teacher (4 units, ~8h)
+
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 14.1 | Teaching young learners | State Dept M12 (K-5) 🎬 + Activate: Games (PD, to download) | ✅ |

@@ -5,11 +5,13 @@ Deep-research pass, 2026-06-07. 5 search angles, 24 sources fetched, 116 claims 
 ## 1. The benchmark: what a TEFL curriculum contains
 
 **Regulated/prestige tier (primary specs, all 3-0 verified):**
+
 - **CELTA** (Cambridge syllabus PDF): 5 topic areas — learners/teachers & context; language analysis & awareness; language skills (reading, listening, speaking, **writing**); planning & resources; developing teaching skills & professionalism. The "120 hours" is 120 *contact* hours plus a minimum ~80 self-study hours (~200 total), including **6 assessed teaching-practice hours with real learners**.
 - **Trinity CertTESOL**: 5 assessed units — Teaching Skills; Language Awareness & Skills; The Learner Profile; Materials Assignment; The Unknown Language (trainee learns ~4h of a language foreign to them). Minimum 6 hours supervised assessed teaching practice.
 - **Ofqual Level 5 (Gatehouse/i-to-i spec, V5 2022)**: 4 mandatory 45-GLH units — Classroom & Learners; Lesson Planning & Resources; Vocabulary/Grammar/Pronunciation; The Four Skills. 240 TQT. The Diploma adds One-to-One/Online and Business English units.
 
 **Budget online tier (provider-stated, 3-0 verified as "what they claim to contain"):**
+
 - **ITTT**: 20 units, ~50/50 grammar vs methodology (provider's own characterization).
 - **TEFL Org Premier**: Methodology 50h, Grammar 30h, Video Observation 20h, Teaching Online 10h, Large Classes 10h.
 - **Bridge**: 60h core (13 modules) + 40h grammar + 20h specialized (Young Learners + Business English).
@@ -24,6 +26,7 @@ Deep-research pass, 2026-06-07. 5 search angles, 24 sources fetched, 116 claims 
 ⚠️ Correction (2026-06-07): the research pass was fed only modules mid1–mid15; the full map (course-structure-reference.md) also has mid16 (Writing, 6.8k words), mid17 (advanced grammar), mid18 (behaviour/storytelling/drama), and mid20 (limited resources/large classes/discipline/culture). So writing and classroom management are **thin, not absent** — the rest of the analysis stands.
 
 Missing or thin:
+
 - **Writing skills** — exists (mid16) but at 6.8k words it is the thinnest of the four skills; writing is a named, assessed Four-Skills component in every regulated spec.
 - **Classroom management / discipline** — covered across mid18/mid20, though without the structured learning-outcomes treatment the regulated spec requires.
 - **Teaching young learners** and **business English** — absent; precisely what better budget competitors (TEFL Org, Bridge) advertise.

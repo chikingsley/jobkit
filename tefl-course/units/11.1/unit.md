@@ -1,7 +1,7 @@
 # Managing Large Classes
 
-
 ## The Realities of Teaching 40–75 Students
+
 Teaching a class of forty to seventy-five students places immediate and concrete pressure on almost every aspect of a teacher's work. The first difficulty is time. Managing a large class well requires careful planning, yet the sheer volume of students means that teachers rarely have the hours needed to plan at the level the situation demands. A teacher like Marta, responsible for sixty-three secondary students across multiple sections, may find that the time needed to design differentiated activities does not exist in her working week.
 
 Establishing rapport presents a second, related difficulty. In a class of that size, a teacher may spend an entire term without learning every student's name, let alone understanding individual strengths and anxieties. Without that personal connection, students can feel anonymous, and a student like Paulo, sitting in the back row of a crowded room, may disengage entirely before the teacher notices. Monitoring student work compounds the problem further. When one teacher must observe sixty students working simultaneously, most learners will complete tasks without receiving any individual feedback, leaving errors uncorrected and progress unmeasured.
@@ -38,8 +38,8 @@ Managing student movement is one of the points where a routine either saves or l
 
 Finally, a teacher who creates purposeful activities that keep learners on task should also prepare additional self-directed work for students who finish early. Without this, a student like Priya, who completes a writing task ahead of her classmates, has nothing to do and may begin to distract others. A standing instruction, such as "If you finish, begin the extension reading on the side shelf," keeps every student occupied and removes a common source of disruption without requiring the teacher to intervene.
 
-
 ## Pair and Group Structures That Work at Scale
+
 In a class of fifty or more students, pair and group structures solve a problem that no amount of teacher energy can solve alone: the need for every learner to practise at the same time. When the teacher is the sole source of interaction, only one student speaks at a time while the rest wait. Pair work changes that arithmetic immediately. If a teacher like Mr. Osei sets up a paired dialogue task and signals the start, all thirty pairs in his room of sixty students begin producing language simultaneously, and the total amount of student practice in that five-minute exchange far exceeds what a teacher-fronted session of the same length could generate.
 
 The routines that make this possible are themselves teachable. Students need to move smoothly from one activity to another, shift in and out of group work quickly, and self-check or peer-check their own work. None of these behaviours appear automatically in a large class; they are trained. A teacher who has spent the first two weeks of term practising the signal for group formation, whether a raised hand, a clap pattern, or a verbal cue, will find that a class of sixty students can rearrange into groups of four in under a minute. Without that training, the same transition can consume ten minutes of lesson time and leave students restless before the activity has begun.
@@ -63,6 +63,7 @@ Where the teacher cannot be in two places at once, additional monitoring resourc
 The rotation plan, the targeted circulation, and the use of additional help form a system rather than a collection of separate habits. Each requires the teacher to decide before the lesson begins who will receive attention and how. In a large class, that advance decision is what separates a student like Amara from one who spends an entire term waiting to be noticed.
 
 ## Keeping Weaker Students Engaged: Discipline and Inclusion
+
 Discipline management, as the source defines it, is a fair and even-handed system in which students are clearly told what behaviour is expected and what the consequences of negative behaviour will be. This definition places the burden of clarity on the teacher before any problem occurs. A teacher who waits until a student like Kenji disrupts a pair activity to explain the rules has already lost time that belonged to the whole class.
 
 The source draws a direct distinction between proactive and reactive teacher behaviour. Proactive behaviour anticipates student reactions and organises the classroom to prevent problems from developing; reactive behaviour responds to problems only after they have appeared. In practical terms, this means writing rules on the board at the start of term, discussing them openly, and posting them on the wall in both the students' first language and the language of instruction. A student still developing proficiency in English can then read the expectations in the language she understands best.
@@ -123,7 +124,6 @@ When persistent negative behaviour does appear despite these measures, the sourc
 
    *Answer: Mr. Osei should address Priya's finished-early situation immediately by directing her to the standing extension task, then move to circulate toward Amara for a brief individual check-in, and postpone addressing Kenji's off-task behaviour until after class rather than interrupting the lesson for the whole group. The unit states that a teacher should prepare additional self-directed work for students who finish early to prevent them from distracting others, and that individual discipline conversations should be postponed until after class wherever reasonable so the lesson continues and weaker students are not deprived of practice time. Circulating to Amara reflects the unit's rotation and targeted circulation guidance, which holds that students who sit quietly and struggle go unnoticed unless the teacher makes a deliberate plan to reach them.*
    *Anchor: "postponing individual discipline conversations until after class wherever this is reasonable, so that the lesson continues"*
-
 
 ## References
 

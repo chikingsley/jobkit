@@ -13,6 +13,7 @@ Recruiters skim in ~8 seconds, so **five things must jump out immediately**, bef
 5. Availability
 
 Concrete rules:
+
 - Lead with a **bold summary line** between contact details and education that shows what you offer (not what you want). Example he wrote for this profile: *"TEFL-Certified Professional Educator with Bachelor's Degree and American Passport — Available Immediately."*
 - Signal you're an American native speaker: put **`USA`** after the state (people don't know US cities/states), put **`+1`** before the phone number, consider a mailing address.
 - **Drop the GPA and graduation dates** — don't highlight being a recent grad (don't deny it, just don't draw the eye to it).

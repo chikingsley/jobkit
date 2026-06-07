@@ -1,6 +1,5 @@
 # Learning Strategies
 
-
 ## What Are Learning Strategies? Core Categories Explained
 
 A strategy is a tool, plan, or method used for accomplishing a task. In a language classroom, this definition covers an enormous range of behaviors, from the way a student silently rehearses a new verb form to the way she chooses a partner for a speaking activity. Because strategies serve so many different purposes, the source material groups them into three broad categories, each addressing a distinct dimension of the learning process.
@@ -17,7 +16,6 @@ T: "How did you figure out what that word meant?"
 S: "I looked at the words around it and kind of guessed from the sentence."
 
 That exchange reveals inferencing at work, a strategy the teacher could not have seen without asking. For this reason, teachers must analyze what they observe and, in many cases, infer which strategies are operating rather than expect to identify them through direct observation alone.
-
 
 ## Cognitive Strategies: Tools for Processing and Remembering Language
 
@@ -38,8 +36,8 @@ Self-checking and monitoring deserve particular attention because they allow lea
 
 The consistent point across Beckman's account is that cognitive strategies work best in combination. Memory tasks benefit from pairing visualization with verbalization and mnemonics together, rather than relying on any single technique. A teacher who introduces these strategies one at a time, then shows students how to combine them for specific tasks, gives learners a flexible toolkit rather than a fixed set of isolated procedures.
 
-
 ## Metacognitive Strategies: Helping Learners Think About Their Own Learning
+
 Metacognition, as defined in this module, is the global understanding of thinking or mental processes that enables learners to recognize, monitor, and organize those processes in themselves. Where cognitive strategies address specific tasks such as memorizing vocabulary or comprehending a text, metacognitive strategies operate at a higher level, allowing learners to step back and observe how they are learning, not just what they are learning. A student who notices mid-task that her reading strategy is not helping her understand a dense paragraph, and who then switches to rereading with self-questioning, is using metacognition in a practical, immediate way.
 
 Cohen's account in Reading B describes several behaviors that characterize this kind of strategic self-awareness. Learners who use metacognitive strategies can self-diagnose their strengths and weaknesses in language learning, monitor and self-evaluate their performance during tasks, and transfer successful strategies to new learning contexts. Consider a student named Tariq who realizes, after a listening exercise, that he understood the general topic but missed most of the specific details. He identifies the gap, adjusts his approach for the next listening task, and applies the same monitoring habit when he moves to reading comprehension work in another class. That transfer of a self-monitoring habit across contexts is precisely what Cohen describes as one of the goals of strategy training.
@@ -57,6 +55,7 @@ Beckman's description of the independent, strategic learner in Reading A capture
 The teacher's role in this process begins with observation and diagnosis. According to the module's introduction, teachers need to learn about their students' backgrounds, identify student problems, and find out what strategies learners are currently using before they can help students determine which strategies might work best for them. A teacher who builds brief planning and evaluation moments into ordinary lessons, without treating them as separate from the content, gives students repeated low-stakes practice in thinking about their own thinking. As students become more adept at this, they become, in the module's terms, better self-teachers.
 
 ## Social Strategies: Learning With and From Others
+
 Social strategies, as defined in Reading B (Cohen), are strategies for enhancing learning through cooperating with other learners and seeking to interact with native speakers or more proficient speakers of the target language. They differ from cognitive and metacognitive strategies in that the learning itself happens through interaction rather than through individual mental processing. A student who asks a classmate to explain an unfamiliar word, or who arranges to speak with a native speaker outside class, is using a social strategy deliberately.
 
 The classroom described in the module's answer key offers a clear illustration of how a teacher can build social strategies into ordinary lesson design. The teacher formed student pairs and groups with care, placing students together to provide mutual support and to draw on shared knowledge. Each group received a different topic, so students had to communicate their findings to the rest of the class rather than complete a task and stop there. That arrangement made genuine communication necessary; students were not practicing a simulated exchange but producing language that their classmates had a real need to receive. The affective result was visible in students' willingness to contribute to their own group's report and, when they felt moved to do so, to other groups' reports as well. They also connected the content to their own personal experiences, which deepened engagement with the material.
@@ -70,6 +69,7 @@ T: That's a useful strategy. Have you told your partner about it?
 Such exchanges are not incidental. When students articulate the strategies they use, they consolidate their own understanding of those strategies and make them available to others. A teacher who designs group tasks with this in mind, whether through structured peer tutoring, carefully formed classroom groups, or whole-class reporting activities, gives students repeated practice in the social dimension of language learning. The goal is for students to see other learners not only as conversation partners but as sources of strategic knowledge they can add to their own developing repertoire.
 
 ## Building Strategy Training Into Normal Lessons
+
 Strategy instruction does not require a separate lesson slot, a special unit, or time taken away from language content. Beckman describes effective strategy instruction as "an integral part of classroom instruction, regardless of the content being taught; it is not an additional subject." A teacher who waits for the right moment to introduce strategies, or who treats them as an occasional add-on, misses the point entirely. The strategies belong inside the regular lesson, woven into the activities students are already doing.
 
 The sequence Beckman outlines gives teachers a practical order to follow. The first step is to describe the strategy and explain its purpose: when it can be used, why it helps, and how to apply it. A teacher might say, T: "Before we read this article, I want to show you a way to predict what the text is about by looking at the headings and the first sentence of each paragraph. This saves time and helps your brain prepare for new information." The second step is to model the strategy openly, thinking aloud so students can observe the mental process. The third step is assisted practice, during which the teacher monitors the class, provides cues, and gives feedback while students try the strategy themselves. S: "I looked at the heading and I think the paragraph will be about crocodile habitats." T: "Good. Now check whether the first sentence confirms that." Repeated practice of this kind moves the strategy toward automaticity, so students apply it without having to stop and deliberate. The fourth step asks students to monitor and evaluate their own use of the strategy, noticing whether it worked and why. The fifth step encourages them to transfer the strategy to a different task or subject, such as using the same prediction technique when approaching a biology text or an exam passage.
@@ -79,6 +79,7 @@ The Strategies-Based Instruction approach described by Cohen takes this integrat
 Physical reminders in the classroom support this ongoing integration. Written reminders for learning strategies posted on walls and bulletin boards help students keep those strategies present in their minds between explicit teaching moments. A poster listing the steps for self-monitoring during reading, or a display showing common memory techniques, gives students a reference point they can consult independently. Some teachers produce these materials themselves, and some involve students in making them, which itself becomes a form of strategy consolidation. The classroom environment, in this way, becomes part of the instruction.
 
 ## Helping Learners Build Strategies Between Classes
+
 The work of strategy development does not stop when students leave the room. A teacher who builds strategy awareness into lessons can also prepare learners to apply those strategies in the hours and days between classes. The action-plan steps in this module point toward several concrete ways to do this, beginning with the classroom conditions that make independent practice possible in the first place.
 
 A trusting atmosphere is the foundation. When students feel safe enough to attempt tasks they might fail, they are more willing to try unfamiliar strategies on their own. Consider a student named Amara, who has always memorized vocabulary by writing words repeatedly. If her teacher has made it clear that experimenting with a new approach carries no penalty, Amara may try grouping words by meaning or associating them with images she already knows. That willingness to experiment is itself a strategic behavior, and it grows from the confidence built inside the classroom.
@@ -137,7 +138,6 @@ When learners reach this point, something shifts in how they relate to their own
 
    *Answer: A strong response would have the trainee pause the transition and ask Dani to identify the gap she noticed and what she might do differently on the next task, explicitly activating the Evaluation stage of Chamot and O'Malley's four-stage metacognitive framework. The trainee should justify this by noting that evaluation after a task is the stage at which learners assess how well a given strategy worked, and that repeated cycles of this kind build the self-monitoring habit Cohen describes as transferable to new contexts. The trainee might also note that this move costs only the two available minutes and does not displace language content, consistent with Beckman's principle that strategy instruction is integral to regular lessons rather than an add-on.*
    *Anchor: "In the fourth stage, Evaluation, they assess how well a given strategy worked after the task"*
-
 
 ## References
 

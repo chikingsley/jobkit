@@ -1,0 +1,15 @@
+{
+  // Repo convention: no hard line-wrapping in prose (one paragraph = one line, editors soft-wrap),
+  // so the 80-col rule is permanently off. Sources/ holds bulk downloads + generated transcripts.
+  "config": {
+    "MD013": false,
+    // table pipe-spacing style consistency — cosmetic, our compact delimiters are intentional
+    "MD060": false
+  },
+  "ignores": [
+    "node_modules",
+    ".venv",
+    "tefl-course/sources/**",
+    ".claude/skills/**"
+  ]
+}

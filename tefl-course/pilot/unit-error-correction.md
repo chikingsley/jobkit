@@ -1,6 +1,5 @@
 # Giving Feedback and Correcting Errors
 
-
 ## What feedback is and why it matters
 
 Feedback, as used in language teaching, is information a learner receives about their performance, whether that information concerns the accuracy of their language, the success of their communication, or their confidence as a speaker or writer. A teacher who tells a student that a sentence is grammatically correct is giving feedback. So is a teacher who nods, repeats a student's utterance with a slight change in intonation, or writes a grade at the top of a composition. The form varies widely. The function is consistent: the learner learns something about how they are doing.
@@ -12,7 +11,6 @@ Teachers who reflect on their own experiences of giving and receiving feedback t
 This three-way pattern points to something the source material makes explicit: incorrectness is not the only standard a teacher can use to assess or respond to a learner's production. Feedback operates across linguistic, communicative, and affective domains simultaneously. A response that addresses a grammar point while ignoring the affective dimension may correct the form and damage the learner's willingness to speak again.
 
 Planning feedback deliberately, rather than correcting on reflex, follows directly from this reality. A teacher who corrects every error as it arises is making an implicit claim that accuracy always takes priority over fluency, confidence, and communicative momentum. That claim is not always warranted. Research supports the value of oral corrective feedback for second language development (Lyster and Saito, 2010; Li, 2010), but the decision about when and how to give that feedback still requires the teacher to read the task, the student, and the moment. Deliberate planning means deciding in advance which errors matter for a given activity, how corrections will be delivered, and what the likely effect on the learner will be, before the lesson begins rather than in the middle of it.
-
 
 ## Types of feedback
 
@@ -26,7 +24,6 @@ Feedback also differs by its source. Teacher feedback is the most familiar kind,
 
 The final distinction concerns the target of the feedback. Feedback on form addresses grammar, vocabulary, or pronunciation; feedback on content addresses the ideas, the meaning, or the success of the communication. These two targets can pull in opposite directions during a single activity. If a student named Yusuf is giving an oral presentation on a topic he researched, interrupting him to correct a preposition error shifts his attention from meaning to mechanics at precisely the wrong moment. The teacher might instead note the preposition error privately and address it later, while responding to the content of Yusuf's argument during the presentation itself. The source material is explicit on this point: teachers should decide whether an error prevents understanding or whether fluency is more important for the task at hand, and they should let that judgment determine which dimension of feedback takes priority.
 
-
 ## When to correct, and what
 
 Selective correction begins with a clear distinction between two types of classroom activity. During fluency work, such as a pair discussion or a student narrating a personal story, the activity exists to produce sustained speech; constant interruption defeats that purpose. During accuracy work, such as a drill on the past tense or a controlled substitution exercise, immediate correction is the point of the exercise, and withholding it would leave the student practicing the wrong form. The teacher's first decision, then, is to identify which kind of activity is underway before deciding whether to intervene at all.
@@ -38,7 +35,6 @@ Over-correction carries an affective cost that the source material addresses dir
 The decision about which errors to treat also depends on whether the error is a mistake or a true error. A mistake, in the technical sense used in applied linguistics, results from inattention rather than incomplete learning; the student knows the correct form but did not produce it carefully. A true error reflects a gap in the learner's developing system. Correcting a mistake the student can already self-repair is less productive than addressing an error that reveals a genuine misunderstanding of the target structure.
 
 The effort a teacher puts into selecting and delivering corrective feedback is well spent. Lyster and Saito (2010) found, across fifteen classroom studies, that the effects of oral corrective feedback on second language development are significant and durable over time, meaning that careful correction produces gains that persist rather than fade. That finding gives teachers a principled reason to correct selectively and well, rather than either correcting everything indiscriminately or avoiding correction out of concern for the classroom atmosphere.
-
 
 ## How to correct: what the evidence says
 
@@ -54,7 +50,6 @@ The standard interpretation of why prompts outperform recasts on average is that
 
 Neither technique is universally superior in every classroom moment, and a teacher's choice should reflect the task at hand. During a fluency activity where communication is the primary goal, a quiet recast allows the lesson to continue without breaking the student's concentration on meaning. During a form-focused exercise, or when a student has produced an error that reflects a pattern the class has been studying, a prompt is the more productive choice. A teacher working with a class on reported speech might use recasts during a free discussion and switch to elicitation prompts the moment a student produces a form that the class practised that morning, because the context signals that accuracy is now within reach. Context decides.
 
-
 ## Techniques in practice
 
 One practical technique is the delayed correction slot, in which the teacher notes errors silently during a fluency activity and addresses them on the board only after the activity ends. Because the errors are written without attribution, no individual student is identified, and the class can treat the correction as a shared problem to solve. A teacher running a role-play might jot down three recurring verb-tense errors, then write them anonymously on the board and ask the group to identify what went wrong before offering any explanation.
@@ -66,7 +61,6 @@ Self-correction time is a brief pause, built deliberately into the lesson, durin
 The three-pile sort, adapted from the source material's workshop sorting activity, trains learners to categorise their own production as 'went well,' 'needs work,' or 'not sure.' At the end of a writing task, a student reviews her sentences and physically or mentally places each one in a category before the teacher collects the work. This habit builds the diagnostic awareness that the source material describes as understanding the nature of an error, and it gives the teacher immediate information about where a student's uncertainty lies rather than where the teacher assumes it lies.
 
 Praise is most useful when it names the specific thing the student did correctly rather than offering a general approval word. Telling a student 'Good' after a spoken answer tells her nothing she can repeat deliberately; telling her 'You used the past perfect there and it was correct' gives her a piece of information she can act on. When a student named Priya produces a well-formed conditional sentence during a discussion, the teacher might say 'That conditional clause was accurate and it made your meaning very clear,' connecting the linguistic form directly to its communicative effect and reinforcing both at once.
-
 
 ## Check your understanding
 
@@ -114,7 +108,6 @@ Praise is most useful when it names the specific thing the student did correctly
 
    *Answer: The most appropriate move is a prompt, specifically a metalinguistic cue or a repetition with rising intonation such as repeating 'Yesterday I go to the park?' and waiting for Tomás to self-repair. This choice is justified on two grounds. First, the lesson target is simple past tense and the class has already practised the forms in a controlled drill, meaning the correct forms are within reach; the unit states that a prompt is the more productive choice when a student has produced an error that reflects a pattern the class has been studying. Second, Lyster and Saito (2010) found that prompts, which push the learner toward self-repair, produce larger effects on second language development than recasts, because requiring the student to retrieve and produce the correct form engages deeper cognitive processing. The error also qualifies for treatment under all three of the unit's selection criteria: it blocks precise communication of time reference, it targets the lesson's specific language point, and multiple students are making the same error simultaneously.*
    *Anchor: "During a form-focused exercise, or when a student has produced an error that reflects a pattern the class has been studying, a prompt is the more productive choice."*
-
 
 ## References
 

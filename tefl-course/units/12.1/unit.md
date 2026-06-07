@@ -1,7 +1,7 @@
 # Individual Learner Differences
 
-
 ## Why Learners Differ: A Map of Individual Differences
+
 Any group of learners shares certain features. In a private school class of Russian students studying English, for example, all the students speak the same first language, they are roughly the same age, they are literate in their own language, and they come from a similar socio-economic background. These shared characteristics give the teacher a useful starting point. The class is not, however, a uniform group, and the differences among those same students are just as real as the similarities.
 
 Some students may find language learning easy; others will find it genuinely difficult. Some will arrive at class in good spirits most days; others will not. A few may have special needs, such as hearing difficulties, poor eyesight, or difficulty sitting still for extended periods. The private school Russian class is a convenient illustration precisely because its surface uniformity makes the underlying variation easy to see. A class with more obvious external diversity makes the same point with greater force.
@@ -36,7 +36,6 @@ A self-access room or area is a room or area of a room where materials are avail
 
 Strategy instruction teaches students about learning strategies and how and when to use them, helps students identify personally effective strategies, and encourages them to make strategic behaviours a systematic part of their learning. When a teacher pauses mid-lesson to tell students why they are doing a particular activity, as the teacher in the module video does when she asks whether the song made vocabulary easier to learn, she is practising strategy instruction at the macro level. Taken together, these eight terms form a practical vocabulary for the central challenge of this module: seeing individual learners clearly and adjusting teaching accordingly.
 
-
 ## Varying Input, Tasks, and Grouping: The Teacher's Toolkit
 
 A single lesson can carry far more variety than it might first appear, and that variety allows teachers to reach learners with different strengths, backgrounds, and motivations. The Module Focus in this unit identifies seven distinct ways teachers can vary their practice, each addressing a different dimension of learner difference. Taken together, they form a practical toolkit rather than a set of isolated techniques.
@@ -65,7 +64,6 @@ The video described in the source shows what these spaces can look like in pract
 
 Posting clear instructions and schedules throughout these areas is a practical detail that carries real weight. When a learner can read the steps for using the listening equipment independently, or consult a posted schedule to know which area she should move to next, she is managing her own learning time rather than waiting for the teacher to redirect her. This kind of self-monitoring builds the metacognitive awareness, the knowledge a learner has of her own learning process, that makes independent study genuinely productive rather than merely unsupervised.
 
-
 ## Motivation, Autonomy, and Making Learning Real
 
 Motivation, defined in this unit as the psychological factors that determine how much effort learners are willing to apply to accomplish or learn something, is not a fixed quality that students either possess or lack. It shifts in response to what happens inside the classroom, and teachers can make deliberate choices that raise or lower it. Two straightforward techniques visible in the video segments illustrate this well. The first is the posting and display of student work; when a learner sees her own writing mounted on a wall or her group's project stored in a notebook that other students can consult, the work acquires a purpose beyond the grade. The second technique is giving students the opportunity to choose materials that interest them from a wide variety of available resources. A student who selects a book from a cart because the topic appeals to him is already more invested in reading it than a student who receives the same book as an assignment.
@@ -79,7 +77,6 @@ S: "Five. But Lena saw seven, so we put seven for that day."
 T: "Good. So where does that bar go on the chart?"
 
 That brief exchange contains listening, speaking, and numeracy, all anchored to information the students gathered in the world outside the classroom. The source text describes this as an authentic activity, one that meets the needs of learners who learn better through practical experience and promotes visual literacy alongside group work. Authenticity of this kind connects directly to motivation: when learners can see that the language they are practising belongs to real situations they have encountered, they are more willing to apply effort to it. The bar chart on the wall then becomes another instance of displayed student work, closing the loop between the two motivational techniques and the broader goal of making learning feel purposeful to the individuals in the room.
-
 
 ## Learner Preferences: What Students Tell Us About Themselves
 
@@ -137,7 +134,6 @@ The evidence-supported planning response to learner differences is building vari
 
    *Answer: A well-justified response would identify a move such as setting up learning stations or a self-access area so that early finishers can select a follow-up task matched to their level and interest, while slower workers continue at their own pace without pressure. The justification should connect to the unit's principle that learners can work at their own pace and that a faster worker moves on to additional activities that genuinely interest her, while a slower worker takes the time she needs. Alternatively, a trainee might justify offering a variety of tasks built around the same input, so that different skills are practised, allowing each learner to engage through a format suited to their current ability. Any move is acceptable provided it is named precisely and linked to a specific passage from the unit.*
    *Anchor: "learners can work at their own pace; a slower worker takes the time she needs"*
-
 
 ## References
 

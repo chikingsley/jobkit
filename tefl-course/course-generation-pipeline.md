@@ -15,6 +15,7 @@ The single most important constraint, set explicitly by the owner: **no LLM writ
 **Layer 2 — constrained drafting.** The LLM's only permitted jobs: ordering extracted material, writing short bridges between source passages, condensing, and drafting exercises/quiz items grounded in the extracted text. The drafting prompt embeds the banned-pattern catalog, requires textbook register, and forbids introducing claims not present in the source. Quiz questions must each be answerable by pointing at a specific passage in the unit, and that passage gets recorded with the question.
 
 **Layer 3 — the enforcement gate (every unit, no exceptions).**
+
 1. `dslop` — deterministic CLI lint (installed as a dev dep; strict `dslop.toml` to be tuned). Catches structural tells: em-dashes, contrastive negation, filler adverbs, rhythm statistics. Non-zero exit = unit rejected.
 2. `detector/patterns.js` from the vendored [avoid-ai-writing](../.claude/skills/avoid-ai-writing/) skill — zero-dep scorer covering what dslop misses: the three vocabulary tiers (delve/tapestry/leverage…), transitions, chatbot artifacts, stylometrics. Score threshold to be set; anything above it = rejected.
 3. avoid-ai-writing skill audit pass (P0 credibility killers → P2 polish) in detect mode, then targeted rewrite of flagged spans only.

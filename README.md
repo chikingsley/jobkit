@@ -6,7 +6,7 @@ This repository contains personal contact information and job-search records. Ke
 
 ## Layout
 
-```
+```text
 src/jobkit/              Python package (uv project)
   llm.py                 Superwhisper LLM client (shared by job enrichment)
   jobs/                  pull listings → normalize → export: cli, http, models, state, enrich, export
@@ -96,8 +96,8 @@ gws-profile chibuzor auth status                                 # confirm accou
 gws-profile cheez2012 auth login -s gmail,drive,calendar,tasks   # interactive (browser) — adds Gmail scope
 ```
 
-Profiles: `chibuzor` → chibuzor.ejimofor@gmail.com (logged in, full Gmail scopes),
-`cheez2012` → cheez2012@gmail.com (calendar/tasks only until the login above adds Gmail).
+Profiles: `chibuzor` → <chibuzor.ejimofor@gmail.com> (logged in, full Gmail scopes),
+`cheez2012` → <cheez2012@gmail.com> (calendar/tasks only until the login above adds Gmail).
 
 ### Sending a message
 
@@ -131,8 +131,8 @@ To stage instead of send, swap `messages send` for `drafts create` with
    holding `application.md` (status, next action, fit notes) and `job-description.md`
    (raw recruiter/job text). Point the CSV `job_file` column at that folder.
 3. Generate tailored resume PDFs into `resumes/pdfs/`; keep markdown sources editable.
-5. Keep sensitive identifiers, login details, and unrelated personal records out of this repo.
-6. Before sending emails, verify the active Gmail profile/account separately.
+4. Keep sensitive identifiers, login details, and unrelated personal records out of this repo.
+5. Before sending emails, verify the active Gmail profile/account separately.
 
 ## Archiving
 

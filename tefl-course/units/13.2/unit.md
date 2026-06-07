@@ -1,7 +1,7 @@
 # Alternative Assessment
 
-
 ## What Alternative Assessment Is and Why It Matters
+
 Alternative assessment is a type of evaluation that directly measures learners' ability to use the language. Paper-and-pencil tests reveal what a learner knows about the language; alternative assessment reveals what a learner can do with it. That distinction shapes every practical decision a teacher makes when choosing how to evaluate a class.
 
 The first reason to use alternative assessment is that it places learners in situations where they make real communicative use of English for a genuine purpose. A student named Fatima, for example, is not filling in a grammar table; she is using the language as a means of communication to accomplish something meaningful. The second reason is that alternative assessment allows learners to demonstrate what they have learned and how well they can apply it. Criteria based on the goals of the class are established in advance, so both teacher and student understand what successful completion looks like before the work begins.
@@ -20,7 +20,6 @@ For pairs to function well in this role, the teacher must supply clear guideline
 
 Students in a peer assessment activity carry genuine responsibilities. They are expected to stay on task, complete the work within the time the teacher has set, and treat their role as evaluator with the same seriousness they would bring to their own writing. A student who gives only superficial comments, or who spends the time on unrelated conversation, fails both herself and her partner. When students take the role seriously, peer assessment gives them practice in applying criteria to real language use, which is itself a form of language learning.
 
-
 ## Portfolios: Building a Record of Progress
 
 A portfolio is a systematic collection of a learner's work over a period of time, evaluated according to pre-set criteria. The criteria are what distinguish a portfolio from a simple folder of accumulated papers; without them, the collection has no evaluative purpose. A student named Amara, for example, might keep every draft of her essays alongside reading response sheets and a short written reflection on what she has improved, all measured against standards she received at the start of the term.
@@ -35,8 +34,8 @@ The physical form of a portfolio depends on the age and context of the learners.
 
 Portfolios are suitable for learners at any age or proficiency level, which makes them one of the more flexible tools available to a language teacher. A beginning-level adult class might include vocabulary logs and short writing tasks, while an advanced secondary class might include multiple drafts of analytical essays and reading comprehension activities. Students and the teacher typically decide together what will go into the portfolio for end-of-term evaluation, and they also agree on the criteria by which that collection will be judged. That shared decision-making means students understand from the outset what a successful portfolio looks like, and they can work toward that standard throughout the course.
 
-
 ## Performance Assessment and Rubrics
+
 Performance assessment rests on two requirements: a task for students to perform and a set of criteria that define what a successful performance looks like. During the performance itself, both the teacher and the student audience evaluate what they see against those established criteria. When the performance ends, they offer constructive feedback to the performers, giving the assessment a formative quality even within what might appear to be a summative event.
 
 The range of tasks that qualify as performance assessment is wider than many teachers initially expect. In one classroom example, individual students report the results of their group's research on an academic topic. To do this, a student such as Marco must read source material, organise the group's findings, write key points on an overhead transparency, and then speak to the class. Four distinct language skills are present in a single assessed event. In a second example, a group of students performs a dramatisation of an abridged version of King Lear. A student named Priya must listen carefully to hear the play read correctly, read for comprehension, sustain reading fluency, attend to pronunciation, and deliver her lines with dramatic expression. The two tasks look nothing alike on the surface, yet both meet the definition of performance assessment because each involves a task and a set of evaluative criteria applied in real time.
@@ -48,6 +47,7 @@ The specific criteria a teacher selects should reflect the actual goals of the c
 The teacher may establish the criteria independently, or may negotiate them with students. Negotiation has a practical advantage: when a student like Marco has contributed to writing the rubric, he is more likely to understand what each criterion means and to apply it accurately when evaluating a classmate's report. Shared ownership matters. Regardless of how the criteria are developed, students must receive them before the performance begins. Receiving the criteria in advance means that evaluation during and after the task is grounded in transparent, agreed-upon standards rather than impressionistic judgment.
 
 ## The Four Defining Characteristics of Alternative Assessment
+
 Any form of alternative assessment, regardless of its specific format, shares four defining characteristics drawn from the source material for this unit. The first is that it begins with course objectives. A portfolio in an adult literacy class and a dramatized reading in a secondary school are very different activities, yet both must be anchored to what the class has set out to achieve. The second characteristic is that learners receive criteria describing successful achievement before the assessment begins, a principle the preceding section examined in detail. The third is that the assessment evaluates actual student performance, meaning the learner demonstrates what she can do with the language rather than what she knows about it. The fourth is that the student takes part in the evaluation process itself, whether through self-assessment, peer feedback, or a conference with the teacher.
 
 These four characteristics mark a clear boundary between alternative assessment and the discrete-point tests that dominate many traditional programmes. A multiple-choice grammar test measures a learner's knowledge about the language: a student like Yuki may correctly identify the past perfect in a sentence without being able to use it in conversation. Alternative assessment shifts the question from "Does Yuki know the rule?" to "Can Yuki use the language to accomplish something real?" The source frames this as the difference between testing language knowledge and testing language use, and the distinction carries practical weight when a teacher is deciding which instrument to reach for.
@@ -67,7 +67,6 @@ The third step is to bring your plan to a small group of colleagues or fellow tr
 The fourth step is revision. You take the feedback from your group and adjust the plan before bringing it into the classroom. A criterion that seemed obvious to you may have confused three out of four colleagues, which is a reliable signal that it will confuse students as well. Once the plan is revised, you try it with your class, or, if you are not currently teaching, you ask an experienced teacher or trainer to review the final version.
 
 The thread connecting all four steps is the requirement that criteria be shared with learners before the assessment begins. This principle appears in every form of alternative assessment covered in this unit. Peer assessment depends on it, because students evaluating a classmate's writing need to know in advance what they are looking for. Portfolios depend on it, because students cannot curate their own work meaningfully without knowing the standards against which it will be judged. Performance assessment depends on it, because a student preparing to dramatize a scene or deliver a report needs to understand what a successful performance requires. Designing your own assessment is, in this sense, an exercise in making expectations visible, to yourself first, and then to the learners in your class.
-
 
 ## Check your understanding
 
@@ -115,7 +114,6 @@ The thread connecting all four steps is the requirement that criteria be shared 
 
    *Answer: Ms. Rivera should move to each struggling pair and direct students' attention to the written guidelines she should have distributed before the activity began, pointing to specific criteria and asking each student to locate one feature of the draft that matches or does not match a named criterion. The unit states that without clear guidelines a student has no reliable basis for deciding what to look for, and that the feedback given may be vague or misdirected. Supplying and re-anchoring students to those guidelines is therefore the move the unit's own logic requires.*
    *Anchor: "Without them, a student like David has no reliable basis for deciding what to look for in his partner's writing"*
-
 
 ## References
 

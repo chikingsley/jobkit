@@ -5,7 +5,7 @@ Slot: the error-correction/feedback unit (teacherrecord's mid9 Unit 3 territory,
 ## Source mapping (every section names its sources)
 
 | Section | Content | Source |
-|---|---|---|
+| --- | --- | --- |
 | 1. What feedback is and why it matters | feedback as information about performance; effects on learners (the "Aha" vs discouragement framing); positive/negative/unclear | State Dept Module 5 manual (public domain), pp. 45–46 |
 | 2. Types of feedback | oral vs written; immediate vs delayed; teacher / peer / self; form vs content | Module 5 manual |
 | 3. When and what to correct | accuracy vs fluency stages; selective correction; affective cost of over-correction | Module 5 manual + Lyster & Saito (2010) durability finding |

@@ -2,8 +2,8 @@
 
 Structural reference (topic outline) extracted from a registered account. The full prose is copyrighted and kept local/gitignored. Use this only as a checklist of what a 120hr course covers.
 
-
 ## module-mid1  (26,572 words)
+
 - Unit 1: The TEFL World
 - Unit 2: L1 and L2
 - Unit 3: What makes a competent and effective teacher?
@@ -12,6 +12,7 @@ Structural reference (topic outline) extracted from a registered account. The fu
 - Unit 6: Student Feedback
 
 ## module-mid3  (42,896 words)
+
 - Unit 1: Grammar at every level
 - Unit 1: Questions
 - Unit 2: Key grammatical terms and their functions
@@ -24,6 +25,7 @@ Structural reference (topic outline) extracted from a registered account. The fu
 - Unit 5: Questions
 
 ## module-mid5  (12,914 words)
+
 - Unit 1: Presentation Practice Production
 - Unit 2: Test Teach Test
 - Unit 3: Task-based Learning
@@ -32,6 +34,7 @@ Structural reference (topic outline) extracted from a registered account. The fu
 - Unit 4: Questions
 
 ## module-mid7  (21,245 words)
+
 - Unit 1: Lesson Aims
 - Unit 1: Questions
 - Unit 2: Components of a lesson plan
@@ -49,6 +52,7 @@ Structural reference (topic outline) extracted from a registered account. The fu
 - Unit 8: Self-made supplementary materials and teaching aids
 
 ## module-mid9  (7,426 words)
+
 - Unit 1: Communicative Approach
 - Unit 1: Questions
 - Unit 2: Communicative Activities
@@ -57,6 +61,7 @@ Structural reference (topic outline) extracted from a registered account. The fu
 - Unit 3: Questions
 
 ## module-mid11  (17,372 words)
+
 - Unit 1: Lexis
 - Unit 2: Phonology 1 - Phonological awareness
 - Unit 2: Questions
@@ -68,25 +73,30 @@ Structural reference (topic outline) extracted from a registered account. The fu
 - Unit 5: Questions
 
 ## module-mid13  (8,613 words)
+
 - Unit 1: Learning Styles
 - Unit 1: Questions
 - Unit 2: Listening
 - Unit 2: Questions
 
 ## module-mid14  (6,388 words)
+
 - Unit 1: Reading
 - Unit 2: Reading Skills DVD Lesson
 - Unit 3: Suggested solutions
 
 ## module-mid15  (6,603 words)
+
 - Unit 1: Speaking
 - Unit 2: Some vocabulary activities and exercises
 
 ## module-mid16  (6,818 words)
+
 - Unit 1: Writing
 - Unit 2: Questions to think about while watching our authentic writing lesson
 
 ## module-mid17  (23,966 words)
+
 - Unit 1: Phrasal verbs
 - Unit 2: Prepositions
 - Unit 3: Idioms
@@ -96,12 +106,14 @@ Structural reference (topic outline) extracted from a registered account. The fu
 - Unit 7: Further lesson evaluation
 
 ## module-mid18  (10,599 words)
+
 - Unit 1: Managing behaviour in the classroom
 - Unit 2: The Seven ‘R’s
 - Unit 3: Storytelling
 - Unit 4: Drama
 
 ## module-mid20  (18,212 words)
+
 - Unit 1: Teaching with limited resources
 - Unit 2: Teaching Large Classes
 - Unit 3: Teacher roles
@@ -110,6 +122,7 @@ Structural reference (topic outline) extracted from a registered account. The fu
 - Unit 4: Questions
 - Unit 5: Culture and its implications
 - Unit 5: Questions
+
 ---
 
 ## How teacherrecord.com is built (recon notes)

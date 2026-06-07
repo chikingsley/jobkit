@@ -8,6 +8,7 @@ for the data that motivates it.
 ## 1. Follow-up tracking: who owns what
 
 Gmail does **not** give us follow-up tracking we can build on:
+
 - **Nudges** = a soft UI reminder ("Sent 3 days ago, follow up?"). No cadence rules, no API, not programmable.
 - No concept of "this is outreach thread #N, follow-up #2 is due Thursday."
 
@@ -30,6 +31,7 @@ replies, and updates the store; `follow-ups` reads the store and drafts in-threa
 sends; a human reviews and hits send.
 
 ### Optional visibility layer: Gmail labels
+
 A nice touch (not required): mirror state into Gmail labels — `outreach/awaiting-reply`,
 `outreach/followup-due`, `outreach/replied` — so the campaign is visible in the inbox itself, not
 just in our DB. One-way push from the store; cheap, and it makes the system legible without a UI.
@@ -39,6 +41,7 @@ just in our DB. One-way push from the store; cheap, and it makes the system legi
 **Now (personal CLI):** a local **SQLite** file under `~/github/jobkit/.cache/outreach/track.db`.
 Zero infra, perfect for one user on one machine, matches the existing `jobs/state.py` convention.
 This is what the current build uses. It's the right call until one of these becomes true:
+
 - you want follow-ups to fire **without your laptop on** (autonomous cadence),
 - you want it on **multiple devices**, or
 - it becomes a **product** with more than one user.
@@ -67,6 +70,7 @@ jobkit already automates the first two and has the data to prove the third. As a
 basically **"Ben-as-software for ESL job-seekers"**:
 
 **What it does** (the funnel you've already built, generalized):
+
 1. Aggregate live ESL jobs across boards (the `jobs/` pipeline) → normalized + LLM-enriched.
 2. Build/tailor a resume to the proven ESL rules (the `resume/` side + the playbook critique).
 3. Compose outreach that *enforces the playbook by construction* (open-ended question, targeted
@@ -81,12 +85,14 @@ offers — so the product gets measurably better at "what to send, to whom, when
 for the tailoring; D1 for state; Cron for cadence; R2 for documents; Pages for the dashboard.
 
 **Monetization, Ben-style tiers:**
+
 - *Free* — board aggregation + 1 resume build.
 - *Plus* — AI outreach + follow-up automation + tracking dashboard.
 - *Coaching* — human-in-the-loop review / contract-math / "run away from this offer" calls (the part
   Ben did personally; could be you, or a vetted coach marketplace).
 
 **Real risks to design around early:**
+
 - **Deliverability & compliance** — automated cold email at scale invites spam filtering, sender-
   reputation damage, and CAN-SPAM/GDPR obligations. Keep it **draft-first / human-in-the-loop** and
   per-user send-as (their own Gmail, their own reputation) rather than blasting from a shared domain.
