@@ -12,6 +12,7 @@ __pycache__/
 
 # Copyrighted third-party course content — local reference only, never commit
 tefl-course/sources/teacherrecord-120hr-tefl/
+tefl-course/sources/las-vegas-teaching-archive/
 # Bulk public-domain downloads — re-fetchable, see tefl-course/SOURCES.md (SHA256SUMS is committed)
 tefl-course/sources/state-dept-shaping/*
 !tefl-course/sources/state-dept-shaping/SHA256SUMS

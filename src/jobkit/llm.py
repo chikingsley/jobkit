@@ -205,7 +205,11 @@ def _sse_events(text: str) -> list[dict[str, Any]]:
 
 
 def parse_json_text(text: str) -> object:
-    """Parse a string as JSON, stripping ```json markdown fences if present."""
+    """Parse the first JSON value in a model response.
+
+    Tolerates ```json fences, prose before the value ("Here is the JSON: {..."), and trailing
+    text after it (the "Extra data" failure mode) — models add all three in practice.
+    """
     stripped = text.strip()
     if stripped.startswith("```"):
         lines = stripped.splitlines()
@@ -214,7 +218,9 @@ def parse_json_text(text: str) -> object:
         if lines and lines[-1].strip() == "```":
             lines = lines[:-1]
         stripped = "\n".join(lines).strip()
-    return json.loads(stripped)
+    starts = [i for i in (stripped.find("{"), stripped.find("[")) if i != -1]
+    value, _end = json.JSONDecoder().raw_decode(stripped, min(starts) if starts else 0)
+    return value
 
 
 class SuperwhisperClient:
