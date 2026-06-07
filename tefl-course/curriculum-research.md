@@ -21,9 +21,11 @@ Deep-research pass, 2026-06-07. 5 search angles, 24 sources fetched, 116 claims 
 
 ## 2. Gap analysis: teacherrecord vs the benchmark (3-0 verified)
 
-Missing outright:
-- **Writing skills** — no standalone module (reading/listening/speaking each have one); writing is a named, assessed Four-Skills component in every regulated spec. Biggest single content gap.
-- **Classroom management / discipline / classroom layout** — a core required learning outcome in the regulated spec; absent.
+⚠️ Correction (2026-06-07): the research pass was fed only modules mid1–mid15; the full map (course-structure-reference.md) also has mid16 (Writing, 6.8k words), mid17 (advanced grammar), mid18 (behaviour/storytelling/drama), and mid20 (limited resources/large classes/discipline/culture). So writing and classroom management are **thin, not absent** — the rest of the analysis stands.
+
+Missing or thin:
+- **Writing skills** — exists (mid16) but at 6.8k words it is the thinnest of the four skills; writing is a named, assessed Four-Skills component in every regulated spec.
+- **Classroom management / discipline** — covered across mid18/mid20, though without the structured learning-outcomes treatment the regulated spec requires.
 - **Teaching young learners** and **business English** — absent; precisely what better budget competitors (TEFL Org, Bridge) advertise.
 - **Assessed practicum** — absent, like all budget courses (this is the structural tier difference, not a fixable content gap at this price point).
 
