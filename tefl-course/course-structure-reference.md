@@ -120,7 +120,7 @@ Structural reference (topic outline) extracted from a registered account. The fu
   - Course home: `GET /teacher/certificate/tefl_view`
   - Module body: `GET /teacher/certificate/set_module/mid/{N}` (study mids: 1,3,5,7,9,11,13–18,20)
   - Module test: `GET /teacher/certificate/tefl_test/mid/{N}`
-- Full archive (13 modules, ~210k words) pulled to `job-data/reference-archive/teacherrecord-120hr-tefl/` — **gitignored, copyrighted, reference only**.
+- Full archive (13 modules, ~210k words) pulled to `tefl-course/sources/teacherrecord-120hr-tefl/` — **gitignored, copyrighted, reference only**.
 
 ## The legal line (important)
 

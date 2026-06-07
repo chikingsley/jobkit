@@ -134,6 +134,21 @@ wheels = [
 ]
 
 [[package]]
+name = "dslop"
+version = "0.2.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/52/75955c5c092bf45988049335f8cbaa955369946ed4e561c5fad372422d4f/dslop-0.2.2.tar.gz", hash = "sha256:e9a1b396939431af10cc9e173805f07bebdc03a6e0688b89e9c60004168bd772", size = 181835, upload-time = "2026-04-24T14:49:56.214Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/48/5f/9af58b91f74407ba5f7d085ba0979dfb91155818e91c3ccebc20bdd30af4/dslop-0.2.2-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:696e3448b03d521325aa5713f5843f4b98116a99f31afee713b75077d910d714", size = 1175692, upload-time = "2026-04-24T14:49:45.675Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/6f/854815f39c0cb7661fdbfbb44fd1be96abc5a445577753026914d31612b3/dslop-0.2.2-py3-none-macosx_11_0_arm64.whl", hash = "sha256:9d1493cbb7c806c8ecebee572734350b8c9985c55d47480d92db458be68e4d87", size = 1115966, upload-time = "2026-04-24T14:49:47.311Z" },
+    { url = "https://files.pythonhosted.org/packages/78/c0/321fccf567763dcfe31cb94d8e59b733ede955b552160736019bbf61d0c6/dslop-0.2.2-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f79038e556ff8c044973c4b2b374d831557ea73717fe1b46b7658bc27cb6ba0c", size = 1128277, upload-time = "2026-04-24T14:49:48.378Z" },
+    { url = "https://files.pythonhosted.org/packages/8f/5c/cfde2cda9f10292c5fab8d9b603d7b2e09afa11aca65f91acd801274ce46/dslop-0.2.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:68f5feb2cb199a0098c986263f5a2825154ecb3fdbef73f31f66c77b966dfe6b", size = 1223247, upload-time = "2026-04-24T14:49:50.09Z" },
+    { url = "https://files.pythonhosted.org/packages/e0/a4/868bbf8992c1f862c8cf5d15db4725deadeb4b0a5bb905d459dba106ab2a/dslop-0.2.2-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:6a49a5803857f9ad2e04daca289ed3e21794aa29add85e1fdfd6f4fc6d301dac", size = 1170198, upload-time = "2026-04-24T14:49:51.681Z" },
+    { url = "https://files.pythonhosted.org/packages/34/74/d6466396787ffd6fe5a119a8eb1e373532aef6641a8ce7660a4060c00991/dslop-0.2.2-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:ddfa878d08ec3c4033a986e8525159b2197ead9fc99464c3b4326be32b7b0945", size = 1278137, upload-time = "2026-04-24T14:49:53.108Z" },
+    { url = "https://files.pythonhosted.org/packages/9d/f1/40e3e277fd0e586aca9534fd9021144385d4ffc372f32d8acf30b0304cf0/dslop-0.2.2-py3-none-win_amd64.whl", hash = "sha256:a0a5e7aeb2298fede2efbf83b60fa98b6c40484d298329e0efef8eb6786e58ab", size = 1119551, upload-time = "2026-04-24T14:49:54.928Z" },
+]
+
+[[package]]
 name = "fonttools"
 version = "4.63.0"
 source = { registry = "https://pypi.org/simple" }
@@ -224,6 +239,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "dslop" },
     { name = "ruff" },
     { name = "ty" },
 ]
@@ -238,6 +254,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "dslop", specifier = ">=0.2.2" },
     { name = "ruff", specifier = ">=0.15.13" },
     { name = "ty", specifier = ">=0.0.35" },
 ]

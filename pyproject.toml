@@ -13,6 +13,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+  "dslop>=0.2.2",
   "ruff>=0.15.13",
   "ty>=0.0.35",
 ]
