@@ -1,0 +1,252 @@
+Delivered-To: chibuzor.ejimofor@gmail.com
+Received: by 2002:a05:6a10:bd17:b0:4c1:b57c:622e with SMTP id vu23csp168203pxb;
+        Wed, 7 Jun 2023 00:21:26 -0700 (PDT)
+X-Received: by 2002:a4a:d683:0:b0:557:ccb2:7fff with SMTP id i3-20020a4ad683000000b00557ccb27fffmr1598380oot.1.1686122485605;
+        Wed, 07 Jun 2023 00:21:25 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1686122485; cv=none;
+        d=google.com; s=arc-20160816;
+        b=UPc+AxLwxePQ2kiq3oO8I66SByRYigAv061pxBlcl9wpAVm61ceGQ4nWuidJnZB51h
+         BSmRZo34lfLUn4yM1Z8WoSPp7rCjY75mOkDPmB6dxW6VMNK2VzRwOoUaGXTTkDhoA3lH
+         j7nJmH/5dyZk/GcLXScMRuuPOyqIVss740OnIAkXJ6qT9YV4pm4SkYwqRaP0KwELPvV0
+         Kzk/idLVaaveXOGjz4tRX3/ORkSKHb3Q8yIJ1Qhyrp30UHCZ2WkwQ2cPEOPx6LrvX/bW
+         3PD50c3WuZ1VR5o46my5lxL49mG2mJpRwvjlYttV53JL7wTrPmS9iBJ+UIu94MEFQkAl
+         kELQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;
+        h=in-reply-to:references:subject:from:date:message-id:auto-submitted
+         :to:dkim-signature;
+        bh=GV92XDBZddgtPj08h48jmX7ETF2dwSXFTz7QTRIk0Mg=;
+        b=mW5tup3em9C+JBcooR5MOeIVrPaXdKn4N0kOEu5ssHiY6uds1qzJI1AogK/gMrnEPa
+         m7lsKyORnCS7tz6Mt2qtXoCt0OpN/TsnYjtoE0i4ZUPN1TWBwYrfbzsvwuFxEnnmT0PN
+         Z8W2k6YXvIs2Su7VSx3qvPTcQalaZYelQNwp2Gbbb31VNUNqpzu6UQMxlDOJFeBW/H7y
+         fjNQ0d//pwEwVxd2s7PV6w9ej4+SdJ6BVKpd/z+0kSL51SA9jU6U5hbUT4o7hu9Jl0AL
+         rueNtQR8m4QMnief7IdvSl/rgT2k6a1Kreg5vgOR3XYSrAOvd8nF5rh9sWsH/KdC+fcA
+         ugNA==
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@googlemail.com header.s=20221208 header.b=UdQHuaam;
+       spf=none (google.com: mail-sor-f69.google.com does not designate permitted sender hosts) smtp.helo=mail-sor-f69.google.com;
+       dmarc=pass (p=QUARANTINE sp=QUARANTINE dis=NONE) header.from=googlemail.com
+Return-Path: <>
+Received: from mail-sor-f69.google.com (mail-sor-f69.google.com. [209.85.220.69])
+        by mx.google.com with SMTPS id p64-20020acaf143000000b0039a3be796dbsor3791541oih.5.2023.06.07.00.21.25
+        for <chibuzor.ejimofor@gmail.com>
+        (Google Transport Security);
+        Wed, 07 Jun 2023 00:21:25 -0700 (PDT)
+Received-SPF: none (google.com: mail-sor-f69.google.com does not designate permitted sender hosts) client-ip=209.85.220.69;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@googlemail.com header.s=20221208 header.b=UdQHuaam;
+       spf=none (google.com: mail-sor-f69.google.com does not designate permitted sender hosts) smtp.helo=mail-sor-f69.google.com;
+       dmarc=pass (p=QUARANTINE sp=QUARANTINE dis=NONE) header.from=googlemail.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=googlemail.com; s=20221208; t=1686122485; x=1688714485;
+        h=in-reply-to:references:subject:from:date:message-id:auto-submitted
+         :to:from:to:cc:subject:date:message-id:reply-to;
+        bh=GV92XDBZddgtPj08h48jmX7ETF2dwSXFTz7QTRIk0Mg=;
+        b=UdQHuaamVmHROd7qwFaklZOQbaulRnuOPn3H2e8xkaNdiTAGvK+5B+8Ilr/xAN13cR
+         x/B1LYTNYZlJTTKsdZe+GPNN2mByEFknurrL5yJrU2DP66ndsnsP9Z5hMXXeZA1fKZsr
+         TogjEgZ5evWxMp3UFcyWBh1ypJPT9JRcCfN9+2SpeTP08kH7a4TpyXg1zGKRnpC9Va6Z
+         eVW0CcmvGs4h22Nddy3wqGHkRVzzo5AoZQ9rZpD98SN0xygJiUjZ/g+4jnONzaO+QXYb
+         srxHJmgtUrQlbVMPhdpcueyx1FK//0L8DI8hkQcEM9TYzItvebqfzxds16XQuoKEcxw+
+         9lnQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686122485; x=1688714485;
+        h=in-reply-to:references:subject:from:date:message-id:auto-submitted
+         :to:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=GV92XDBZddgtPj08h48jmX7ETF2dwSXFTz7QTRIk0Mg=;
+        b=aazlsiLgUoqTf8euE78aEu/CvocdqNPtYuL2wm52EgaN3S1OIyHbbeKyoyj80lcFGG
+         5xOVyrrZB5BmnR0ITbuOnd9tHoA7RuQJ9n+sRsADxS4LTmdREhni5+GTp9m2PZWGuSKu
+         tIcTEaRox+Ye/uZVEACKCegNRx2hO1QSNHd8WC9gMO/+qKkU8mL6vI31ma67ylc3P6YO
+         dGH6vlwUW6gwknesOaTTPRCQV9AYgpSAzhI/cwHtZioS0zBwkxJrC09Chc/SU9305SsE
+         Wy7VhYeiyeid6njVJUwlyufMvj4c7YkA4tmMOBUSt8i0HiJZ8fr4/IP780Q0NO2XwS8P
+         60KQ==
+X-Gm-Message-State: AC+VfDxqBXfAvb8E/W7uZoWkQQPMlmkQaqxDcdXUhggwqc9RhwdHohnT
+	gP17CbkzKjP6EhXbWbpAdCJOIN6Y0uVw90I905jnYQ==
+X-Google-Smtp-Source: ACHHUZ73k3VC3d6QkMLjJxQ1FN9BlPG5ip6Qram1SRxVDk0MqJo6Mwt33KwLU6MRlHYV50kfqwrfflMcQ/jkKFHZwQN17Dlv+9v161g=
+X-Received: by 2002:a05:6808:193:b0:39a:664c:9761 with SMTP id w19-20020a056808019300b0039a664c9761mr4353193oic.29.1686122485446;
+        Wed, 07 Jun 2023 00:21:25 -0700 (PDT)
+Content-Type: multipart/report; boundary="000000000000cac58f05fd84fb85"; report-type=delivery-status
+To: chibuzor.ejimofor@gmail.com
+Received: by 2002:a05:6808:193:b0:39a:664c:9761 with SMTP id
+ w19-20020a056808019300b0039a664c9761mr3896192oic.29; Wed, 07 Jun 2023
+ 00:21:25 -0700 (PDT)
+Return-Path: <>
+Auto-Submitted: auto-replied
+Message-ID: <64802ff5.050a0220.9a44e.96c6.GMR@mx.google.com>
+Date: Wed, 07 Jun 2023 00:21:25 -0700 (PDT)
+From: Mail Delivery Subsystem <mailer-daemon@googlemail.com>
+Subject: Delivery Status Notification (Failure)
+References: <3EEED203-A1CE-4E80-9567-8A1C817E4689@gmail.com>
+In-Reply-To: <3EEED203-A1CE-4E80-9567-8A1C817E4689@gmail.com>
+X-Failed-Recipients: ben@benteachesenglishoverseas.com
+
+--000000000000cac58f05fd84fb85
+Content-Type: multipart/related; boundary="000000000000caf35505fd84fbb2"
+
+--000000000000caf35505fd84fbb2
+Content-Type: multipart/alternative; boundary="000000000000caf35e05fd84fbb3"
+
+--000000000000caf35e05fd84fbb3
+Content-Type: text/plain; charset="UTF-8"
+
+
+** Address not found **
+
+Your message wasn't delivered to ben@benteachesenglishoverseas.com because the domain benteachesenglishoverseas.com couldn't be found. Check for typos or unnecessary spaces and try again.
+
+
+
+The response was:
+
+DNS Error: DNS type 'mx' lookup of benteachesenglishoverseas.com responded with code NOERROR
+DNS type 'mx' lookup of benteachesenglishoverseas.com had no relevant answers.
+DNS type 'aaaa' lookup of benteachesenglishoverseas.com responded with code NOERROR
+DNS type 'aaaa' lookup of benteachesenglishoverseas.com had no relevant answers.
+DNS type 'a' lookup of benteachesenglishoverseas.com responded with code NOERROR
+DNS type 'a' lookup of benteachesenglishoverseas.com had no relevant answers.
+
+--000000000000caf35e05fd84fbb3
+Content-Type: text/html; charset="UTF-8"
+
+
+<html>
+<head>
+<style>
+* {
+font-family:Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+</style>
+</head>
+<body>
+<table cellpadding="0" cellspacing="0" class="email-wrapper" style="padding-top:32px;background-color:#ffffff;"><tbody>
+<tr><td>
+<table cellpadding=0 cellspacing=0><tbody>
+<tr><td style="max-width:560px;padding:24px 24px 32px;background-color:#fafafa;border:1px solid #e0e0e0;border-radius:2px">
+<img style="padding:0 24px 16px 0;float:left" width=72 height=72 alt="Error Icon" src="cid:icon.png">
+<table style="min-width:272px;padding-top:8px"><tbody>
+<tr><td><h2 style="font-size:20px;color:#212121;font-weight:bold;margin:0">
+Address not found
+</h2></td></tr>
+<tr><td style="padding-top:20px;color:#757575;font-size:16px;font-weight:normal;text-align:left">
+Your message wasn't delivered to <a style='color:#212121;text-decoration:none'><b>ben@benteachesenglishoverseas.com</b></a> because the domain benteachesenglishoverseas.com couldn't be found. Check for typos or unnecessary spaces and try again.
+</td></tr>
+</tbody></table>
+</td></tr>
+</tbody></table>
+</td></tr>
+<tr style="border:none;background-color:#fff;font-size:12.8px;width:90%">
+<td align="left" style="padding:48px 10px">
+The response was:<br/>
+<p style="font-family:monospace">
+DNS Error: DNS type &#39;mx&#39; lookup of benteachesenglishoverseas.com responded with code NOERROR
+DNS type &#39;mx&#39; lookup of benteachesenglishoverseas.com had no relevant answers.
+DNS type &#39;aaaa&#39; lookup of benteachesenglishoverseas.com responded with code NOERROR
+DNS type &#39;aaaa&#39; lookup of benteachesenglishoverseas.com had no relevant answers.
+DNS type &#39;a&#39; lookup of benteachesenglishoverseas.com responded with code NOERROR
+DNS type &#39;a&#39; lookup of benteachesenglishoverseas.com had no relevant answers.
+</p>
+</td>
+</tr>
+</tbody></table>
+</body>
+</html>
+
+--000000000000caf35e05fd84fbb3--
+--000000000000caf35505fd84fbb2
+Content-Type: image/png; name="icon.png"
+Content-Disposition: attachment; filename="icon.png"
+Content-Transfer-Encoding: base64
+Content-ID: <icon.png>
+
+iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAYAAADnRuK4AAAACXBIWXMAABYlAAAWJQFJUiTwAAAA
+GXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABTdJREFUeNrsnD9sFEcUh5+PRMqZ
+yA0SPhAUQAQFUkyTgiBASARo6QApqVIkfdxGFJFSgGhJAUIiBaQB0ZIOKVCkwUgURjIg2fxL4kS+
+YDvkbC/388bi8N16Z4/d7J/5PsniuD3fyePP772ZeTsDQRAYQL/UGAJAIEAgQCBAIAAEAgQCBAIE
+AkAgyJT3Mv+Eq7vYK8mTE+MDRCAghQECAeRQA5V2ZOpmg5vDx3NPzRbmGRMEcmTrEbNNB8zWfRD+
+f/Efs2e3zCZvMjaksBg27TfbcuSNPEKP9ZyuAQKtHX2O9ncNgWC57umMPKvRNb0GEKgnLoUyxTQC
+rcns0/6uIRAs8/hGf9cQCJZpTpjdO2f25/03z+mxntM1eLtsZAgiUtX4JcaBCAQIBAgECARQ8CJa
+G5jab4J4pm4WZmO3OALVh802fIwcLkyPkcKAGggAgQCBAIEAgQCBABAIEAjKA/1AnahhbO5FdOOY
+VsrrDbPBYcYKgf5D2wLaV3p+22xh1u17tO3S+DTcvxvagUDeivPgx/a/95J/73w7Sj26Hn4pKo2M
+ehuV/KyBJM6d0f7k6RKx/R63vvL2tmf/ItDdM2ZTP6f7nkp9Y2fDx1v9akmpIU+KSCLVUghUQfSL
+zVKeTklbLxGoctw/nzC5rw8L5KRNbkpnKq6pgSqEClzNnFzY+XnYWrt6VpVk1vbwWvg+RKCKMOUw
+Q1LEOXA+/MX3mpJvGDHb265xtnzmFoUK1HaKQGlMtePYM+q2KKjXuaS1NJYIEKgI8jhEgqHt4cqy
+Ky53j3hyHz2bqSLp2o2LbJ7MxKovkGqXteoWpaOk96O9/yF/dF7NwlS36AuIQIBA5celQK4PIxBE
+4LLzrtoLgaALdSy6CJRkWQCBPGLsTHznomZ9nszUECgJ2ml3WWHe+QVFNPSQx6UdZNtxr9pbEShN
+eTTz8mQXHoHSlke7+Z+c9m6VGoHSkEfs/trLW3wQKApN1V3lGfnGu2Z6BFoLtYCs3GWBPAiUCLVh
+/HoaeRCoT9R873KLM/IgUBfapnCpe5AHgXry4pf412ihEHkQqCdxd5VqrcezhUIESsJMTJ+Pdthp
+Z0WgyNlXXPHc2Mc4IVAELl2Gnh8mhUDvCkfbIVAkcbf/aOoO3fMKhqAD3frTa4quwpn0hUDOkQhI
+YYBAgECAQAAU0QlYObl+5Ug8NcprZkZxjUCxRPVA6zmtEXHCBykskrhjgHXN09PoEcgFl4M4H11j
+nBAoApcj6ZoPGScEAgTKApcDoTw5sgWB+sGlz1n90IBAPdE6j1o21PfcC11jLagL1oFWRyGlKU3p
+OxcSJQ7NZAjkhHp/uG2HFAYIBAgECASAQIBAgECAQAAIBOkxEARBtp9wdVfAMOfIifEBIhCQwgCB
+ABAI0oV2jhxZ+nfBatuPZfgBCy0Eqqo8c01b+uu51XZvzOgDWoHNTGR+pCwpLEd5svuAZXlO2uEr
+PyEQ8hRWHgRCHmqg0sjTnLalv6crJQ8C/U8stqNO0I4+VZOHFIY8COS1PGL2ybd5yUMKK7s8zYmL
+dujyd3n+nESgcsvzZd4/KwIhDwIhT35QA6UyE1qyxZnfvJMHgdKS549JC1qvvJOHFIY8CFR5eV5O
+XimqPAhUdHnmfx+zgxdOFXkoqIGKKs/cswnb/8Oeog8HEai48nxUhiFBIORBIOShBioskkbySCLk
+IQIhDwIhj28p7FApR6b1qlEbHGpkO/rr6215vi/zH1r2x7tApSGFAQIBAgECAQIBIBAgECAQIBBA
+LK8FGADCTxYrr+EVJgAAAABJRU5ErkJggg==
+--000000000000caf35505fd84fbb2--
+--000000000000cac58f05fd84fb85
+Content-Type: message/delivery-status
+
+Reporting-MTA: dns; googlemail.com
+Received-From-MTA: dns; chibuzor.ejimofor@gmail.com
+Arrival-Date: Wed, 07 Jun 2023 00:21:20 -0700 (PDT)
+X-Original-Message-ID: <3EEED203-A1CE-4E80-9567-8A1C817E4689@gmail.com>
+
+Final-Recipient: rfc822; ben@benteachesenglishoverseas.com
+Action: failed
+Status: 5.4.3
+Diagnostic-Code: smtp; DNS Error: DNS type 'mx' lookup of benteachesenglishoverseas.com responded with code NOERROR
+ DNS type 'mx' lookup of benteachesenglishoverseas.com had no relevant answers.
+ DNS type 'aaaa' lookup of benteachesenglishoverseas.com responded with code NOERROR
+ DNS type 'aaaa' lookup of benteachesenglishoverseas.com had no relevant answers.
+ DNS type 'a' lookup of benteachesenglishoverseas.com responded with code NOERROR
+ DNS type 'a' lookup of benteachesenglishoverseas.com had no relevant answers.
+Last-Attempt-Date: Wed, 07 Jun 2023 00:21:25 -0700 (PDT)
+
+--000000000000cac58f05fd84fb85
+Content-Type: message/rfc822
+
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1686122484; x=1688714484;
+        h=to:date:message-id:subject:mime-version:from:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=56+FM+Uphrs0CqRPlQGNS4Q1x43X1InQHTX5ATY+k28=;
+        b=iB6tVoSeFdnD1yJgpByBI4r7Fo2De6c4NNPAcr8ElosRWYPf3+z/VpOKN23MTkaa1n
+         u/PfmEmMiXGmckiY5gl1oo4O5Ddw0LgGmPBMnG8pSHcVVG8+OdfcTiNZT02xoy/Tf4KW
+         xt3RFyml+pCJtDQ9WhvHsVgYGJVjlTgJk0D/nI3OHHmO3YxBe9ub7Uqv9yC/jA7G3nlv
+         W02Fd9ib450pnUkFK9WgemVT+EOJwGJ6Srwm9/PPpoCQH6DLqtlyrkrrP2jN+XXWxPj3
+         XlxV/fLTO/KpKdQIn8jEkQKtt4JAwl+zteDMqyiP/WqeJrlUTsrRkQreM3yplHcKwHBg
+         ziOw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1686122485; x=1688714485;
+        h=to:date:message-id:subject:mime-version:from:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=56+FM+Uphrs0CqRPlQGNS4Q1x43X1InQHTX5ATY+k28=;
+        b=cUB9HX/bkhsZsIAF9wMTzl5lAQEP93CBU7/p6EgDFdS8exNp0ZSuUoIVyflKZdDp+R
+         UUz1+ydR97hMJLzPSb2/MO3ZT1eGYtq64hcNO5Pw0P7rCA8SlzGSZOX5pMTWrYSsO1UB
+         ZcDc6pGT9RJ/FtY/qIv2/+JlmUn4GSDX5ux0Yr/kkLJMYRmiKh4Rjs1skb5f+87cnnfh
+         Aahn9XOgJTqFJ3EGJWU2WnTh5q8EBuZjTDtT/mtlfG4WV8vGRAZl3dNMy1KWhp6XUsPr
+         OfwxDUWi1oOdNxtjiMb+I1qewaGvNHU8qjDyJ5ahlOBbEN2dYCWiGJvF74/5f9BnlCEh
+         j6zA==
+X-Gm-Message-State: AC+VfDyMIQ1eicpKiQf4Imna2WUSmFGw5U16pQYLd01IHdJ1+fDO1swK
+	9oA/dPwv3CytvUCnB3TdoKu3+lCYppw=
+X-Google-Smtp-Source: ACHHUZ7Jd0RukQoEK8F+JM+DBF/nO4a5zcaam2aacwe02EMEYFMfDlhy118nUNBPBCGOvQxOqzNd3g==
+X-Received: by 2002:a05:6808:193:b0:39a:664c:9761 with SMTP id w19-20020a056808019300b0039a664c9761mr4353038oic.29.1686122481474;
+        Wed, 07 Jun 2023 00:21:21 -0700 (PDT)
+Return-Path: <chibuzor.ejimofor@gmail.com>
+Received: from smtpclient.apple ([2600:8800:608f:3f00:7c07:78ca:30e4:d0ac])
+        by smtp.gmail.com with ESMTPSA id s19-20020a17090a881300b002532ddc3a00sm683983pjn.15.2023.06.07.00.21.20
+        for <ben@benteachesenglishoverseas.com>
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 07 Jun 2023 00:21:20 -0700 (PDT)
+From: Chibuzor Ejimofor <chibuzor.ejimofor@gmail.com>
+Content-Type: multipart/mixed;
+	boundary="Apple-Mail=_5B54C75C-787D-476A-8C3E-9CA900AA22E1"
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.600.7\))
+Subject: EBook - if it's still active
+Message-Id: <3EEED203-A1CE-4E80-9567-8A1C817E4689@gmail.com>
+Date: Wed, 7 Jun 2023 00:21:09 -0700
+To: ben@benteachesenglishoverseas.com
+X-Mailer: Apple Mail (2.3731.600.7)
+
+----- Message truncated -----
+--000000000000cac58f05fd84fb85--

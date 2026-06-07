@@ -1,0 +1,583 @@
+Delivered-To: chibuzor.ejimofor@gmail.com
+Received: by 2002:a92:d485:0:0:0:0:0 with SMTP id p5csp1280028ilg;
+        Wed, 28 Aug 2019 13:21:21 -0700 (PDT)
+X-Received: by 2002:a2e:8559:: with SMTP id u25mr3083709ljj.224.1567023681483;
+        Wed, 28 Aug 2019 13:21:21 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1567023681; cv=none;
+        d=google.com; s=arc-20160816;
+        b=NTZsRvl0Y3zLQLCv04zYUSgoBGehsBmLq9SLUFdS40tG2P2/uOcDg1KlEJU2vAmiBH
+         FpedATfmjLM2z6d++Qj4Zj6HJPVqOWoh6MXWUWGWutjBE3so97YiJFWf7aIzMziNCd9F
+         63dpYOr1QcSpJsISaDW9t9Q1C756RVnaHh2ECv9G9vT+mGbhb8C7iivLhVkQwyn71N+S
+         6OANC+JcS4qalORhuIhk118uOK37jbMCiwmxHxOMShfSBxrgYh/WeNpWunc+ExMHV1yg
+         tLD+sesBNncS7FpwsAfXihMYhBl/J9do0yDhTEBIOejvvSNKBINJ9WHBshtGSwVTq1dR
+         oXqQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;
+        h=to:subject:message-id:date:from:references:in-reply-to:mime-version
+         :dkim-signature;
+        bh=2M5d2Q6sstQsack0W14iuUmziTTzxEz3B+Hrn0Q/3tE=;
+        b=IzIS/s8N6DHsSHUdRQnl0ITUlo/tCvVhd9tfK2+8G6vR2KL/5TndRve9iSqUl1pQ8w
+         7JCijq9am4ZQJjF8a9n0HVD7PsB+Ktv7OV3NIhFDYkZDeI7C46ERdJzd8wW17skusd1k
+         1mNo2TxqdEAfZFan7wIXEN21Ps9ZdpOH9EmxRpP+GCKwcFqd3//qAXrWNUOcEUoEOfC1
+         X6cTmx0EXFTphkYfu6kc3KO3hNwecJtDWe1X2VPPki1ZiaR/wXWmRGcLGa42QJ6h4FxU
+         EGze8L7B+3j0i2KMgHXGBavDYK6MQpNcneqjUgKqzuvVbNhbMtdz1tCr1674JAD6Ep1i
+         ZYIg==
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@benteachesenglishoverseas-com.20150623.gappssmtp.com header.s=20150623 header.b=QQ4IeODq;
+       spf=pass (google.com: domain of ben@benteachesenglishoverseas.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=ben@benteachesenglishoverseas.com
+Return-Path: <ben@benteachesenglishoverseas.com>
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id h2sor63374lfc.60.2019.08.28.13.21.20
+        for <chibuzor.ejimofor@gmail.com>
+        (Google Transport Security);
+        Wed, 28 Aug 2019 13:21:20 -0700 (PDT)
+Received-SPF: pass (google.com: domain of ben@benteachesenglishoverseas.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@benteachesenglishoverseas-com.20150623.gappssmtp.com header.s=20150623 header.b=QQ4IeODq;
+       spf=pass (google.com: domain of ben@benteachesenglishoverseas.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=ben@benteachesenglishoverseas.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=benteachesenglishoverseas-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to;
+        bh=2M5d2Q6sstQsack0W14iuUmziTTzxEz3B+Hrn0Q/3tE=;
+        b=QQ4IeODq+tdgLMr1k2b7WNFwbaP/mqI+95ozID1qyf0ex5dvpNtZTZue+RgGjwpOzM
+         EOOhIvbKKZCl91J/VMxDw1tUH478TTsnio+RsRMlFpi8IcYA4I0BMazRz8uK9+rQzGyx
+         YMM6MSSOwoF/Qj4b7nIld1lQEnEZsFGPnDC8r6ncPv6ehr25t/CI7Wvda5FLqHhSsFWj
+         lDsVoH3/Ng/31YAYzFkzAkp7aBSgnjoFjCBQhFkIi0zYa7tfJH8TCzh51cK3g6BB4MuQ
+         OCMMchgkk/Vyj6/d3M/bzYOAB3bcPGpFsC9BDmLnFiNzTpDi+C8+nE90Syzn3/GptANl
+         aIJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:in-reply-to:references:from:date
+         :message-id:subject:to;
+        bh=2M5d2Q6sstQsack0W14iuUmziTTzxEz3B+Hrn0Q/3tE=;
+        b=tFtKgulauz9vEkXyTAjLIg0FF9oUk2uFMaorC8a7UOcWMa7OShYKJGjUYc1ZdQi2rX
+         jh11/ucl1bp8ywTgTxijtq09ZdsXy5nuwNOGombxJgWPzE0LBdGwX728mpJwlvE3illL
+         Kx23bYmqQRiHGhCsaVnVaMoVaixAgDt8rP+7DSgp/VG1imB9/dqm8EDuKrrarmJJAtzf
+         NdjhceaT6XyHIaxesOoo9SafgdWOR7SOy7xQpa1Jk01d7xYZX3+e+uBuOULJ4JI3X1Wq
+         V8b4B7DkDS8E1YHmOhWNYvC0Pu8cjCZFNOzxSoWLCyBYL7RtWjV6TSn31bsj1iGe+NKX
+         RAjA==
+X-Gm-Message-State: APjAAAWAqUkwOrN6Ewh/sdhqpYqGZsaon3dlidUmh4v+I5MzKbSGzO5d
+	rCU7J+wbEgPk8WgWzTXHQgyYGV3djO0T560SQy5qJNxn
+X-Google-Smtp-Source: APXvYqzrn77YzcaI9UsstRRfAkPJWuL8JyIo+ZZhh6sKAY9IJNmyLtOYI/rGXY7JItvY2lb5WMWRlsD4Om38zPmO3Mw=
+X-Received: by 2002:a19:cc4f:: with SMTP id c76mr509159lfg.117.1567023680174;
+ Wed, 28 Aug 2019 13:21:20 -0700 (PDT)
+Received: from 907372061162 named unknown by gmailapi.google.com with
+ HTTPREST; Wed, 28 Aug 2019 13:21:19 -0700
+MIME-Version: 1.0
+In-Reply-To: <D972BFA1-CFE6-4FC1-A339-30FA8333823B@gmail.com>
+References: <CAJhTWTVb5HMr_BO9BGWmoVoz1NP-m281XTLWSP7XMoC=FH0G2w@mail.gmail.com>
+ <D972BFA1-CFE6-4FC1-A339-30FA8333823B@gmail.com>
+From: Ben Teaches English Overseas <ben@benteachesenglishoverseas.com>
+Date: Wed, 28 Aug 2019 13:21:19 -0700
+Message-ID: <CAJhTWTU019kAxAQ0uY8hG4cS_LGve6tGHj5sxtNSeFYOcT2uyQ@mail.gmail.com>
+Subject: Re: Job Search Update + Feedback requested
+To: Chibuzor Ejimofor <chibuzor.ejimofor@gmail.com>
+Content-Type: multipart/alternative; boundary="000000000000cfccf10591332197"
+
+--000000000000cfccf10591332197
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hi Chi,
+
+It's great to hear from you.
+
+There are a couple options right now in China to earn great money:
+
+1.) Get on with a top notch international school. This is hard if you're
+just starting out.
+
+2.) Get on with a job that has very few hours but decent pay and then
+augment your income by adding on extra employment at great hourly rates.
+
+
+So is 16k common? Absolutely. Is it the best you can do? No.
+
+Most important is to take the entire contract and calculate exactly what
+you'll be earning per hour. From there you can compare apples to apples.
+
+For example, if it were 16k for 25 teaching hours that were all together
+and no office hours, you'd be making a LOT more.. even with the same 16k. I
+hope that makes sense. You could then use those extra hours to do something
+else to make more money instead of sitting in the office.
+
+
+I find training centers often have the highest sticker price, but when it
+comes to calculation, they come in the lowest per hour because of the
+amount of time they expect you to be on site each week.
+
+Your questions:
+
+
+1.) ESLcafe is going to list almost exclusively training centers. I would
+look more at expat specific website job sections like shenzhenparty.com for
+Shenzhen. I would be looking at seriousteachers.com. I would be talking to
+head hunters on Skype and letting them know exactly what you're looking
+for. I'd look at Angelina's ESL cafe. I'd stay away from Dave's.
+
+
+2.) I find that emails without questions are easier to ignore. I like to
+ask at least one open ended question that requires a response. Many people
+feel obligated to respond and then it lets me know that the email is
+active, they received my documents, and my message went to the right place.
+Then I can target follow ups. This could be as simple as: Is your school
+still currently seeking an English teacher for the fall term?
+
+This might not work for everyone, but it has worked well for me in the
+past. I also frequently follow up.
+
+3.) No, it's not... but again it's best to look at the overall package. Is
+16k net great for 50 hour weeks? No way. Is it great for 10 hours a week I
+can pack all into a Saturday? You bet.
+
+
+Ben
+
+On Mon, Aug 26, 2019 at 12:00 PM Chibuzor Ejimofor <
+chibuzor.ejimofor@gmail.com> wrote:
+
+> Hello Ben,
+>
+> Thank you for this resume I=E2=80=99ve started applying to jobs for the p=
+ast 2
+> months and I=E2=80=99ve been getting back very similar offers with the be=
+st so far
+> being 16,000 rmb net including a free apartment for 25 teaching hours and
+> 15 office hours. In Asia, this seems to be the going rate for teachers
+> without experience=E2=80=A6 I=E2=80=99m wondering if 1) I=E2=80=99m apply=
+ing to the wrong places or
+> 2) if my starter email is off or 3) if this is the market value for someo=
+ne
+> without experience in Asia=E2=80=A6 So 3 questions:
+>
+> 1) most / all of the ads online are for language centers. Is there a
+> better forum or method to find high paying jobs / better contracts? My go
+> to has been eslcafe.com
+> 2) I=E2=80=99m attaching an example email for what I=E2=80=99ve been send=
+ing out as an
+> initial email. I=E2=80=99d appreciate feedback=E2=80=A6 the only thing I =
+change between
+> schools is the country location in the text and the Subject Line.
+> 3) Is this 16k net rmb the best I can get with no experience? If so, I=E2=
+=80=99ll
+> accept it and work my way up from here.
+>
+> I look forward to hearing from you!
+>
+> Best,
+>
+> *Chibuzor (Chi) Ejimofor*
+> M | +1 304 276 4410
+> E  | Chibuzor.ejimofor@gmail.com
+> Skype | cheez20
+>
+>
+>
+>
+> ---------- Forwarded message ----------
+> From: Chibuzor Ejimofor <chibuzor.ejimofor@gmail.com>
+> To: job@bigwig-moscow.ru
+> Cc:
+> Bcc:
+> Date: Mon, 26 Aug 2019 14:43:01 -0400
+> Subject: Native English Teacher Available - Moscow
+> Hello,
+>
+> My name is Chi and I am a TEFL-Certified Professional Teacher with
+> Bachelor's Degree *available immediately*. I am interested in living and
+> working in Moscow and so I definitely want to hear more about any open
+> English teaching positions that you are offering.
+>
+> I already have a 3 year multi-entry travel visa to Russia which will make
+> it easier for me to enter Russia and begin sooner. In addition, I have 3
+> years of experience teaching other subjects ranging from biology, soccer,
+> and safety management. I also have experience teaching from my 250 hour
+> TEFL Certification.
+>
+> I=E2=80=99ve I attached my resume, degree, TEFL, and passport to this ema=
+il for
+> further review. I can send the other documents as needed. Let me know if
+> you will be free to speak this week or next week about this role.
+>
+> Thanks,
+>
+>
+> *Chibuzor (Chi) Ejimofor*
+> M | +1 304 276 4410
+> E  | Chibuzor.ejimofor@gmail.com
+> Skype | cheez20
+>
+>
+> On Jun 16, 2019, at 10:51 AM, Ben Teaches English Overseas <
+> ben@benteachesenglishoverseas.com> wrote:
+>
+> Hi Chibuzor,
+>
+> I hope you're doing great. Please find your documents attached:
+>
+> (1) PDF version of your resume
+> (1) DOC version of your resume (can be modified to make unlimited PDF
+> versions)
+> (1) DOC version of your cover letter template (can be modified to make
+> unlimited cover letters for various employers.) If you need help on this,
+> I'm happy to assist.
+>
+> If you see any issues or problems, don't hesitate to let me know and we'l=
+l
+> get them corrected. We hope you like how they turned out!
+>
+> Ben
+>
+> --
+> *Ben *
+>
+>
+> *------------------------*
+>
+> *1.) Need to talk on Skype? View my calendar and book your spot:
+> www.rockstareslteacher.com <http://www.rockstareslteacher.com/>*
+>
+> *2.) Articles: *
+>
+>
+>
+>
+>
+>
+>
+> *www.benteachesenglishoverseas.com/blog
+> <http://www.benteachesenglishoverseas.com/blog> 3.) Follow me on Facebook
+> to get updates and ideas: www.facebook.com/benteachesenglishoverseas
+> <http://www.facebook.com/benteachesenglishoverseas>  4.) Follow my IG for
+> pictures and videos: www.instagram.com/benteachesenglishoverseas
+> <http://www.instagram.com/benteachesenglishoverseas>5.) Over 300 videos: =
+**https://www.youtube.com/c/benteachesenglishoverseas
+> <https://www.youtube.com/c/benteachesenglishoverseas>*
+>
+> *------------------------*
+>
+> *"**Ben is an excellent mentor and is always full of positive, yet
+> realistic and honest advice. I like that he doesn't sugarcoat things and
+> that he sticks to what he knows, so you know the advice you're getting is
+> legit and valuable." *-Nick Barnets, client
+>
+> -------------------------------
+>
+> ***This is not legal, tax, or accounting advice and for informational
+> purposes only. Make sure to do your own due diligence.***
+>
+> ***The information contained in this e-mail message is
+> privileged, confidential, and protected from disclosure.***
+> <Chibuzor Ejimofor.pdf><Chibuzor Ejimofor.docx><Chibuzor Ejimofor Cover
+> Letter Template.docx>
+>
+>
+>
+
+--=20
+*Ben *
+
+
+*------------------------*
+
+*1.) Need to talk on Skype? View my calendar and book your spot:
+www.rockstareslteacher.com <http://www.rockstareslteacher.com>*
+
+*2.) Articles: *
+
+
+
+
+
+
+
+*www.benteachesenglishoverseas.com/blog
+<http://www.benteachesenglishoverseas.com/blog> 3.) Follow me on Facebook
+to get updates and ideas: www.facebook.com/benteachesenglishoverseas
+<http://www.facebook.com/benteachesenglishoverseas>  4.) Follow my IG for
+pictures and videos: www.instagram.com/benteachesenglishoverseas
+<http://www.instagram.com/benteachesenglishoverseas>5.) Over 300
+videos: **https://www.youtube.com/c/benteachesenglishoverseas
+<https://www.youtube.com/c/benteachesenglishoverseas>*
+
+*------------------------*
+
+*"**Ben is an excellent mentor and is always full of positive, yet
+realistic and honest advice. I like that he doesn't sugarcoat things and
+that he sticks to what he knows, so you know the advice you're getting is
+legit and valuable." *-Nick Barnets, client
+
+-------------------------------
+
+***This is not legal, tax, or accounting advice and for informational
+purposes only. Make sure to do your own due diligence.***
+
+***The information contained in this e-mail message is
+privileged, confidential, and protected from disclosure.***
+
+--000000000000cfccf10591332197
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Hi Chi, <br><br>It&#39;s great to hear from you. <br><br>T=
+here are a couple options right now in China to earn great money: <br><br>1=
+.) Get on with a top notch international school. This is hard if you&#39;re=
+ just starting out. <br><br>2.) Get on with a job that has very few hours b=
+ut decent pay and then augment your income by adding on extra employment at=
+ great hourly rates. <br><br><br>So is 16k common? Absolutely. Is it the be=
+st you can do? No. <br><br>Most important is to take the entire contract an=
+d calculate exactly what you&#39;ll be earning per hour. From there you can=
+ compare apples to apples. <br><br>For example, if it were 16k for 25 teach=
+ing hours that were all together and no office hours, you&#39;d be making a=
+ LOT more.. even with the same 16k. I hope that makes sense. You could then=
+ use those extra hours to do something else to make more money instead of s=
+itting in the office. <br><br><br>I find training centers often have the hi=
+ghest sticker price, but when it comes to calculation, they come in the low=
+est per hour because of the amount of time they expect you to be on site ea=
+ch week. <br><br>Your questions: <br><br><br>1.) ESLcafe is going to list a=
+lmost exclusively training centers. I would look more at expat specific web=
+site job sections like <a href=3D"http://shenzhenparty.com">shenzhenparty.c=
+om</a> for Shenzhen. I would be looking at <a href=3D"http://seriousteacher=
+s.com">seriousteachers.com</a>. I would be talking to head hunters on Skype=
+ and letting them know exactly what you&#39;re looking for. I&#39;d look at=
+ Angelina&#39;s ESL cafe. I&#39;d stay away from Dave&#39;s. <br><br><br>2.=
+) I find that emails without questions are easier to ignore. I like to ask =
+at least one open ended question that requires a response. Many people feel=
+ obligated to respond and then it lets me know that the email is active, th=
+ey received my documents, and my message went to the right place. Then I ca=
+n target follow ups. This could be as simple as: Is your school still curre=
+ntly seeking an English teacher for the fall term? <br><br>This might not w=
+ork for everyone, but it has worked well for me in the past. I also frequen=
+tly follow up. <br><br>3.) No, it&#39;s not... but again it&#39;s best to l=
+ook at the overall package. Is 16k net great for 50 hour weeks? No way. Is =
+it great for 10 hours a week I can pack all into a Saturday? You bet. <br><=
+br><br>Ben=C2=A0<br><span></span></div><br><div class=3D"gmail_quote"><div =
+dir=3D"ltr" class=3D"gmail_attr">On Mon, Aug 26, 2019 at 12:00 PM Chibuzor =
+Ejimofor &lt;<a href=3D"mailto:chibuzor.ejimofor@gmail.com">chibuzor.ejimof=
+or@gmail.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" styl=
+e=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);paddin=
+g-left:1ex"><div style=3D"overflow-wrap: break-word;">Hello Ben,<div><br></=
+div><div>Thank you for this resume I=E2=80=99ve started applying to jobs fo=
+r the past 2 months and I=E2=80=99ve been getting back very similar offers =
+with the best so far being 16,000 rmb net including a free apartment for 25=
+ teaching hours and 15 office hours. In Asia, this seems to be the going ra=
+te for teachers without experience=E2=80=A6 I=E2=80=99m wondering if 1) I=
+=E2=80=99m applying to the wrong places or 2) if my starter email is off or=
+ 3) if this is the market value for someone without experience in Asia=E2=
+=80=A6 So 3 questions:</div><div><br></div><div>1) most / all of the ads on=
+line are for language centers. Is there a better forum or method to find hi=
+gh paying jobs / better contracts? My go to has been <a href=3D"http://eslc=
+afe.com" target=3D"_blank">eslcafe.com</a></div><div>2) I=E2=80=99m attachi=
+ng an example email for what I=E2=80=99ve been sending out as an initial em=
+ail. I=E2=80=99d appreciate feedback=E2=80=A6 the only thing I change betwe=
+en schools is the country location in the text and the Subject Line.</div><=
+div>3) Is this 16k net rmb the best I can get with no experience? If so, I=
+=E2=80=99ll accept it and work my way up from here.</div><div><br></div><di=
+v>I look forward to hearing from you!</div><div><br></div><div>Best,</div><=
+div><br></div><div><div>
+<div dir=3D"auto" style=3D"color:rgb(0,0,0);letter-spacing:normal;text-alig=
+n:start;text-indent:0px;text-transform:none;white-space:normal;word-spacing=
+:0px;text-decoration:none"><div dir=3D"auto" style=3D"color:rgb(0,0,0);lett=
+er-spacing:normal;text-align:start;text-indent:0px;text-transform:none;whit=
+e-space:normal;word-spacing:0px;text-decoration:none"><div style=3D"color:r=
+gb(0,0,0);letter-spacing:normal;text-align:start;text-indent:0px;text-trans=
+form:none;white-space:normal;word-spacing:0px"><div style=3D"color:rgb(0,0,=
+0);letter-spacing:normal;text-align:start;text-indent:0px;text-transform:no=
+ne;white-space:normal;word-spacing:0px"><font color=3D"#011993" style=3D"fo=
+nt-size:12px"><b>Chibuzor (Chi) Ejimofor</b><br>M | +1 304 276 4410<br>E =
+=C2=A0| <a href=3D"mailto:Chibuzor.ejimofor@gmail.com" target=3D"_blank">Ch=
+ibuzor.ejimofor@gmail.com</a></font></div><div style=3D"color:rgb(0,0,0);le=
+tter-spacing:normal;text-align:start;text-indent:0px;text-transform:none;wh=
+ite-space:normal;word-spacing:0px"><font color=3D"#011993" style=3D"font-si=
+ze:12px">Skype | cheez20<br></font><br></div></div></div></div>
+</div>
+<div></div></div></div><br><br><br>---------- Forwarded message ----------<=
+br>From:=C2=A0Chibuzor Ejimofor &lt;<a href=3D"mailto:chibuzor.ejimofor@gma=
+il.com" target=3D"_blank">chibuzor.ejimofor@gmail.com</a>&gt;<br>To:=C2=A0<=
+a href=3D"mailto:job@bigwig-moscow.ru" target=3D"_blank">job@bigwig-moscow.=
+ru</a><br>Cc:=C2=A0<br>Bcc:=C2=A0<br>Date:=C2=A0Mon, 26 Aug 2019 14:43:01 -=
+0400<br>Subject:=C2=A0Native English Teacher Available - Moscow<br><div sty=
+le=3D"overflow-wrap: break-word;"><div style=3D"color:rgb(0,0,0)">Hello,</d=
+iv><div style=3D"color:rgb(0,0,0)"><div><div><div><div dir=3D"auto" style=
+=3D"overflow-wrap: break-word;"><div style=3D"overflow-wrap: break-word;"><=
+div style=3D"overflow-wrap: break-word;"><font color=3D"#011993"><br style=
+=3D"color:rgb(0,0,0)"><span style=3D"color:rgb(0,0,0)">My name is Chi and I=
+ am a=C2=A0TEFL-Certified Professional Teacher with Bachelor&#39;s Degree=
+=C2=A0<b>available immediately</b>. I=C2=A0am interested in living and work=
+ing in Moscow and so I definitely want to hear more about any open English =
+teaching positions that you are offering.=C2=A0</span></font></div><div sty=
+le=3D"overflow-wrap: break-word;"><font color=3D"#011993"><span style=3D"co=
+lor:rgb(0,0,0)"><br></span></font></div><div style=3D"overflow-wrap: break-=
+word;"><font color=3D"#011993"><span style=3D"color:rgb(0,0,0)">I already h=
+ave a 3 year multi-entry travel visa to Russia which will make it easier fo=
+r me to enter Russia and begin sooner. In addition, I have 3 years of exper=
+ience teaching other subjects ranging from biology, soccer, and safety mana=
+gement. I also have experience teaching from my 250 hour TEFL Certification=
+.=C2=A0</span><div style=3D"color:rgb(0,0,0)"><br><span>I=E2=80=99ve I atta=
+ched my resume, degree, TEFL, and passport to this email for further review=
+. I can send the=C2=A0other documents as needed. Let me know if you will be=
+ free to speak this week or next week about this role.</span><br><br><span>=
+Thanks,</span><div><div><div dir=3D"auto" style=3D"overflow-wrap: break-wor=
+d;"><div style=3D"overflow-wrap: break-word;"><div style=3D"overflow-wrap: =
+break-word;"><br></div><div style=3D"overflow-wrap: break-word;"><br></div>=
+<div style=3D"overflow-wrap: break-word;"><div style=3D"overflow-wrap: brea=
+k-word;"><font color=3D"#011993"><b>Chibuzor (Chi) Ejimofor</b><br>M | +1 3=
+04 276 4410<br>E =C2=A0|=C2=A0<a href=3D"mailto:Chibuzor.ejimofor@gmail.com=
+" target=3D"_blank">Chibuzor.ejimofor@gmail.com</a></font></div><div style=
+=3D"overflow-wrap: break-word;"><font color=3D"#011993">Skype | cheez20</fo=
+nt></div><div style=3D"overflow-wrap: break-word;"><font color=3D"#011993">=
+<br></font></div></div></div></div></div></div></div></font></div></div></d=
+iv></div></div></div></div><div style=3D"color:rgb(0,0,0)"><div><div><div><=
+div dir=3D"auto" style=3D"overflow-wrap: break-word;"><div style=3D"overflo=
+w-wrap: break-word;"><div style=3D"overflow-wrap: break-word;"><font color=
+=3D"#011993"><div style=3D"color:rgb(0,0,0)"><div><div><div dir=3D"auto" st=
+yle=3D"overflow-wrap: break-word;"><div style=3D"overflow-wrap: break-word;=
+"><div style=3D"overflow-wrap: break-word;"></div></div></div></div></div><=
+/div></font></div></div></div></div></div></div></div></div><div style=3D"o=
+verflow-wrap: break-word;"><div style=3D"color:rgb(0,0,0)"><div><div><div><=
+div dir=3D"auto" style=3D"overflow-wrap: break-word;"><div style=3D"overflo=
+w-wrap: break-word;"><div style=3D"overflow-wrap: break-word;"><font color=
+=3D"#011993"><div style=3D"color:rgb(0,0,0)"><div><div><div dir=3D"auto" st=
+yle=3D"overflow-wrap: break-word;"><div style=3D"overflow-wrap: break-word;=
+"><div style=3D"overflow-wrap: break-word;"></div></div></div></div></div><=
+/div></font></div></div></div></div></div></div></div></div><div style=3D"o=
+verflow-wrap: break-word;"><div style=3D"color:rgb(0,0,0)"><div><div><div><=
+div dir=3D"auto" style=3D"overflow-wrap: break-word;"><div style=3D"overflo=
+w-wrap: break-word;"><div style=3D"overflow-wrap: break-word;"><font color=
+=3D"#011993"><div style=3D"color:rgb(0,0,0)"><div><div><div dir=3D"auto" st=
+yle=3D"overflow-wrap: break-word;"><div style=3D"overflow-wrap: break-word;=
+"><div style=3D"overflow-wrap: break-word;"></div></div></div></div></div><=
+/div></font></div></div></div></div></div></div></div></div><div style=3D"o=
+verflow-wrap: break-word;"><div style=3D"color:rgb(0,0,0)"><div><div><div><=
+div dir=3D"auto" style=3D"overflow-wrap: break-word;"><div style=3D"overflo=
+w-wrap: break-word;"><div style=3D"overflow-wrap: break-word;"><font color=
+=3D"#011993"><div style=3D"color:rgb(0,0,0)"><div><div><div dir=3D"auto" st=
+yle=3D"overflow-wrap: break-word;"><div style=3D"overflow-wrap: break-word;=
+"><div style=3D"overflow-wrap: break-word;"></div><div style=3D"overflow-wr=
+ap: break-word;"></div></div></div></div></div></div></font></div></div></d=
+iv></div></div></div></div></div><div style=3D"overflow-wrap: break-word;">=
+</div><div style=3D"overflow-wrap: break-word;"><div><div><br><blockquote t=
+ype=3D"cite"><div>On Jun 16, 2019, at 10:51 AM, Ben Teaches English Oversea=
+s &lt;<a href=3D"mailto:ben@benteachesenglishoverseas.com" target=3D"_blank=
+">ben@benteachesenglishoverseas.com</a>&gt; wrote:</div><br class=3D"gmail-=
+m_-5666325227513671526Apple-interchange-newline"><div><div dir=3D"ltr">Hi C=
+hibuzor,=C2=A0<div><br></div><div>I hope you&#39;re doing great. Please fin=
+d your documents attached:<br><br>(1) PDF version of your resume <br>(1) DO=
+C version of your resume (can be modified to make unlimited PDF versions) <=
+br>(1) DOC version of your cover letter template (can be modified to make u=
+nlimited cover letters for various employers.) If you need help on this, I&=
+#39;m happy to assist.=C2=A0<br><br>If you see any issues or problems, don&=
+#39;t hesitate to let me know and we&#39;ll get them corrected. We hope you=
+ like how they turned out!=C2=A0=C2=A0</div><div><br></div><div>Ben<br clea=
+r=3D"all"><div><br></div>-- <br><div dir=3D"ltr" class=3D"gmail-m_-56663252=
+27513671526gmail_signature"><div dir=3D"ltr"><div><div dir=3D"ltr"><div><di=
+v dir=3D"ltr"><div><div dir=3D"ltr"><div><div dir=3D"ltr"><div dir=3D"ltr">=
+<div dir=3D"ltr"><div dir=3D"ltr"><div dir=3D"ltr"><div dir=3D"ltr"><font f=
+ace=3D"verdana, sans-serif" size=3D"2"><b>Ben=C2=A0</b></font></div><div di=
+r=3D"ltr"><font face=3D"verdana, sans-serif" size=3D"2"><b><img src=3D"http=
+s://www.benteachesenglishoverseas.com/wp-content/uploads/2017/02/LogoBeanTe=
+aches2.png" width=3D"200" height=3D"76"><br></b></font></div><div dir=3D"lt=
+r"><font face=3D"verdana, sans-serif" size=3D"2"><i><br></i></font></div><d=
+iv dir=3D"ltr"><font face=3D"verdana, sans-serif" size=3D"2"><i>-----------=
+-------------</i></font></div><div><font face=3D"verdana, sans-serif" size=
+=3D"2"><b><br></b></font></div><div><font face=3D"verdana, sans-serif" size=
+=3D"2"><b>1.) Need to talk on Skype? View my calendar and book your spot: <=
+a href=3D"http://www.rockstareslteacher.com/" target=3D"_blank">www.rocksta=
+reslteacher.com</a></b></font></div><div><font face=3D"verdana, sans-serif"=
+ size=3D"2"><b><br></b></font></div><div><font face=3D"verdana, sans-serif"=
+ size=3D"2"><b>2.) Articles:=C2=A0</b></font><b style=3D"font-family:verdan=
+a,sans-serif;font-size:small"><a href=3D"http://www.benteachesenglishoverse=
+as.com/blog" target=3D"_blank">www.benteachesenglishoverseas.com/blog</a>=
+=C2=A0<br><br>3.) Follow me on Facebook to get updates and ideas: <a href=
+=3D"http://www.facebook.com/benteachesenglishoverseas" target=3D"_blank">ww=
+w.facebook.com/benteachesenglishoverseas</a>=C2=A0 <br><br>4.) Follow my IG=
+ for pictures and videos:=C2=A0<a href=3D"http://www.instagram.com/benteach=
+esenglishoverseas" target=3D"_blank"><br>www.instagram.com/benteachesenglis=
+hoverseas</a><br><br>5.) Over 300 videos:=C2=A0<br></b><font face=3D"verdan=
+a, sans-serif" size=3D"2"><b><a href=3D"https://www.youtube.com/c/benteache=
+senglishoverseas" target=3D"_blank">https://www.youtube.com/c/benteacheseng=
+lishoverseas</a></b></font></div><div><font face=3D"verdana, sans-serif" si=
+ze=3D"2"><br></font></div><div><font face=3D"verdana, sans-serif" size=3D"2=
+"><i>------------------------</i></font></div><div><font face=3D"verdana, s=
+ans-serif" size=3D"2"><i><br></i></font></div><div><font face=3D"verdana, s=
+ans-serif" size=3D"2"><i><b>&quot;</b></i></font><span style=3D"color:rgb(2=
+9,33,41);font-family:Helvetica,Arial,sans-serif;font-size:14px"><b><i>Ben i=
+s an excellent mentor and is always full of positive, yet realistic and hon=
+est advice. I like that he doesn&#39;t sugarcoat things and that he sticks =
+to what he knows, so you know the advice you&#39;re getting is legit and va=
+luable.&quot;</i> </b>-Nick Barnets, client</span></div><div><span style=3D=
+"color:rgb(29,33,41);font-family:Helvetica,Arial,sans-serif;font-size:14px"=
+><br></span></div><div><span style=3D"color:rgb(29,33,41);font-family:Helve=
+tica,Arial,sans-serif;font-size:14px">-------------------------------</span=
+></div><div><span style=3D"color:rgb(29,33,41);font-family:Helvetica,Arial,=
+sans-serif;font-size:14px"><br></span></div><div dir=3D"ltr"><div style=3D"=
+font-size:12.8px"><div style=3D"font-size:small"><font face=3D"verdana, san=
+s-serif" size=3D"2"><i>**This is not legal, tax, or accounting advice and f=
+or informational purposes only. Make sure to do your own due diligence.**</=
+i></font></div><div style=3D"font-size:small"><font face=3D"verdana, sans-s=
+erif" size=3D"2"><i><br></i></font></div><font face=3D"verdana, sans-serif"=
+ size=3D"2" style=3D"font-size:small"><i>**The information contained in thi=
+s e-mail message is privileged,=C2=A0confidential, and protected from=C2=A0=
+disclosure.**</i></font></div></div></div></div></div></div></div></div></d=
+iv></div></div></div></div></div></div></div></div><span></span></div>
+<span id=3D"gmail-m_-5666325227513671526cid:f_jwxa4fun0">&lt;Chibuzor Ejimo=
+for.pdf&gt;</span><span id=3D"gmail-m_-5666325227513671526cid:f_jwxa5qgw1">=
+&lt;Chibuzor Ejimofor.docx&gt;</span><span id=3D"gmail-m_-56663252275136715=
+26cid:f_jwxa67kr2">&lt;Chibuzor Ejimofor Cover Letter Template.docx&gt;</sp=
+an></div></blockquote></div><br></div></div></blockquote></div><br clear=3D=
+"all"><div><br></div>-- <br><div dir=3D"ltr" class=3D"gmail_signature"><div=
+ dir=3D"ltr"><div><div dir=3D"ltr"><div><div dir=3D"ltr"><div><div dir=3D"l=
+tr"><div><div dir=3D"ltr"><div dir=3D"ltr"><div dir=3D"ltr"><div dir=3D"ltr=
+"><div dir=3D"ltr"><div dir=3D"ltr"><font face=3D"verdana, sans-serif" colo=
+r=3D"#000000" size=3D"2"><b>Ben=C2=A0</b></font></div><div dir=3D"ltr"><fon=
+t face=3D"verdana, sans-serif" color=3D"#000000" size=3D"2"><b><img src=3D"=
+https://www.benteachesenglishoverseas.com/wp-content/uploads/2017/02/LogoBe=
+anTeaches2.png" width=3D"200" height=3D"76"><br></b></font></div><div dir=
+=3D"ltr"><font face=3D"verdana, sans-serif" color=3D"#000000" size=3D"2"><i=
+><br></i></font></div><div dir=3D"ltr"><font face=3D"verdana, sans-serif" c=
+olor=3D"#000000" size=3D"2"><i>------------------------</i></font></div><di=
+v><font color=3D"#000000" face=3D"verdana, sans-serif" size=3D"2"><b><br></=
+b></font></div><div><font face=3D"verdana, sans-serif" color=3D"#000000" si=
+ze=3D"2"><b>1.) Need to talk on Skype? View my calendar and book your spot:=
+ <a href=3D"http://www.rockstareslteacher.com" target=3D"_blank">www.rockst=
+areslteacher.com</a></b></font></div><div><font face=3D"verdana, sans-serif=
+" color=3D"#000000" size=3D"2"><b><br></b></font></div><div><font face=3D"v=
+erdana, sans-serif" color=3D"#000000" size=3D"2"><b>2.) Articles:=C2=A0</b>=
+</font><b style=3D"color:rgb(0,0,0);font-family:verdana,sans-serif;font-siz=
+e:small"><a href=3D"http://www.benteachesenglishoverseas.com/blog" target=
+=3D"_blank">www.benteachesenglishoverseas.com/blog</a>=C2=A0<br><br>3.) Fol=
+low me on Facebook to get updates and ideas: <a href=3D"http://www.facebook=
+.com/benteachesenglishoverseas" target=3D"_blank">www.facebook.com/benteach=
+esenglishoverseas</a>=C2=A0 <br><br>4.) Follow my IG for pictures and video=
+s:=C2=A0<a href=3D"http://www.instagram.com/benteachesenglishoverseas" targ=
+et=3D"_blank"><br>www.instagram.com/benteachesenglishoverseas</a><br><br>5.=
+) Over 300 videos:=C2=A0<br></b><font color=3D"#000000" face=3D"verdana, sa=
+ns-serif" size=3D"2"><b><a href=3D"https://www.youtube.com/c/benteachesengl=
+ishoverseas" target=3D"_blank">https://www.youtube.com/c/benteachesenglisho=
+verseas</a></b></font></div><div><font color=3D"#000000" face=3D"verdana, s=
+ans-serif" size=3D"2"><br></font></div><div><font color=3D"#000000" face=3D=
+"verdana, sans-serif" size=3D"2"><i>------------------------</i></font></di=
+v><div><font color=3D"#000000" face=3D"verdana, sans-serif" size=3D"2"><i><=
+br></i></font></div><div><font color=3D"#000000" face=3D"verdana, sans-seri=
+f" size=3D"2"><i><b>&quot;</b></i></font><span style=3D"color:rgb(29,33,41)=
+;font-family:Helvetica,Arial,sans-serif;font-size:14px"><b><i>Ben is an exc=
+ellent mentor and is always full of positive, yet realistic and honest advi=
+ce. I like that he doesn&#39;t sugarcoat things and that he sticks to what =
+he knows, so you know the advice you&#39;re getting is legit and valuable.&=
+quot;</i> </b>-Nick Barnets, client</span></div><div><span style=3D"color:r=
+gb(29,33,41);font-family:Helvetica,Arial,sans-serif;font-size:14px"><br></s=
+pan></div><div><span style=3D"color:rgb(29,33,41);font-family:Helvetica,Ari=
+al,sans-serif;font-size:14px">-------------------------------</span></div><=
+div><span style=3D"color:rgb(29,33,41);font-family:Helvetica,Arial,sans-ser=
+if;font-size:14px"><br></span></div><div dir=3D"ltr"><div style=3D"font-siz=
+e:12.8px"><div style=3D"font-size:small"><font face=3D"verdana, sans-serif"=
+ color=3D"#000000" size=3D"2"><i>**This is not legal, tax, or accounting ad=
+vice and for informational purposes only. Make sure to do your own due dili=
+gence.**</i></font></div><div style=3D"font-size:small"><font face=3D"verda=
+na, sans-serif" color=3D"#000000" size=3D"2"><i><br></i></font></div><font =
+face=3D"verdana, sans-serif" color=3D"#000000" size=3D"2" style=3D"font-siz=
+e:small"><i>**The information contained in this e-mail message is privilege=
+d,=C2=A0confidential, and protected from=C2=A0disclosure.**</i></font></div=
+></div></div></div></div></div></div></div></div></div></div></div></div></=
+div></div></div>
+
+--000000000000cfccf10591332197--

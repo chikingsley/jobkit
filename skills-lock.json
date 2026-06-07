@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "skills": {
+    "Academic CV Builder": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/academic-cv-builder/SKILL.md",
+      "computedHash": "a6105efce0f64a3506affe7a1edd9b007df2d16604197eab5a9dee7732b43dc9"
+    },
+    "Career Changer Translator": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/career-changer-translator/SKILL.md",
+      "computedHash": "d4cfd9a3ec8d62f7d417d553c83e114d30424d810ef3f7231f14021787241614"
+    },
+    "Cover Letter Generator": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/cover-letter-generator/SKILL.md",
+      "computedHash": "063d1f19fac28a7eb6bca5a2595fc71f1c005edf06c2e62ffae04dbf3cbcee5f"
+    },
+    "Creative Portfolio Resume": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/creative-portfolio-resume/SKILL.md",
+      "computedHash": "5032bf37d0774c28140f434035e1dc171b2a61b64ad3b3ac1b7e82ef3454c617"
+    },
+    "Executive Resume Writer": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/executive-resume-writer/SKILL.md",
+      "computedHash": "d916771824cbff7bc73b47ab52449d683f0f641adaef478f756f38c54e5d560d"
+    },
+    "Interview Prep Generator": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/interview-prep-generator/SKILL.md",
+      "computedHash": "f016f936074c5e2e22512a8b8b7afa32e904995f6b5f8e2df440ed9ee11abeb6"
+    },
+    "Job Description Analyzer": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/job-description-analyzer/SKILL.md",
+      "computedHash": "ff478c88d87ddbfe491dcde329fd5c7a37cd1c29ab60afa85128d414f55dc5b1"
+    },
+    "LinkedIn Profile Optimizer": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/linkedin-profile-optimizer/SKILL.md",
+      "computedHash": "35d1a5148644033a34a60e95f4bc6011b7930cf89d19ee0dcbbb58137ddf71c2"
+    },
+    "Offer Comparison Analyzer": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/offer-comparison-analyzer/SKILL.md",
+      "computedHash": "b6bc40d127301a315ef4c480e1d10865825b2c9bb766d311dd1df20571d2c17c"
+    },
+    "Portfolio Case Study Writer": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/portfolio-case-study-writer/SKILL.md",
+      "computedHash": "a7e523d4f31e5e7240f198521f82f0202939830f673933e030ca9dfc2963fd44"
+    },
+    "Reference List Builder": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/reference-list-builder/SKILL.md",
+      "computedHash": "fe0a0f000b0fbbc908924c88934f1520c7d5f6e91dc137da7cf665fe712a1747"
+    },
+    "Resume ATS Optimizer": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/resume-ats-optimizer/SKILL.md",
+      "computedHash": "fa4320d1a1208da1bc170c0bf7e96e886f7175a7ffc2a89956d5005d48c59cc8"
+    },
+    "Resume Bullet Writer": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/resume-bullet-writer/SKILL.md",
+      "computedHash": "9a7e4a157a67704952c03f798009eaad07f901e292f0c7761e6fda83dc89adcf"
+    },
+    "Resume Formatter": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/resume-formatter/SKILL.md",
+      "computedHash": "aeb738e7aa45de17713569e49b5ff2a67cbc7fa2a2d672d0f009c86e3923a8eb"
+    },
+    "Resume Quantifier": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/resume-quantifier/SKILL.md",
+      "computedHash": "a30515230466164e3f881baec16f37be4cec6c3f11e8de5ee19669a82dc73ea0"
+    },
+    "Resume Section Builder": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/resume-section-builder/SKILL.md",
+      "computedHash": "5db76d9112689c1e64507c1c290184188efad9a433af7b081a3737fd325c84cf"
+    },
+    "Resume Tailor": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/resume-tailor/SKILL.md",
+      "computedHash": "f35a22028c6774a6c916de9fb82d27467a9e39b6268ed2a9fa5a85d4e874cc57"
+    },
+    "Resume Version Manager": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/resume-version-manager/SKILL.md",
+      "computedHash": "ae90b694937dd6439462b9364c2e6a3ef30f234fc5843042fbf0aa7015387598"
+    },
+    "Salary Negotiation Prep": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/salary-negotiation-prep/SKILL.md",
+      "computedHash": "4838e5e88b016f1bb4429b6512b15576e3242bd68b0553194f60d7843f86b0eb"
+    },
+    "Tech Resume Optimizer": {
+      "source": "Paramchoudhary/ResumeSkills",
+      "sourceType": "github",
+      "skillPath": "skills/tech-resume-optimizer/SKILL.md",
+      "computedHash": "9541fdae552dd57d44f6124f3f11a5b888078ba2f389ca2b58e086407fc2dada"
+    }
+  }
+}

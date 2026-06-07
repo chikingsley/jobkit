@@ -1,0 +1,693 @@
+Delivered-To: chibuzor.ejimofor@gmail.com
+Received: by 2002:a92:3612:0:0:0:0:0 with SMTP id d18csp5316828ila;
+        Tue, 11 Jun 2019 07:03:48 -0700 (PDT)
+X-Received: by 2002:a2e:2993:: with SMTP id p19mr11947240ljp.202.1560261828518;
+        Tue, 11 Jun 2019 07:03:48 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1560261828; cv=none;
+        d=google.com; s=arc-20160816;
+        b=fN0tDcs2d0Lo1Wotn+OpMm6z6WWyTLNc4a+gcZOc4tXIrBaDoaN4rCtNCPBdk50iY2
+         0aXvOPpajZrtu2lxOhJwKE+xL1vLrmZqkIw7I3Og6r0VvI9DK/ehSE7bKnKyXJ79MaeX
+         Zjuapaffuneign7JdwFu0Xf0c8/37q9iVlz0eXx7PrY5z1ciVpNI1+wGiTAyuIJiSy26
+         ENt5SUWGMpTRzd5LVRGFZUrabbwUYegZfT6uaPEDmxbECkTEM3Xeg41Ksf1qy2uUpmIO
+         wwBze/feSzFrUTxN9rPi3Rdkt+qWsGo6qHMsqFi80WYjN7YpqlzsajdUDFK7DwdVLg3y
+         Up9Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;
+        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
+         :dkim-signature;
+        bh=ckEUgyUzdxkvYRHB+t+hN7bl5hbZqlZh8NCpjAOwhCs=;
+        b=W+IsHjrLVsjOfVH7GCoOhK96WHHj8gp9H+nH3nW81MQWOpY/cM8kz9ZvmHiHw68ZYe
+         FANvaL0S3dprAo2ChW2kbFNPuoHhA/O/RVXnm8wZ/i1D58AarcPllZtXkF1gXbl+sJjG
+         2IT7IDaTvLgduTf738MCxO3ve7wP7kcBMpcscftZOwwFDE8nU5sevn+ta8LoUdxo3bfW
+         LJNt2XCZHqYVORy136e3SGmeDSG2jKo452/6XyPXNwgYer1GNd9smpjG73vudysHeXB1
+         UUTXjgEo5velCdG2oZHwqgT1FXbK2vZ5+TNOTXkMzAhH46sSVIWaoXITFf0oTL8i1U2h
+         M1kQ==
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@benteachesenglishoverseas-com.20150623.gappssmtp.com header.s=20150623 header.b=xmuSQYy4;
+       spf=pass (google.com: domain of ben@benteachesenglishoverseas.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=ben@benteachesenglishoverseas.com
+Return-Path: <ben@benteachesenglishoverseas.com>
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id q4sor2671074lff.63.2019.06.11.07.03.47
+        for <chibuzor.ejimofor@gmail.com>
+        (Google Transport Security);
+        Tue, 11 Jun 2019 07:03:47 -0700 (PDT)
+Received-SPF: pass (google.com: domain of ben@benteachesenglishoverseas.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@benteachesenglishoverseas-com.20150623.gappssmtp.com header.s=20150623 header.b=xmuSQYy4;
+       spf=pass (google.com: domain of ben@benteachesenglishoverseas.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=ben@benteachesenglishoverseas.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=benteachesenglishoverseas-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to;
+        bh=ckEUgyUzdxkvYRHB+t+hN7bl5hbZqlZh8NCpjAOwhCs=;
+        b=xmuSQYy4MAbOz3DDFNYvjqCdzcDcvNxNrYzfJ5PiDizsP+6kAgcp83sHSvKGWpVfaP
+         TNhvq+2ypRpd6xFM0gQ/2/m/MG0IgEyEUJJlK9qTrfAEORResYpR9QoWpJcBI9lgnzxF
+         z550dTDPrILBJyBGOskWn9B9kofugdFEe0+J6AldoP0KKHyU1BKgpfqkxmPql/av3f3K
+         1sIXBGNRI02eWQZkEUkksGusEnWbHMmSdJd0lJHOFpcY+X125pF9zaLVmzoRdkpHEHSS
+         LR/Pvd5Ag4gSFzWRSexncivzVU6ZKB0EkLh3qEtqTwe3CaU0r2ZxP7rLI/kYvwzvqIYT
+         kyJQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to;
+        bh=ckEUgyUzdxkvYRHB+t+hN7bl5hbZqlZh8NCpjAOwhCs=;
+        b=t/WJLPOmYRWWR/1LW7RdQIGvIY9JPRKefXHq80RQBXLm1qF0uWEHR0wkNFztGZ+XUH
+         12h1D4V8hTbAHzFKaL53cLzDSdvTdBYGQz8hhtg10iNc3+N/sFEbsYy3TT4eUuFYlHVl
+         EPoX/35Xj2/jjMKeMXIfReFEq/ktMTQq3qCJqH2u7BwSO4jHXOTU9DCH6WBJYLypVuBz
+         SZQQDn2WY8Mi0icSytS6jmbf2/yg1ngCrHrP6jmdmaj9UjkPFqMbWi+y63pP+Dv0ppn2
+         A0uev5uqQcoTVtJzr7HvoBspSo/cKaupQQMsd1Iz0TMQg5KRykvQs7RbG2eybj9jUvJO
+         7KnQ==
+X-Gm-Message-State: APjAAAWzPfyeW+Xioedf6c7R2xaNVWqfbsRTo5fNM0f6/GMNH9S1ytWc
+	MTGQu3t+uApUkY6zi8Lp7dVZGYYJMI9aP/44k2thW52T5/UF9g==
+X-Google-Smtp-Source: APXvYqwct3/6d2ZHKHJsuiOkHeNXI2QjEqH2mIutiXjz08zrCwN/rhDaIRay/S/bgaD8ZKRys3AUwNVBfoMte/TXGjU=
+X-Received: by 2002:ac2:528e:: with SMTP id q14mr10533182lfm.17.1560261827082;
+ Tue, 11 Jun 2019 07:03:47 -0700 (PDT)
+MIME-Version: 1.0
+References: <A93BE9B2-0006-49DB-A817-4C56E88302CF@gmail.com>
+ <CAJhTWTVVnQTWHWFW5XDFrZ9u3PF4-A6jH2_oR4StF-wCjbbYMQ@mail.gmail.com> <EAAB8ACD-C9F0-475F-A451-33F9310E6C18@gmail.com>
+In-Reply-To: <EAAB8ACD-C9F0-475F-A451-33F9310E6C18@gmail.com>
+From: Ben Teaches English Overseas <ben@benteachesenglishoverseas.com>
+Date: Tue, 11 Jun 2019 22:03:11 +0800
+Message-ID: <CAJhTWTXoSATv1anOBZgN6HPH67w7pacWx+JEETkv6WGjA8ryaA@mail.gmail.com>
+Subject: Re: New Client Questionnaire + Contract review
+To: Chibuzor Ejimofor <chibuzor.ejimofor@gmail.com>
+Content-Type: multipart/alternative; boundary="000000000000f5d0d7058b0cc3e4"
+
+--000000000000f5d0d7058b0cc3e4
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+*Hi, Chibuzor! *
+
+*It's great to hear from you. *
+
+Thanks for the insights!
+
+*It's always my pleasure. *
+
+
+[finance details] I actually lived out of my car for the past couple years
+so I was able to keep expenses mostly low. I=E2=80=99ve traveled a crazy am=
+ount
+though so savings are still at $0 (actually negative with loan and credit
+debt). Average last three months from mint.com, 400 for food, 300 for
+gas/car, 300 for loans, and 120 for phone.
+
+*Got it! Good on you for having the discipline to do this! I have no doubt
+that you will take like a fish to water and make great money overseas. I've
+not lived in a car, but I've lived in some pretty rough conditions before
+and it makes you grateful for certain things... and much more appreciative
+of living minimally. I hate having tons of junk in my life. *
+
+
+*FINANCIAL GOALS: *
+
+*I've gone over your sheet. Depending upon how hard you want to work, if
+you're willing to go to a place like China and really work at developing
+your clientele and classes on top of the right contract, I think we could
+reduce all of these down to 1-2 years on the timeline. If anything I think
+these goals are too realistic and you can do better. *
+
+I finished the book today and I really like the idea of working in oil or
+with the defense contractors for a year or two just to pay off all my debt
+and save some money. I was already looking to get into oil abroad with the
+chemical engineering degree. Ideally, my goal is to end up living in Russia
+but I=E2=80=99m willing to sacrifice location for a year in order to get my
+finances back on the right foot. I=E2=80=99m open to relocating anywhere if=
+ the
+opportunity is good.
+
+
+
+*Great! Unfortunately oil is depressed right now and the contracts aren't
+out there right now, but I am confident that once we hit $80 a barrel on
+crude for a while again it will come back. *
+
+*As far as defense, there are still some great jobs available in Saudi
+Arabia and Afghanistan. The hard part is timing them. They are notoriously
+slow and prone to doddle when it comes to hiring. Sometimes you won't hear
+from anyone for weeks or months and then suddenly they might want to
+interview you right away or even offer you a job straight away. It can be
+bizarre. I just had someone get a Saudi contract after waiting literally
+months and wondering if it would ever come through. This has happened to me
+a few times. *
+
+
+
+That said, I plan on spreading my applications far and wide and choosing
+the best option as you suggested. I attached my resume which I have already
+slightly modified for teaching. I highlighted the few bullets that were
+related to teaching e.g. training employees in safety or soccer coaching.
+Not sure how to reframe these other bullets for teaching but let me know if
+you have any other ideas or thoughts. If I should be looking for double,
+I=E2=80=99ll go ahead and reject this offer and apply for better options.
+
+*That sounds great. You definitely should be looking for more than that
+previous offer. Please give me a couple days to go over this resume in
+detail and I will be back with a full critique and some suggestions. I can
+rush your resume once we have the frame work completed and we're ready for
+the design--that part should only take one business day. *
+
+*In the interim period, please feel free to ask any and all questions you
+may have and bounce any ideas off me as well. I'm always here to help. *
+
+*Ben *
+
+On Thu, Jun 6, 2019 at 7:53 PM Chibuzor Ejimofor <
+chibuzor.ejimofor@gmail.com> wrote:
+
+> Ben,
+>
+> Thanks for the insights!
+>
+> [finance details] I actually lived out of my car for the past couple year=
+s
+> so I was able to keep expenses mostly low. I=E2=80=99ve traveled a crazy =
+amount
+> though so savings are still at $0 (actually negative with loan and credit
+> debt). Average last three months from mint.com, 400 for food, 300 for
+> gas/car, 300 for loans, and 120 for phone.
+>
+> I finished the book today and I really like the idea of working in oil or
+> with the defense contractors for a year or two just to pay off all my deb=
+t
+> and save some money. I was already looking to get into oil abroad with th=
+e
+> chemical engineering degree. Ideally, my goal is to end up living in Russ=
+ia
+> but I=E2=80=99m willing to sacrifice location for a year in order to get =
+my
+> finances back on the right foot. I=E2=80=99m open to relocating anywhere =
+if the
+> opportunity is good.
+>
+> That said, I plan on spreading my applications far and wide and choosing
+> the best option as you suggested. I attached my resume which I have alrea=
+dy
+> slightly modified for teaching. I highlighted the few bullets that were
+> related to teaching e.g. training employees in safety or soccer coaching.
+> Not sure how to reframe these other bullets for teaching but let me know =
+if
+> you have any other ideas or thoughts. If I should be looking for double,
+> I=E2=80=99ll go ahead and reject this offer and apply for better options.
+>
+> I look forward to your response!
+>
+> Best,
+>
+> *Chibuzor (Chi) Ejimofor*
+> M | +1 304 276 4410
+> E  | Chibuzor.ejimofor@gmail.com
+>
+> PS: It=E2=80=99s good that I used your service=E2=80=A6 it=E2=80=99s almo=
+st guaranteed I would
+> have taken this offer if applying alone!
+>
+>
+> On Jun 4, 2019, at 7:13 AM, Ben Teaches English Overseas <
+> ben@benteachesenglishoverseas.com> wrote:
+>
+> Hi, Chi!
+>
+> Welcome aboard! It's great to hear from you.
+>
+> You have a bachelor's degree, are in the process of getting your TEFL, an=
+d
+> have a top-notch passport. These will go a long way abroad.
+>
+> Given that you rank money as a top priority, I would encourage you not to
+> walk away from this contract... but to actually run away from it. This is
+> very, very low. You can do much, much better.
+>
+> One of the first things I would do is consider how much of that $80k
+> salary you had left over each month after you paid all of your expenses.
+> Once you have this baseline, we can look at how much would be required to
+> match it. It's probably a lot lower than you think.
+>
+>
+> Matching a high salary in the countries you've specified is going to be
+> rough. But it's entirely possible to do it somewhere like China.
+>
+> Generally speaking I encourage no one to ever work for less than 200 RMB
+> or $30US per hour in China because it's just not necessary. I very rarely
+> see training center contracts that pencil out. The best positions are in
+> public and private K-12 and universities and colleges. Once you've worked
+> your way through the manual, please let me know what you're thinking and =
+we
+> can go from there.
+>
+> Many people also find that they're not getting as many hits and as high
+> quality of offers as they'd like because their resumes are off. You can
+> upgrade your package if desired within the first 30 days and we can work =
+on
+> getting all of your documents looking professional and polished.
+>
+> Ideally I'd like to see you get at very least double what this contract i=
+s
+> offering in terms of hourly compensation. I look forward to continuing th=
+is
+> conversation with you.
+>
+> Ben
+>
+> On Tue, Jun 4, 2019 at 5:37 AM Chibuzor Ejimofor <
+> chibuzor.ejimofor@gmail.com> wrote:
+>
+>> Ben,
+>>
+>> I hope you are doing well!
+>>
+>> My name is Chi and I am looking at switching my career temporarily and
+>> possibly permanently to teaching English abroad. I filled out a couple
+>> questionnaires which I attached. One is the new client questionnaire for=
+m
+>> and the other is a contract review request form for a contract from Engl=
+ish
+>> First, a private company that has schools in China, Indonesia and Russia=
+. I
+>> know you probably have a lot of contracts to review so let me know when =
+you
+>> can get to mine and what your thoughts are on this contract.
+>>
+>> I look forward to communicating further with you!
+>>
+>> Best regards,
+>>
+>>
+>> *Chibuzor (Chi) Ejimofor*
+>> M | +1 304 276 4410
+>> E  | Chibuzor.ejimofor@gmail.com
+>>
+>>
+>
+> --
+> *Ben *
+>
+>
+> *------------------------*
+>
+> *1.) Need to talk on Skype? View my calendar and book your
+> spot: www.rockstareslteacher.com <http://www.rockstareslteacher.com/>*
+>
+> *2.) Articles: *
+>
+>
+>
+>
+>
+>
+>
+> *www.benteachesenglishoverseas.com/blog
+> <http://www.benteachesenglishoverseas.com/blog> 3.) Follow me on Facebook
+> to get updates and ideas: www.facebook.com/benteachesenglishoverseas
+> <http://www.facebook.com/benteachesenglishoverseas>  4.) Follow my IG for
+> pictures and videos: www.instagram.com/benteachesenglishoverseas
+> <http://www.instagram.com/benteachesenglishoverseas>5.) Over 300 videos: =
+**https://www.youtube.com/c/benteachesenglishoverseas
+> <https://www.youtube.com/c/benteachesenglishoverseas>*
+>
+> *------------------------*
+>
+> *"**Ben is an excellent mentor and is always full of positive, yet
+> realistic and honest advice. I like that he doesn't sugarcoat things and
+> that he sticks to what he knows, so you know the advice you're getting is
+> legit and valuable." *-Nick Barnets, client
+>
+> -------------------------------
+>
+> ***This is not legal, tax, or accounting advice and for informational
+> purposes only. Make sure to do your own due diligence.***
+>
+> ***The information contained in this e-mail message is
+> privileged, confidential, and protected from disclosure.***
+>
+>
+>
+
+--=20
+*Ben *
+
+
+*------------------------*
+
+*1.) Need to talk on Skype? View my calendar and book your spot:
+www.rockstareslteacher.com <http://www.rockstareslteacher.com>*
+
+*2.) Articles: *
+
+
+
+
+
+
+
+*www.benteachesenglishoverseas.com/blog
+<http://www.benteachesenglishoverseas.com/blog> 3.) Follow me on Facebook
+to get updates and ideas: www.facebook.com/benteachesenglishoverseas
+<http://www.facebook.com/benteachesenglishoverseas>  4.) Follow my IG for
+pictures and videos: www.instagram.com/benteachesenglishoverseas
+<http://www.instagram.com/benteachesenglishoverseas>5.) Over 300
+videos: **https://www.youtube.com/c/benteachesenglishoverseas
+<https://www.youtube.com/c/benteachesenglishoverseas>*
+
+*------------------------*
+
+*"**Ben is an excellent mentor and is always full of positive, yet
+realistic and honest advice. I like that he doesn't sugarcoat things and
+that he sticks to what he knows, so you know the advice you're getting is
+legit and valuable." *-Nick Barnets, client
+
+-------------------------------
+
+***This is not legal, tax, or accounting advice and for informational
+purposes only. Make sure to do your own due diligence.***
+
+***The information contained in this e-mail message is
+privileged, confidential, and protected from disclosure.***
+
+--000000000000f5d0d7058b0cc3e4
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><b>Hi, Chibuzor!=C2=A0</b><div><b><br></b></div><div><b>It=
+&#39;s great to hear from you.=C2=A0</b></div><div><b><br></b></div><div><d=
+iv>Thanks for the insights!</div><div><br></div><div><b>It&#39;s always my =
+pleasure.=C2=A0</b></div><div><b><br></b></div><div><br></div><div>[finance=
+ details] I actually lived out of my car for the past couple years so I was=
+ able to keep expenses mostly low. I=E2=80=99ve traveled a crazy amount tho=
+ugh so savings are still at $0 (actually negative with loan and credit debt=
+). Average last three months from=C2=A0<a href=3D"http://mint.com/" target=
+=3D"_blank">mint.com</a>, 400 for food, 300 for gas/car, 300 for loans, and=
+ 120 for phone.</div><div><br></div><div><b>Got it! Good on you for having =
+the discipline to do this! I have no doubt that you will take like a fish t=
+o water and make great money overseas. I&#39;ve not lived in a car, but I&#=
+39;ve lived in some pretty rough conditions before and it makes you gratefu=
+l for certain things... and much more appreciative of living minimally. I h=
+ate having tons of junk in my life.=C2=A0</b></div><div>=C2=A0</div><div><b=
+r></div><div><b>FINANCIAL GOALS:=C2=A0</b></div><div><b><br></b></div><div>=
+<b>I&#39;ve gone over your sheet. Depending upon how hard you want to work,=
+ if you&#39;re willing to go to a place like China and really work at devel=
+oping your clientele and classes on top of the right contract, I think we c=
+ould reduce all of these down to 1-2 years on the timeline. If anything I t=
+hink these goals are too realistic and you can do better.=C2=A0</b></div><d=
+iv><br></div><div>I finished the book today and I really like the idea of w=
+orking in oil or with the defense contractors for a year or two just to pay=
+ off all my debt and save some money. I was already looking to get into oil=
+ abroad with the chemical engineering degree. Ideally, my goal is to end up=
+ living in Russia but I=E2=80=99m willing to sacrifice location for a year =
+in order to get my finances back on the right foot. I=E2=80=99m open to rel=
+ocating anywhere if the opportunity is good.=C2=A0</div><div><br></div><div=
+><br></div><div><br></div><div><b>Great! Unfortunately oil is depressed rig=
+ht now and the contracts aren&#39;t out there right now, but I am confident=
+ that once we hit $80 a barrel on crude for a while again it will come back=
+.=C2=A0</b></div><div><b><br></b></div><div><b>As far as defense, there are=
+ still some great jobs available in Saudi Arabia and Afghanistan. The hard =
+part is timing them. They are notoriously slow and prone to doddle when it =
+comes to hiring. Sometimes you won&#39;t hear from anyone for weeks or mont=
+hs and then suddenly they might want to interview you right away or even of=
+fer you a job straight away. It can be bizarre. I just had someone get a Sa=
+udi contract after waiting literally months and wondering if it would ever =
+come through. This has happened to me a few times.=C2=A0</b></div><div><b><=
+br></b></div><div><b><br></b></div><div><br></div><div>That said, I plan on=
+ spreading my applications far and wide and choosing the best option as you=
+ suggested. I attached my resume which I have already slightly modified for=
+ teaching. I highlighted the few bullets that were related to teaching e.g.=
+ training employees in safety or soccer coaching. Not sure how to reframe t=
+hese other bullets for teaching but let me know if you have any other ideas=
+ or thoughts. If I should be looking for double, I=E2=80=99ll go ahead and =
+reject this offer and apply for better options.=C2=A0</div><div><br></div><=
+div><b>That sounds great. You definitely should be looking for more than th=
+at previous offer. Please give me a couple days to go over this resume in d=
+etail and I will be back with a full critique and some suggestions. I can r=
+ush your resume once we have the frame work completed and we&#39;re ready f=
+or the design--that part should only take one business day.=C2=A0</b></div>=
+<div><b><br></b></div><div><b>In the interim period, please feel free to as=
+k any and all questions you may have and bounce any ideas off me as well. I=
+&#39;m always here to help.=C2=A0</b></div></div><div><b><br></b></div><div=
+><b>Ben=C2=A0</b></div></div><br><div class=3D"gmail_quote"><div dir=3D"ltr=
+" class=3D"gmail_attr">On Thu, Jun 6, 2019 at 7:53 PM Chibuzor Ejimofor &lt=
+;<a href=3D"mailto:chibuzor.ejimofor@gmail.com">chibuzor.ejimofor@gmail.com=
+</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=3D"margin:=
+0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex">=
+<div style=3D"overflow-wrap: break-word;">Ben,<div><br></div><div>Thanks fo=
+r the insights!</div><div><br></div><div>[finance details] I actually lived=
+ out of my car for the past couple years so I was able to keep expenses mos=
+tly low. I=E2=80=99ve traveled a crazy amount though so savings are still a=
+t $0 (actually negative with loan and credit debt). Average last three mont=
+hs from <a href=3D"http://mint.com" target=3D"_blank">mint.com</a>, 400 for=
+ food, 300 for gas/car, 300 for loans, and 120 for phone.=C2=A0</div><div><=
+br></div><div>I finished the book today and I really like the idea of worki=
+ng in oil or with the defense contractors for a year or two just to pay off=
+ all my debt and save some money. I was already looking to get into oil abr=
+oad with the chemical engineering degree. Ideally, my goal is to end up liv=
+ing in Russia but I=E2=80=99m willing to sacrifice location for a year in o=
+rder to get my finances back on the right foot. I=E2=80=99m open to relocat=
+ing anywhere if the opportunity is good.=C2=A0</div><div><br></div><div>Tha=
+t said, I plan on spreading my applications far and wide and choosing the b=
+est option as you suggested. I attached my resume which I have already slig=
+htly modified for teaching. I highlighted the few bullets that were related=
+ to teaching e.g. training employees in safety or soccer coaching. Not sure=
+ how to reframe these other bullets for teaching but let me know if you hav=
+e any other ideas or thoughts. If I should be looking for double, I=E2=80=
+=99ll go ahead and reject this offer and apply for better options.=C2=A0</d=
+iv><div><br></div><div>I look forward to your response!</div><div><br></div=
+><div>Best,</div><div><br></div><div><div>
+<div dir=3D"auto" style=3D"letter-spacing:normal;text-align:start;text-inde=
+nt:0px;text-transform:none;white-space:normal;word-spacing:0px;text-decorat=
+ion:none"><div style=3D"letter-spacing:normal;text-align:start;text-indent:=
+0px;text-transform:none;white-space:normal;word-spacing:0px"><div style=3D"=
+color:rgb(0,0,0);letter-spacing:normal;text-align:start;text-indent:0px;tex=
+t-transform:none;white-space:normal;word-spacing:0px"><font color=3D"#01199=
+3" style=3D"font-size:12px"><b>Chibuzor (Chi) Ejimofor</b><br>M | +1 304 27=
+6 4410<br>E =C2=A0| <a href=3D"mailto:Chibuzor.ejimofor@gmail.com" target=
+=3D"_blank">Chibuzor.ejimofor@gmail.com</a></font></div><div style=3D"color=
+:rgb(0,0,0);letter-spacing:normal;text-align:start;text-indent:0px;text-tra=
+nsform:none;white-space:normal;word-spacing:0px"><font color=3D"#011993" st=
+yle=3D"font-size:12px"><br></font></div><div style=3D"color:rgb(0,0,0);lett=
+er-spacing:normal;text-align:start;text-indent:0px;text-transform:none;whit=
+e-space:normal;word-spacing:0px"><font color=3D"#011993" style=3D"font-size=
+:12px">PS:=C2=A0</font>It=E2=80=99s good that I used your service=E2=80=A6 =
+it=E2=80=99s almost guaranteed I would have taken this offer if applying al=
+one!</div><div><font style=3D"font-size:12px"><br></font></div></div></div>=
+</div></div></div><div style=3D"overflow-wrap: break-word;"><div><div><div =
+dir=3D"auto" style=3D"letter-spacing:normal;text-align:start;text-indent:0p=
+x;text-transform:none;white-space:normal;word-spacing:0px;text-decoration:n=
+one"><div style=3D"letter-spacing:normal;text-align:start;text-indent:0px;t=
+ext-transform:none;white-space:normal;word-spacing:0px"><div></div></div></=
+div></div></div></div><div style=3D"overflow-wrap: break-word;"><div><div><=
+div dir=3D"auto" style=3D"letter-spacing:normal;text-align:start;text-inden=
+t:0px;text-transform:none;white-space:normal;word-spacing:0px;text-decorati=
+on:none"><div style=3D"letter-spacing:normal;text-align:start;text-indent:0=
+px;text-transform:none;white-space:normal;word-spacing:0px"><div><span styl=
+e=3D"background-color:rgb(254,254,254)"></span></div></div></div></div></di=
+v></div><div style=3D"overflow-wrap: break-word;"><div><div><div dir=3D"aut=
+o" style=3D"letter-spacing:normal;text-align:start;text-indent:0px;text-tra=
+nsform:none;white-space:normal;word-spacing:0px;text-decoration:none"><div =
+style=3D"letter-spacing:normal;text-align:start;text-indent:0px;text-transf=
+orm:none;white-space:normal;word-spacing:0px"><div><span style=3D"backgroun=
+d-color:rgb(254,254,254)"></span></div></div></div>
+</div>
+<br><div><blockquote type=3D"cite"><div>On Jun 4, 2019, at 7:13 AM, Ben Tea=
+ches English Overseas &lt;<a href=3D"mailto:ben@benteachesenglishoverseas.c=
+om" target=3D"_blank">ben@benteachesenglishoverseas.com</a>&gt; wrote:</div=
+><br class=3D"gmail-m_6590972861729098191Apple-interchange-newline"><div><d=
+iv dir=3D"ltr" style=3D"font-family:Helvetica;font-size:12px;font-style:nor=
+mal;font-variant-caps:normal;font-weight:normal;letter-spacing:normal;text-=
+align:start;text-indent:0px;text-transform:none;white-space:normal;word-spa=
+cing:0px;text-decoration:none">Hi, Chi!<span class=3D"gmail-m_6590972861729=
+098191Apple-converted-space">=C2=A0</span><br><br>Welcome aboard! It&#39;s =
+great to hear from you.<span class=3D"gmail-m_6590972861729098191Apple-conv=
+erted-space">=C2=A0</span><br><br>You have a bachelor&#39;s degree, are in =
+the process of getting your TEFL, and have a top-notch passport. These will=
+ go a long way abroad.<span class=3D"gmail-m_6590972861729098191Apple-conve=
+rted-space">=C2=A0</span><br><br>Given that you rank money as a top priorit=
+y, I would encourage you not to walk away from this contract... but to actu=
+ally run away from it. This is very, very low. You can do much, much better=
+.<span class=3D"gmail-m_6590972861729098191Apple-converted-space">=C2=A0</s=
+pan><br><br>One of the first things I would do is consider how much of that=
+ $80k salary you had left over each month after you paid all of your expens=
+es. Once you have this baseline, we can look at how much would be required =
+to match it. It&#39;s probably a lot lower than you think.=C2=A0</div></div=
+></blockquote><blockquote type=3D"cite"><div><div dir=3D"ltr" style=3D"font=
+-family:Helvetica;font-size:12px;font-style:normal;font-variant-caps:normal=
+;font-weight:normal;letter-spacing:normal;text-align:start;text-indent:0px;=
+text-transform:none;white-space:normal;word-spacing:0px;text-decoration:non=
+e"><br>Matching a high salary in the countries you&#39;ve specified is goin=
+g to be rough. But it&#39;s entirely possible to do it somewhere like China=
+.<span class=3D"gmail-m_6590972861729098191Apple-converted-space">=C2=A0</s=
+pan><br><br>Generally speaking I encourage no one to ever work for less tha=
+n 200 RMB or $30US per hour in China because it&#39;s just not necessary. I=
+ very rarely see training center contracts that pencil out. The best positi=
+ons are in public and private K-12 and universities and colleges. Once you&=
+#39;ve worked your way through the manual, please let me know what you&#39;=
+re thinking and we can go from there.<span class=3D"gmail-m_659097286172909=
+8191Apple-converted-space">=C2=A0</span><br><br>Many people also find that =
+they&#39;re not getting as many hits and as high quality of offers as they&=
+#39;d like because their resumes are off. You can upgrade your package if d=
+esired within the first 30 days and we can work on getting all of your docu=
+ments looking professional and polished.<span class=3D"gmail-m_659097286172=
+9098191Apple-converted-space">=C2=A0</span><br><br>Ideally I&#39;d like to =
+see you get at very least double what this contract is offering in terms of=
+ hourly compensation. I look forward to continuing this conversation with y=
+ou.<span class=3D"gmail-m_6590972861729098191Apple-converted-space">=C2=A0<=
+/span><br><br>Ben=C2=A0<br><span></span></div><br style=3D"font-family:Helv=
+etica;font-size:12px;font-style:normal;font-variant-caps:normal;font-weight=
+:normal;letter-spacing:normal;text-align:start;text-indent:0px;text-transfo=
+rm:none;white-space:normal;word-spacing:0px;text-decoration:none"><div clas=
+s=3D"gmail_quote" style=3D"font-family:Helvetica;font-size:12px;font-style:=
+normal;font-variant-caps:normal;font-weight:normal;letter-spacing:normal;te=
+xt-align:start;text-indent:0px;text-transform:none;white-space:normal;word-=
+spacing:0px;text-decoration:none"><div dir=3D"ltr" class=3D"gmail_attr">On =
+Tue, Jun 4, 2019 at 5:37 AM Chibuzor Ejimofor &lt;<a href=3D"mailto:chibuzo=
+r.ejimofor@gmail.com" target=3D"_blank">chibuzor.ejimofor@gmail.com</a>&gt;=
+ wrote:<br></div><blockquote class=3D"gmail_quote" style=3D"margin:0px 0px =
+0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex"><div>Ben=
+,<div><br></div><div>I hope you are doing well!</div><div><br></div><div>My=
+ name is Chi and I am looking at switching my career temporarily and possib=
+ly permanently to teaching English abroad. I filled out a couple questionna=
+ires which I attached. One is the new client questionnaire form and the oth=
+er is a contract review request form for a contract from English First, a p=
+rivate company that has schools in China, Indonesia and Russia. I know you =
+probably have a lot of contracts to review so let me know when you can get =
+to mine and what your thoughts are on this contract.</div><div><br></div><d=
+iv>I look forward to communicating further with you!</div><div><br></div><d=
+iv>Best regards,</div><br><br><div><div dir=3D"auto" style=3D"letter-spacin=
+g:normal;text-align:start;text-indent:0px;text-transform:none;white-space:n=
+ormal;word-spacing:0px;text-decoration:none"><div style=3D"letter-spacing:n=
+ormal;text-align:start;text-indent:0px;text-transform:none;white-space:norm=
+al;word-spacing:0px"><div style=3D"letter-spacing:normal;text-align:start;t=
+ext-indent:0px;text-transform:none;white-space:normal;word-spacing:0px"><fo=
+nt color=3D"#011993" style=3D"font-size:12px"><b>Chibuzor (Chi) Ejimofor</b=
+><br>M | +1 304 276 4410</font><font color=3D"#011993" style=3D"font-size:1=
+2px"><br>E =C2=A0|<span class=3D"gmail-m_6590972861729098191Apple-converted=
+-space">=C2=A0</span><a href=3D"mailto:Chibuzor.ejimofor@gmail.com" target=
+=3D"_blank">Chibuzor.ejimofor@gmail.com</a><br></font><br></div></div></div=
+></div></div><div></div><div></div><div></div></blockquote></div><br clear=
+=3D"all" style=3D"font-family:Helvetica;font-size:12px;font-style:normal;fo=
+nt-variant-caps:normal;font-weight:normal;letter-spacing:normal;text-align:=
+start;text-indent:0px;text-transform:none;white-space:normal;word-spacing:0=
+px;text-decoration:none"><div style=3D"font-family:Helvetica;font-size:12px=
+;font-style:normal;font-variant-caps:normal;font-weight:normal;letter-spaci=
+ng:normal;text-align:start;text-indent:0px;text-transform:none;white-space:=
+normal;word-spacing:0px;text-decoration:none"><br></div><span style=3D"font=
+-family:Helvetica;font-size:12px;font-style:normal;font-variant-caps:normal=
+;font-weight:normal;letter-spacing:normal;text-align:start;text-indent:0px;=
+text-transform:none;white-space:normal;word-spacing:0px;text-decoration:non=
+e;float:none;display:inline">--<span class=3D"gmail-m_6590972861729098191Ap=
+ple-converted-space">=C2=A0</span></span><br style=3D"font-family:Helvetica=
+;font-size:12px;font-style:normal;font-variant-caps:normal;font-weight:norm=
+al;letter-spacing:normal;text-align:start;text-indent:0px;text-transform:no=
+ne;white-space:normal;word-spacing:0px;text-decoration:none"><div dir=3D"lt=
+r" class=3D"gmail-m_6590972861729098191gmail_signature" style=3D"font-famil=
+y:Helvetica;font-size:12px;font-style:normal;font-variant-caps:normal;font-=
+weight:normal;letter-spacing:normal;text-align:start;text-indent:0px;text-t=
+ransform:none;white-space:normal;word-spacing:0px;text-decoration:none"><di=
+v dir=3D"ltr"><div><div dir=3D"ltr"><div><div dir=3D"ltr"><div><div dir=3D"=
+ltr"><div><div dir=3D"ltr"><div dir=3D"ltr"><div dir=3D"ltr"><div dir=3D"lt=
+r"><div dir=3D"ltr"><div dir=3D"ltr"><font face=3D"verdana, sans-serif" siz=
+e=3D"2"><b>Ben=C2=A0</b></font></div><div dir=3D"ltr"><font face=3D"verdana=
+, sans-serif" size=3D"2"><b><img src=3D"https://www.benteachesenglishoverse=
+as.com/wp-content/uploads/2017/02/LogoBeanTeaches2.png" width=3D"200" heigh=
+t=3D"76"><br></b></font></div><div dir=3D"ltr"><font face=3D"verdana, sans-=
+serif" size=3D"2"><i><br></i></font></div><div dir=3D"ltr"><font face=3D"ve=
+rdana, sans-serif" size=3D"2"><i>------------------------</i></font></div><=
+div><font face=3D"verdana, sans-serif" size=3D"2"><b><br></b></font></div><=
+div><font face=3D"verdana, sans-serif" size=3D"2"><b>1.) Need to talk on Sk=
+ype? View my calendar and book your spot:<span class=3D"gmail-m_65909728617=
+29098191Apple-converted-space">=C2=A0</span><a href=3D"http://www.rockstare=
+slteacher.com/" target=3D"_blank">www.rockstareslteacher.com</a></b></font>=
+</div><div><font face=3D"verdana, sans-serif" size=3D"2"><b><br></b></font>=
+</div><div><font face=3D"verdana, sans-serif" size=3D"2"><b>2.) Articles:=
+=C2=A0</b></font><b style=3D"font-family:verdana,sans-serif;font-size:small=
+"><a href=3D"http://www.benteachesenglishoverseas.com/blog" target=3D"_blan=
+k">www.benteachesenglishoverseas.com/blog</a>=C2=A0<br><br>3.) Follow me on=
+ Facebook to get updates and ideas:<span class=3D"gmail-m_65909728617290981=
+91Apple-converted-space">=C2=A0</span><a href=3D"http://www.facebook.com/be=
+nteachesenglishoverseas" target=3D"_blank">www.facebook.com/benteachesengli=
+shoverseas</a>=C2=A0<span class=3D"gmail-m_6590972861729098191Apple-convert=
+ed-space">=C2=A0</span><br><br>4.) Follow my IG for pictures and videos:=C2=
+=A0<a href=3D"http://www.instagram.com/benteachesenglishoverseas" target=3D=
+"_blank"><br>www.instagram.com/benteachesenglishoverseas</a><br><br>5.) Ove=
+r 300 videos:=C2=A0<br></b><font face=3D"verdana, sans-serif" size=3D"2"><b=
+><a href=3D"https://www.youtube.com/c/benteachesenglishoverseas" target=3D"=
+_blank">https://www.youtube.com/c/benteachesenglishoverseas</a></b></font><=
+/div><div><font face=3D"verdana, sans-serif" size=3D"2"><br></font></div><d=
+iv><font face=3D"verdana, sans-serif" size=3D"2"><i>-----------------------=
+-</i></font></div><div><font face=3D"verdana, sans-serif" size=3D"2"><i><br=
+></i></font></div><div><font face=3D"verdana, sans-serif" size=3D"2"><i><b>=
+&quot;</b></i></font><span style=3D"color:rgb(29,33,41);font-family:Helveti=
+ca,Arial,sans-serif;font-size:14px"><b><i>Ben is an excellent mentor and is=
+ always full of positive, yet realistic and honest advice. I like that he d=
+oesn&#39;t sugarcoat things and that he sticks to what he knows, so you kno=
+w the advice you&#39;re getting is legit and valuable.&quot;</i><span class=
+=3D"gmail-m_6590972861729098191Apple-converted-space">=C2=A0</span></b>-Nic=
+k Barnets, client</span></div><div><span style=3D"color:rgb(29,33,41);font-=
+family:Helvetica,Arial,sans-serif;font-size:14px"><br></span></div><div><sp=
+an style=3D"color:rgb(29,33,41);font-family:Helvetica,Arial,sans-serif;font=
+-size:14px">-------------------------------</span></div><div><span style=3D=
+"color:rgb(29,33,41);font-family:Helvetica,Arial,sans-serif;font-size:14px"=
+><br></span></div><div dir=3D"ltr"><div style=3D"font-size:12.8px"><div sty=
+le=3D"font-size:small"><font face=3D"verdana, sans-serif" size=3D"2"><i>**T=
+his is not legal, tax, or accounting advice and for informational purposes =
+only. Make sure to do your own due diligence.**</i></font></div><div style=
+=3D"font-size:small"><font face=3D"verdana, sans-serif" size=3D"2"><i><br><=
+/i></font></div><font face=3D"verdana, sans-serif" size=3D"2" style=3D"font=
+-size:small"><i>**The information contained in this e-mail message is privi=
+leged,=C2=A0confidential, and protected from=C2=A0disclosure.**</i></font><=
+/div></div></div></div></div></div></div></div></div></div></div></div></di=
+v></div></div></div></div></blockquote></div><br></div></div></blockquote><=
+/div><br clear=3D"all"><div><br></div>-- <br><div dir=3D"ltr" class=3D"gmai=
+l_signature"><div dir=3D"ltr"><div><div dir=3D"ltr"><div><div dir=3D"ltr"><=
+div><div dir=3D"ltr"><div><div dir=3D"ltr"><div dir=3D"ltr"><div dir=3D"ltr=
+"><div dir=3D"ltr"><div dir=3D"ltr"><div dir=3D"ltr"><font face=3D"verdana,=
+ sans-serif" color=3D"#000000" size=3D"2"><b>Ben=C2=A0</b></font></div><div=
+ dir=3D"ltr"><font face=3D"verdana, sans-serif" color=3D"#000000" size=3D"2=
+"><b><img src=3D"https://www.benteachesenglishoverseas.com/wp-content/uploa=
+ds/2017/02/LogoBeanTeaches2.png" width=3D"200" height=3D"76"><br></b></font=
+></div><div dir=3D"ltr"><font face=3D"verdana, sans-serif" color=3D"#000000=
+" size=3D"2"><i><br></i></font></div><div dir=3D"ltr"><font face=3D"verdana=
+, sans-serif" color=3D"#000000" size=3D"2"><i>------------------------</i><=
+/font></div><div><font color=3D"#000000" face=3D"verdana, sans-serif" size=
+=3D"2"><b><br></b></font></div><div><font face=3D"verdana, sans-serif" colo=
+r=3D"#000000" size=3D"2"><b>1.) Need to talk on Skype? View my calendar and=
+ book your spot: <a href=3D"http://www.rockstareslteacher.com" target=3D"_b=
+lank">www.rockstareslteacher.com</a></b></font></div><div><font face=3D"ver=
+dana, sans-serif" color=3D"#000000" size=3D"2"><b><br></b></font></div><div=
+><font face=3D"verdana, sans-serif" color=3D"#000000" size=3D"2"><b>2.) Art=
+icles:=C2=A0</b></font><b style=3D"color:rgb(0,0,0);font-family:verdana,san=
+s-serif;font-size:small"><a href=3D"http://www.benteachesenglishoverseas.co=
+m/blog" target=3D"_blank">www.benteachesenglishoverseas.com/blog</a>=C2=A0<=
+br><br>3.) Follow me on Facebook to get updates and ideas: <a href=3D"http:=
+//www.facebook.com/benteachesenglishoverseas" target=3D"_blank">www.faceboo=
+k.com/benteachesenglishoverseas</a>=C2=A0 <br><br>4.) Follow my IG for pict=
+ures and videos:=C2=A0<a href=3D"http://www.instagram.com/benteachesenglish=
+overseas" target=3D"_blank"><br>www.instagram.com/benteachesenglishoverseas=
+</a><br><br>5.) Over 300 videos:=C2=A0<br></b><font color=3D"#000000" face=
+=3D"verdana, sans-serif" size=3D"2"><b><a href=3D"https://www.youtube.com/c=
+/benteachesenglishoverseas" target=3D"_blank">https://www.youtube.com/c/ben=
+teachesenglishoverseas</a></b></font></div><div><font color=3D"#000000" fac=
+e=3D"verdana, sans-serif" size=3D"2"><br></font></div><div><font color=3D"#=
+000000" face=3D"verdana, sans-serif" size=3D"2"><i>------------------------=
+</i></font></div><div><font color=3D"#000000" face=3D"verdana, sans-serif" =
+size=3D"2"><i><br></i></font></div><div><font color=3D"#000000" face=3D"ver=
+dana, sans-serif" size=3D"2"><i><b>&quot;</b></i></font><span style=3D"colo=
+r:rgb(29,33,41);font-family:Helvetica,Arial,sans-serif;font-size:14px"><b><=
+i>Ben is an excellent mentor and is always full of positive, yet realistic =
+and honest advice. I like that he doesn&#39;t sugarcoat things and that he =
+sticks to what he knows, so you know the advice you&#39;re getting is legit=
+ and valuable.&quot;</i> </b>-Nick Barnets, client</span></div><div><span s=
+tyle=3D"color:rgb(29,33,41);font-family:Helvetica,Arial,sans-serif;font-siz=
+e:14px"><br></span></div><div><span style=3D"color:rgb(29,33,41);font-famil=
+y:Helvetica,Arial,sans-serif;font-size:14px">------------------------------=
+-</span></div><div><span style=3D"color:rgb(29,33,41);font-family:Helvetica=
+,Arial,sans-serif;font-size:14px"><br></span></div><div dir=3D"ltr"><div st=
+yle=3D"font-size:12.8px"><div style=3D"font-size:small"><font face=3D"verda=
+na, sans-serif" color=3D"#000000" size=3D"2"><i>**This is not legal, tax, o=
+r accounting advice and for informational purposes only. Make sure to do yo=
+ur own due diligence.**</i></font></div><div style=3D"font-size:small"><fon=
+t face=3D"verdana, sans-serif" color=3D"#000000" size=3D"2"><i><br></i></fo=
+nt></div><font face=3D"verdana, sans-serif" color=3D"#000000" size=3D"2" st=
+yle=3D"font-size:small"><i>**The information contained in this e-mail messa=
+ge is privileged,=C2=A0confidential, and protected from=C2=A0disclosure.**<=
+/i></font></div></div></div></div></div></div></div></div></div></div></div=
+></div></div></div></div></div>
+
+--000000000000f5d0d7058b0cc3e4--

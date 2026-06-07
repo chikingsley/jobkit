@@ -1,0 +1,100 @@
+@page {
+  size: Letter;
+  margin: 0.68in 0.82in 0.58in;
+}
+
+html {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+  line-height: 1.18;
+  color: #111;
+}
+
+body {
+  margin: 0;
+}
+
+h1 {
+  margin: 0 0 2pt;
+  font-size: 24pt;
+  line-height: 1;
+  text-align: left;
+  font-weight: 400;
+}
+
+h1 + p {
+  margin: 0 0 12pt;
+  text-align: left;
+  font-size: 10pt;
+  font-weight: 400;
+}
+
+h2 {
+  margin: 9pt 0 5pt;
+  padding-bottom: 2pt;
+  border-bottom: 1px solid #111;
+  font-size: 10pt;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 1.7pt;
+  font-weight: 400;
+}
+
+h3 {
+  margin: 8pt 0 1pt;
+  font-size: 10pt;
+  line-height: 1.1;
+  font-weight: 400;
+}
+
+h3 strong {
+  font-weight: 700;
+}
+
+h3 .location {
+  font-weight: 400;
+}
+
+p .date {
+  float: right;
+  font-weight: 400;
+  font-style: normal;
+}
+
+p {
+  margin: 0 0 4pt;
+}
+
+strong {
+  font-weight: 700;
+}
+
+ul {
+  margin: 1pt 0 6pt 18pt;
+  padding: 0;
+}
+
+li {
+  margin: 0 0 1.9pt;
+  padding-left: 1pt;
+}
+
+.skills ul {
+  column-count: 3;
+  column-gap: 18pt;
+  margin-top: 3pt;
+}
+
+.skills li {
+  break-inside: avoid;
+  margin-bottom: 2.2pt;
+}
+
+a {
+  color: #111;
+  text-decoration: none;
+}
+
+hr {
+  display: none;
+}

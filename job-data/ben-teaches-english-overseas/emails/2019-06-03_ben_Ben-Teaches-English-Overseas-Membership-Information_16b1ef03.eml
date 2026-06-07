@@ -1,0 +1,94 @@
+Delivered-To: chibuzor.ejimofor@gmail.com
+Received: by 2002:a92:ae04:0:0:0:0:0 with SMTP id s4csp5039043ilh;
+        Mon, 3 Jun 2019 13:03:07 -0700 (PDT)
+X-Google-Smtp-Source: APXvYqz+JTEDzPwcd0jqTaqVkvzNp06K6W6XvglxVhu2zEmQriijrJhIrPfD3Y2AE960UsGNpQ+t
+X-Received: by 2002:a05:6830:148d:: with SMTP id s13mr2519762otq.186.1559592187293;
+        Mon, 03 Jun 2019 13:03:07 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1559592187; cv=none;
+        d=google.com; s=arc-20160816;
+        b=jqmeEHw2iHsXPaRpGudftqfBBEszoBzm5vtjiRZVfO8R+5o8FXHgljkmniObiKtgRC
+         MsfzGGiGn8mysT+LfutbvmNzzx70W15P6VKDmWhNnK3elNzdcM07FI+eBKvk3g9wcvM7
+         iOq1hKVZZm2JBSDC6AvJpa++4O5uUqy0o5GX1CWHLmmKXTHYh5upD7IxZeYr1YD4QvjQ
+         Lb+tLjva6QJBZ+I3XbSTDkhdBk7dgrOz5cQr7vtrUBuVvgARmQ/hKbUBWLsGSLpJnlFK
+         1AQ5JOhBxj3ibp6EyT7gdxqyprBkNuITMFfNxJY+EcMEd/kseRv2vFrI/P0+Yp+dXjwx
+         Fqwg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;
+        h=mime-version:content-disposition:content-transfer-encoding:from
+         :date:subject:to:dkim-signature:message-id;
+        bh=tskoF1BncjaYDVwluDFTQ1cm0U7PueuhiZgl3TbPWoM=;
+        b=i70sCjFkaXGWOt15r3Wq8e1xewxJ820sbc0fl4wsdyCeJiW0YWp9Q5Xm5oGpr4mQ4R
+         ED0xTggT0X4YtC/Ljby0C9yaYzmUNKa64G5YHTrCs12Zw4jEhKowLUopBPY/LOB6CYPG
+         IQWNQcMhUSg4Qd/UISWb0CeU3H0gQEqnBthECFA53UeFDyft4As9EQ7dhfltxrk/0XkB
+         Fn9UcEgThVSyoCh15B55QOZbtLSJLBrmX5E0rRbbQ5urF1CDL+gW3ofL1vUsvxFF0R76
+         e6f90NP7opKl96Rt2c59mEYYOrNimfIwrpytd3Qng5qlBccFv0JYcVbv3cyYoNedWZcs
+         8Qew==
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=fail header.i=@benteachesenglishoverseas.com header.s=default header.b=8THJbjUG;
+       spf=softfail (google.com: domain of transitioning ben@benteachesenglishoverseas.com does not designate 192.185.147.85 as permitted sender) smtp.mailfrom=ben@benteachesenglishoverseas.com
+Return-Path: <ben@benteachesenglishoverseas.com>
+Received: from gateway30.websitewelcome.com (gateway30.websitewelcome.com. [192.185.147.85])
+        by mx.google.com with ESMTPS id v17si8682476otj.162.2019.06.03.13.03.07
+        for <chibuzor.ejimofor@gmail.com>
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 03 Jun 2019 13:03:07 -0700 (PDT)
+Received-SPF: softfail (google.com: domain of transitioning ben@benteachesenglishoverseas.com does not designate 192.185.147.85 as permitted sender) client-ip=192.185.147.85;
+Authentication-Results: mx.google.com;
+       dkim=fail header.i=@benteachesenglishoverseas.com header.s=default header.b=8THJbjUG;
+       spf=softfail (google.com: domain of transitioning ben@benteachesenglishoverseas.com does not designate 192.185.147.85 as permitted sender) smtp.mailfrom=ben@benteachesenglishoverseas.com
+Message-Id: <5cf57cfb.1c69fb81.7016e.d8c7SMTPIN_ADDED_MISSING@mx.google.com>
+Received: from cm17.websitewelcome.com (cm17.websitewelcome.com [100.42.49.20])
+	by gateway30.websitewelcome.com (Postfix) with ESMTP id 133FA4B6D
+	for <chibuzor.ejimofor@gmail.com>; Mon,  3 Jun 2019 15:03:07 -0500 (CDT)
+Received: from gator4160.hostgator.com ([108.167.133.16])
+	by cmsmtp with SMTP
+	id XtAhhT4CE90onXtAhhV7Gx; Mon, 03 Jun 2019 15:03:07 -0500
+X-Authority-Reason: ss=1
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=benteachesenglishoverseas.com; s=default; h=MIME-Version:
+	Content-Transfer-Encoding:Content-Type:From:Date:Subject:To:Sender:Reply-To:
+	Message-ID:Cc:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
+	List-Archive; bh=tskoF1BncjaYDVwluDFTQ1cm0U7PueuhiZgl3TbPWoM=; b=8THJbjUGXNXv
+	fan3Qm7ndrX5dOH6LJmUq3C09rMpz9CrwzxBG+RiGn0DgT8LKDCDPlFEUpoQrJCA9LbciEJDBDU6J
+	crgpxbUR56IVP7Gy/gwbL77UHVuRG/l3mjtKyIEze0uDtzJ/gNmZ8diTTlqvkNMizimuUMAWiQIxN
+	euURqcklAjPSv8fzhzq9T94fqphZuPQ2w3k/lFJPrG5gyJZhAAvrWk7bTyBnHvhHsR7jBTPwell0o
+	4ATOuJGdRXiwOZoSKndjBn+wKHGtiV74LNiQNb73kAW6oKwTVXuOO9zXt3h3Jknw0bD9HuLvjxMT+
+	yKTwtoDawkdrkJNy5Gn62w==;
+Received: from [108.167.140.161] (port=38952 helo=localhost)
+	by gator4160.hostgator.com with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
+	(Exim 4.91)
+	(envelope-from <ben@benteachesenglishoverseas.com>)
+	id 1hXtAg-0039KA-UT
+	for chibuzor.ejimofor@gmail.com; Mon, 03 Jun 2019 15:03:06 -0500
+To: Chibuzor Ejimofor <chibuzor.ejimofor@gmail.com>
+Subject: Ben Teaches English Overseas: Membership Information
+Date: Mon, 03 Jun 2019 15:03:06 -0500
+From: Ben Teaches English Overseas <ben@benteachesenglishoverseas.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+MIME-Version: 1.0
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4160.hostgator.com
+X-AntiAbuse: Original Domain - gmail.com
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - benteachesenglishoverseas.com
+X-BWhitelist: no
+X-Source-IP: 108.167.140.161
+X-Source-L: Yes
+X-Exim-ID: 1hXtAg-0039KA-UT
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: (localhost) [108.167.140.161]:38952
+X-Source-Auth: ben@benteachesenglishoverseas.com
+X-Email-Count: 4
+X-Source-Cap: YmVuaG9mZjtiZW5ob2ZmO2dhdG9yNDE2MC5ob3N0Z2F0b3IuY29t
+X-Local-Domain: yes
+
+Dear Chibuzor Ejimofor,=0A=0AThank you for subscribing on Ben Teaches En=
+glish Overseas!=0A=0A   Your User ID: ckejimofor=0A=0ALog-on to your mem=
+ber pages at:=0Ahttp://www.benteachesenglishoverseas.com/amember/member=
+=0A        =0A=0A--=0ABest Regards,=0ABen Teaches English Overseas=0Ahtt=
+p://www.benteachesenglishoverseas.com/amember

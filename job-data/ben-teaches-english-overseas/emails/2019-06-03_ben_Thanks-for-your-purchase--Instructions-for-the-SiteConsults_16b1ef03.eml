@@ -1,0 +1,177 @@
+Delivered-To: chibuzor.ejimofor@gmail.com
+Received: by 2002:a92:ae04:0:0:0:0:0 with SMTP id s4csp5039048ilh;
+        Mon, 3 Jun 2019 13:03:07 -0700 (PDT)
+X-Google-Smtp-Source: APXvYqyRE4mcHXMk2qDtUuoc0a7IaK8JcbvP0bfdSZzFcM699kzJCOpIzKB1Xh8CTi2W+nx6ow1K
+X-Received: by 2002:aca:d6d7:: with SMTP id n206mr2108727oig.179.1559592187424;
+        Mon, 03 Jun 2019 13:03:07 -0700 (PDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1559592187; cv=none;
+        d=google.com; s=arc-20160816;
+        b=l+1xfp2Iux4dz/VKF9UBU9QqXgZLXW95qmHs9OOTZKGqrnQf4HDSsYKqwkHELET9He
+         PGAkQ7h5xhIufe1zUv5bBeU97i5S81lc8KHb85vy3ONg5gabV94KmV5yFCIV+5eQ7ZmZ
+         nZBPD+8gaURHAmpB+dF6wpLjGBrNzaSZjYt6cArWKxXhJ5WGh70ZU8lJn3tE4+ri3nnc
+         bLFtT4ec0ir6W0SMT64mkNlVsheO/PKVhbUvjGUJRYaDkqdNggk6fJ3CJpL2DfB4neMj
+         uJzfx+lwu3PmuE70owzBxeAbPZo9Ht5vDXG6NO7PrJx3IglEeaJmLCsEv2pmbp0X2ITa
+         yFUg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20160816;
+        h=mime-version:from:date:list-unsubscribe:subject:to:dkim-signature
+         :message-id;
+        bh=WaGD/qr2gy6I2FXOPU4MEsKxbJwb2BD2b/oxwg7W4F4=;
+        b=rwnU8/lcICJaBgDvnQpvfKOZraroRNtqi6jzVeZR3WZu64ScyEYsEJ54Gxsr0KmW4g
+         wTP+MW/H9fnVQQyy/4/aIgLw6xRu748qyYISz6Vro5wouNg82t+pLpdoKXh4gxpiL3Ib
+         3g/YkDPVzCS87C/uJS3DZQwYZ6ne04BHs9MxAl1no5z1GWcEU59V/NuDruAV0zcUzsx2
+         QI08cR+zyKWGqXO3YaN291Rwn0FFFoLMgc90ifjjZaD0VtDy4kMs0kst2fNc3IFIVDp0
+         sMR6UsZWkWgfpR4QfLX4hktrXKOX19gmUUSKOQsk+kB/VmNQ8sVqzAdMWneuz/x0UOhd
+         1xvw==
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=fail header.i=@benteachesenglishoverseas.com header.s=default header.b=4GT6zfNa;
+       spf=softfail (google.com: domain of transitioning ben@benteachesenglishoverseas.com does not designate 192.185.51.36 as permitted sender) smtp.mailfrom=ben@benteachesenglishoverseas.com
+Return-Path: <ben@benteachesenglishoverseas.com>
+Received: from gateway24.websitewelcome.com (gateway24.websitewelcome.com. [192.185.51.36])
+        by mx.google.com with ESMTPS id j22si661378oib.149.2019.06.03.13.03.07
+        for <chibuzor.ejimofor@gmail.com>
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 03 Jun 2019 13:03:07 -0700 (PDT)
+Received-SPF: softfail (google.com: domain of transitioning ben@benteachesenglishoverseas.com does not designate 192.185.51.36 as permitted sender) client-ip=192.185.51.36;
+Authentication-Results: mx.google.com;
+       dkim=fail header.i=@benteachesenglishoverseas.com header.s=default header.b=4GT6zfNa;
+       spf=softfail (google.com: domain of transitioning ben@benteachesenglishoverseas.com does not designate 192.185.51.36 as permitted sender) smtp.mailfrom=ben@benteachesenglishoverseas.com
+Message-Id: <5cf57cfb.1c69fb81.8badf.ac8dSMTPIN_ADDED_MISSING@mx.google.com>
+Received: from cm16.websitewelcome.com (cm16.websitewelcome.com [100.42.49.19])
+	by gateway24.websitewelcome.com (Postfix) with ESMTP id 2F917BA3A5F
+	for <chibuzor.ejimofor@gmail.com>; Mon,  3 Jun 2019 15:03:07 -0500 (CDT)
+Received: from gator4160.hostgator.com ([108.167.133.16])
+	by cmsmtp with SMTP
+	id XtAhhBJiE4FKpXtAhhVZQG; Mon, 03 Jun 2019 15:03:07 -0500
+X-Authority-Reason: ss=1
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=benteachesenglishoverseas.com; s=default; h=MIME-Version:Content-Type:From:
+	Date:List-Unsubscribe:Subject:To:Sender:Reply-To:Message-ID:Cc:
+	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:
+	References:List-Id:List-Help:List-Subscribe:List-Post:List-Owner:List-Archive
+	; bh=WaGD/qr2gy6I2FXOPU4MEsKxbJwb2BD2b/oxwg7W4F4=; b=4GT6zfNagcd8RCAIyqmaKB9n
+	qhoBJqsgjLhw4O4DqVOk6UCUKRZ2LTWYlgQxTc2r41FxdHXCgbEXC9YOSHOoQv4IfPckMWKlZODJM
+	YqrIeEtLcuy/5fIQYHeAzQM1dAfJ205VgmC/Sf9kaWe46bGQcUyhViW50NqmHYEUYEg1vATWoPUpy
+	yDNclg7alDl5sUWJRjbJlirH6KYAFJpaCnI/hN93spr57gsG483XxgbeQxGhBONTfubclrC+9Sofi
+	Tr0Jl0GjkttFPOE5516Wtm522jvE7iaJkSu0ylxw44V86FomGdGmeJ+svwMKomwC+n7EPx9lDveqN
+	wNWzxJQuVw==;
+Received: from [108.167.140.161] (port=38952 helo=localhost)
+	by gator4160.hostgator.com with esmtpsa (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128)
+	(Exim 4.91)
+	(envelope-from <ben@benteachesenglishoverseas.com>)
+	id 1hXtAg-0039KA-Un
+	for chibuzor.ejimofor@gmail.com; Mon, 03 Jun 2019 15:03:06 -0500
+To: Chibuzor Ejimofor <chibuzor.ejimofor@gmail.com>
+Subject: Thanks for your purchase + Instructions for the Site/Consults
+List-Unsubscribe: <http://www.benteachesenglishoverseas.com/amember/unsubscribe?e=chibuzor.ejimofor%40gmail.com&s=goEAiE6GDR>
+Date: Mon, 03 Jun 2019 15:03:06 -0500
+From: Ben Teaches English Overseas <ben@benteachesenglishoverseas.com>
+Content-Type: multipart/alternative;
+ boundary="=_6c4c89a37dbb698386134f1c41b11df6"
+MIME-Version: 1.0
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4160.hostgator.com
+X-AntiAbuse: Original Domain - gmail.com
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - benteachesenglishoverseas.com
+X-BWhitelist: no
+X-Source-IP: 108.167.140.161
+X-Source-L: Yes
+X-Exim-ID: 1hXtAg-0039KA-Un
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: (localhost) [108.167.140.161]:38952
+X-Source-Auth: ben@benteachesenglishoverseas.com
+X-Email-Count: 4
+X-Source-Cap: YmVuaG9mZjtiZW5ob2ZmO2dhdG9yNDE2MC5ob3N0Z2F0b3IuY29t
+X-Local-Domain: yes
+
+--=_6c4c89a37dbb698386134f1c41b11df6
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Dear Chibuzor ,=0D=0A=0D=0A=0D=0A=0D=0AWelcome aboard!=0D=0A=0D=0A=0D=0A=
+=0D=0AThanks for your purchase. I look forward to working with you!&nbsp=
+;=0D=0A=0D=0A1.) COACHING=0D=0A=0D=0Aa.) For your unlimited coaching, pl=
+ease email ben@benteachesenglishoverseas.com&nbsp;=0D=0A=0D=0Ab.) Please=
+ understand that if your emails are excessively long, it will significan=
+tly delay my response time. I deal with a large volume of email and my g=
+oal is always to get back to you as quickly as possible.&nbsp;=0D=0A=0D=
+=0A2.) RESUME=0D=0A=0D=0Aa.) Please download and read the manual prior t=
+o sending your resume unless it&#39;s an absolute emergency. There is a=
+ lot to absorb. I know it&#39;s easy to get excited and want to start ap=
+plying right away, but if you are able to implement what you learn, I pr=
+omise you will ultimately have much better results.&nbsp;=0D=0A=0D=0Ab.)=
+ Please read the READ ME file in your folder related to resumes before s=
+ubmitting your documents.=0D=0A=0D=0A3.) EMERGENCIES/TIGHT DEADLINES=0D=
+=0A=0D=0AIf you have a legitimate emergency, like a contract period is a=
+bout to expire or they&#39;re going to choose another candidate if you d=
+on&#39;t act and you&#39;re on the fence, put *Emergency* in the title l=
+ine of your email. I will respond to it as quickly as humanly possible d=
+uring normal working hours. My current local time is Pacific Daylight Ti=
+me (UTC-7).=0D=0A=0D=0A4.) STEP 1 --QUESTIONNAIRE=0D=0A=0D=0APlease find=
+ the client questionnaire in your member account. This will help us get=
+ started.=0D=0A=0D=0A5.) CONTRACT REVIEW=0D=0A=0D=0Aa.) I&#39;m happy to=
+ review contracts with you. Prior to submitting them, please complete th=
+e Contract Review Request Form and attach it along with the contract its=
+elf.&nbsp;=0D=0A=0D=0Ab.) Please do not forward me a contract with nothi=
+ng written. No two people are the same and I need the data requested in=
+ order to help you.=0D=0A=0D=0A6.) UPGRADES&nbsp;=0D=0A=0D=0Aa.) You can=
+ upgrade your package at any time during the first 30 days for the diffe=
+rence in package prices. Please email ben@benteachesenglishoverseas.com=
+ for a link.=0D=0A=0D=0A=0D=0A=0D=0AI&#39;m excited to work with you!=0D=
+=0ABen&nbsp;=0D=0A&nbsp;=0D=0A=0D=0A------------------------------------=
+-------------------------------=0D=0ATo unsubscribe from our periodic e-=
+mail messages, please click the=0D=0Afollowing link:=0D=0A  http://www.b=
+enteachesenglishoverseas.com/amember/unsubscribe?e=3Dchibuzor.ejimofor%4=
+0gmail.com&s=3DgoEAiE6GDR=0D=0A-----------------------------------------=
+--------------------------
+
+--=_6c4c89a37dbb698386134f1c41b11df6
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><head><title>Thanks for your purchase + Instructions for the Site/=
+Consults</title></head><body><p><em><strong>Dear Chibuzor ,</strong></em=
+></p>=0D=0A=0D=0A<p></p>=0D=0A=0D=0A<p><em><strong>Welcome aboard!</stro=
+ng></em></p>=0D=0A=0D=0A<p></p>=0D=0A=0D=0A<p>Thanks for your purchase.=
+ I look forward to working with you!&nbsp;</p>=0D=0A=0D=0A<p>1.) <strong=
+>COACHING</strong><br />=0D=0A<br />=0D=0Aa.) For your unlimited coachin=
+g, please email <strong>ben@benteachesenglishoverseas.com</strong>&nbsp;=
+</p>=0D=0A=0D=0A<p>b.) Please understand that if your emails are excessi=
+vely long, it will significantly delay my response time. I deal with a l=
+arge volume of email and my goal is always to get back to you as quickly=
+ as possible.&nbsp;</p>=0D=0A=0D=0A<p>2.) <strong>RESUME</strong></p>=0D=
+=0A=0D=0A<p>a.) Please download and read the manual prior to sending you=
+r resume unless it&#39;s an absolute emergency. There is a lot to absorb=
+. I know it&#39;s easy to get excited and want to start applying right a=
+way, but if you are able to implement what you learn, I promise you will=
+ ultimately have much better results.&nbsp;</p>=0D=0A=0D=0A<p>b.) Please=
+ read the READ ME file in your folder related to resumes before submitti=
+ng your documents.</p>=0D=0A=0D=0A<p>3.) <strong>EMERGENCIES/TIGHT DEADL=
+INES</strong></p>=0D=0A=0D=0A<p>If you have a legitimate emergency, like=
+ a contract period is about to expire or they&#39;re going to choose ano=
+ther candidate if you don&#39;t act and you&#39;re on the fence, put <st=
+rong>*Emergency* </strong>in the title line of your email. I will respon=
+d to it as quickly as humanly possible <em>during normal working hours</=
+em>. My current local time is Pacific Daylight Time (UTC-7).</p>=0D=0A=
+=0D=0A<p>4.) <strong>STEP 1 --QUESTIONNAIRE</strong></p>=0D=0A=0D=0A<p>P=
+lease find the client questionnaire in your member account. This will he=
+lp us get started.</p>=0D=0A=0D=0A<p>5.) <strong>CONTRACT REVIEW</strong=
+></p>=0D=0A=0D=0A<p>a.) I&#39;m happy to review contracts with you. Prio=
+r to submitting them, please complete the Contract Review Request Form a=
+nd attach it along with the contract itself.&nbsp;</p>=0D=0A=0D=0A<p>b.)=
+ Please do not forward me a contract with nothing written. No two people=
+ are the same and I need the data requested in order to help you.</p>=0D=
+=0A=0D=0A<p>6.) <strong>UPGRADES&nbsp;</strong></p>=0D=0A=0D=0A<p>a.) Yo=
+u can upgrade your package at any time during the first 30 days for the=
+ difference in package prices. Please email <strong>ben@benteachesenglis=
+hoverseas.com</strong> for a link.</p>=0D=0A=0D=0A<p></p>=0D=0A=0D=0A<p>=
+I&#39;m excited to work with you!<br />=0D=0ABen&nbsp;<br />=0D=0A&nbsp;=
+</p>=0D=0A<br />=0D=0A<font color=3D"gray">To unsubscribe from our perio=
+dic e-mail messages, please click the following <a href=3D"http://www.be=
+nteachesenglishoverseas.com/amember/unsubscribe?e=3Dchibuzor.ejimofor%40=
+gmail.com&s=3DgoEAiE6GDR">link</a></font>=0D=0A<br /></body></html>
+
+--=_6c4c89a37dbb698386134f1c41b11df6--
