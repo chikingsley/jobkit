@@ -9,3 +9,6 @@ __pycache__/
 .ruff_cache/
 .ty_cache/
 .cache/
+
+# Copyrighted third-party course content — local reference only, never commit
+job-data/reference-archive/
