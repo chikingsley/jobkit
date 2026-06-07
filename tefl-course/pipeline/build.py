@@ -54,6 +54,18 @@ _QUIZ_BRIEF = (
 )
 
 
+def _json_call(client: SuperwhisperClient, prompt: str, *, max_tokens: int) -> object | None:
+    """Run generate_json with retries — models occasionally emit malformed JSON."""
+    for attempt in range(3):
+        try:
+            return client.generate_json(
+                [{"role": "user", "content": prompt}], max_tokens=max_tokens
+            )
+        except json.JSONDecodeError:
+            _log(f"  malformed JSON from model (attempt {attempt + 1}/3); retrying")
+    return None
+
+
 def _load_sources(unit: Unit) -> str:
     """Concatenate the unit's extracted source text files."""
     parts = [(ROOT / TEXT_DIR / name).read_text(encoding="utf-8") for name in unit.sources]
@@ -93,7 +105,7 @@ def outline(client: SuperwhisperClient, unit: Unit) -> list[dict[str, object]]:
             _load_sources(unit),
         ]
     )
-    parsed = client.generate_json([{"role": "user", "content": prompt}], max_tokens=1400)
+    parsed = _json_call(client, prompt, max_tokens=1400)
     fields = cast("dict[str, object]", parsed) if isinstance(parsed, dict) else {}
     raw = fields.get("sections")
     sections = [s for s in (raw if isinstance(raw, list) else []) if isinstance(s, dict)]
@@ -110,8 +122,8 @@ def _section_prompt(unit: Unit, source: str, sec: dict[str, object], previous_ta
     parts = [
         "You are writing one section of a unit in a self-study TEFL certificate course. The "
         f'unit is called "{unit.title}". Write ONLY the section named below, about {words} '
-        "words, in the register required by the style rules. Return ONLY a JSON object "
-        '{"text": "..."} with the section prose (no heading).',
+        "words, in the register required by the style rules. Return ONLY the section prose — "
+        "no heading, no preamble, no commentary.",
         "",
         "== STYLE RULES (violations are rejected by an automated gate) ==",
         STYLE_RULES,
@@ -142,24 +154,37 @@ def draft(client: SuperwhisperClient, unit: Unit) -> Path:
     for sec in sections:
         prompt = _section_prompt(unit, source, sec, previous_tail)
         words = int(cast("int", sec.get("words", 450)))
-        parsed = client.generate_json(
+        text = client.generate(
             [{"role": "user", "content": prompt}], max_tokens=int(words * 2.2)
-        )
-        fields = cast("dict[str, object]", parsed) if isinstance(parsed, dict) else {}
-        text = str(fields.get("text", "")).strip()
+        ).strip()
         if not text:
             sys.exit(f"unit {unit.uid}: empty draft for section {sec.get('title')!r}")
         chunks.append(f"\n## {sec.get('title', '')}\n\n{text}\n")
         previous_tail = text[-600:]
         _log(f"[{unit.uid}] drafted: {sec.get('title')} ({len(text.split())} words)")
 
+    unit_text = "\n".join(chunks)
     quiz_prompt = (
-        f"{_QUIZ_BRIEF}\n\n== STYLE RULES ==\n{STYLE_RULES}\n\n== THE UNIT ==\n" + "\n".join(chunks)
+        f"{_QUIZ_BRIEF}\n\n== STYLE RULES ==\n{STYLE_RULES}\n\n== THE UNIT ==\n{unit_text}"
     )
-    parsed = client.generate_json([{"role": "user", "content": quiz_prompt}], max_tokens=1600)
-    fields = cast("dict[str, object]", parsed) if isinstance(parsed, dict) else {}
-    raw_questions = fields.get("questions", [])
-    items = cast("list[object]", raw_questions) if isinstance(raw_questions, list) else []
+    items: list[object] = []
+    problems: list[str] = ["quiz never generated"]
+    for _attempt in range(2):
+        parsed = _json_call(client, quiz_prompt, max_tokens=1600)
+        fields = cast("dict[str, object]", parsed) if isinstance(parsed, dict) else {}
+        raw_questions = fields.get("questions", [])
+        items = cast("list[object]", raw_questions) if isinstance(raw_questions, list) else []
+        problems = _quiz_problems(items, unit_text)
+        if not problems:
+            break
+        _log(f"[{unit.uid}] quiz failed validation ({len(problems)}); retrying")
+    warning = UNITS_DIR / unit.uid / "quiz-warnings.txt"
+    if problems:
+        warning.parent.mkdir(parents=True, exist_ok=True)
+        warning.write_text("\n".join(problems) + "\n", encoding="utf-8")
+        _log(f"[{unit.uid}] QUIZ WARNINGS kept for owner review: {len(problems)}")
+    elif warning.exists():
+        warning.unlink()
     chunks.append(_render_quiz(items))
     chunks.append("\n## References\n\n" + "\n".join(f"- {r}" for r in unit.references) + "\n")
 
@@ -168,6 +193,33 @@ def draft(client: SuperwhisperClient, unit: Unit) -> Path:
     out.write_text("\n".join(chunks), encoding="utf-8")
     _log(f"[{unit.uid}] wrote {out}")
     return out
+
+
+def _quiz_problems(items: list[object], unit_text: str) -> list[str]:
+    """Validate the generated quiz: count, MC shape, answers, and anchors that really occur."""
+    problems: list[str] = []
+    expected = 6
+    if len(items) != expected:
+        problems.append(f"expected {expected} questions, got {len(items)}")
+    lowered = unit_text.lower()
+    for i, raw in enumerate(items, 1):
+        if not isinstance(raw, dict):
+            problems.append(f"q{i}: not an object")
+            continue
+        q = cast("dict[str, object]", raw)
+        if not str(q.get("question", "")).strip():
+            problems.append(f"q{i}: empty question")
+        options = q.get("options")
+        if isinstance(options, list) and len(options) != 4:  # noqa: PLR2004 - MC convention.
+            problems.append(f"q{i}: multiple-choice needs 4 options, got {len(options)}")
+        if not str(q.get("answer", "")).strip():
+            problems.append(f"q{i}: empty answer")
+        anchor = str(q.get("anchor", "")).strip()
+        if not anchor:
+            problems.append(f"q{i}: missing anchor")
+        elif anchor.lower() not in lowered:
+            problems.append(f"q{i}: anchor not found verbatim in unit text: {anchor!r}")
+    return problems
 
 
 def _render_quiz(questions: list[object]) -> str:
@@ -203,7 +255,12 @@ def gate(unit: Unit) -> bool:
     # The sentence-length-kurtosis metric is an OPEN OWNER DECISION (see the pilot): dialogue-
     # heavy teaching prose legitimately depresses it. A unit whose only dslop finding is that
     # file-level metric passes the gate with a rhythm flag rather than failing outright.
-    rhythm_only = dslop.returncode != 0 and not _DSLOP_HIT_RE.search(dslop.stdout)
+    dslop_report = dslop.stdout + dslop.stderr  # dslop writes its report to stderr.
+    rhythm_only = (
+        dslop.returncode != 0
+        and not _DSLOP_HIT_RE.search(dslop_report)
+        and "sentence-length-kurtosis" in dslop_report
+    )
     patterns_ok = score is not None and score < PATTERNS_MAX_SCORE
     passed = (dslop.returncode == 0 or rhythm_only) and patterns_ok
     status = "PASS"
@@ -238,14 +295,25 @@ _REVISE_BRIEF = (
     "A section of a TEFL course unit failed an automated prose gate. Rewrite it so the listed "
     "violations are gone while preserving every factual claim, example, citation, and roughly "
     "the same length. Also vary sentence length deliberately (mix a few very short sentences "
-    "with longer, layered ones — uniform rhythm is itself a violation). Return ONLY a JSON "
-    'object {"text": "..."} with the corrected section prose (no heading).'
+    "with longer, layered ones — uniform rhythm is itself a violation). Return ONLY the "
+    "corrected section prose — no heading, no preamble, no commentary."
 )
 
 
+_DIALOGUE_LINE_RE = re.compile(r"^\s*[TS]\d*:\s")
+
+
 def _dslop_prose(text: str) -> str:
-    """Return the prose body the dslop gate evaluates (everything before the quiz)."""
-    return re.split(r"^## Check your understanding$", text, flags=re.MULTILINE)[0]
+    """Return the prose body the dslop gate evaluates.
+
+    Strips the quiz/references (citation formats false-positive) and BLANKS classroom-dialogue
+    lines (`T: ...` / `S: ...`) in place — verbatim speech legitimately contains three short
+    sentences in a row and must not be linted as authored prose. Blanking (not deleting)
+    preserves line numbers so violation mapping stays aligned with the real file.
+    """
+    body = re.split(r"^## Check your understanding$", text, flags=re.MULTILINE)[0]
+    lines = [("" if _DIALOGUE_LINE_RE.match(line) else line) for line in body.splitlines()]
+    return "\n".join(lines)
 
 
 def _run_dslop(prose: str) -> subprocess.CompletedProcess[str]:
@@ -260,55 +328,64 @@ def _run_dslop(prose: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def _violations_by_section(text: str, dslop_out: str) -> dict[str, list[str]]:
-    """Map dslop violations onto `## ` sections as "rule: ...flagged snippet..." strings."""
-    lines = text.splitlines()
-    section_for_line: list[str] = []
-    current = "(preamble)"
-    for line in lines:
-        if line.startswith("## "):
-            current = line[3:].strip()
-        section_for_line.append(current)
-    hits: dict[str, list[str]] = {}
+def _section_spans(lines: list[str]) -> list[tuple[str, int, int]]:
+    """Return (title, header_index, end_index_exclusive) for each `## ` section, in order."""
+    headers = [i for i, line in enumerate(lines) if line.startswith("## ")]
+    spans = []
+    for pos, header_idx in enumerate(headers):
+        end = headers[pos + 1] if pos + 1 < len(headers) else len(lines)
+        spans.append((lines[header_idx][3:].strip(), header_idx, end))
+    return spans
+
+
+def _violations_by_span(
+    lines: list[str], spans: list[tuple[str, int, int]], dslop_out: str
+) -> dict[int, list[str]]:
+    """Map dslop line hits to section-span indices as "rule: ...flagged snippet..." strings."""
+    hits: dict[int, list[str]] = {}
     for match in _DSLOP_HIT_RE.finditer(dslop_out):
         line_no, col, rule = int(match.group(1)), int(match.group(2)), match.group(3)
-        if not 1 <= line_no <= len(section_for_line):
+        line_idx = line_no - 1
+        if not 0 <= line_idx < len(lines):
             continue
-        line_text = lines[line_no - 1]
-        snippet = line_text[max(0, col - 45) : col + 65].strip()
-        hits.setdefault(section_for_line[line_no - 1], []).append(f"{rule}: ...{snippet}...")
+        snippet = lines[line_idx][max(0, col - 45) : col + 65].strip()
+        for span_idx, (_title, header_idx, end) in enumerate(spans):
+            if header_idx < line_idx < end:
+                hits.setdefault(span_idx, []).append(f"{rule}: ...{snippet}...")
+                break
     return hits
 
 
 def revise(client: SuperwhisperClient, unit: Unit) -> None:
-    """Auto-repair gate violations section by section (up to _MAX_REVISE_ROUNDS passes)."""
+    """Auto-repair gate violations section by section (up to _MAX_REVISE_ROUNDS passes).
+
+    Sections are addressed by line span, not by heading text, so duplicate or edited headings
+    cannot mis-target a rewrite; flagged spans are spliced in reverse order so earlier line
+    numbers stay valid while later sections are replaced.
+    """
     path = UNITS_DIR / unit.uid / "unit.md"
     for round_no in range(1, _MAX_REVISE_ROUNDS + 1):
         text = path.read_text(encoding="utf-8")
         result = _run_dslop(_dslop_prose(text))
         if result.returncode == 0:
             return
-        by_section = _violations_by_section(text, result.stdout)
-        flagged = {k: v for k, v in by_section.items() if k != "(preamble)"}
+        lines = text.splitlines()
+        spans = _section_spans(lines)
+        flagged = _violations_by_span(lines, spans, result.stdout + result.stderr)
         if not flagged:
             return  # file-level metrics only (e.g. kurtosis); leave for owner review.
         _log(f"[{unit.uid}] revise round {round_no}: {sum(map(len, flagged.values()))} hits")
-        for section_title, rules in flagged.items():
-            text = _revise_section(client, unit, text, section_title, rules)
-        path.write_text(text, encoding="utf-8")
+        for span_idx in sorted(flagged, reverse=True):
+            _title, header_idx, end = spans[span_idx]
+            body = "\n".join(lines[header_idx + 1 : end]).strip()
+            fixed = _revise_body(client, unit, body, flagged[span_idx])
+            if fixed:
+                lines[header_idx + 1 : end] = ["", *fixed.splitlines(), ""]
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def _revise_section(
-    client: SuperwhisperClient, unit: Unit, text: str, section_title: str, rules: list[str]
-) -> str:
-    """Rewrite one flagged section in `text` and return the updated unit text."""
-    pattern = re.compile(
-        rf"(^## {re.escape(section_title)}$\n)(.*?)(?=^## |\Z)", re.MULTILINE | re.DOTALL
-    )
-    match = pattern.search(text)
-    if match is None:
-        return text
-    body = match.group(2).strip()
+def _revise_body(client: SuperwhisperClient, unit: Unit, body: str, rules: list[str]) -> str:
+    """Ask the model to rewrite one flagged section body; returns "" on failure."""
     prompt = "\n".join(
         [
             _REVISE_BRIEF,
@@ -331,12 +408,7 @@ def _revise_section(
             body,
         ]
     )
-    parsed = client.generate_json([{"role": "user", "content": prompt}], max_tokens=2200)
-    fields = cast("dict[str, object]", parsed) if isinstance(parsed, dict) else {}
-    fixed = str(fields.get("text", "")).strip()
-    if not fixed:
-        return text
-    return text[: match.start(2)] + fixed + "\n\n" + text[match.end(2) :]
+    return client.generate([{"role": "user", "content": prompt}], max_tokens=2200).strip()
 
 
 def _detector_score(stdout: str) -> int | None:

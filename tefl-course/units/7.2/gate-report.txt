@@ -1,13 +1,13 @@
-unit 9.3 — Mistakes, Errors, and What They Tell You
+unit 7.2 — Teaching Reading
 GATE PASS (rhythm metric flagged — owner review)
 
 == dslop (prose body, exit 1) ==
 [0m[1m[31mdslop: 1 violation in 1 file
-[0m  <stdin> sentence-length-kurtosis=-0.42 (threshold 1.50)
+[0m  <stdin> sentence-length-kurtosis=0.29 (threshold 1.50)
 
 [0m[1mfix:
 [0m  sentence-length-kurtosis: your sentences are all similar length. rewrite whole paragraphs: merge related short sentences into longer, layered ones; also insert a few very short or very long sentences for contrast
 
 == patterns.js (full file) ==
-{"score":1,"label":"Minimal AI signals","issues":3}
+{"score":2,"label":"Minimal AI signals","issues":4}
 

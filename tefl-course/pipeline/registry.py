@@ -195,7 +195,7 @@ UNITS: dict[str, Unit] = {
                 "encouraging. Do NOT re-teach the meta-analysis; reference it in passing at most."
             ),
             citation_facts=CF_FACTS,
-            references=(_REF_LS, _SD.format(m="Module 5: Learner Feedback")),
+            references=(_REF_LI, _REF_LS, _SD.format(m="Module 5: Learner Feedback")),
         ),
         Unit(
             uid="9.3",
@@ -209,7 +209,7 @@ UNITS: dict[str, Unit] = {
                 "touch on correction technique (that is 9.1's job)."
             ),
             citation_facts=CF_FACTS,
-            references=(_REF_LI, _SD.format(m="Module 5: Learner Feedback")),
+            references=(_REF_LI, _REF_LS, _SD.format(m="Module 5: Learner Feedback")),
         ),
         Unit(
             uid="11.1",

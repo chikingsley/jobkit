@@ -8,3 +8,8 @@
 
 [patterns]
 banned-negation = false
+# weasel-connectives flags the purpose clause "so that" ("...so that every student receives
+# direct contact"), which instructional prose needs constantly. The genuine tells on that list
+# ("which means", "in turn", "the reality is") stay banned via the style rules prompt and the
+# avoid-ai-writing detector.
+weasel-connectives = false
