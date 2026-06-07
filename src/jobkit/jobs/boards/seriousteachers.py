@@ -32,6 +32,8 @@ from __future__ import annotations
 
 import os
 import re
+import sys
+from http import HTTPStatus
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -57,21 +59,50 @@ DESCRIPTION_MAX = 1200
 MAX_FIELD_LABEL_LEN = 40
 
 LOGIN_URL = f"{BASE}/te2/login"
-TOKEN_RE = re.compile(r'name="__RequestVerificationToken"[^>]*value="([^"]+)"')
 ENV_EMAIL = "SERIOUSTEACHERS_EMAIL"
 ENV_PASSWORD = "SERIOUSTEACHERS_PASSWORD"  # noqa: S105
+
+# Repo root (this file sits at src/jobkit/jobs/boards/) — keeps the .env lookup
+# independent of the directory fetch-jobs is launched from.
+_ENV_FILE = Path(__file__).resolve().parents[4] / ".env"
 
 
 def _credentials() -> tuple[str, str] | None:
     """Teacher-account credentials from the environment, falling back to the repo ``.env``."""
     env = dict(os.environ)
-    if ENV_EMAIL not in env or ENV_PASSWORD not in env:
-        for line in Path(".env").read_text().splitlines() if Path(".env").exists() else []:
+    if (ENV_EMAIL not in env or ENV_PASSWORD not in env) and _ENV_FILE.exists():
+        for line in _ENV_FILE.read_text().splitlines():
             key, sep, value = line.partition("=")
             if sep:
                 env.setdefault(key.strip(), value.strip())
     email, password = env.get(ENV_EMAIL), env.get(ENV_PASSWORD)
     return (email, password) if email and password else None
+
+
+def _post_login(client: httpx.Client, email: str, password: str) -> None:
+    """POST the login form on ``client``; raise ``RuntimeError`` when it is rejected."""
+    soup = BeautifulSoup(client.get(LOGIN_URL).text, "html.parser")
+    token = soup.find("input", attrs={"name": "__RequestVerificationToken"})
+    token_value = _attr(token, "value") if isinstance(token, Tag) else ""
+    if not token_value:
+        msg = "seriousteachers login page had no __RequestVerificationToken"
+        raise RuntimeError(msg)
+    response = client.post(
+        LOGIN_URL,
+        data={
+            "email": email,
+            "password": password,
+            "idjob": "0",
+            "idemployer": "0",
+            "__RequestVerificationToken": token_value,
+        },
+    )
+    if response.status_code != HTTPStatus.FOUND:
+        msg = (
+            f"seriousteachers login failed (HTTP {response.status_code}) — "
+            f"check {ENV_EMAIL}/{ENV_PASSWORD}"
+        )
+        raise RuntimeError(msg)
 
 
 def login() -> httpx.Client | None:
@@ -84,32 +115,28 @@ def login() -> httpx.Client | None:
     if creds is None:
         return None
     client = httpx.Client(headers={"User-Agent": USER_AGENT}, timeout=30)
-    token = TOKEN_RE.search(client.get(LOGIN_URL).text)
-    if token is None:
-        msg = "seriousteachers login page had no __RequestVerificationToken"
-        raise RuntimeError(msg)
-    response = client.post(
-        LOGIN_URL,
-        data={
-            "email": creds[0],
-            "password": creds[1],
-            "idjob": "0",
-            "idemployer": "0",
-            "__RequestVerificationToken": token.group(1),
-        },
-    )
-    if response.status_code != 302:  # noqa: PLR2004
-        msg = (
-            f"seriousteachers login failed (HTTP {response.status_code}) — "
-            f"check {ENV_EMAIL}/{ENV_PASSWORD}"
-        )
-        raise RuntimeError(msg)
+    try:
+        _post_login(client, *creds)
+    except BaseException:
+        client.close()
+        raise
     return client
 
 
 def resolve_apply(client: httpx.Client, apply_url: str) -> str:
     """Follow a gated apply link with a logged-in session to its real destination."""
-    return str(client.get(apply_url, follow_redirects=True).url)
+    response = client.get(apply_url, follow_redirects=True)
+    response.raise_for_status()
+    final = str(response.url)
+    if "/te2/login" in final.lower():
+        msg = f"apply link bounced back to login (session not accepted): {apply_url}"
+        raise RuntimeError(msg)
+    return final
+
+
+def _warn(message: str) -> None:
+    """Non-fatal adapter diagnostics to stderr (stdout is reserved for CLI output)."""
+    sys.stderr.write(f"seriousteachers: {message}\n")
 
 
 def _attr(tag: Tag, name: str) -> str:
@@ -232,15 +259,25 @@ def _collect(job_ids: list[str], limit: int) -> list[JobPosting]:
         _parse_detail(job_id, fetch(f"{BASE}/job_details/{job_id}/0/"))
         for job_id in job_ids[:limit]
     ]
-    client = login()
-    if client is not None:
-        try:
-            for posting in postings:
-                gated = posting.fields.get("apply_url", "")
-                if APPLY_RE.search(gated):
-                    posting.fields["apply_url"] = resolve_apply(client, gated)
-        finally:
-            client.close()
+    try:
+        client = login()
+    except (RuntimeError, httpx.HTTPError) as exc:
+        # Apply-link resolution is optional enrichment — never break the public fetch.
+        _warn(f"skipping apply-link resolution ({exc})")
+        return postings
+    if client is None:
+        return postings
+    try:
+        for posting in postings:
+            gated = posting.fields.get("apply_url", "")
+            if not APPLY_RE.search(gated):
+                continue
+            try:
+                posting.fields["apply_url"] = resolve_apply(client, gated)
+            except (RuntimeError, httpx.HTTPError) as exc:
+                _warn(f"could not resolve {gated} ({exc})")
+    finally:
+        client.close()
     return postings
 
 
