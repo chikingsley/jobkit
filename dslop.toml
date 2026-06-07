@@ -1,0 +1,10 @@
+# dslop config — the deterministic prose gate for tefl-course content
+# (see tefl-course/course-generation-pipeline.md, Layer 3).
+#
+# banned-negation is OFF: it bans every "not"/"n't", which instructional prose
+# legitimately needs ("do not interrupt during fluency work"). The actual AI
+# negation tells stay ON (contrastive "it's not X, it's Y", negation pairs,
+# symmetric negation).
+
+[patterns]
+banned-negation = false
