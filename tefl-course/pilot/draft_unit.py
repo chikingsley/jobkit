@@ -170,7 +170,8 @@ def main() -> None:
         parsed = client.generate_json([{"role": "user", "content": quiz_prompt}], max_tokens=1600)
         quiz = cast("dict[str, object]", parsed) if isinstance(parsed, dict) else {}
         questions = quiz.get("questions", [])
-        chunks.append(_render_quiz(questions if isinstance(questions, list) else []))
+        items = cast("list[object]", questions) if isinstance(questions, list) else []
+        chunks.append(_render_quiz(items))
         chunks.append(
             "\n## References\n\n"
             "- Li, S. (2010). The effectiveness of corrective feedback in SLA: A meta-analysis. "
