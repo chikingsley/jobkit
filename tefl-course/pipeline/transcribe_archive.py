@@ -122,7 +122,13 @@ def _frontmatter(fields: dict[str, object]) -> str:
 def _label_speakers(
     client: SuperwhisperClient, turns: list[Turn], context: str
 ) -> tuple[str, dict[str, str]]:
-    """Ask Sonnet for a recording description + speaker display names; safe fallbacks."""
+    """Ask Sonnet for a recording description + speaker display names; safe fallbacks.
+
+    NOTE: the preview sent here is from the owner's OWN copyrighted textbook audio, transcribed
+    for his personal lesson prep. This is a deliberate personal-use exception — it is NOT part of
+    the course-generation pipeline (which never feeds copyrighted text to the model), and nothing
+    produced here is published in the course.
+    """
     preview = "\n".join(f"{t.speaker}: {t.text}" for t in turns)[:6000]
     try:
         parsed = client.generate_json(

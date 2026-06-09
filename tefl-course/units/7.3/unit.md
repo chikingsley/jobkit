@@ -14,7 +14,7 @@ The research record on whether extensive reading improves language proficiency d
 
 A meta-analysis is a study that pools the results of many individual experiments and calculates a single summary statistic, allowing researchers to draw conclusions that no single classroom study could support alone. Nakanishi (2015) gathered 34 studies on extensive reading in foreign language contexts and subjected them to this procedure, publishing the results in TESOL Quarterly. The combined sample gave the field its first large-scale quantitative picture of what extensive reading does to reading proficiency.
 
-To read the findings, you need to understand Cohen's d, the unit of measurement Nakanishi (2015) used. Cohen's d expresses the size of an effect in standard deviation units: a d of 0.20 is considered small, 0.50 is moderate, and 0.80 is large. A student named Yuki, for example, who scores at the 50th percentile before an extensive reading programme would be expected to score at roughly the 68th percentile after a programme producing a d of 0.46, all else being equal. The number gives teachers a concrete sense of how much ground students are likely to gain.
+To read the findings, you need to understand what an effect size is. An effect size expresses how large a difference is in standardised terms, so results from different studies can be compared on one scale: a larger number means a bigger gap between learners who took part in a programme and those who did not. The figures reported for extensive reading below are all positive, and in education research they sit in the range usually described as a meaningful benefit rather than a marginal one.
 
 Nakanishi (2015) reports two distinct figures, and they must be read separately. When studies compared an extensive reading group against a control group that did not receive the same treatment, the effect size was d = 0.46, a moderate effect. This between-group comparison is the more conservative and informative of the two estimates, because the control group absorbs the background gains that any student accumulates through continued instruction and exposure to English over time, gains that have nothing to do with extensive reading in particular.
 
@@ -34,15 +34,13 @@ Both meta-analyses measure reading proficiency broadly, aggregating across tests
 
 ## An Honest Look at the Numbers: Hamada's Caveat
 
-The two meta-analyses reviewed in the previous section present a persuasive case, and it is tempting to walk into a staffroom meeting and announce that extensive reading reliably produces large gains. Hamada (2020) provides a necessary check on that enthusiasm. His analysis examines a problem that affects many educational research literatures: studies finding positive results are more likely to be submitted to journals, accepted by editors, and read by practitioners, while studies finding weak or null effects tend to remain unpublished. This asymmetry means that any meta-analysis drawing on published work may be summarising a skewed sample of the evidence.
+The two meta-analyses reviewed in the previous section present a persuasive case, and it is tempting to walk into a staffroom meeting and announce that extensive reading reliably produces large gains. Hamada (2020) provides a necessary check on that enthusiasm. The issue he addresses is that classrooms which adopt extensive reading programmes are rarely chosen at random. A teacher named Ms Okonkwo who introduces a graded-reader library is probably already enthusiastic about reading instruction, and her students may already be more motivated readers than the average class down the corridor. When those students improve, the gain is real, but it cannot be attributed to extensive reading alone. The programme and the pre-existing conditions arrived together, and separating their contributions is difficult after the fact.
 
-A second source of inflation is specific to extensive reading research. Classrooms that adopt ER programmes are rarely chosen at random. A teacher named Ms Okonkwo who introduces a graded-reader library is probably already enthusiastic about reading instruction, and her students may already be more motivated readers than the average class down the corridor. When those students improve, the gain is real, but it cannot be attributed to ER alone. The programme and the pre-existing conditions arrived together, and separating their contributions is difficult after the fact.
-
-When Hamada (2020) applies statistical corrections for these sources of bias, the adjusted effect size falls to approximately d = 0.37. That figure is still positive and still meaningful; a student like Priya, from the scenario above, remains more likely to improve under an ER programme than without one. The adjusted estimate is, however, noticeably smaller than the unadjusted group-comparison figures reported by Nakanishi (2015) at d = 0.46 and by Jeon and Day (2016) at d = 0.57. Treating the higher numbers as definitive while ignoring Hamada's correction would misrepresent what the research supports.
+Using methods designed to adjust for these differences between groups, Hamada (2020) arrives at a more conservative estimate, with the adjusted effect size falling to approximately d = 0.37. That figure is still positive and still meaningful; a student like Priya, from the scenario above, remains more likely to improve under an extensive reading programme than without one. The adjusted estimate is, however, noticeably smaller than the unadjusted group-comparison figures reported by Nakanishi (2015) at d = 0.46 and by Jeon and Day (2016) at d = 0.57. Treating the higher numbers as definitive while ignoring Hamada's more cautious estimate would misrepresent what the research supports.
 
 Reflective practitioners present all three sets of figures together. Imagine a trainee named Daniel preparing to argue for a graded-reader programme at his secondary school. His head of department asks how strong the evidence is, and Daniel replies:
 
-T: The meta-analyses show effect sizes between 0.46 and 0.79 depending on the comparison method, but a 2020 analysis adjusting for publication bias puts the corrected figure closer to 0.37.
+T: Nakanishi's analysis found d = 0.46 in group comparisons and d = 0.71 in pre-post designs; Jeon and Day found d = 0.57 and d = 0.79. Hamada's 2020 analysis, adjusting for publication bias, puts the corrected figure closer to d = 0.37.
 S: So it works, but it's not a miracle cure?
 T: Exactly. The evidence is consistent and positive, but we should plan the programme carefully and track our own results rather than assuming the published averages will transfer automatically.
 
@@ -122,12 +120,12 @@ Published averages, however, describe populations rather than individuals. A tra
 **4. Explain why the between-group effect size is considered more evidentially informative than the pre-post effect size in extensive reading research.**
 
    *Answer: The between-group comparison accounts for general improvement students make through continued instruction over time, isolating the contribution of extensive reading more precisely than a pre-post design, which has no control group to absorb background gains.*
-   *Anchor: "the control group accounts for the general improvement that students make simply through continued instruction"*
+   *Anchor: "the control group absorbs the background gains that any student accumulates through continued instruction"*
 
-**5. Identify the two sources of potential inflation in extensive reading effect sizes that Hamada (2020) examines.**
+**5. Why does Hamada (2020) arrive at a lower adjusted effect size (about d = 0.37) than Nakanishi and Jeon & Day?**
 
-   *Answer: The first source is publication bias, where studies with positive results are more likely to be published than those with weak or null effects. The second is selection bias, where classrooms adopting extensive reading programmes are rarely chosen at random and may already have more motivated teachers and students.*
-   *Anchor: "studies finding positive results are more likely to be submitted to journals, accepted by editors"*
+   *Answer: Because classrooms that adopt extensive reading programmes are rarely chosen at random; the classes and teachers who take up extensive reading may already be more motivated, so part of the measured gain reflects those pre-existing differences rather than the programme alone. Hamada uses methods that adjust for these differences between groups, producing a more conservative estimate.*
+   *Anchor: "classrooms which adopt extensive reading programmes are rarely chosen at random"*
 
 **6. A trainee teacher, Sofia, has set up a reading station in the corner of her classroom nearest the door, where students frequently enter and exit during transitions. She has stocked the shelf with fifteen copies of the same graded reader at one level. After two weeks, several students appear disengaged and one student, Leo, says he has already read the only book that interested him. Identify one move Sofia should make first and justify it using evidence from the unit.**
 
@@ -138,4 +136,5 @@ Published averages, however, describe populations rather than individuals. A tra
 
 - Nakanishi, T. (2015). A meta-analysis of extensive reading research. *TESOL Quarterly*, 49(1), 6-37.
 - Jeon, E.-Y., & Day, R. R. (2016). The effectiveness of ER on reading proficiency: A meta-analysis. *Reading in a Foreign Language*, 28(2), 246-265.
+- Hamada, A. (2020). Using meta-analysis and propensity score methods to assess treatment effects toward evidence-based practice in extensive reading. *Frontiers in Psychology*, 11, 617.
 - U.S. Department of State. *Shaping the Way We Teach English: From Observation to Action*. americanenglish.state.gov (public domain).

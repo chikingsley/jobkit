@@ -3,7 +3,7 @@ GATE FAIL
 
 == dslop (prose body, exit 1) ==
 [0m[1m[31mdslop: 1 violation in 1 file
-[0m  <stdin>:37:262 filler-adverbs
+[0m  <stdin>:36:262 filler-adverbs
 
 [0m[1mfix:
 [0m  filler-adverbs: cut the adverb (quietly/actually/really/simply/essentially/etc.); if it carries weight, replace with a concrete qualifier
@@ -11,3 +11,4 @@ GATE FAIL
 == patterns.js (full file) ==
 {"score":2,"label":"Minimal AI signals","issues":4}
 
+== quiz: clean ==

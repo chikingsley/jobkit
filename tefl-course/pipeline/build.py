@@ -90,13 +90,28 @@ def _json_call(client: SuperwhisperClient, prompt: str, *, max_tokens: int) -> o
     return None
 
 
+# Corpus-mode source files must resolve INSIDE this public-domain dir — a hard boundary so a bad
+# registry path (absolute, ../, or anything under the copyrighted teacherrecord/ tree) can never be
+# fed to the model.
+_ALLOWED_SOURCE_DIR = (ROOT / TEXT_DIR).resolve()
+
+
+def _safe_source_path(name: str) -> Path:
+    """Resolve a corpus source filename, rejecting traversal or anything outside the allowed dir."""
+    path = (ROOT / TEXT_DIR / name).resolve()
+    if not path.is_relative_to(_ALLOWED_SOURCE_DIR):
+        msg = f"refusing source outside the public-domain corpus: {name!r}"
+        raise ValueError(msg)
+    return path
+
+
 def _load_sources(unit: Unit) -> str:
     """Return the unit's source text per its mode (exact files / retrieval / none for facts)."""
     if unit.mode == "retrieval":
         return retrieve(unit.retrieval_query, top_k=6)
     if unit.mode == "facts":
         return ""
-    parts = [(ROOT / TEXT_DIR / name).read_text(encoding="utf-8") for name in unit.sources]
+    parts = [_safe_source_path(name).read_text(encoding="utf-8") for name in unit.sources]
     return "\n\n".join(parts)
 
 
@@ -117,15 +132,23 @@ def _source_section(unit: Unit, source: str) -> str:
 
 def _citations_block(unit: Unit) -> str:
     """Render the allowed-citations constraint for the prompts."""
-    if not unit.citation_facts:
+    if unit.citation_facts:
         return (
-            "This unit has NO research citations. Make no claims about research, studies, or "
-            "evidence. Every claim must come from the source text."
+            "Verified research facts (the ONLY effectiveness claims you may make; cite inline as "
+            f"(Author, Year)):\n{unit.citation_facts}\nState these claims as written. Do NOT "
+            "invent, extend, round, convert, or derive ANY further numbers from them (no "
+            "percentiles, no percentage conversions, no merged ranges, no benchmark labels). "
+            "Every other claim must come from the source text or, in facts mode, from established "
+            "uncopyrightable facts."
+        )
+    if unit.mode == "facts":
+        return (
+            "This unit has NO research citations. Make no claims about named studies, effect "
+            "sizes, or statistics. Write from established, uncopyrightable facts only."
         )
     return (
-        "Verified research facts (the ONLY effectiveness claims you may make; cite inline as "
-        f"(Author, Year)):\n{unit.citation_facts}\nDo not invent, extend, or round these. Every "
-        "other claim must come from the source text."
+        "This unit has NO research citations. Make no claims about research, studies, or "
+        "evidence. Every claim must come from the source text."
     )
 
 
@@ -319,10 +342,13 @@ def gate(unit: Unit) -> bool:
         and "sentence-length-kurtosis" in dslop_report
     )
     patterns_ok = score is not None and score < PATTERNS_MAX_SCORE
-    passed = (dslop.returncode == 0 or rhythm_only) and patterns_ok
+    # Unresolved quiz warnings (bad/ungrounded anchors) block the gate — they must not ship.
+    quiz_warn = UNITS_DIR / unit.uid / "quiz-warnings.txt"
+    quiz_ok = not quiz_warn.exists()
+    passed = (dslop.returncode == 0 or rhythm_only) and patterns_ok and quiz_ok
     status = "PASS"
     if not passed:
-        status = "FAIL"
+        status = "FAIL (quiz warnings)" if (dslop.returncode == 0 and patterns_ok) else "FAIL"
     elif rhythm_only:
         status = "PASS (rhythm metric flagged — owner review)"
 
@@ -331,7 +357,8 @@ def gate(unit: Unit) -> bool:
         f"unit {unit.uid} — {unit.title}\n"
         f"GATE {status}\n\n"
         f"== dslop (prose body, exit {dslop.returncode}) ==\n{dslop.stdout}{dslop.stderr}\n"
-        f"== patterns.js (full file) ==\n{detector.stdout}{detector.stderr}\n",
+        f"== patterns.js (full file) ==\n{detector.stdout}{detector.stderr}\n"
+        f"== quiz: {'clean' if quiz_ok else 'WARNINGS (see quiz-warnings.txt)'} ==\n",
         encoding="utf-8",
     )
     _log(f"[{unit.uid}] gate: {status} (patterns score {score})")

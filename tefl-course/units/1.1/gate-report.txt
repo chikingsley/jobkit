@@ -6,3 +6,4 @@ GATE PASS
 == patterns.js (full file) ==
 {"score":2,"label":"Minimal AI signals","issues":3}
 
+== quiz: clean ==

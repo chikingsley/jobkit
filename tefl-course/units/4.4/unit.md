@@ -44,11 +44,11 @@ Peer assessment extends this principle by making students active participants in
 
 ## The Research Base: What Meta-Analyses Tell Us
 
-Bryfonski and McKay (2019) conducted what remains the field's most cited quantitative survey of task-based language teaching, drawing together 52 individual studies into a single meta-analysis. A meta-analysis is a statistical procedure that combines the results of many separate studies into one overall estimate, expressed as an effect size, a number that indicates how much better the group receiving a treatment performed compared to a group that did not. Bryfonski and McKay reported an effect size of d = 0.93, a figure that, by conventional benchmarks, sits in the large range and suggested that learners in task-based classrooms were outperforming those in comparison conditions by a substantial margin (Bryfonski & McKay, 2019).
+Bryfonski and McKay (2019) conducted a quantitative survey of task-based language teaching, drawing together 52 individual studies into a single meta-analysis. A meta-analysis is a statistical procedure that combines the results of many separate studies into one overall estimate, expressed as an effect size, a number that indicates how much better the group receiving a treatment performed compared to a group that did not. Bryfonski and McKay reported an effect size of d = 0.93, a figure that, by conventional benchmarks, sits in the large range and suggested that learners in task-based classrooms were outperforming those in comparison conditions by a substantial margin (Bryfonski & McKay, 2019).
 
 That figure, however, did not go unchallenged. Xuan, Cheung and Liu (2025) returned to the same body of evidence and conducted a re-analysis, arguing that the original meta-analysis applied loose inclusion criteria, admitting studies whose designs were not sufficiently comparable. After correcting for this, they arrived at a more modest effect size of g = 0.61 (Xuan, Cheung & Liu, 2025). The difference between d and g here reflects different statistical corrections rather than different underlying data, and g = 0.61 is the figure this unit treats as the current best estimate.
 
-To make these numbers concrete, consider a class where a student named Carlos is learning to make requests in English. An effect size of g = 0.61 means that, on average, a learner taught through task-based methods would score higher than roughly 73 percent of learners taught through a comparison approach. That is a meaningful advantage, even if it falls short of the dramatic picture the original estimate painted.
+An effect size of g = 0.61 represents a moderate positive advantage for learners taught through task-based methods over those in a comparison approach. That is a meaningful benefit, even if it falls short of the dramatic picture the original estimate painted.
 
 The disagreement between the two analyses concerns magnitude, not direction. Both Bryfonski and McKay (2019) and Xuan, Cheung and Liu (2025) find that task-based instruction produces better outcomes than the conditions it is compared against. A teacher reading this evidence can therefore proceed with reasonable confidence that designing lessons around communicative tasks, rather than relying solely on form-focused drills, is likely to benefit learners. The honest position is that the size of that benefit remains a matter of ongoing methodological debate, and anyone citing the original d = 0.93 without acknowledging the revised estimate is presenting an incomplete picture of what the research currently supports.
 
@@ -60,7 +60,7 @@ This disagreement carries a transferable lesson about reading research. An effec
 
 Understanding this distinction has direct classroom relevance. The source materials used throughout this unit emphasise that providing a rationale for an activity helps students understand why they are being asked to do it and reduces resistance to unfamiliar approaches (americanenglish.state.gov, Shaping the Way We Teach English). A teacher who grasps the difference between a settled directional finding and a contested magnitude is far better placed to give that rationale honestly. Consider a teacher named Marta explaining a group task to her adult ESOL class.
 
-T: "We know from several large studies that working through tasks like this one tends to improve your speaking and listening more than repeating drills alone."
+T: "We know from several large studies that working through tasks like this one tends to help you learn more than form-focused drills alone."
 S: "How much better?"
 T: "Researchers are still debating the exact size of the improvement, but every analysis points in the same direction."
 
@@ -91,8 +91,8 @@ Teachers who follow this planning sequence can adopt TBLT with reasonable confid
 
    a. d = 0.93, as reported by Bryfonski and McKay (2019)
    b. g = 0.61, as reported by Xuan, Cheung and Liu (2025)
-   c. d = 0.50, a conventional medium-range benchmark
-   d. g = 0.73, derived from the percentage advantage calculation
+   c. d = 0.50, the average of the two reported figures
+   d. g = 0.61, but only for young learners
 
    *Answer: g = 0.61, as reported by Xuan, Cheung and Liu (2025)*
    *Anchor: "g = 0.61 is the figure this unit treats as the current best estimate"*
@@ -130,7 +130,7 @@ Teachers who follow this planning sequence can adopt TBLT with reasonable confid
 **6. During the task cycle, you circulate and notice that student Marco's group has stopped talking. Marco says the group finished early and is waiting for the other groups. The task was to agree on which local event to recommend to a new classmate and to justify the choice. Describe one move you would make and justify it using a principle from the unit.**
 
    *Answer: A strong move is to ask a targeted clarifying question rather than supplying new content, for example: 'You chose the food festival. Can you say more about why that fits him better than the other two options?' This reflects the unit's description of the teacher as 'guide on the side' who circulates and asks clarifying questions to open gaps that students fill with their own thinking, keeping communicative work with the students rather than redirecting it to the teacher. The prompt also pushes the group toward the kind of reasoned justification the task requires, extending their engagement without taking over the outcome.*
-   *Anchor: "The teacher has not supplied the content or the language; the prompt has simply opened a gap"*
+   *Anchor: "circulate, coach, and facilitate rather than to direct from the front of the room"*
 
 ## References
 
