@@ -150,7 +150,7 @@ A final point deserves emphasis. L1 background is a useful diagnostic tool, not 
 
 **4. A Korean-speaking student says 'I went to bank this morning,' omitting the definite article. Using the decision-tree sequence described in the unit, explain which article is required and why.**
 
-   *Answer: The definite article 'the' is required because the bank is a specific place Yuki visits regularly, meaning the listener can identify which bank is meant. The decision-tree asks first whether the noun is countable and singular (yes), then whether the identity is already understood or only one such thing could logically exist in context (yes, it is her regular bank). That second condition calls for 'the.'*
+   *Answer: The definite article 'the' is required because the bank is a specific place the student visits regularly, meaning the listener can identify which bank is meant. The decision-tree asks first whether the noun is countable and singular (yes), then whether the identity is already understood or only one such thing could logically exist in context (yes, it is the student's regular bank). That second condition calls for 'the.'*
    *Anchor: "If the noun has already been introduced, or if only one such thing could logically exist in the context, 'the' is correct."*
 
 **5. The unit identifies a category of verbs that cannot take the progressive aspect in English. Name this category, give the example from the unit of a learner error involving it, and state the corrected form.**
