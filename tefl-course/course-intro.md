@@ -2,7 +2,7 @@
 
 This is a 120-hour TEFL certificate course. It prepares you to teach English to speakers of other languages, whether you are heading to a classroom in another country, teaching online, or starting your first job at a language school. The course assumes no teaching experience. It does assume that you can read English comfortably, since you will be reading a great deal of it here.
 
-The course has 14 modules and 63 units. A unit is one sitting of work: a reading of two to three thousand words, a few questions along the way, and a short quiz at the end. Most people finish a unit in about two hours. Work through the modules in order. Later units build on earlier ones, and the tests are designed around that sequence.
+The course has 14 modules and 63 units. A unit is one sitting of work: a reading of around 2,500 to 3,300 words, a few questions along the way, and a short quiz at the end. Most people finish a unit in about two hours. Work through the modules in order. Later units build on earlier ones, and the tests are designed around that sequence.
 
 ## What makes this course different
 
@@ -30,7 +30,7 @@ There are three layers, each with a purpose.
 
 **Unit quizzes** end every unit: six questions, including one scenario that puts you in a classroom and asks what you would do. These are self-checks. Use them honestly, without looking back at the text on your first attempt, because the act of retrieving the answer is what makes it stick.
 
-**Module tests** close every module. Section A tests the module you just finished, with three questions per unit. Section B asks two questions from earlier modules; forgetting some of it is expected, and the retrieval will restore it. Section C is a scenario worth five points. The pass mark is 70 percent. If you fall short, reread the units the missed questions came from and take the test again.
+**Module tests** close every module. Section A tests the module you just finished, with three questions per unit. Section B, on every test after the first module, asks two questions from earlier modules; forgetting some of it is expected, and the retrieval will restore it. Section C is a scenario worth five points. The pass mark is 70 percent. If you fall short, reread the units the missed questions came from and take the test again.
 
 **The final exam** covers the whole course: one question from every unit, plus three extended scenarios that ask you to combine ideas across modules, the way real teaching does. The pass mark is 70 percent.
 

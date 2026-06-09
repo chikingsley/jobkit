@@ -69,7 +69,8 @@ _BANK_BRIEF = (
     "one correct) and 1 short-answer. The unit already has a quiz (shown below) — your questions "
     "must test DIFFERENT points or angles from those, not rephrase them. For EVERY question "
     "include an 'anchor': a verbatim quote of at most 15 words from the unit text containing the "
-    'answer. Return ONLY {"questions": [{"type": "mc"|"short", "question": "...", "options": '
+    "answer. For multiple-choice, the answer must begin with the EXACT text of the correct "
+    'option. Return ONLY {"questions": [{"type": "mc"|"short", "question": "...", "options": '
     '[...] or null, "answer": "...", "anchor": "..."}]}.'
 )
 
@@ -123,6 +124,19 @@ def build_bank(client: SuperwhisperClient, unit: Unit) -> list[dict[str, object]
     return items
 
 
+def _mc_problems(i: int, q: dict[str, object], opts: list[object]) -> list[str]:
+    """Validate one multiple-choice item: 4 options, answer matching one of them."""
+    problems: list[str] = []
+    if len(opts) != 4:  # noqa: PLR2004 - MC convention.
+        problems.append(f"q{i}: needs 4 options, got {len(opts)}")
+    answer = str(q.get("answer", "")).strip().lower()
+    if answer and not any(
+        str(o).strip().lower() in answer or answer in str(o).strip().lower() for o in opts
+    ):
+        problems.append(f"q{i}: answer does not match any option")
+    return problems
+
+
 def _bank_problems(items: list[dict[str, object]], prose: str) -> list[str]:
     """Validate a bank: 4 questions, 3 MC with 4 options, anchors grounded in the unit prose."""
     problems: list[str] = []
@@ -130,13 +144,17 @@ def _bank_problems(items: list[dict[str, object]], prose: str) -> list[str]:
         problems.append(f"expected {BANK_PER_UNIT} questions, got {len(items)}")
     lowered = prose.lower()
     unit_words = frozenset(re.findall(r"[a-z0-9]+", lowered))
-    mc = 0
     for i, q in enumerate(items, 1):
         options = q.get("options")
-        if isinstance(options, list):
-            mc += 1
-            if len(options) != 4:  # noqa: PLR2004 - MC convention.
-                problems.append(f"q{i}: needs 4 options, got {len(options)}")
+        is_mc = isinstance(options, list)
+        # Order is load-bearing: positions 1-3 are MC (module test), position 4 is the
+        # short-answer reserved for the final exam (`bank[3]`).
+        if i <= 3 and not is_mc:  # noqa: PLR2004
+            problems.append(f"q{i}: positions 1-3 must be multiple-choice")
+        if i == BANK_PER_UNIT and is_mc:
+            problems.append(f"q{i}: position 4 must be short-answer (final-exam reserve)")
+        if is_mc:
+            problems += _mc_problems(i, q, cast("list[object]", options))
         if not str(q.get("question", "")).strip() or not str(q.get("answer", "")).strip():
             problems.append(f"q{i}: empty question/answer")
         anchor = str(q.get("anchor", "")).strip()
@@ -146,16 +164,21 @@ def _bank_problems(items: list[dict[str, object]], prose: str) -> list[str]:
             anchor, unit_words
         ):
             problems.append(f"q{i}: anchor not grounded: {anchor!r}")
-    if mc != 3:  # noqa: PLR2004 - 3 MC + 1 short by design.
-        problems.append(f"expected 3 multiple-choice, got {mc}")
     return problems
 
 
 _REVIEW_MAX_LEN = 220  # skip long scenario stems; review items should be quick re-asks.
 
 
+_OPTION_LINE_RE = re.compile(r"^\s{3}[a-d]\.\s+(.+)$", re.MULTILINE)
+
+
 def _review_pool(before_module: int) -> list[tuple[str, dict[str, object]]]:
-    """Collect (uid, question) pairs from the UNIT QUIZZES of all modules before `before_module`."""
+    """Collect (uid, question) pairs from the UNIT QUIZZES of all modules before `before_module`.
+
+    Multiple-choice options are preserved (parsed from the quiz block), so a re-asked
+    "Which of the following..." item still has its choices on the test paper.
+    """
     pool: list[tuple[str, dict[str, object]]] = []
     for unit in UNITS.values():
         if _module_of(unit.uid) >= before_module:
@@ -164,8 +187,15 @@ def _review_pool(before_module: int) -> list[tuple[str, dict[str, object]]]:
         for m in build._QUIZ_BLOCK_RE.finditer(quiz):  # noqa: SLF001
             q = m.group("q").strip()
             # Only re-ask self-contained questions; skip scenario items (too long to re-ask).
-            if len(q) < _REVIEW_MAX_LEN:
-                pool.append((unit.uid, {"question": q, "answer": m.group("a").strip()}))
+            if len(q) >= _REVIEW_MAX_LEN:
+                continue
+            options = [o.strip() for o in _OPTION_LINE_RE.findall(m.group(0))]
+            if "following" in q.lower() and len(options) != 4:  # noqa: PLR2004
+                continue  # an options-dependent stem whose options failed to parse: skip it.
+            item: dict[str, object] = {"question": q, "answer": m.group("a").strip()}
+            if len(options) == 4:  # noqa: PLR2004
+                item["options"] = options
+            pool.append((unit.uid, item))
     return pool
 
 
@@ -180,22 +210,36 @@ def _scenario(client: SuperwhisperClient, label: str, material: str) -> dict[str
     raise RuntimeError(msg)
 
 
-def _render_mc(i: int, q: dict[str, object]) -> str:
-    """Render one bank/test question as markdown (with answer-key block)."""
+def _key_text(q: dict[str, object]) -> str:
+    """Return the grading-key answer; MC keys normalize to the matching option when found."""
+    answer = str(q.get("answer", "")).strip()
+    options = q.get("options")
+    if isinstance(options, list):
+        low = answer.lower()
+        for j, opt in enumerate(options, 1):
+            o = str(opt).strip()
+            if o.lower() == low or o.lower() in low or low in o.lower():
+                return f"{chr(96 + j)}. {o}"
+    return answer
+
+
+def _render_mc(i: int, q: dict[str, object], *, include_key: bool) -> str:
+    """Render one test question as markdown; the answer/anchor key only when `include_key`."""
     lines = [f"**{i}. {q.get('question', '')}**", ""]
     options = q.get("options")
     if isinstance(options, list):
         lines += [f"   {chr(96 + j)}. {opt}" for j, opt in enumerate(options, 1)]
         lines.append("")
-    lines.append(f"   *Answer: {q.get('answer', '')}*")
-    anchor = str(q.get("anchor", "")).strip()
-    if anchor:
-        lines.append(f'   *Anchor: "{anchor}"*')
-    lines.append("")
+    if include_key:
+        lines.append(f"   *Answer: {_key_text(q)}*")
+        anchor = str(q.get("anchor", "")).strip()
+        if anchor:
+            lines.append(f'   *Anchor: "{anchor}"*')
+        lines.append("")
     return "\n".join(lines)
 
 
-def assemble_module_test(module: int, rng: random.Random) -> str:
+def assemble_module_test(module: int, rng: random.Random, *, include_key: bool) -> str:
     """Assemble one module test from cached banks + spaced-review pool."""
     units = _units_of(module)
     title = MODULE_TITLES.get(module, f"Module {module}")
@@ -224,18 +268,22 @@ def assemble_module_test(module: int, rng: random.Random) -> str:
         bank = json.loads((build.UNITS_DIR / unit.uid / "bank.json").read_text(encoding="utf-8"))
         for q in bank[:3]:
             i += 1
-            out.append(_render_mc(i, q))
+            out.append(_render_mc(i, q, include_key=include_key))
     if reviews:
         out += [f"## Section B — Review ({len(reviews)} points, 1 each)", ""]
         for uid, q in reviews:
             i += 1
-            out.append(_render_mc(i, {**q, "anchor": f"unit {uid} quiz"}))
+            out.append(_render_mc(i, {**q, "anchor": f"unit {uid} quiz"}, include_key=include_key))
     scen = json.loads((TESTS_DIR / f"_scenario-M{module}.json").read_text(encoding="utf-8"))
-    out += ["## Section C — Scenario (5 points)", "", _render_mc(i + 1, scen)]
+    out += [
+        "## Section C — Scenario (5 points)",
+        "",
+        _render_mc(i + 1, scen, include_key=include_key),
+    ]
     return "\n".join(out) + "\n"
 
 
-def assemble_final() -> str:
+def assemble_final(*, include_key: bool) -> str:
     """Assemble the final exam: every unit's reserved bank question + 3 scenario essays."""
     uids = sorted(UNITS, key=lambda u: [int(p) for p in u.split(".")])
     out = [
@@ -254,11 +302,11 @@ def assemble_final() -> str:
             current_module = module
             out.append(f"### Module {module} — {MODULE_TITLES.get(module, '')}\n")
         bank = json.loads((build.UNITS_DIR / uid / "bank.json").read_text(encoding="utf-8"))
-        out.append(_render_mc(i, bank[3]))  # the reserved 4th question
+        out.append(_render_mc(i, bank[3], include_key=include_key))  # the reserved 4th question
     out += ["## Section B — Scenarios (30 points, 10 each)", ""]
     for j in range(1, 4):
         scen = json.loads((TESTS_DIR / f"_scenario-final-{j}.json").read_text(encoding="utf-8"))
-        out.append(_render_mc(len(uids) + j, scen))
+        out.append(_render_mc(len(uids) + j, scen, include_key=include_key))
     return "\n".join(out) + "\n"
 
 
@@ -306,16 +354,45 @@ def cmd_scenarios() -> None:
         client.close()
 
 
+def _preflight() -> None:
+    """Verify every required bank and scenario file exists and parses BEFORE writing any output."""
+    missing: list[str] = []
+    for uid in UNITS:
+        path = build.UNITS_DIR / uid / "bank.json"
+        try:
+            items = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(items, list) or len(items) != BANK_PER_UNIT:
+                missing.append(f"{path} (malformed)")
+        except (OSError, json.JSONDecodeError):
+            missing.append(str(path))
+    for module in sorted(MODULE_TITLES):
+        path = TESTS_DIR / f"_scenario-M{module}.json"
+        if not path.exists():
+            missing.append(str(path))
+    for j in (1, 2, 3):
+        path = TESTS_DIR / f"_scenario-final-{j}.json"
+        if not path.exists():
+            missing.append(str(path))
+    if missing:
+        msg = f"assemble preflight failed; missing/corrupt inputs: {missing[:5]}"
+        raise SystemExit(msg)
+
+
 def cmd_assemble() -> None:
     """Write all module tests and the final exam."""
     TESTS_DIR.mkdir(exist_ok=True)
-    rng = random.Random(20260609)  # noqa: S311 - reproducible sampling, not crypto.
+    _preflight()
     for module in sorted(MODULE_TITLES):
-        path = TESTS_DIR / f"module-{module:02d}-test.md"
-        path.write_text(assemble_module_test(module, rng), encoding="utf-8")
-        build._log(f"wrote {path.name}")  # noqa: SLF001
-    (TESTS_DIR / "final-exam.md").write_text(assemble_final(), encoding="utf-8")
-    build._log("wrote final-exam.md")  # noqa: SLF001
+        for suffix, key in (("", False), ("-key", True)):
+            # Same seed for both versions so the sampled review questions match.
+            rng = random.Random(20260609 + module)  # noqa: S311 - reproducible, not crypto.
+            path = TESTS_DIR / f"module-{module:02d}-test{suffix}.md"
+            path.write_text(assemble_module_test(module, rng, include_key=key), encoding="utf-8")
+        build._log(f"wrote module-{module:02d}-test(.md/-key.md)")  # noqa: SLF001
+    for suffix, key in (("", False), ("-key", True)):
+        path = TESTS_DIR / f"final-exam{suffix}.md"
+        path.write_text(assemble_final(include_key=key), encoding="utf-8")
+    build._log("wrote final-exam(.md/-key.md)")  # noqa: SLF001
 
 
 def main() -> None:

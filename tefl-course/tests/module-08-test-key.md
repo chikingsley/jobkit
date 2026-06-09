@@ -11,12 +11,18 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
    c. They eliminate the need for preparation time before the speaking task begins.
    d. They are easier to assess because every student produces the same type of output.
 
+   *Answer: b. Students have a personal stake in the conversation because they are expressing what they genuinely think.*
+   *Anchor: "When students are asked to express what they genuinely think rather than produce a single correct answer, they have a personal stake in the conversation."*
+
 **2. What distinguishes the Word Strings activity as particularly suitable for lower-proficiency students, according to the unit?**
 
    a. It requires students to paraphrase a sentence without repeating the original wording.
    b. It asks each student to select a word card and deliver an opinion to the whole class.
    c. A student can contribute a single word and still participate meaningfully in building a complete sentence.
    d. It uses a problem-solution format that encourages both critical and creative thinking.
+
+   *Answer: c. A student can contribute a single word and still participate meaningfully in building a complete sentence.*
+   *Anchor: "A student named Yuki who hesitates to speak at length can contribute a single word and still participate meaningfully in the construction of something larger."*
 
 **3. The unit identifies three features shared by both the problem-solution role-play and the TV Talk Show activity. Which of the following is one of those three features?**
 
@@ -25,12 +31,18 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
    c. Students make creative decisions about characters or scenarios, meaning the language they produce is genuinely their own.
    d. The activity is conducted entirely in small groups with no whole-class performance phase.
 
+   *Answer: c. Students make creative decisions about characters or scenarios, meaning the language they produce is genuinely their own.*
+   *Anchor: "They make creative decisions about characters or scenarios, which means the language they produce is genuinely their own rather than a repetition of a model."*
+
 **4. According to the unit, what specific risk arises when a teacher plans a group activity without considering the lead-in and follow-up steps?**
 
    a. Students will refuse to participate in the group task without a warm-up game.
    b. Students may lack the knowledge or context they need to begin the group work.
    c. The teacher will be unable to circulate and monitor groups effectively.
    d. Groups will finish at different speeds, making whole-class debriefing impossible.
+
+   *Answer: b. Students may lack the knowledge or context they need to begin the group work.*
+   *Anchor: "risks leaving students without the knowledge or context they need to begin"*
 
 **5. The unit describes the count-off method of grouping students. Which of the following is stated as an advantage of this technique?**
 
@@ -39,12 +51,18 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
    c. It takes less than a minute and reduces the social awkwardness of being chosen last or left out.
    d. It ensures that students who share the same first language are separated across teams.
 
+   *Answer: c. It takes less than a minute and reduces the social awkwardness of being chosen last or left out.*
+   *Anchor: "introduces a mild element of chance that can reduce the social awkwardness of being chosen last or left out"*
+
 **6. How does the unit describe the closing of the writing task in Video Segment 2, particularly regarding how errors were handled?**
 
    a. The teacher collected each group's sentence privately and returned written corrections the following lesson.
    b. The teacher identified which group had made each error and asked that group to correct it aloud.
    c. No single person was blamed for errors and everyone took part in the corrections as a collective act.
    d. Students voted anonymously on which sentence needed the most revision before editing began.
+
+   *Answer: c. No single person was blamed for errors and everyone took part in the corrections as a collective act.*
+   *Anchor: "no single person was blamed for errors and that everyone took part in the corrections"*
 
 **7. How does the unit say the Word Bricks activity adjusts to serve a mixed-level classroom without requiring the teacher to prepare entirely separate materials?**
 
@@ -53,12 +71,18 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
    c. The teacher removes the suffix bricks for beginners and adds them back for advanced students
    d. Beginning students use only one face of each brick while advanced students use both faces
 
+   *Answer: b. Adding one or two extra Wild Cards raises the ceiling for any group*
+   *Anchor: "Adding one or two extra Wild Cards raises the ceiling for any group"*
+
 **8. According to the unit, what is the role of explaining sentences in a paragraph, and how do they differ from evidence sentences?**
 
    a. Explaining sentences provide specific examples that support the main idea, while evidence sentences expand the claim's scope
    b. Explaining sentences restate the topic sentence in new language, while evidence sentences introduce the next paragraph's idea
    c. Explaining sentences add more information about the main idea without yet offering proof, while evidence sentences provide specific examples
    d. Explaining sentences connect evidence back to the topic sentence, while evidence sentences describe the paragraph's subject in general terms
+
+   *Answer: c. Explaining sentences add more information about the main idea without yet offering proof, while evidence sentences provide specific examples*
+   *Anchor: "They do not yet offer proof; they expand the claim so that the reader understands its scope"*
 
 **9. The unit identifies a mutually reinforcing quality in the station-based peer feedback activity. What does this mean?**
 
@@ -67,12 +91,18 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
    c. The teacher's summative feedback reinforces the peer feedback students have already received at each station
    d. Working with several different peers ensures that each student's judgment is reinforced by multiple classmates
 
+   *Answer: b. When a student notices a missing element in a classmate's essay, she tends to return to her own essay and check the same element*
+   *Anchor: "Evaluating someone else's writing sharpens attention to the writer's own work"*
+
 **10. According to the unit, what is the main challenge for teachers who provide feedback on drafts before assigning a grade?**
 
    a. Students tend to ignore written comments on early drafts
    b. Extra time and effort are required to provide feedback and then read and score the revised papers
    c. Peer feedback makes the teacher's comments redundant
    d. Grading criteria become inconsistent across multiple drafts
+
+   *Answer: b. Extra time and effort are required to provide feedback and then read and score the revised papers*
+   *Anchor: "extra time and effort are required for teachers to provide feedback on drafts and then read and score the revised papers"*
 
 **11. What is the specific purpose of using a different colored highlighter pen at each editing station?**
 
@@ -81,12 +111,18 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
    c. To create a visible record showing which elements have been examined and where changes were made
    d. To signal to peers which sections of the essay still need revision
 
+   *Answer: c. To create a visible record showing which elements have been examined and where changes were made*
+   *Anchor: "The color coding creates a visible record of the review: by the time a student has worked through all ten stations"*
+
 **12. According to the unit, how does peer editing benefit a student who notices a missing introduction in a classmate's essay?**
 
    a. It allows the student to earn extra credit by correcting the classmate's work
    b. It prompts the student to return to their own essay and check whether the same element is present
    c. It gives the student a model introduction to copy into their own draft
    d. It replaces the need for the teacher to explain structural requirements
+
+   *Answer: b. It prompts the student to return to their own essay and check whether the same element is present*
+   *Anchor: "that observation prompts a return to their own essay to check whether the same element is present"*
 
 **13. According to the unit, what distinguishes receptive skills from productive skills?**
 
@@ -95,12 +131,18 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
    c. Receptive skills are assessed through written tests, while productive skills are assessed through spoken performance.
    d. Receptive skills develop before productive skills in all language learners regardless of context.
 
+   *Answer: b. Receptive skills involve taking in language produced by others, while productive skills involve generating language for others.*
+   *Anchor: "Listening and reading are the receptive skills, meaning the learner takes in language produced by others; speaking and writing are the productive skills"*
+
 **14. In the 'Good Deeds' iEARN project, what was the purpose of dividing students into two groups to read different sources in jigsaw style?**
 
    a. To allow faster readers to finish early and help slower readers with comprehension.
    b. To ensure that the subsequent discussion required genuine listening because no single student held the complete picture.
    c. To reduce the number of library books needed by splitting the reading load equally.
    d. To give the teacher time to assess individual reading skills while the other group worked independently.
+
+   *Answer: b. To ensure that the subsequent discussion required genuine listening because no single student held the complete picture.*
+   *Anchor: "Because each group had read different material, the subsequent discussion required genuine listening, since no single student held the complete picture."*
 
 **15. What practical advantage does the unit give for identifying the spine skill before a lesson begins, specifically when time runs short?**
 
@@ -109,9 +151,15 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
    c. It helps the teacher shorten a supporting stage without abandoning the lesson's primary purpose.
    d. It gives students advance notice of which skill will be graded so they can prepare accordingly.
 
+   *Answer: c. It helps the teacher shorten a supporting stage without abandoning the lesson's primary purpose.*
+   *Anchor: "If Mateus needs another five minutes to finish his paragraph, the teacher can shorten the read-aloud stage without abandoning the lesson's purpose"*
+
 ## Section B — Review (2 points, 1 each)
 
 **16. A student named Yuki says 'I have gone yesterday.' What does the unit identify as the grammatical confusion this error represents?**
+
+   *Answer: Yuki is confusing the present perfect with the simple past, a very common error at the pre-intermediate stage.*
+   *Anchor: "unit 1.4 quiz"*
 
 **17. Which of the following sentences correctly demonstrates the absence of do-support with a modal verb?**
 
@@ -120,6 +168,12 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
    c. Does she can stay late?
    d. Did he must leave early?
 
+   *Answer: b. Will you come tomorrow?*
+   *Anchor: "unit 3.1 quiz"*
+
 ## Section C — Scenario (5 points)
 
 **18. Mr. Osei is running a speaking lesson with a mixed-confidence class. He has set up a free discussion task in which Carlos, Daniel, Wei, Fatima, Yuki, and Priya debate whether social media does more harm than good. Two minutes into the discussion, Fatima makes a clear subject-verb agreement error ('Everyone are saying the same thing') while making a strong, well-reasoned point. Mr. Osei notices the error. What should he do at this moment, and why?**
+
+   *Answer: Mr. Osei should allow Fatima to finish her point without interrupting to correct the error. Because the activity is a free discussion designed to develop fluency, the primary goal is the smooth, confident production of ideas rather than grammatical precision. Stopping Fatima mid-sentence to address the subject-verb error would break the flow of her argument, risk embarrassing her in front of her classmates, and signal to the whole group that grammatical form matters more than communicative content during this task — precisely the message that undermines willingness to speak. The module is explicit that interrupting a student mid-sentence to correct a grammatical mistake can cause that student to lose her train of thought, feel embarrassed, and become more cautious about contributing in future lessons. Mr. Osei is not failing in his duty by staying silent; he is making a deliberate planning decision aligned with the activity's goal. If he wants to address the error, he can note it privately and return to it in a later accuracy-focused phase — for example, a controlled activity like Mix It, Fix It — where attending to grammatical form is the explicit purpose. The module also reminds teachers to consider confidence levels: Fatima is already speaking and reasoning well, and sustaining that momentum is more valuable at this moment than correcting a single form. Choosing the right goal for the right moment is one of the more consequential judgments a speaking teacher makes.*
+   *Anchor: "stopping a student mid-sentence to address a grammatical mistake breaks the flow of ideas"*

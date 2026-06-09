@@ -8,7 +8,7 @@
       "C. Record the error and address it only if it recurs in a second piece of work",
       "D. Ask the whole class whether they can identify what went wrong"
     ],
-    "answer": "The teacher's first obligation is to understand why the incorrect form occurred and determine whether the student lacked knowledge or made a careless slip.",
+    "answer": "B. Understand why the incorrect form occurred and determine whether it reflects missing knowledge or a careless slip — The teacher's first obligation is to understand why the incorrect form occurred and determine whether the student lacked knowledge or made a careless slip.",
     "anchor": "understand why the incorrect form occurred, and determine whether the student lacked the knowledge to produce the correct form"
   },
   {
@@ -20,7 +20,7 @@
       "C. A failed attempt generates useful data about the learner's developing system, making it more productive than avoidance",
       "D. Teachers should discourage risk-taking until foundational structures are fully mastered"
     ],
-    "answer": "Attempting a structure and getting it wrong is more productive than avoidance because the attempt generates data for both the learner and the teacher about where the interlanguage system currently stands.",
+    "answer": "C. A failed attempt generates useful data about the learner's developing system, making it more productive than avoidance — Attempting a structure and getting it wrong is more productive than avoidance because the attempt generates data for both the learner and the teacher about where the interlanguage system currently stands.",
     "anchor": "the attempt generates data, both for the learner and for the teacher, about where the interlanguage system currently stands"
   },
   {
@@ -32,14 +32,14 @@
       "C. A student addresses a new teacher with 'Hey, tell me the answer,' using a register suited to a peer",
       "D. A student omits the past-tense marker, saying 'yesterday I go to the market'"
     ],
-    "answer": "A pragmatic error occurs when language is grammatically correct but socially or culturally inappropriate, as when a student uses peer register with an authority figure.",
+    "answer": "C. A student addresses a new teacher with 'Hey, tell me the answer,' using a register suited to a peer — A pragmatic error occurs when language is grammatically correct but socially or culturally inappropriate, as when a student uses peer register with an authority figure.",
     "anchor": "a pragmatic error occurs when a student produces language that is grammatically correct but socially or culturally inappropriate for the situation"
   },
   {
     "type": "short",
-    "question": "The unit warns that a teacher's stated beliefs about mistakes and their actual feedback practices must align. Explain what misalignment looks like and why it matters for student behaviour in the classroom.",
+    "question": "A learner produces 'She go to school yesterday.' Using the unit's terms, explain what this error reveals about the learner's developing language system, and name the term researchers use for that system.",
     "options": null,
-    "answer": "Misalignment occurs when a teacher says mistakes are welcome but then responds to every error with immediate, public correction. Students observe the actual behaviour rather than the stated belief, so they will not feel safe taking risks. As a result, learners retreat to language already under control rather than attempting new or difficult structures, which undermines the risk-taking that the unit identifies as necessary for acquisition.",
-    "anchor": "A teacher who says mistakes are welcome but then responds to every error with immediate, public correction will not be believed"
+    "answer": "The missing past-tense marker reflects a temporary, evolving linguistic system called interlanguage. The error shows incomplete learning of the past-tense rule rather than carelessness, so it is evidence of where the learner's system currently stands and what to teach next.",
+    "anchor": "the state of a temporary, evolving linguistic system that researchers call interlanguage"
   }
 ]

@@ -37,7 +37,7 @@
   },
   {
     "type": "short",
-    "question": "A student writes: 'My friend told me two weeks ago that she had moved.' Rewrite only the time adverbial 'two weeks ago' as it should appear in reported speech, and name the rule that governs this change.",
+    "question": "A friend says to you: \"I moved two weeks ago.\" You report this the following month. Rewrite the time expression 'two weeks ago' as it should appear in your reported sentence, and name the rule that governs the change.",
     "options": null,
     "answer": "'Two weeks ago' becomes 'two weeks before' (or 'two weeks previously'). The rule is that time adverbials shift to reflect the reporter's position in time, replacing 'ago' with 'before' or 'previously'.",
     "anchor": "The construction \"ago\" is replaced by \"before\" or \"previously,\" so \"two weeks ago\" becomes \"two weeks before.\""

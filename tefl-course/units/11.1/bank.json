@@ -8,7 +8,7 @@
       "C) Discipline problems increase to the point where communicative activities become impossible",
       "D) Teachers lose the ability to use pair work because rooms are too crowded to rearrange"
     ],
-    "answer": "When sixty students share a single lesson hour, each individual's opportunity to produce language shrinks to a fraction of what a smaller class would allow.",
+    "answer": "B) Students have fewer opportunities to produce language because practice time is divided among too many learners — When sixty students share a single lesson hour, each individual's opportunity to produce language shrinks to a fraction of what a smaller class would allow.",
     "anchor": "each individual's opportunity to produce language shrinks to a fraction of what a smaller class would allow"
   },
   {
@@ -20,7 +20,7 @@
       "C) It creates a circulation of attention among students who read and respond to each other's work",
       "D) It signals to administrators that communicative tasks are being completed"
     ],
-    "answer": "Other groups have a reason to read and respond to work that is not their own, creating a circulation of attention that a single teacher-fronted display cannot replicate.",
+    "answer": "C) It creates a circulation of attention among students who read and respond to each other's work — Other groups have a reason to read and respond to work that is not their own, creating a circulation of attention that a single teacher-fronted display cannot replicate.",
     "anchor": "creating a circulation of attention that a single teacher-fronted display cannot replicate"
   },
   {
@@ -32,13 +32,14 @@
       "C) The teacher will repeatedly return to confident students and front rows, leaving those who most need help unnoticed",
       "D) Pair work will break down because students expect the teacher to visit every pair equally"
     ],
-    "answer": "a teacher who circulates without a plan will inevitably return to the same confident students, the same front rows, and the same pairs who raise their hands",
+    "answer": "C) The teacher will repeatedly return to confident students and front rows, leaving those who most need help unnoticed — a teacher who circulates without a plan will inevitably return to the same confident students, the same front rows, and the same pairs who raise their hands",
     "anchor": "a teacher who circulates without a plan will inevitably return to the same confident students, the same front rows"
   },
   {
     "type": "short",
-    "question": "The unit argues that allowing students to participate in creating classroom rules produces a different outcome than a teacher-imposed list. What outcome does the unit say this participation produces, and what additional mechanisms does the unit recommend to reinforce those rules?",
-    "answer": "When students help decide the rules, the resulting conduct guide carries shared ownership. The unit also recommends using reward systems and peer reinforcement so the whole class works toward common behavioral goals.",
-    "anchor": "the resulting conduct guide carries a kind of shared ownership that a teacher-imposed list does not"
+    "question": "The unit recommends 'classroom learning systems' as the foundation of managing a large class. Define the term and give one example of such a routine from the unit.",
+    "options": null,
+    "answer": "Classroom learning systems are the clear routines, expectations, and physical arrangements a teacher sets up in advance to make the class run smoothly. One example: posting the day's agenda on the board at the start of class, so students know what is coming without the teacher spending time explaining it.",
+    "anchor": "clear routines, expectations, and physical arrangements a teacher sets up in advance"
   }
 ]
