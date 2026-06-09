@@ -1,6 +1,12 @@
 # Style rules — embedded in every drafting prompt, enforced by the gate
 
-Write like a print textbook from a serious publisher. Plain declarative sentences. Concrete classroom examples with named hypothetical students. Vary sentence length naturally. One idea per paragraph, 3–6 sentences, joined by the logic of the content rather than transition words.
+Write like a print textbook from a serious publisher. Plain declarative sentences. Concrete classroom examples used sparingly. Vary sentence length naturally. One idea per paragraph, 3–6 sentences, joined by the logic of the content rather than transition words.
+
+SPELLING: American English throughout (organize, recognize, behavior, color, center, practice, traveling, analyze, program). This is an American-English course.
+
+NAMED EXAMPLES: use ONLY the recurring cast (see ../cast.md) — learners Carlos, Daniel, Wei, Fatima, Yuki, Priya; teachers Ms. Reyes, Mr. Osei. Keep each character's gender consistent. Do not invent new names. Use a named vignette only when it genuinely clarifies a point — a few per unit at most, never one per paragraph. Vary how examples are introduced; do not open paragraph after paragraph with "Consider…".
+
+Do NOT open a unit or section with meta-framing ("The central argument of this unit is…", "This unit will explore…"). Start on the content.
 
 BANNED — structures:
 
