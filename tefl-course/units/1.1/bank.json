@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what distinguishes a bilingual English-Spanish classroom in the United States from an EFL classroom in Costa Rica, even when both serve children aged five and six?",
+    "options": [
+      "The bilingual classroom uses more games and songs than the EFL classroom.",
+      "In the bilingual setting English shares space with Spanish throughout the school day, while in the EFL classroom English arrives as a subject in its own right.",
+      "The EFL classroom has better physical resources and more learning stations.",
+      "The bilingual classroom focuses on grammar explanation rather than activity-based learning."
+    ],
+    "answer": "In the bilingual setting English shares space with Spanish throughout the school day, while in the EFL classroom English arrives as a subject in its own right.",
+    "anchor": "In the bilingual setting, English shares space with Spanish throughout the school day"
+  },
+  {
+    "type": "mc",
+    "question": "The unit identifies five core areas of pedagogical skill that TEFL teachers develop. Which of the following is NOT listed among them?",
+    "options": [
+      "Classroom management",
+      "Language teaching techniques",
+      "Curriculum design and syllabus writing",
+      "Adapting activities and lesson planning"
+    ],
+    "answer": "Curriculum design and syllabus writing",
+    "anchor": "classroom management, language teaching techniques, encouraging critical and creative thinking, lesson observation skills, and adapting activities and lesson planning"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, what specific challenge related to classroom management is described as particularly difficult when working with very young learners?",
+    "options": [
+      "Keeping learners seated during grammar explanations",
+      "Managing transitions between activities",
+      "Preventing learners from using their home language",
+      "Assessing proficiency levels accurately"
+    ],
+    "answer": "Managing transitions between activities",
+    "anchor": "transitions between activities can be difficult, especially when working with very young learners"
+  },
+  {
+    "type": "short",
+    "question": "The unit describes a structured sequence that teachers follow when using observation as a professional learning tool. What is the first stage of this sequence, and what does it involve?",
+    "options": null,
+    "answer": "The first stage is activating prior knowledge before viewing, which involves drawing on the teacher's own classroom experience to set a context for what they are about to observe.",
+    "anchor": "Teachers first activate their prior knowledge before viewing, drawing on their own classroom experience"
+  }
+]

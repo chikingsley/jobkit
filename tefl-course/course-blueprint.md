@@ -10,7 +10,7 @@ The pre-production master plan (2026-06-07). Every unit named, sourced, and stat
 - 🎬 — a public-domain State Dept video exists for the topic (embeddable from their YouTube).
 - ⭐ — carries verified research citations (curriculum-research.md §4); these units are the differentiators no budget competitor has.
 
-## The course: 14 modules, 57 units, ~120 hours
+## The course: 14 modules, 63 units, ~120 hours
 
 Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-question anchored quiz. Module ends with a test that re-asks 2 questions from earlier modules (spaced retrieval, practicing what §M5 teaches). ~2 study-hours per unit + module tests + final ≈ 120 hours. Target text volume ~170–210k words (teacherrecord claims 120hr at ~210k).
 
@@ -149,7 +149,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 
 ## Totals
 
-57 units: **17 ✅ corpus-covered · 25 🟡 partial · 15 🔴 needs sourcing** · 12 units ⭐ carry verified citations · ~17 topics have free public-domain video.
+63 units (the header originally miscounted 57; the module tables below were always right): **17 ✅ corpus-covered · 25 🟡 partial · 15 🔴 needs sourcing** · 12 units ⭐ carry verified citations · ~17 topics have free public-domain video.
 
 ## What the owner can source (maps to the 🔴 rows)
 

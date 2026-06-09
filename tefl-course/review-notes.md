@@ -10,6 +10,12 @@
 
 My own read of the 62 drafted units, in context, against the source material (State Dept corpus, the Interchange/Passages/Grammar & Beyond books in the archive) and the gate. Not a rewrite plan and nothing forced — a vibe-check with the evidence behind each call, ranked by whether I'd actually bother.
 
+## Wrapper-pass catches (2026-06-09, during test building)
+
+- **Unit 9.1 was missing from `units/`** — the pilot was never promoted out of `pilot/`; the course had silently been 62/63. Promoted, registered, gated. The course is 63 units.
+- **Blueprint header said "57 units"** while its own module tables always summed to 63. Header fixed.
+- **6.2 (Phonemic Chart) was framed entirely around British RP** in an American-English course, and described learner Carlos as a "speaker of a variety of English." Rewritten: RP origin acknowledged, American differences (rhoticity, vowel mergers) stated, principle-transfers point made.
+
 ## The honest headline
 
 Read one unit at a time, the writing is genuinely good: clear, accurate, faithful to source, well sequenced, no purple prose. Nothing reads as "slop" in isolation. The problems are all **aggregate** — patterns you only feel reading the whole course, and they're the things that quietly say "a machine wrote this." Every one is mechanical to fix without touching the substance.

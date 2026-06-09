@@ -923,6 +923,19 @@ UNITS: dict[str, Unit] = {
             references=(_SD.format(m="Module 3: Integrating Skills"),),
         ),
         Unit(
+            uid="9.1",
+            title="Giving Feedback and Correcting Errors",
+            module="M9 — Feedback & Error Correction",
+            sources=("module5-learning-feedback.txt",),
+            scope=(
+                "THE PILOT UNIT (built first, by hand-tuned process): what feedback is and why it "
+                "matters, types of feedback, when and what to correct, recasts vs prompts with the "
+                "evidence, techniques in practice."
+            ),
+            citation_facts=CF_FACTS,
+            references=(_REF_LI, _REF_LS, _SD.format(m="Module 5: Learner Feedback")),
+        ),
+        Unit(
             uid="9.2",
             title="Learner Feedback in Practice",
             module="M9 — Feedback & Error Correction",

@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what fundamental advantage does a second language learner have that an infant acquiring a first language does not?",
+    "options": [
+      "A longer attention span for processing new vocabulary",
+      "A complete linguistic system already in place",
+      "Prior exposure to Total Physical Response techniques",
+      "The ability to read dictionary definitions independently"
+    ],
+    "answer": "A second language learner already has a complete linguistic system in place, which they draw on constantly to make inferences about new input.",
+    "anchor": "A learner acquiring a second language arrives in the classroom with something an infant never has: a complete linguistic system already in place."
+  },
+  {
+    "type": "mc",
+    "question": "Why does the unit say that production follows comprehension in first language acquisition, rather than the other way around?",
+    "options": [
+      "Because children are taught to listen before they are allowed to speak",
+      "Because children spend months listening and making sense of input before producing a recognizable word",
+      "Because vocabulary lists must be memorized before speech is possible",
+      "Because physical actions replace the need for spoken language in early childhood"
+    ],
+    "answer": "Children spend months listening and making sense of input before producing a single recognizable word; comprehension comes first and production follows naturally.",
+    "anchor": "spending months listening and making sense of that input before producing a single recognizable word"
+  },
+  {
+    "type": "mc",
+    "question": "What does the unit identify as the primary risk of enforcing a strict English-only rule that forbids any use of the learner's first language?",
+    "options": [
+      "It causes learners to rely too heavily on translation rather than inference",
+      "It prevents teachers from using realia and physical actions effectively",
+      "It may produce learners who are reluctant to attempt speech at all",
+      "It makes concept-checking questions impossible to conduct"
+    ],
+    "answer": "A classroom culture that treats L1 as entirely forbidden may produce learners who are reluctant to attempt speech at all, because the resulting silence when they cannot retrieve a word can feel punishing.",
+    "anchor": "A classroom culture that treats L1 as entirely forbidden may produce learners who are reluctant to attempt speech at all."
+  },
+  {
+    "type": "short",
+    "question": "The unit describes integrated language skills activities as serving the same principle as contextualization. Using an example from the unit, explain what makes an integrated skills activity more effective for older learners than repeating decontextualized sentences.",
+    "options": null,
+    "answer": "An integrated skills activity combines listening, speaking, reading, and writing within a single meaningful task. The unit's example of Carlos listening to a song, raising signs when he hears target vocabulary, and then discussing the lyrics with a partner shows that he is using language across multiple channels simultaneously, the way it functions in the real world. Older learners' developed reasoning minds can actively sort and connect this richer input to existing knowledge, leaving a more durable memory trace than mechanical repetition of isolated sentences can produce.",
+    "anchor": "a learner named Carlos is using language the way it functions in the world, where meaning is built across multiple channels at once"
+  }
+]

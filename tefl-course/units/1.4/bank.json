@@ -1,0 +1,44 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what distinguishes the gap between C1 and C2 proficiency?",
+    "options": [
+      "C2 learners have mastered all grammatical structures, while C1 learners still make frequent errors.",
+      "The gap is more about stylistic mastery than grammatical accuracy.",
+      "C2 learners can speak faster than C1 learners in conversation.",
+      "C1 learners cannot follow colloquial speech, whereas C2 learners can."
+    ],
+    "answer": "The gap is more about stylistic mastery than grammatical accuracy.",
+    "anchor": "The gap between C1 and C2 is often more about stylistic mastery than grammatical accuracy."
+  },
+  {
+    "type": "mc",
+    "question": "The unit warns that the six traditional proficiency band labels are not perfectly standardised. Which of the following best reflects this point?",
+    "options": [
+      "Schools always use the CEFR instead of traditional band labels.",
+      "One school may call a level 'pre-intermediate' where another uses 'elementary plus.'",
+      "Advanced learners are defined identically across all course book publishers.",
+      "The bands have precise entry and exit criteria that all institutions follow."
+    ],
+    "answer": "One school may call a level 'pre-intermediate' where another uses 'elementary plus.'",
+    "anchor": "One school may call a level 'pre-intermediate' where another uses 'elementary plus'"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the primary purpose of strategic pairing in a mixed-level class?",
+    "options": [
+      "To allow the teacher to focus exclusively on weaker learners while stronger ones work alone.",
+      "To ensure stronger learners always present to the group while weaker learners take notes.",
+      "To distribute cognitive load productively, giving the weaker learner a model and the stronger learner consolidation through explaining.",
+      "To prevent stronger learners from completing tasks too quickly by assigning them extra writing."
+    ],
+    "answer": "To distribute cognitive load productively, giving the weaker learner a model and the stronger learner consolidation through explaining.",
+    "anchor": "gives the weaker learner access to a model and gives the stronger learner the consolidation that comes from explaining and reformulating"
+  },
+  {
+    "type": "short",
+    "question": "The unit argues that a learner's proficiency level should not be treated as fixed. What practical classroom actions does the unit recommend to track how learners are developing over time?",
+    "answer": "The unit recommends regularly reassessing learners through short writing tasks, spoken check-ins, or informal observation during activities, then adjusting groupings, materials, and expectations accordingly.",
+    "anchor": "short writing tasks, spoken check-ins, or informal observation during activities, allows the teacher to adjust groupings, materials, and expectations"
+  }
+]

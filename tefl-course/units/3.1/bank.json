@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "Which sentence correctly uses 'be able to' to fill a grammatical gap that 'can' cannot cover?",
+    "options": [
+      "She can attend the meeting next week.",
+      "She will be able to attend the meeting.",
+      "She could to attend the meeting next week.",
+      "She may can attend the meeting."
+    ],
+    "answer": "She will be able to attend the meeting.",
+    "anchor": "\"She will be able to attend the meeting\" supplies the future that can cannot."
+  },
+  {
+    "type": "mc",
+    "question": "What distinguishes 'must' from 'have to' when expressing obligation?",
+    "options": [
+      "'Must' refers only to past obligations, while 'have to' refers to present ones.",
+      "'Must' expresses obligation originating with the speaker, while 'have to' expresses obligation from an external source.",
+      "'Must' is informal and 'have to' is formal.",
+      "'Must' requires do-support in questions, while 'have to' does not."
+    ],
+    "answer": "'Must' expresses obligation originating with the speaker, while 'have to' expresses obligation from an external source.",
+    "anchor": "must expresses strong obligation originating with the speaker... Have to expresses obligation that comes from an external source"
+  },
+  {
+    "type": "mc",
+    "question": "In the sentence 'Students may use dictionaries during the test,' what meaning does 'may' carry?",
+    "options": [
+      "Epistemic possibility — it is possible that students will use dictionaries.",
+      "Formal permission — students are allowed to use dictionaries.",
+      "Polite request — students are asking to use dictionaries.",
+      "Tentative prediction — students might use dictionaries."
+    ],
+    "answer": "Formal permission — students are allowed to use dictionaries.",
+    "anchor": "\"Students may use dictionaries during the test\" is a permission statement, not a possibility claim."
+  },
+  {
+    "type": "short",
+    "question": "Explain why a teacher should present semi-modals such as 'have to' as a distinct pattern rather than applying the same rules used for core modals like 'can' or 'must'.",
+    "options": null,
+    "answer": "Semi-modals behave like ordinary verbs: they require the full infinitive marker and use do-support in questions and negatives, whereas core modals take a bare infinitive and form questions and negatives without do-support. Applying core modal rules to semi-modals produces errors, such as treating 'have to' as if it never takes a third-person singular inflection.",
+    "anchor": "applying the rules for can or must directly to have to produces errors"
+  }
+]

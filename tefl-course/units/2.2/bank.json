@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "Which coordinating conjunction would best signal a contrast relationship when joining two main clauses in a compound sentence?",
+    "options": [
+      "and",
+      "so",
+      "but",
+      "for"
+    ],
+    "answer": "but",
+    "anchor": "The relationship between the clauses, whether contrast, addition, or consequence, is signaled by whichever connector the writer chooses."
+  },
+  {
+    "type": "mc",
+    "question": "In the sentence 'The list on the whiteboard confused Daniel,' what grammatical role does the prepositional phrase 'on the whiteboard' perform?",
+    "options": [
+      "It acts as the subject of the sentence.",
+      "It modifies the noun 'list'.",
+      "It fills an adverbial role after the object.",
+      "It functions as a subject complement."
+    ],
+    "answer": "It modifies the noun 'list'.",
+    "anchor": "the prepositional phrase 'on the whiteboard' modifies the noun 'list'"
+  },
+  {
+    "type": "mc",
+    "question": "A student writes 'He seems tiredness.' What has the student misunderstood about the slot following a linking verb?",
+    "options": [
+      "They have used an intransitive verb where a transitive one is required.",
+      "They have treated the complement slot as though it requires a noun the way an object does.",
+      "They have placed an adverbial between the verb and its object.",
+      "They have confused a subordinate clause with a main clause."
+    ],
+    "answer": "They have treated the complement slot as though it requires a noun the way an object does.",
+    "anchor": "Carlos who writes 'He seems tiredness' has treated the complement slot as though it requires a noun in the same way an object does"
+  },
+  {
+    "type": "short",
+    "question": "Explain why a compound-complex sentence requires more than just two main clauses to qualify as compound-complex, and give the minimum structural requirements for this sentence type.",
+    "options": null,
+    "answer": "A compound-complex sentence must contain at least two main clauses AND at least one subordinate clause. Two main clauses alone produce only a compound sentence; the subordinate clause is the additional requirement that makes it compound-complex.",
+    "anchor": "it contains at least two main clauses and at least one subordinate clause"
+  }
+]

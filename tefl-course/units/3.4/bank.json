@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what distinguishes 'She walked into the room' from 'I ran into my old teacher at the market'?",
+    "options": [
+      "In the first sentence, 'into' introduces a location phrase; in the second, it has bonded with 'run' to create a new meaning.",
+      "Both sentences use 'into' as a particle that changes the meaning of the base verb.",
+      "The first sentence contains a phrasal verb, while the second uses an ordinary verb-plus-preposition combination.",
+      "In both sentences, 'into' functions as a preposition pointing toward a location."
+    ],
+    "answer": "In the first sentence, 'into' introduces a location phrase; in the second, it has bonded with 'run' to create a new meaning.",
+    "anchor": "It has bonded with 'run' to create a new meaning: to meet someone by chance."
+  },
+  {
+    "type": "mc",
+    "question": "Which statement about the relationship between transitivity and separability is explicitly supported by the unit?",
+    "options": [
+      "All transitive phrasal verbs are separable.",
+      "All separable phrasal verbs are intransitive.",
+      "The separable-intransitive cell of the two-by-two grid is empty because separability requires an object to move.",
+      "Inseparable phrasal verbs are always intransitive."
+    ],
+    "answer": "The separable-intransitive cell of the two-by-two grid is empty because separability requires an object to move.",
+    "anchor": "The separable-intransitive cell is empty, because separability requires an object to move, and intransitive verbs have none."
+  },
+  {
+    "type": "mc",
+    "question": "What specific purpose does the unit assign to the particle-swap activity using the base verb 'give'?",
+    "options": [
+      "To help learners memorise the correct spelling of particles through repeated writing practice.",
+      "To train learners to treat particles as meaningful units so that unfamiliar combinations become less opaque.",
+      "To demonstrate that all particles attached to 'give' share a single core meaning.",
+      "To show learners that phrasal verbs with 'give' are always inseparable."
+    ],
+    "answer": "To train learners to treat particles as meaningful units so that unfamiliar combinations become less opaque.",
+    "anchor": "learners begin to treat particles as meaningful units rather than fixed attachments, and unfamiliar combinations become less opaque"
+  },
+  {
+    "type": "short",
+    "question": "The unit argues that recycling is what separates a vocabulary lesson from vocabulary acquisition. What does the unit say must happen for a phrasal verb to become available for spontaneous use?",
+    "options": null,
+    "answer": "The item must accumulate repeated meaningful contact across different lessons and skills. The unit states that a phrasal verb met once and never seen again is unlikely to move into a learner's active repertoire, so teachers should return to the same items in different contexts—for example, in reading, speaking, and writing tasks across multiple lessons.",
+    "anchor": "That accumulation is what makes a word available for spontaneous use."
+  }
+]

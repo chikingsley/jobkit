@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the term for the influence a learner's first language exerts on their English production?",
+    "options": [
+      "Interlanguage",
+      "Transfer",
+      "Fossilisation",
+      "Contrastive analysis"
+    ],
+    "answer": "Transfer",
+    "anchor": "The term for this influence is transfer. Transfer occurs when a learner applies an L1 rule to English"
+  },
+  {
+    "type": "mc",
+    "question": "The unit describes a pattern where learners who have learned English requires articles begin inserting 'the' where zero article is required. What is this pattern called?",
+    "options": [
+      "Negative transfer",
+      "Omission",
+      "Overcorrection",
+      "Hypercorrection avoidance"
+    ],
+    "answer": "Overcorrection",
+    "anchor": "Overcorrection produces a different pattern. Having learned that English requires articles, some learners begin inserting 'the' where zero article is required."
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the most direct remedy when a spelling error is caused by the learner's phonology rather than a gap in vocabulary knowledge?",
+    "options": [
+      "Have the learner copy the correct spelling multiple times to build muscle memory",
+      "Mark the error and ask the learner to look up the word in a dictionary",
+      "Address the pronunciation before correcting the spelling",
+      "Teach the spelling rule governing the vowel pattern in question"
+    ],
+    "answer": "Address the pronunciation before correcting the spelling",
+    "anchor": "The most direct remedy is to address the pronunciation before correcting the spelling."
+  },
+  {
+    "type": "short",
+    "question": "The unit describes three practical classroom approaches for responding to predictable L1-influenced errors. Name all three approaches in the order the unit presents them.",
+    "options": null,
+    "answer": "The three approaches are: (1) anticipatory teaching, preparing for likely errors before they appear by building problem areas into the syllabus from the start; (2) error analysis during feedback, identifying the L1 rule learners are applying when marking written work and explaining the English rule that replaces it; and (3) contrastive explanation, pointing out clearly and briefly how English differs from the learner's L1 on a specific grammatical or phonological point.",
+    "anchor": "The first practical approach is anticipatory teaching... The second approach is error analysis during feedback... The third approach is contrastive explanation"
+  }
+]

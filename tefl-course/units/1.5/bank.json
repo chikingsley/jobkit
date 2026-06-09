@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the key reason for introducing a transition signal on the very first day rather than waiting until later in the course?",
+    "options": [
+      "A. Students are more energetic on day one and therefore respond better to new signals.",
+      "B. A signal introduced and practiced on day one becomes a reliable tool by day five, whereas retrofitting it later is much harder.",
+      "C. Transition signals are only effective when students have not yet formed friendships with one another.",
+      "D. The first day is the only occasion when a teacher has enough spare time to explain and rehearse a new cue."
+    ],
+    "answer": "A signal introduced and practiced on day one becomes a reliable tool by day five, making it far harder to establish once the class already feels chaotic.",
+    "anchor": "a signal that is introduced and practiced on day one becomes a reliable tool by day five"
+  },
+  {
+    "type": "mc",
+    "question": "The unit argues that assigning small procedural roles to students from the very first day serves which purpose beyond simple task management?",
+    "options": [
+      "A. It prevents stronger students from dominating whole-class discussions.",
+      "B. It gives the teacher time to complete the seating chart without interruption.",
+      "C. It builds a sense of shared ownership over the classroom environment.",
+      "D. It ensures that quieter students receive more individual attention from the teacher."
+    ],
+    "answer": "Assigning small tasks to students from the first day builds a sense of shared ownership over the classroom environment.",
+    "anchor": "builds a sense of shared ownership over the classroom environment"
+  },
+  {
+    "type": "mc",
+    "question": "When the unit describes the teacher's role shifting across the four-stage icebreaker sequence, which pairing correctly matches a phase to the teacher's role?",
+    "options": [
+      "A. Pair work — discussion leader; whole-class phase — monitor.",
+      "B. Small-group work — audience; individual presentations — listener.",
+      "C. Pair work — monitor; individual presentations — audience.",
+      "D. Whole-class phase — monitor; small-group work — discussion leader."
+    ],
+    "answer": "During pair work the teacher acts as monitor, and during individual presentations the teacher acts as audience.",
+    "anchor": "monitor during pair work, listener during group work, discussion leader during the whole-class phase, and audience during individual presentations"
+  },
+  {
+    "type": "short",
+    "question": "The unit states that positive feedback given to one student affects the rest of the class as well. Explain the mechanism by which this happens, as described in the unit.",
+    "options": null,
+    "answer": "When the teacher acknowledges a correct answer from one student, every other student in the room registers that the classroom is a place where correct answers are acknowledged rather than taken for granted, making them progressively more willing to attempt answers themselves.",
+    "anchor": "every other student in the room registers that the classroom is a place where correct answers are acknowledged"
+  }
+]

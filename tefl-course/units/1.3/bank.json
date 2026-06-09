@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, why is describing an effective teacher in terms of personality traits such as 'patience' considered less useful for trainees than describing observable behaviors?",
+    "options": [
+      "Personality traits are difficult to measure accurately in a classroom setting",
+      "Patience cannot be practiced in the same way that a questioning technique can",
+      "Personality descriptions focus too much on the teacher rather than the students",
+      "Traits like enthusiasm are irrelevant to student learning outcomes"
+    ],
+    "answer": "Patience cannot be practiced in the same way that a questioning technique can",
+    "anchor": "Patience cannot be practiced in the same way that a questioning technique can"
+  },
+  {
+    "type": "mc",
+    "question": "The unit explains that concept-checking questions serve a different function from comprehension-checking questions. What specifically do concept-checking questions verify?",
+    "options": [
+      "Whether students have processed a procedural instruction before an activity begins",
+      "Whether students have understood the meaning of a word or phrase, not merely whether they can repeat it back",
+      "Whether students are ready to move from pair work to whole-class discussion",
+      "Whether students have memorized the correct spelling of new vocabulary items"
+    ],
+    "answer": "Whether students have understood the meaning of a word or phrase, not merely whether they can repeat it back",
+    "anchor": "They verify whether students have understood the meaning of a word or phrase, not merely whether they can repeat it back"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the specific risk when a teacher stops the whole class to correct one off-task student?",
+    "options": [
+      "The corrected student is likely to become more disruptive afterward",
+      "The teacher loses the opportunity to use proximity as a management tool",
+      "The teacher has handed Carlos's inattention to every other student in the room",
+      "The lesson objective becomes unclear to the rest of the class"
+    ],
+    "answer": "The teacher has handed Carlos's inattention to every other student in the room",
+    "anchor": "she has handed Carlos's inattention to every other student in the room"
+  },
+  {
+    "type": "short",
+    "question": "The unit argues that fairness in an inclusive classroom does not mean treating every student identically. According to the unit, what does fairness actually mean in this context?",
+    "options": null,
+    "answer": "Fairness means giving each student the conditions in which she can participate on her own terms, rather than applying identical treatment to all students regardless of their individual needs.",
+    "anchor": "it means giving each student the conditions in which she can participate on her own terms"
+  }
+]

@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "Which of the following correctly illustrates an adjective used in predicative position?",
+    "options": [
+      "a dusty road",
+      "three nervous students",
+      "the students seemed nervous",
+      "a careful driver"
+    ],
+    "answer": "the students seemed nervous",
+    "anchor": "In predicative position, the adjective follows a linking verb and describes the subject, as in the students seemed nervous"
+  },
+  {
+    "type": "mc",
+    "question": "What is the grammatical role of 'in front of' in the sentence 'The car parked in front of the gate'?",
+    "options": [
+      "Three separate words with independent grammatical roles",
+      "A subordinating conjunction introducing a dependent clause",
+      "A complex preposition functioning as a single unit",
+      "A coordinating conjunction joining two noun phrases"
+    ],
+    "answer": "A complex preposition functioning as a single unit",
+    "anchor": "Complex prepositions consist of two or three words functioning as a single unit: in front of, next to, because of"
+  },
+  {
+    "type": "mc",
+    "question": "Why does metalanguage matter when a teacher reads a course syllabus entry such as 'modal verbs of deduction'?",
+    "options": [
+      "It allows the teacher to correct student pronunciation errors immediately.",
+      "It enables the teacher to map syllabus labels onto actual language forms and their grammatical behaviour.",
+      "It ensures the teacher can write the target forms on the board without consulting a reference.",
+      "It replaces the need for a grammar reference when planning lessons."
+    ],
+    "answer": "It enables the teacher to map syllabus labels onto actual language forms and their grammatical behaviour.",
+    "anchor": "Entries such as 'present perfect for recent events' or 'comparative adjectives' assume the reader can map those labels onto actual language"
+  },
+  {
+    "type": "short",
+    "question": "Explain why the sentence 'She sings beautiful' is grammatically incorrect, identifying the word class of 'beautiful' and stating what word class is required instead, with a reason.",
+    "options": null,
+    "answer": "In 'She sings beautiful', the word 'beautiful' is an adjective, but because it modifies the dynamic verb 'sings' rather than describing the subject, an adverb is required. The correct form is 'beautifully', which describes the manner of the action.",
+    "anchor": "sings is a dynamic verb, not a linking verb, so the modifier describes the manner of the action rather than the subject herself"
+  }
+]

@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "Which subordinating conjunction is described as introducing 'the only condition under which the result will not hold'?",
+    "options": [
+      "as long as",
+      "provided that",
+      "unless",
+      "on condition that"
+    ],
+    "answer": "unless",
+    "anchor": "'Unless' means 'if not' and introduces the only condition under which the result will not hold"
+  },
+  {
+    "type": "mc",
+    "question": "What is the primary reason the unit recommends introducing conditionals through meaning before form?",
+    "options": [
+      "It allows teachers to skip drilling exercises entirely",
+      "It saves learners considerable confusion",
+      "It ensures learners memorise the numbered labels first",
+      "It prevents learners from encountering mixed conditionals too early"
+    ],
+    "answer": "It saves learners considerable confusion",
+    "anchor": "Introducing conditionals through meaning before form saves learners considerable confusion"
+  },
+  {
+    "type": "mc",
+    "question": "In the sentence 'If she has already left, we will need to call her,' what aspect is used in the condition clause and why?",
+    "options": [
+      "Past simple, to signal an unreal condition",
+      "Present perfect, to signal a completed action whose result is relevant now",
+      "Past perfect, to signal a counterfactual past event",
+      "Present continuous, to frame the condition as an ongoing state"
+    ],
+    "answer": "Present perfect, to signal a completed action whose result is relevant now",
+    "anchor": "'If she has already left, we will need to call her' uses the present perfect in the condition clause to signal a completed action whose result is relevant now"
+  },
+  {
+    "type": "short",
+    "question": "A mixed conditional sentence reads: 'If she had taken that job in Berlin, she would be fluent in German by now.' Identify the time frame of each clause and explain what meaning this combination expresses that neither the second nor the third conditional alone could convey.",
+    "options": null,
+    "answer": "The if-clause (past perfect) refers to a decision not made in the past; the main clause (would + bare infinitive) describes a present state that would exist today as a consequence. This combination expresses a past missed opportunity alongside its imagined present-day result simultaneously, which neither the second conditional (present/future hypothetical) nor the third conditional (closed past) can capture alone.",
+    "anchor": "The if-clause refers to a decision that was not made in the past; the main clause describes the present state that would exist today as a consequence"
+  }
+]

@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the key difference between the perfect simple 'He has run five kilometres today' and the perfect continuous 'He has been running'?",
+    "options": [
+      "A. The perfect simple refers to present time while the perfect continuous refers to past time.",
+      "B. The perfect simple foregrounds a completed, measurable result while the perfect continuous foregrounds the activity as an extended process.",
+      "C. The perfect simple uses a past participle while the perfect continuous uses a present participle, making them different tenses.",
+      "D. The perfect continuous can only be used when the activity has fully stopped, whereas the perfect simple implies it is still ongoing."
+    ],
+    "answer": "B. The perfect simple foregrounds a completed, measurable result while the perfect continuous foregrounds the activity as an extended process.",
+    "anchor": "'He has run five kilometres today' focuses on the finished quantity, a measurable result."
+  },
+  {
+    "type": "mc",
+    "question": "The unit uses the image of a horizontal line representing time to explain aspect. Which of the following correctly matches the two aspects to their visual representations?",
+    "options": [
+      "A. Simple aspect = a segment of the line showing spread; continuous aspect = a single dot with no visible interior.",
+      "B. Simple aspect = a bridge between two points on the line; continuous aspect = a single dot.",
+      "C. Simple aspect = a single dot with no visible interior; continuous aspect = a segment showing the action spreading across it.",
+      "D. Simple aspect = a segment showing duration; continuous aspect = a bridge connecting two time points."
+    ],
+    "answer": "C. Simple aspect = a single dot with no visible interior; continuous aspect = a segment showing the action spreading across it.",
+    "anchor": "The simple aspect treats an event as a single point on that line, a dot with no visible interior."
+  },
+  {
+    "type": "mc",
+    "question": "The unit argues that a learner of English whose first language is Mandarin faces a particular challenge with the English tense-aspect system. What is that challenge, according to the unit?",
+    "options": [
+      "A. Mandarin marks both tense and aspect through verb inflection, so learners must unlearn inflectional habits.",
+      "B. Mandarin does not inflect verbs for tense and marks aspect with particles, so the learner needs explicit explanation of what the English system is doing.",
+      "C. Mandarin has more tenses than English, causing learners to over-differentiate time reference.",
+      "D. Mandarin uses modal auxiliaries for future time in the same way English does, creating false transfer errors."
+    ],
+    "answer": "B. Mandarin does not inflect verbs for tense and marks aspect with particles, so the learner needs explicit explanation of what the English system is doing.",
+    "anchor": "Mandarin, for instance, does not inflect verbs for tense; aspect is marked by particles rather than by changes to the verb stem."
+  },
+  {
+    "type": "short",
+    "question": "The unit contrasts 'I lived in Rome' with 'I have lived in Rome' as a classroom minimal pair. Explain what meaning difference the unit says these two sentences convey, and why minimal pairs are recommended as a teaching technique.",
+    "options": null,
+    "answer": "The first sentence presents the period of residence as a closed, bounded fact with no connection to the present, while the second presents it as part of the speaker's current biography, still relevant now. Minimal pairs are recommended because two sentences identical except for the verb form isolate the aspectual contrast precisely, allowing the meaning difference to emerge from context rather than from a definition.",
+    "anchor": "The first presents the period of residence as a closed, bounded fact... the second presents it as part of the speaker's current biography, relevant now."
+  }
+]

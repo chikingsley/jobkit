@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, which three purposes does the future simple (will + base verb) serve?",
+    "options": [
+      "Spontaneous decision, confident prediction, and promise",
+      "Arranged plan, general truth, and promise",
+      "Spontaneous decision, arranged plan, and completed future action",
+      "Confident prediction, ongoing future action, and general truth"
+    ],
+    "answer": "Spontaneous decision, confident prediction, and promise",
+    "anchor": "A spontaneous decision made at the moment of speaking takes this form... A prediction offered without supporting evidence also uses will... A promise, equally, calls for will"
+  },
+  {
+    "type": "mc",
+    "question": "The unit states that stative verbs cannot take the continuous form. Which of the following sentences contains a stative verb error of this type?",
+    "options": [
+      "She is writing in her notebook.",
+      "I am knowing the answer.",
+      "Carlos is commuting to Cardiff this week.",
+      "They are preparing the food right now."
+    ],
+    "answer": "I am knowing the answer.",
+    "anchor": "A student who says 'I am knowing the answer' has applied the continuous form to a verb that does not describe a process"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, what distinguishes the future perfect from the future simple in a sentence such as 'By Friday evening, I'll have finished all four practice papers'?",
+    "options": [
+      "The future perfect indicates a spontaneous decision made at the moment of speaking.",
+      "The future perfect is used only in formal written English, not in speech.",
+      "The future perfect views the action as complete from a future vantage point, defined by a deadline.",
+      "The future perfect signals that the action will be in progress at a specific future moment."
+    ],
+    "answer": "The future perfect views the action as complete from a future vantage point, defined by a deadline.",
+    "anchor": "The deadline... is what distinguishes this form from the future simple... the action is viewed as complete from a future vantage point"
+  },
+  {
+    "type": "short",
+    "question": "A student says 'I am meeting my cousin tomorrow' to describe a pre-arranged event. According to the unit, why is this form more appropriate than 'I will meet my cousin tomorrow'?",
+    "options": null,
+    "answer": "The present continuous is appropriate because it signals prior planning and arrangement. Using 'will' instead strips away the sense of prior planning and replaces it with a spontaneous decision or prediction made at the moment of speaking, which misrepresents the nature of the event.",
+    "anchor": "Using 'will' for a pre-arranged event strips away the sense of prior planning and replaces it with a decision or prediction made at the moment of speaking"
+  }
+]
