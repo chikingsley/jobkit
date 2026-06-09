@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the primary purpose of drilling after modeling a pronunciation feature?",
+    "options": [
+      "To expose students to a wide variety of new vocabulary items",
+      "To move a pronunciation feature from conscious attention toward more automatic production",
+      "To allow the teacher to assess individual students' phonetic accuracy",
+      "To replace listen-and-discriminate activities with faster repetition"
+    ],
+    "answer": "Its purpose is to move a pronunciation feature from conscious attention toward more automatic production.",
+    "anchor": "Its purpose is to move a pronunciation feature from conscious attention toward more automatic production."
+  },
+  {
+    "type": "mc",
+    "question": "Why does the unit recommend that teachers circulate during group or pair work rather than relying solely on whole-class activities to identify pronunciation issues?",
+    "options": [
+      "Because whole-class activities are too short to reveal any pronunciation patterns",
+      "Because group work produces natural, unguarded speech that whole-class activities rarely provide",
+      "Because circulating allows the teacher to model sounds to each student individually",
+      "Because students only mispronounce words when they are unaware of being observed"
+    ],
+    "answer": "Circulating among groups gives the teacher access to natural, unguarded speech that a whole-class activity rarely produces.",
+    "anchor": "Circulating among groups gives the teacher access to natural, unguarded speech that a whole-class activity rarely produces."
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, how does keeping intelligibility as the standard affect the emotional atmosphere of the classroom?",
+    "options": [
+      "It encourages students to self-correct every minor sound deviation before speaking",
+      "It positions the teacher as a judge who evaluates how each student sounds",
+      "It makes students more willing to speak, take risks, and produce longer stretches of language",
+      "It reduces the need for any pronunciation instruction during the lesson"
+    ],
+    "answer": "When a student knows his accent will not be treated as a deficiency, he is more willing to speak, to take risks, and to produce longer stretches of language.",
+    "anchor": "he is more willing to speak, to take risks, and to produce longer stretches of language"
+  },
+  {
+    "type": "short",
+    "question": "Explain why the unit presents minimal pairs as particularly useful for learners whose first language does not contain a sound contrast found in English, and what sequence of activities does the unit recommend for teaching with minimal pairs?",
+    "options": null,
+    "answer": "Minimal pairs are especially useful because a student may produce two distinct English words identically without realising the difference affects comprehension, since the contrast simply does not exist in their first language. The unit recommends a structured sequence: first, listen-and-discriminate activities so students can reliably perceive the contrast, and then drilling for production once perception is established.",
+    "anchor": "a contrast does not exist in a student's first language... Separating perception from production matters because students often need to hear a distinction reliably before they can make it consistently"
+  }
+]

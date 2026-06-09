@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the primary cost of concentrating authority in the controller role during a teacher-centered lesson?",
+    "options": [
+      "Students become confused about lesson objectives without teacher direction.",
+      "Students have limited opportunities to produce language freely or make decisions about their own learning.",
+      "The teacher cannot monitor student performance while managing behavior.",
+      "Transitions between activities become less smooth without student input."
+    ],
+    "answer": "Students have limited opportunities to produce language freely or make decisions about their own learning.",
+    "anchor": "when the teacher directs every move, students have limited opportunities to produce language freely or make decisions about their own learning"
+  },
+  {
+    "type": "mc",
+    "question": "The unit describes tools such as the Discussion Leader Self-Assessment Worksheet and the Peer Assessment Worksheet. In which teacher role does distributing these tools place the teacher?",
+    "options": [
+      "Controller, because the teacher decides which students receive which worksheets.",
+      "Monitor, because the worksheets allow the teacher to observe student performance unobtrusively.",
+      "Prompter, because the worksheets help students retrieve answers they could not produce alone.",
+      "Resource, because the tools provide structured support so students can operate with genuine independence."
+    ],
+    "answer": "Resource, because the tools provide structured support so students can operate with genuine independence.",
+    "anchor": "The teacher who distributes these tools is acting as a resource: providing the support in advance so that students can operate with genuine independence"
+  },
+  {
+    "type": "mc",
+    "question": "The unit describes a student named Priya who consistently waits to hear a classmate's answer before producing her own during a game of Hot Potato. What does the unit say a monitoring teacher should do with this observation?",
+    "options": [
+      "Interrupt the game immediately and redirect Priya to answer independently.",
+      "Note the observation without stopping the class, storing it to inform later decisions such as reteaching or re-pairing students.",
+      "Switch to a written assessment so Priya cannot rely on classmates for answers.",
+      "Assign Priya the role of discussion leader in the next activity to build her confidence."
+    ],
+    "answer": "Note the observation without stopping the class, storing it to inform later decisions such as reteaching or re-pairing students.",
+    "anchor": "A student like Priya who consistently waits to hear a classmate's answer before producing her own is signaling something the teacher needs to register, even if the game continues without interruption"
+  },
+  {
+    "type": "short",
+    "question": "The unit argues that neither a teacher-centered nor a student-centered stance is a flaw. What principle does it say this recognition forms the foundation of?",
+    "options": null,
+    "answer": "Recognizing that no single stance serves every moment is the foundation of thinking about teacher roles systematically.",
+    "anchor": "Recognizing that no single stance serves every moment is the foundation of thinking about teacher roles systematically"
+  }
+]

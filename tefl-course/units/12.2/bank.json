@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "Why does the unit argue that learning-styles theory carries a 'moral weight' that makes it difficult for teachers to abandon?",
+    "options": [
+      "Because it is endorsed by peer-reviewed neuroscience journals",
+      "Because sorting students into types feels like attending to them as individuals, reflecting a genuinely valuable instinct",
+      "Because it reduces the workload of lesson planning by simplifying differentiation",
+      "Because government training standards legally require teachers to identify student styles"
+    ],
+    "answer": "Sorting students into types feels like paying attention to them as individuals, and that instinct reflects something genuinely valuable about good teaching.",
+    "anchor": "Sorting students into types feels like paying attention to them as individuals"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the key problem with how the source glossary defines 'visual learner' and 'kinesthetic learner'?",
+    "options": [
+      "The definitions use outdated terminology that modern neuroscience has replaced",
+      "The definitions conflate preferring a format with benefiting from it by placing the two verbs side by side without comment",
+      "The definitions exclude important style categories such as logical and solitary learners",
+      "The definitions are too technical for practicing teachers to apply in the classroom"
+    ],
+    "answer": "Those two verbs are doing very different work, and placing them side by side without comment treats them as equivalent.",
+    "anchor": "Those two verbs are doing very different work, and placing them side by side without comment"
+  },
+  {
+    "type": "mc",
+    "question": "The unit describes Willingham, Hughes, and Dobolyi (2015) as going 'a step further' than simply confirming the lack of evidence for learning styles. What additional position did they take?",
+    "options": [
+      "They proposed a revised taxonomy of learning styles based on neuroimaging data",
+      "They argued that learning-styles theories should be presented to teachers as a popular but scientifically debunked idea rather than as a basis for planning",
+      "They recommended that style inventories be replaced with standardised aptitude tests",
+      "They called for learning styles to be removed from all national curriculum frameworks"
+    ],
+    "answer": "They argued that learning-styles theories should be presented to teachers and trainee teachers as a popular but scientifically debunked idea.",
+    "anchor": "learning-styles theories should be presented to teachers and trainee teachers as a popular but scientifically debunked idea"
+  },
+  {
+    "type": "short",
+    "question": "The unit states that a teacher who hears 'learning styles are a myth' and concludes 'therefore individual differences don't matter' has misread the evidence. Explain what the research actually establishes as the unsupported step, and why this distinction matters for classroom practice.",
+    "options": null,
+    "answer": "The research establishes that the sorting-and-matching procedure — diagnosing a fixed style category and then narrowing a student's instructional diet to match it — is the unsupported step. Learner differences themselves are real and important. The distinction matters because it means teachers should not ignore variation among students; instead, they should address that variation through planned format variety rather than through style diagnosis.",
+    "anchor": "the sorting-and-matching procedure is the unsupported step. Learner differences are real"
+  }
+]

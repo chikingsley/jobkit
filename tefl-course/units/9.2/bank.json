@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "A student tells a shop assistant, 'Give me the bread,' in a context that calls for a polite request. According to the unit, what kind of error is this, and what is the risk of misidentifying it?",
+    "options": [
+      "A grammatical error; the risk is that the student will be asked to repeat the sentence unnecessarily.",
+      "A pragmatic error; treating it as a grammar problem would send the student in the wrong direction entirely.",
+      "A vocabulary error; the student needs to learn more formal synonyms for common nouns.",
+      "A fluency error; interrupting to correct it would break the communicative flow of the task."
+    ],
+    "answer": "A pragmatic error; treating it as a grammar problem would send the student in the wrong direction entirely.",
+    "anchor": "The form is grammatically correct, but the pragmatic register is wrong. Treating that as a grammar problem would send Daniel in the wrong direction entirely."
+  },
+  {
+    "type": "mc",
+    "question": "In the story-retelling lesson described in the unit, what served as natural confirmation that a student's message had been understood?",
+    "options": [
+      "The teacher repeated the student's sentence correctly to the whole class.",
+      "The teacher wrote the correct form on the board after the activity ended.",
+      "The actors' physical responses showed whether the message had landed.",
+      "A peer in the audience raised a hand to signal that the meaning was clear."
+    ],
+    "answer": "The actors' physical responses showed whether the message had landed.",
+    "anchor": "the actors' physical responses served as natural confirmation: if they acted correctly, the speaker knew the message had landed"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the recommended feedback technique for an accuracy-focused writing task such as copying a text?",
+    "options": [
+      "The teacher marks every deviation from the original and returns the work with corrections.",
+      "A partner reads the finished copy aloud while the other student follows the original model.",
+      "The student works through a self-correction checklist before submitting the work.",
+      "The teacher provides guidelines in advance specifying which points will be evaluated."
+    ],
+    "answer": "A partner reads the finished copy aloud while the other student follows the original model.",
+    "anchor": "a partner reads the finished copy aloud while the other student follows the original model"
+  },
+  {
+    "type": "short",
+    "question": "The unit warns that a teacher's stated beliefs about mistakes must be matched by consistent classroom behavior. What specific consequence does the unit say will follow if a teacher's words and actions contradict each other?",
+    "options": null,
+    "answer": "Students will trust the behavior over the words — they will act on what they observe rather than what they heard the teacher say.",
+    "anchor": "if a teacher says mistakes are welcome and then responds to every error with visible correction, students will trust the behavior over the words"
+  }
+]

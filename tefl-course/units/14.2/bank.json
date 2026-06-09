@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, why might a Business English learner like Yuki still struggle professionally despite controlling complex grammar and a wide vocabulary?",
+    "options": [
+      "She lacks the instrumental motivation that drives focused study.",
+      "She has not yet reached an intermediate level of general English.",
+      "She is unfamiliar with the specific conventions and formulaic language that professional communication relies on.",
+      "She avoids written tasks because her reading skills are underdeveloped."
+    ],
+    "answer": "Her difficulty lies in the specific conventions and formulaic language that professional communication relies on, not in any broader deficiency of grammar or range.",
+    "anchor": "the specific conventions and formulaic language that professional communication relies on, not in any broader deficiency of grammar"
+  },
+  {
+    "type": "mc",
+    "question": "What risk does the unit identify in a warm working relationship between teacher and learner in one-to-one teaching?",
+    "options": [
+      "The learner may become overly dependent on the teacher for error correction.",
+      "Extended personal conversation can develop that produces little language learning.",
+      "The teacher may lose professional authority when working with senior learners.",
+      "The learner may refuse to attempt difficult language without peer support."
+    ],
+    "answer": "The risk is that a warm working relationship can allow lessons to drift into extended personal conversation that produces little language learning.",
+    "anchor": "a warm working relationship can allow lessons to drift into extended personal conversation that produces little language learning"
+  },
+  {
+    "type": "mc",
+    "question": "How does the unit suggest a teacher should handle a lesson that is unexpectedly cut short due to a workplace interruption?",
+    "options": [
+      "Reschedule the full lesson and avoid covering any new material in the shortened time.",
+      "Know at any point which single language point is most worth returning to if time is suddenly reduced.",
+      "Ask the learner to complete the remaining activities independently as homework.",
+      "Apologise and end the session early to respect the learner's professional commitments."
+    ],
+    "answer": "The teacher needs a mental habit of knowing, at any point in a lesson, which single language point is most worth returning to if time is suddenly reduced.",
+    "anchor": "knowing, at any point in a lesson, which single language point is most worth returning to if time is suddenly reduced"
+  },
+  {
+    "type": "short",
+    "question": "The unit describes three specific signs a teacher should watch for that indicate a learner may be experiencing fatigue or disengagement during a one-to-one lesson. Name all three.",
+    "options": null,
+    "answer": "The three signs are shorter answers, slower response times, and a loss of eye contact.",
+    "anchor": "shorter answers, slower response times, or a loss of eye contact"
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what distinguishes a receptive skill from a productive skill?",
+    "options": [
+      "A receptive skill requires learners to generate language, while a productive skill involves taking in meaning.",
+      "A receptive skill involves taking in and processing language rather than producing it.",
+      "A receptive skill is always passive, while a productive skill demands active engagement.",
+      "A receptive skill is limited to reading, while a productive skill covers speaking and writing only."
+    ],
+    "answer": "A receptive skill involves taking in and processing language rather than producing it.",
+    "anchor": "A receptive skill is one through which a learner receives and processes language rather than producing it."
+  },
+  {
+    "type": "mc",
+    "question": "What does the unit say happens when a reader has strong decoding skills but no background knowledge of a topic?",
+    "options": [
+      "Top-down processing compensates fully for the lack of background knowledge.",
+      "Bottom-up accuracy alone may not be enough to produce genuine comprehension.",
+      "The reader can still construct meaning by focusing on spelling patterns.",
+      "Rote memorization of vocabulary items fills the gap left by missing prior knowledge."
+    ],
+    "answer": "Bottom-up accuracy alone may not be enough to produce genuine comprehension.",
+    "anchor": "when a reader has strong decoding skills but no background knowledge of a topic, bottom-up accuracy alone may not be enough to produce genuine comprehension"
+  },
+  {
+    "type": "mc",
+    "question": "What principle does the unit identify as governing the choice of texts for a reading lesson?",
+    "options": [
+      "Texts should be chosen because they are readily available and easy to photocopy.",
+      "Texts should be chosen because they carry genuine communicative purpose.",
+      "Texts should be chosen to match a single narrow proficiency band in the class.",
+      "Texts should be chosen primarily for their grammatical complexity and range."
+    ],
+    "answer": "Texts should be chosen because they carry genuine communicative purpose.",
+    "anchor": "texts should be chosen because they carry genuine communicative purpose, not merely because they happen to be on hand"
+  },
+  {
+    "type": "short",
+    "question": "What does the unit mean by content-based instruction, and what example of it does the unit provide?",
+    "answer": "Content-based instruction means structuring curriculum or lessons around central themes or topics. The unit gives the example of a teacher running a two-week unit on the natural world, sequencing a magazine picture activity, a chain story, and a read-aloud session so that each lesson builds on shared vocabulary and ideas from the previous one.",
+    "anchor": "structuring curriculum or lessons around central themes or topics"
+  }
+]

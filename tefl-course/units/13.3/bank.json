@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what specific problem arises when a gap-fill distractor can be eliminated through elementary subject-verb agreement rather than knowledge of the target form?",
+    "options": [
+      "The item becomes double-barrelled and tests two skills simultaneously",
+      "The item is reduced to a guessing exercise with an obvious answer",
+      "The item produces negative washback by penalising correct responses",
+      "The item fails the alignment check because it targets an unstated objective"
+    ],
+    "answer": "The item is reduced to a guessing exercise with an obvious answer",
+    "anchor": "Implausible distractors reduce an item to a guessing exercise with an obvious answer"
+  },
+  {
+    "type": "mc",
+    "question": "The unit argues that a teacher who relies exclusively on knowledge-based test items will consistently do which of the following?",
+    "options": [
+      "Overestimate students whose metalinguistic awareness exceeds their spoken production",
+      "Underestimate students whose communicative ability outpaces their metalinguistic awareness",
+      "Produce positive washback by rewarding accurate grammar recognition",
+      "Align assessment with communicative learning goals more efficiently"
+    ],
+    "answer": "Underestimate students whose communicative ability outpaces their metalinguistic awareness",
+    "anchor": "underestimate students whose communicative ability outpaces their metalinguistic awareness"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit's test-writing workflow, what is the correct order for the first and fourth steps?",
+    "options": [
+      "Draft the items first, then write the learning goals to match them",
+      "Write the marking guide first, then identify the learning goals",
+      "Write the learning goals in plain language first, then write the marking guide before administering the test",
+      "Match item types to goals first, then share the assessment criteria with students"
+    ],
+    "answer": "Write the learning goals in plain language first, then write the marking guide before administering the test",
+    "anchor": "The first step is to write out the lesson's learning goals in plain language before touching a single test item"
+  },
+  {
+    "type": "short",
+    "question": "The unit states that once a student successfully recalled an item on the first test, further passive review of that item produced no measurable improvement. What does this finding imply a student like Priya should do instead of re-reading a vocabulary list after getting an item right?",
+    "options": null,
+    "answer": "Because additional passive review after a first correct recall adds nothing to delayed retention, Priya's time would be better spent on retrieval practice with items she has not yet successfully recalled, rather than re-reading words she already knows.",
+    "anchor": "further passive review of that same item produced no measurable improvement in delayed retention"
+  }
+]

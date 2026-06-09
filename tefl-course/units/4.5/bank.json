@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, which of the following is identified as one of the five characteristics of language awareness as a teaching orientation?",
+    "options": [
+      "A. Prioritising rote memorisation of conjugation tables before communicative use.",
+      "B. Drawing on comprehensible input from authentic sources produced for real communicative purposes.",
+      "C. Avoiding meta-language so learners focus entirely on meaning.",
+      "D. Restricting inductive techniques to advanced learners only."
+    ],
+    "answer": "Drawing on comprehensible input from authentic sources produced for real communicative purposes.",
+    "anchor": "they draw on comprehensible input from authentic sources, texts and recordings produced for real communicative purposes"
+  },
+  {
+    "type": "mc",
+    "question": "How many studies did Goo, Granena, Yilmaz, and Novella (2015) draw on in their meta-analysis, and what was their central conclusion?",
+    "options": [
+      "A. 49 studies; implicit instruction produces stronger outcomes than explicit instruction.",
+      "B. 41 studies; explicit and implicit instruction produce equivalent outcomes.",
+      "C. 34 studies; explicit instruction produces stronger outcomes than implicit instruction.",
+      "D. 428 studies; the overall difference between explicit and implicit instruction is only minor."
+    ],
+    "answer": "34 studies; explicit instruction produces stronger outcomes than implicit instruction.",
+    "anchor": "Goo, Granena, Yilmaz, and Novella (2015) then conducted an independent replication across 34 studies and arrived at the same conclusion: explicit instruction produces stronger outcomes than implicit instruction"
+  },
+  {
+    "type": "mc",
+    "question": "In the unit's recommended four-step lesson design framework, what is the FIRST decision a teacher must make?",
+    "options": [
+      "A. Select authentic material in which the target form appears naturally.",
+      "B. Decide which parts of the lesson call for deductive teaching and which for inductive discovery.",
+      "C. Identify the target form with precision within a specific context.",
+      "D. Construct a communicative task that makes the target form genuinely useful."
+    ],
+    "answer": "Identify the target form with precision within a specific context.",
+    "anchor": "First, identify the target form with precision: the simple past with irregular verbs in narrative contexts, for instance"
+  },
+  {
+    "type": "short",
+    "question": "The unit describes a student named Fatima who scores well on a fill-in-the-blank grammar test but still omits the target inflection during a role-play activity. What does this example illustrate about the relationship between test type and conclusions drawn from research on explicit instruction?",
+    "options": null,
+    "answer": "The example illustrates that a fill-in-the-blank test measures controlled, declarative knowledge — the same kind of knowledge that explicit instruction directly targets — while a role-play measures spontaneous production under communicative pressure. Because the two instruments tap different types of knowledge, a study using only controlled tests will overestimate the advantage of explicit instruction. When communicative or spontaneous-production measures are used, the gap between explicit and implicit instruction narrows considerably, meaning the choice of outcome measure shapes the conclusions a researcher draws.",
+    "anchor": "The test and the task are measuring different things, and the choice of measure shapes the conclusion a researcher draws"
+  }
+]

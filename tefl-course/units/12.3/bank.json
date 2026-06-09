@@ -1,0 +1,44 @@
+[
+  {
+    "type": "mc",
+    "question": "According to Beckman, what is the recommended approach when introducing cognitive strategies to learners?",
+    "options": [
+      "Teach each strategy in isolation so learners can master one before moving to the next.",
+      "Introduce strategies one at a time, then show students how to combine them for specific tasks.",
+      "Allow learners to discover which strategies work best without explicit teacher guidance.",
+      "Focus exclusively on mnemonics because they are the most concrete and teachable strategy."
+    ],
+    "answer": "Introduce strategies one at a time, then show students how to combine them for specific tasks.",
+    "anchor": "A teacher who introduces these strategies one at a time, then shows students how to combine them for specific tasks"
+  },
+  {
+    "type": "mc",
+    "question": "Which step in Beckman's strategy instruction sequence is specifically aimed at moving a strategy toward automaticity?",
+    "options": [
+      "Describing the strategy and explaining its purpose before the lesson begins.",
+      "Modeling the strategy openly by thinking aloud for students.",
+      "Repeated assisted practice during which the teacher monitors, provides cues, and gives feedback.",
+      "Encouraging students to transfer the strategy to a different subject area."
+    ],
+    "answer": "Repeated assisted practice during which the teacher monitors, provides cues, and gives feedback.",
+    "anchor": "Repeated practice of this kind moves the strategy toward automaticity, so students apply it without having to stop"
+  },
+  {
+    "type": "mc",
+    "question": "What does the unit identify as one concrete way the physical classroom environment can support ongoing strategy integration?",
+    "options": [
+      "Arranging desks so that students always face a partner for peer tutoring.",
+      "Posting written reminders for learning strategies on walls and bulletin boards.",
+      "Reserving a separate lesson slot each week dedicated solely to strategy instruction.",
+      "Requiring students to submit weekly logs recording which strategies they attempted."
+    ],
+    "answer": "Posting written reminders for learning strategies on walls and bulletin boards.",
+    "anchor": "Written reminders for learning strategies posted on walls and bulletin boards help students keep those strategies present"
+  },
+  {
+    "type": "short",
+    "question": "According to Cohen, what specific ability marks the transfer of metacognitive self-monitoring beyond the original learning context in which it was developed?",
+    "answer": "The ability to transfer successful strategies to new learning contexts, such as applying a self-monitoring habit developed in one class to tasks in a different subject or setting.",
+    "anchor": "transfer successful strategies to new learning contexts as a central goal of strategy training"
+  }
+]

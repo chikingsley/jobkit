@@ -1,0 +1,44 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the main challenge for teachers who provide feedback on drafts before assigning a grade?",
+    "options": [
+      "Students tend to ignore written comments on early drafts",
+      "Extra time and effort are required to provide feedback and then read and score the revised papers",
+      "Peer feedback makes the teacher's comments redundant",
+      "Grading criteria become inconsistent across multiple drafts"
+    ],
+    "answer": "The unit states directly that extra time and effort are required for teachers to provide feedback on drafts and then read and score the revised papers.",
+    "anchor": "extra time and effort are required for teachers to provide feedback on drafts and then read and score the revised papers"
+  },
+  {
+    "type": "mc",
+    "question": "What is the specific purpose of using a different colored highlighter pen at each editing station?",
+    "options": [
+      "To help students memorize the order of the ten checklist elements",
+      "To allow the teacher to grade each element separately using a color-coded rubric",
+      "To create a visible record showing which elements have been examined and where changes were made",
+      "To signal to peers which sections of the essay still need revision"
+    ],
+    "answer": "The color coding creates a visible record of the review, showing which elements have been examined and where changes were made.",
+    "anchor": "The color coding creates a visible record of the review: by the time a student has worked through all ten stations"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, how does peer editing benefit a student who notices a missing introduction in a classmate's essay?",
+    "options": [
+      "It allows the student to earn extra credit by correcting the classmate's work",
+      "It prompts the student to return to their own essay and check whether the same element is present",
+      "It gives the student a model introduction to copy into their own draft",
+      "It replaces the need for the teacher to explain structural requirements"
+    ],
+    "answer": "Noticing the gap in a peer's essay prompts a return to the student's own essay to check whether the same element is present.",
+    "anchor": "that observation prompts a return to their own essay to check whether the same element is present"
+  },
+  {
+    "type": "short",
+    "question": "According to the unit, why does a student with weaker writing skills benefit in a particular way from noticing their own errors during peer review, rather than being told about them by the teacher?",
+    "answer": "When a weaker student notices an error themselves, they are doing the cognitive work of diagnosis, and that act of noticing is what strengthens the skill. The improvement comes from their own experience of the process rather than from an external correction handed down to them, moving them toward greater autonomy.",
+    "anchor": "the improvement comes from their own experience of the process rather than from an external correction handed down to them"
+  }
+]

@@ -208,8 +208,13 @@ def assemble_module_test(module: int, rng: random.Random) -> str:
         f"# Module {module} Test — {title}",
         "",
         f"Covers units {units[0].uid} to {units[-1].uid}. {total_points} points total; "
-        f"pass mark {PASS_MARK}. Section B re-asks questions from earlier modules: retrieving "
-        "material again after a delay is part of how this course makes it stick.",
+        f"pass mark {PASS_MARK}."
+        + (
+            " Section B re-asks questions from earlier modules: retrieving material again "
+            "after a delay is part of how this course makes it stick."
+            if reviews
+            else ""
+        ),
         "",
         f"## Section A — This module ({n_module_qs} points, 1 each)",
         "",
@@ -242,7 +247,12 @@ def assemble_final() -> str:
         f"## Section A — Course content ({len(uids)} points, 1 each)",
         "",
     ]
+    current_module = 0
     for i, uid in enumerate(uids, 1):
+        module = _module_of(uid)
+        if module != current_module:
+            current_module = module
+            out.append(f"### Module {module} — {MODULE_TITLES.get(module, '')}\n")
         bank = json.loads((build.UNITS_DIR / uid / "bank.json").read_text(encoding="utf-8"))
         out.append(_render_mc(i, bank[3]))  # the reserved 4th question
     out += ["## Section B — Scenarios (30 points, 10 each)", ""]

@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, why does the effort of retrieving a word after a gap strengthen memory more than reading the word and its translation several times in a row?",
+    "options": [
+      "A. Repeated reading activates more neural pathways than retrieval does.",
+      "B. Retrieval after a gap forces the brain to reconstruct the memory, and that reconstruction strengthens the memory trace.",
+      "C. Reading a word multiple times in a row produces an expanding schedule automatically.",
+      "D. Retrieval after a gap allows the teacher to provide corrective feedback more efficiently."
+    ],
+    "answer": "Retrieval after a gap forces the brain to reconstruct the memory, and that reconstruction strengthens the memory trace.",
+    "anchor": "the brain must reconstruct the memory rather than hold it in active attention. Reconstruction takes effort."
+  },
+  {
+    "type": "mc",
+    "question": "The unit describes a chain story activity as a more demanding retrieval event than standard pair review. What makes it more demanding, according to the unit?",
+    "options": [
+      "A. It requires students to write longer sentences than they would in a silent retrieval phase.",
+      "B. It forces students to use words productively rather than to recognize them passively.",
+      "C. It eliminates the need for teacher confirmation at the whole-class stage.",
+      "D. It compresses several spaced review sessions into a single activity block."
+    ],
+    "answer": "It forces students to use words productively rather than to recognize them passively.",
+    "anchor": "requires students to use words productively rather than to recognize them passively, a more demanding retrieval event"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, at what point can a teacher reasonably reduce how often a word appears in planned review under an expanding-schedule logic?",
+    "options": [
+      "A. After the word has appeared in at least three consecutive lessons regardless of student accuracy.",
+      "B. Once the word has been introduced in a formal test and the majority of students scored correctly.",
+      "C. When a word has survived several retrieval attempts across progressively longer gaps without error.",
+      "D. As soon as the word has been reviewed twice, because two spaced encounters are sufficient for consolidation."
+    ],
+    "answer": "When a word has survived several retrieval attempts across progressively longer gaps without error.",
+    "anchor": "when a word has survived several retrieval attempts across progressively longer gaps without error, the teacher can reasonably reduce how often it appears"
+  },
+  {
+    "type": "short",
+    "question": "The unit argues that introducing vocabulary well on the first day is necessary but not sufficient. What, according to the unit, actually determines how much vocabulary survives into long-term use?",
+    "options": null,
+    "answer": "The design of what happens in subsequent lessons — specifically, how vocabulary review is scheduled and distributed across those lessons — determines how much vocabulary survives into long-term use.",
+    "anchor": "the design of what happens in subsequent lessons determines how much of that vocabulary survives into long-term use"
+  }
+]

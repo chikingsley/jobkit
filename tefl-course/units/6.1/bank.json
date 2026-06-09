@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "Which of the following correctly describes how bilabial consonants are produced?",
+    "options": [
+      "The tongue tip makes contact with the ridge of gum just behind the upper teeth.",
+      "The back of the tongue rises to meet the soft palate at the rear of the mouth.",
+      "Both lips press together and then release, or redirect air through the nose.",
+      "The lower lip makes contact with the upper front teeth to create friction."
+    ],
+    "answer": "Both lips press together and then release, or redirect air through the nose.",
+    "anchor": "When both lips press together and then release, the result is either the voiceless sound at the start of 'pen' or the voiced sound at the start of 'bag'"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, what distinguishes vowel production from consonant production in English?",
+    "options": [
+      "Vowels are always voiced, whereas consonants can be either voiced or voiceless.",
+      "Vowels are produced with the airway open throughout, while consonants involve some form of obstruction.",
+      "Vowels are determined solely by lip rounding, while consonants depend on tongue position.",
+      "Vowels occur only in stressed syllables, while consonants appear in all positions."
+    ],
+    "answer": "Vowels are produced with the airway open throughout, while consonants involve some form of obstruction.",
+    "anchor": "a vowel is produced with the airway open throughout. The tongue, the lips, and the jaw shape the resonating space inside the mouth"
+  },
+  {
+    "type": "mc",
+    "question": "Why might a learner who replaces every written vowel with its 'full' sound still seem unnatural, even when all consonants are correct?",
+    "options": [
+      "English consonants carry more meaning than vowels, so consonant errors are more noticeable.",
+      "English rhythm consistently reduces unstressed syllables toward the schwa, which full vowel values disrupt.",
+      "Full vowel values are only appropriate in formal registers, not in everyday speech.",
+      "Written vowels in English always represent long vowels, making full pronunciation redundant."
+    ],
+    "answer": "English rhythm consistently reduces unstressed syllables toward the schwa, which full vowel values disrupt.",
+    "anchor": "English rhythm consistently reduces unstressed syllables toward the schwa, a learner who replaces every written vowel with its 'full' sound will sound unnatural"
+  },
+  {
+    "type": "short",
+    "question": "A student writes 'wether' instead of 'weather.' Using the concept introduced in the final section of the unit, explain why this error is not simply careless and what it reveals about the student's phonological processing.",
+    "options": null,
+    "answer": "The student has correctly heard the spoken word but chosen the wrong written form because 'weather' and 'whether' are homophones — two words with identical pronunciation but different spellings. The error shows the student is processing the sound accurately; the confusion is graphic, not phonological. The teacher should address the source of the confusion rather than treating it as carelessness.",
+    "anchor": "'weather' and 'whether' are homophones, two words with identical pronunciation but different spellings, and the learner has chosen the wrong graphic form for a sound sequence they have heard correctly"
+  }
+]

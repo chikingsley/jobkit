@@ -1,0 +1,44 @@
+[
+  {
+    "type": "mc",
+    "question": "Which preposition best completes the sentence 'The power went out ___ the concert'?",
+    "options": [
+      "during",
+      "for",
+      "since",
+      "until"
+    ],
+    "answer": "during",
+    "anchor": "\"During\" indicates that something happens within the boundaries of a named period, with the period itself as the focus"
+  },
+  {
+    "type": "mc",
+    "question": "A student writes 'they hiked across the forest' when describing movement through the trees. What does the unit identify as the source of this error?",
+    "options": [
+      "The student confused 'across' with 'along,' which describes following a length.",
+      "The student treated the forest as a flat surface rather than a space with interior depth.",
+      "The student applied a movement preposition where a place preposition was needed.",
+      "The student confused 'across' with 'past,' which marks movement beyond a reference point."
+    ],
+    "answer": "The student treated the forest as a flat surface rather than a space with interior depth.",
+    "anchor": "a student named Wei who writes 'they hiked across the forest' has treated the forest as a flat surface rather than a space with interior depth"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, why is English described as having a 'closed lexical class' of prepositions?",
+    "options": [
+      "Prepositions can only be learned through repeated exposure, not rules.",
+      "The set of prepositions is fixed and new ones are almost never added to the language.",
+      "Each preposition carries only one fixed meaning that never changes.",
+      "Prepositions cannot be combined with adjectives or verbs."
+    ],
+    "answer": "The set of prepositions is fixed and new ones are almost never added to the language.",
+    "anchor": "English prepositions form a closed lexical class, meaning the set of members is fixed and new prepositions are almost never added"
+  },
+  {
+    "type": "short",
+    "question": "The unit recommends that learners keep a collocation notebook. What specific form should each entry take, and why does the unit say this format is preferable to recording bare word lists?",
+    "answer": "Each entry should be a complete example sentence (e.g., 'We rely on the bus to get to school' rather than just 'rely on'). The unit says full sentences keep the verb-preposition or adjective-preposition combination intact, whereas bare lists invite learners to treat the preposition as an afterthought.",
+    "anchor": "Each entry should be a complete sentence; for rely on, a learner writes We rely on the bus to get to school rather than the bare phrase alone"
+  }
+]

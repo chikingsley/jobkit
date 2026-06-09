@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what distinguishes receptive skills from productive skills?",
+    "options": [
+      "Receptive skills require grammar knowledge, while productive skills require only vocabulary.",
+      "Receptive skills involve taking in language produced by others, while productive skills involve generating language for others.",
+      "Receptive skills are assessed through written tests, while productive skills are assessed through spoken performance.",
+      "Receptive skills develop before productive skills in all language learners regardless of context."
+    ],
+    "answer": "Receptive skills involve taking in language produced by others, while productive skills involve generating language for others.",
+    "anchor": "Listening and reading are the receptive skills, meaning the learner takes in language produced by others; speaking and writing are the productive skills"
+  },
+  {
+    "type": "mc",
+    "question": "In the 'Good Deeds' iEARN project, what was the purpose of dividing students into two groups to read different sources in jigsaw style?",
+    "options": [
+      "To allow faster readers to finish early and help slower readers with comprehension.",
+      "To ensure that the subsequent discussion required genuine listening because no single student held the complete picture.",
+      "To reduce the number of library books needed by splitting the reading load equally.",
+      "To give the teacher time to assess individual reading skills while the other group worked independently."
+    ],
+    "answer": "To ensure that the subsequent discussion required genuine listening because no single student held the complete picture.",
+    "anchor": "Because each group had read different material, the subsequent discussion required genuine listening, since no single student held the complete picture."
+  },
+  {
+    "type": "mc",
+    "question": "What practical advantage does the unit give for identifying the spine skill before a lesson begins, specifically when time runs short?",
+    "options": [
+      "It allows the teacher to assign the remaining time to whichever skill students find most enjoyable.",
+      "It ensures that grammar and vocabulary sub-skills are always covered before the lesson ends.",
+      "It helps the teacher shorten a supporting stage without abandoning the lesson's primary purpose.",
+      "It gives students advance notice of which skill will be graded so they can prepare accordingly."
+    ],
+    "answer": "It helps the teacher shorten a supporting stage without abandoning the lesson's primary purpose.",
+    "anchor": "If Mateus needs another five minutes to finish his paragraph, the teacher can shorten the read-aloud stage without abandoning the lesson's purpose"
+  },
+  {
+    "type": "short",
+    "question": "The unit describes the chain story as an adaptation for full classes. Explain how the chain story structure ensures that no single student is responsible for only one type of section, and name the additional reading stage it creates without extra teacher preparation.",
+    "options": null,
+    "answer": "Students pass a single co-authored story around a circle, each person writing one part in turn, so every student writes each type of section—introduction, middle sections, and ending—at least once as the paper circulates. When the stories are finished, posting them on walls or doors gives the whole class a reason to read work produced by other groups, adding a reading stage that requires no additional preparation from the teacher.",
+    "anchor": "Every student writes each type of section at least once as the paper circulates, so no one is responsible only for the opening or only for the conclusion."
+  }
+]

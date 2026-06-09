@@ -1,0 +1,44 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what happens when students take on roles other than their own in the television talk show simulation?",
+    "options": [
+      "Students are able to avoid speaking spontaneously because their roles are fully scripted in advance",
+      "Students are encouraged to present information in new ways and to think from perspectives they would not ordinarily occupy",
+      "Students focus exclusively on factual recall because the talk show format requires accurate reporting",
+      "Students become less motivated because they cannot draw on their personal experience"
+    ],
+    "answer": "Students are encouraged to present information in new ways and to think from perspectives they would not ordinarily occupy",
+    "anchor": "taking on roles other than their own encouraged students to present information in new ways and to think from perspectives they would not ordinarily occupy"
+  },
+  {
+    "type": "mc",
+    "question": "The unit argues that a language classroom is a natural setting for developing critical and creative thinking. Which reason does it give for this claim?",
+    "options": [
+      "Language classrooms are the only setting where students encounter real-world content such as mass media",
+      "Grammar and vocabulary instruction automatically produces higher-order thinking without any additional tasks",
+      "Teaching techniques for critical thinking apply as well to language studies as they do to any content area",
+      "Language teachers have more training in thinking skills than teachers of science or social studies"
+    ],
+    "answer": "Teaching techniques for critical thinking apply as well to language studies as they do to any content area",
+    "anchor": "Teaching techniques for critical thinking apply as well to language studies as they do to any content area"
+  },
+  {
+    "type": "mc",
+    "question": "The unit's practical action plan recommends that a teacher begin by identifying a single existing lesson rather than designing an entirely new unit. What reason does the unit give for this recommendation?",
+    "options": [
+      "New units require administrative approval, which takes longer than most teachers can afford",
+      "One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing",
+      "Students perform better on thinking tasks when the topic is one they have already studied in previous years",
+      "Redesigning a lesson from the ground up eliminates the factual groundwork that open tasks require"
+    ],
+    "answer": "One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing",
+    "anchor": "One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing"
+  },
+  {
+    "type": "short",
+    "question": "The unit describes a specific outcome that occurs when students pursue lines of questioning further than the teacher anticipated, calling it 'precisely what the approach is designed to produce.' What is that outcome, and what does the unit say it does NOT represent?",
+    "answer": "The outcome is that students become knowledge experts, knowing more than the teacher does about the particular angle they have pursued. The unit states this does not represent a loss of authority for the teacher.",
+    "anchor": "students become knowledge experts, knowing more than the teacher does about the particular angle they have pursued. Rather than representing a loss of authority, this outcome is precisely what the approach is designed to produce"
+  }
+]

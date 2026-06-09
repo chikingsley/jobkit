@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the primary purpose of pre-reading two or three units ahead of the one currently being taught?",
+    "options": [
+      "To allow the teacher to memorise the coursebook content and reduce preparation time each week.",
+      "To ensure that isolated lesson decisions become coherent course planning with awareness of downstream consequences.",
+      "To identify which units can be skipped entirely before the course begins.",
+      "To help the teacher decide which supplementary materials to purchase before the term starts."
+    ],
+    "answer": "To ensure that isolated lesson decisions become coherent course planning with awareness of downstream consequences.",
+    "anchor": "Reading ahead converts isolated lesson decisions into coherent course planning, and it ensures that choices about reordering or skipping are made with full awareness of the consequences downstream."
+  },
+  {
+    "type": "mc",
+    "question": "When the unit describes the 'modifying' adaptation technique, what does it identify as the element that must remain unchanged even when the format of an activity is altered?",
+    "options": [
+      "The grouping arrangement used during the activity.",
+      "The original lesson aim of the activity.",
+      "The number of practice items provided to students.",
+      "The mode of delivery, whether written or spoken."
+    ],
+    "answer": "The original lesson aim of the activity.",
+    "anchor": "Modifying means changing the format, grouping, or focus of an activity while keeping its original aim intact."
+  },
+  {
+    "type": "mc",
+    "question": "The unit gives three distinct reasons that can legitimately justify supplementing a coursebook. Which of the following is listed as one of those reasons?",
+    "options": [
+      "The teacher personally finds the coursebook's treatment of a topic uninteresting.",
+      "A unit topic coincides with a current local news story that students already care about.",
+      "The coursebook was published more than five years ago and may be outdated.",
+      "A colleague in the same school has recommended a different resource for that point."
+    ],
+    "answer": "A unit topic coincides with a current local news story that students already care about.",
+    "anchor": "if a unit on urban life coincides with a major local planning story in the news, a short authentic article can connect the abstract theme to something students already care about."
+  },
+  {
+    "type": "short",
+    "question": "The unit warns that unprincipled flexible use of a coursebook causes a specific long-term problem. What is that problem, and what does the unit say drives it?",
+    "options": null,
+    "answer": "The long-term problem is that the course loses its coherence. It is driven by the teacher making changes based on convenience or personal preference rather than on what students require.",
+    "anchor": "Over time, a course shaped by convenience rather than judgment loses its coherence."
+  }
+]

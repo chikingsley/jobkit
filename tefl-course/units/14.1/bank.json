@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what distinguishes TPR-Storytelling (TPR-S) from standard TPR?",
+    "options": [
+      "A) TPR-S replaces physical movement with written responses, while standard TPR keeps students active.",
+      "B) TPR-S asks students to take on spoken parts as well as physical movement, building toward oral production.",
+      "C) TPR-S uses the present tense exclusively, while standard TPR relies on the imperative form.",
+      "D) TPR-S is designed for older learners, while standard TPR is restricted to kindergarten students."
+    ],
+    "answer": "B) TPR-S asks students to take on spoken parts as well as physical movement, building toward oral production.",
+    "anchor": "TPR-S asks them to take on spoken parts as well, building toward production through the same grounded, movement-linked approach"
+  },
+  {
+    "type": "mc",
+    "question": "The unit identifies a specific role the teacher takes on during station-based learning. Which of the following best describes that role?",
+    "options": [
+      "A) Lecturer and primary source of all language input during station time.",
+      "B) Passive observer who records student errors for later whole-class correction.",
+      "C) Master planner, guide, and timekeeper who moves through the room and attends to individual students.",
+      "D) Designated clean-up monitor who manages transitions while students self-direct all learning."
+    ],
+    "answer": "C) Master planner, guide, and timekeeper who moves through the room and attends to individual students.",
+    "anchor": "The teacher's role within this structure is what the source calls that of master planner, guide, and timekeeper"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the main cognitive benefit of establishing predictable classroom routines for young learners?",
+    "options": [
+      "A) Routines eliminate the need for the teacher to give directions during transitions.",
+      "B) Routines reduce the cognitive load of figuring out what comes next, leaving more mental space for language.",
+      "C) Routines ensure that all students progress at the same rate regardless of individual development.",
+      "D) Routines replace the need for varied activities because children find repetition of procedures motivating."
+    ],
+    "answer": "B) Routines reduce the cognitive load of figuring out what comes next, leaving more mental space for language.",
+    "anchor": "a classroom where sequences are known in advance reduces the cognitive load of figuring out what comes next, leaving more mental space for language"
+  },
+  {
+    "type": "short",
+    "question": "The unit describes several types of learning stations observed in the source's video segment. Name at least three station types mentioned and explain what the unit says about how children move among them.",
+    "options": null,
+    "answer": "The unit names stations for reading, writing, imagination and arts and crafts, painting, manipulables (such as games, puzzles, and building blocks), and science or other content areas. According to the unit, children move among stations according to established routines rather than moment-by-moment teacher direction.",
+    "anchor": "children move among them according to established routines rather than moment-by-moment teacher direction"
+  }
+]

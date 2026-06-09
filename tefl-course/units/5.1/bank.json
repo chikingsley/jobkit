@@ -1,0 +1,44 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the key design detail a teacher must attend to when using a student-performed skit as a vocabulary activity?",
+    "options": [
+      "The skit must include at least five target words written on a visible script",
+      "Target words must be spoken aloud in context without reading from a script during the final performance",
+      "Students should rehearse the skit at least three times before performing",
+      "The teacher must assign each student a specific target word before rehearsal begins"
+    ],
+    "answer": "Target words must be spoken aloud in context without reading from a script during the final performance",
+    "anchor": "scripts may be used during rehearsal, but the final performance requires the words to come from the students themselves"
+  },
+  {
+    "type": "mc",
+    "question": "The unit describes searching through visible Word Bricks to find ones that match a category. How does the unit classify this activity, and why?",
+    "options": [
+      "As retrieval practice, because students must handle and evaluate each word",
+      "As retrieval practice, because the words are sorted under time pressure",
+      "As recognition, because the words are in front of the student and the task is to sort them",
+      "As re-presentation, because the teacher selects which bricks are shown"
+    ],
+    "answer": "As recognition, because the words are in front of the student and the task is to sort them",
+    "anchor": "Searching through visible bricks to find ones that match a category is recognition: the words are in front of the student, and the task is to sort them"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit's three-question planning framework, what ratio problem does a teacher create by spending twenty minutes presenting vocabulary and only five minutes on practice?",
+    "options": [
+      "The teacher leaves too little time for students to copy definitions accurately",
+      "The teacher has the ratio backwards, since retrieval events should occupy the bulk of lesson time",
+      "The teacher provides too many retrieval events before students have enough exposure",
+      "The teacher compresses the study phase so much that learners cannot attempt retrieval later"
+    ],
+    "answer": "The teacher has the ratio backwards, since retrieval events should occupy the bulk of lesson time",
+    "anchor": "A teacher who spends twenty minutes presenting vocabulary and five minutes on practice has the ratio backwards"
+  },
+  {
+    "type": "short",
+    "question": "The unit states that additional retrieval after a first correct recall continues to strengthen retention, while additional study does not. How does the cumulative Word Bricks collection exploit this finding across the course?",
+    "answer": "By keeping old words physically present in the collection alongside new ones, the collection ensures that previously learned words are repeatedly retrieved during category games and other activities across weeks, rather than concentrated in a single revision session. This creates the conditions for additional retrieval to occur naturally and in a distributed way.",
+    "anchor": "A collection that keeps old words in circulation alongside new ones creates the conditions for that additional retrieval to occur naturally, distributed across weeks"
+  }
+]

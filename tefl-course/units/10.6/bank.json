@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what specific language structures does drawing provide a context for practicing, based on the example dialogue between a teacher and Daniel?",
+    "options": [
+      "Past simple tense and superlative adjectives",
+      "Present continuous forms and comparative adjectives",
+      "Future tense and possessive pronouns",
+      "Modal verbs and relative clauses"
+    ],
+    "answer": "Present continuous forms and comparative adjectives",
+    "anchor": "practicing grammatical structures, for instance when students describe what they have drawn using present continuous forms or comparative adjectives"
+  },
+  {
+    "type": "mc",
+    "question": "The unit describes two distinct modes of drawing activities. What distinguishes drawing from observation from drawing from imagination?",
+    "options": [
+      "Drawing from observation uses colored materials while drawing from imagination uses only pencil",
+      "Drawing from observation is done individually while drawing from imagination is always a group task",
+      "Drawing from observation requires students to look directly at a subject, while drawing from imagination draws on memory and invention",
+      "Drawing from observation is recommended for older learners while drawing from imagination suits younger students"
+    ],
+    "answer": "Drawing from observation requires students to look directly at a subject, while drawing from imagination draws on memory and invention",
+    "anchor": "drawing from observation, in which students look directly at a subject and reproduce what they see"
+  },
+  {
+    "type": "mc",
+    "question": "The unit describes stick puppets as particularly useful for very young learners. What specific benefit does the unit attribute to giving young learners a character to speak through?",
+    "options": [
+      "It eliminates the need for the teacher to model dialogue before students begin",
+      "It allows students to practice writing by scripting their puppet's lines in advance",
+      "It can reduce the self-consciousness that sometimes accompanies early oral production",
+      "It ensures that all students contribute equally to a paired conversation task"
+    ],
+    "answer": "It can reduce the self-consciousness that sometimes accompanies early oral production",
+    "anchor": "give even very young learners a character to speak through, which can reduce the self-consciousness that sometimes accompanies early oral production"
+  },
+  {
+    "type": "short",
+    "question": "The unit recommends a specific starting point for teaching students how to draw any subject, whether from observation or imagination. What is that starting point, and what problem does it solve for students who believe they cannot draw?",
+    "options": null,
+    "answer": "Students are advised to identify the basic shapes that make up the subject before attempting to draw it in full. This replaces the intimidating idea of reproducing a whole object with the manageable task of placing a few familiar shapes on the page, making drawing accessible to reluctant students.",
+    "anchor": "identify the basic shapes that make up the subject before attempting to draw it in full"
+  }
+]

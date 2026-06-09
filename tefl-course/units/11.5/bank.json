@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the primary purpose of asking teachers to draw their 'ideal classroom' during the warm-up activity?",
+    "options": [
+      "To assess whether teachers are familiar with current research on classroom design",
+      "To make visible assumptions about learning that did not feel like choices until the drawing revealed them",
+      "To identify which teachers have experience with learning stations",
+      "To compare resource levels across different national school systems"
+    ],
+    "answer": "To make visible assumptions about learning that did not feel like choices until the drawing revealed them",
+    "anchor": "this resemblance did not feel like a choice until the drawing made it visible"
+  },
+  {
+    "type": "mc",
+    "question": "The unit argues that treating classroom decisions such as how to arrange chairs or give feedback as culturally neutral is itself what?",
+    "options": [
+      "A sign of professional inexperience",
+      "An effective strategy for managing diverse classrooms",
+      "A cultural assumption worth examining",
+      "A necessary starting point before observation begins"
+    ],
+    "answer": "A cultural assumption worth examining",
+    "anchor": "Treating those decisions as culturally neutral is itself a cultural assumption, and one worth examining"
+  },
+  {
+    "type": "mc",
+    "question": "How does the unit distinguish between a reflective log entry and a guess when it comes to cultural adaptation?",
+    "options": [
+      "A log entry is written before the lesson, while a guess is made during it",
+      "A log entry records specific observed moments and becomes the basis for genuine adaptation",
+      "A log entry relies on general cultural knowledge, while a guess relies on observation",
+      "A log entry is only useful for new teachers who lack prior classroom experience"
+    ],
+    "answer": "A log entry records specific observed moments and becomes the basis for genuine adaptation",
+    "anchor": "That exchange, recorded and returned to, becomes the basis for a genuine adaptation rather than a guess"
+  },
+  {
+    "type": "short",
+    "question": "The unit states that peer feedback introduces cultural complexity because the social stakes shift when a classmate rather than the teacher points out an error. What specific prior observation does the unit recommend a teacher make before asking students to give each other feedback?",
+    "options": null,
+    "answer": "The teacher should observe how students already interact with one another — whether they defer to each other, laugh off mistakes together, or look immediately to the teacher for confirmation — before introducing peer feedback.",
+    "anchor": "observing how students already interact: whether they defer to one another, whether they laugh off mistakes together, or whether they look immediately to the teacher for confirmation"
+  }
+]

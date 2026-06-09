@@ -1,0 +1,44 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what distinguishes a 'flexible' plan from a 'loose' plan?",
+    "options": [
+      "A flexible plan uses Bloom's Taxonomy verbs; a loose plan does not.",
+      "A flexible plan has clear objectives, a ranked sequence, and identified points where time can be compressed or expanded; a loose plan has no structure to return to.",
+      "A flexible plan integrates all six language skills equally; a loose plan focuses on only one.",
+      "A flexible plan is shared with colleagues before teaching; a loose plan is used without peer review."
+    ],
+    "answer": "A flexible plan has clear objectives, a ranked sequence of activities, and identified points where time can be compressed or expanded, whereas a loose plan has no structure to return to when something goes wrong.",
+    "anchor": "A flexible plan has clear objectives, a ranked sequence of activities, and identified points where time can be compressed or expanded."
+  },
+  {
+    "type": "mc",
+    "question": "Why does the unit say that writing 'do vocabulary' as a lesson aim is insufficient?",
+    "options": [
+      "It uses an informal verb instead of one drawn from Bloom's Taxonomy.",
+      "It names a territory without specifying which words, what level of knowledge is expected, or how students will demonstrate understanding.",
+      "It focuses on a lower-order cognitive skill rather than a higher-order one.",
+      "It combines vocabulary with another skill area, violating the single teaching-point principle."
+    ],
+    "answer": "The phrase tells the teacher nothing about which words, what level of knowledge is expected, or how students will demonstrate understanding, and it cannot guide sequencing or timing decisions.",
+    "anchor": "That phrase tells her nothing about which words, what level of knowledge is expected, or how students will demonstrate understanding"
+  },
+  {
+    "type": "mc",
+    "question": "What pedagogical reason does the unit give for including movement in the closing stage of a lesson?",
+    "options": [
+      "It allows the teacher to distribute graded assessments without interrupting the lesson flow.",
+      "It signals a shift in cognitive mode and gives the teacher a final sweep of the room.",
+      "It replaces the need for a written reflection activity when time is short.",
+      "It ensures that all six language skills are integrated before the lesson ends."
+    ],
+    "answer": "A physical transition signals a shift in cognitive mode and gives the teacher a final sweep of the room to gather informal evidence of learning.",
+    "anchor": "The physical transition signals a shift in cognitive mode and gives the teacher a final sweep of the room."
+  },
+  {
+    "type": "short",
+    "question": "According to the unit, what makes a Mad Lib an appropriate warm-up choice when the main task requires students to write or speak using specific vocabulary?",
+    "answer": "A Mad Lib has students handle target language in a low-stakes context, practicing word categories and collocations before the main task, thereby building the fluency needed for production.",
+    "anchor": "a production-oriented warm-up like the Mad Lib builds the necessary fluency first"
+  }
+]

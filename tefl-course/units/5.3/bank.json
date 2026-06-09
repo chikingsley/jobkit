@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the primary purpose of posting an ongoing word list visibly in the classroom?",
+    "options": [
+      "To replace the Word Bricks collection when bricks become illegible or are lost",
+      "To allow students to return to vocabulary between lessons, notice gaps, and suggest additions",
+      "To give the teacher a record of which words have already been called during Bingo games",
+      "To display the alphabetized master list that prevents duplication across student groups"
+    ],
+    "answer": "Students can return to it between lessons, notice gaps, and suggest additions themselves.",
+    "anchor": "students can return to it between lessons, notice gaps, and suggest additions themselves"
+  },
+  {
+    "type": "mc",
+    "question": "What distinguishes the memory trace formed through realia from one formed by reading a dictionary definition, according to the unit?",
+    "options": [
+      "Realia produces a memory trace based on visual images rather than printed words",
+      "Realia produces a memory trace that is qualitatively different because it is rooted in physical experience",
+      "Realia produces a memory trace that is stronger because it involves hearing the word in a song or story",
+      "Realia produces a memory trace that relies on grammatical categorization rather than meaning"
+    ],
+    "answer": "A student who has taken apart a keyboard and named each part carries a memory trace qualitatively different from one formed by reading a dictionary definition.",
+    "anchor": "carries a memory trace qualitatively different from one formed by reading a dictionary definition"
+  },
+  {
+    "type": "mc",
+    "question": "In the vocabulary word poem activity, what factor determines whether students write single words, phrases, or complete sentences against each letter?",
+    "options": [
+      "The length of the vocabulary word chosen by the student",
+      "The number of students working together on the poem",
+      "The teacher's decision about which option is appropriate for the class's level",
+      "The topic set from which the vocabulary word is drawn"
+    ],
+    "answer": "The teacher decides which of those three options is appropriate for the class.",
+    "anchor": "The teacher decides which of those three options is appropriate for the class"
+  },
+  {
+    "type": "short",
+    "question": "Explain what a collocation is and why the unit argues that including function word bricks in the Word Bricks collection helps students practice collocational patterns.",
+    "options": null,
+    "answer": "Collocations are fixed or strongly preferred word combinations that cannot be predicted from individual word meanings alone. Function words act as 'glue' that binds content words into grammatically complete structures, so having function bricks available means students practice the collocational patterns that make sentences sound natural rather than producing incomplete strings like 'cat drink water.'",
+    "anchor": "These are the glue words that bind content items into grammatically complete structures"
+  }
+]

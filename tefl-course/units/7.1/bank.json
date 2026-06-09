@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the purpose of pre-teaching vocabulary items such as 'take a statement' and 'come out of nowhere' before the audio plays?",
+    "options": [
+      "To test whether students can guess the meaning of idioms from context",
+      "To make the listening task easy by removing all challenge from the audio",
+      "To remove obstacles that have nothing to do with listening ability so students can recognize phrases rather than stop to decode them",
+      "To introduce the grammar structures students will need for the post-listening writing task"
+    ],
+    "answer": "To remove obstacles that have nothing to do with listening ability so students can recognize phrases rather than stop to decode them",
+    "anchor": "Pre-teaching of this kind is not about making the task easy; it is about removing obstacles that have nothing to do with listening ability"
+  },
+  {
+    "type": "mc",
+    "question": "When audio-playing technology is unavailable, which two alternatives does the unit recommend for keeping listening at the center of the lesson?",
+    "options": [
+      "Showing a video clip and assigning a reading passage on the same topic",
+      "Dictation tasks and inviting a guest speaker into the classroom",
+      "Having students read a transcript aloud and then discuss it in pairs",
+      "Playing audio on a personal device and using subtitles as a visual support"
+    ],
+    "answer": "Dictation tasks and inviting a guest speaker into the classroom",
+    "anchor": "Dictation tasks, in which the teacher reads aloud and students transcribe… Inviting a guest speaker into the classroom"
+  },
+  {
+    "type": "mc",
+    "question": "The unit warns that extending the warm-up discussion or replaying the audio an extra time can have a specific negative consequence. What is that consequence?",
+    "options": [
+      "Students lose interest in the topic before the gist-listening task begins",
+      "The teacher loses credibility if the lesson plan is not followed exactly",
+      "The post-listening task is prevented from being reached, leaving the listening work unfinished",
+      "Students become over-prepared and find the detail-listening task too easy"
+    ],
+    "answer": "The post-listening task is prevented from being reached, leaving the listening work unfinished",
+    "anchor": "A lesson that ends before students have produced anything leaves the listening work unfinished, however well the earlier stages went"
+  },
+  {
+    "type": "short",
+    "question": "The unit describes a post-listening summary competition. Explain how this activity works and what two outcomes it produces for students.",
+    "options": null,
+    "answer": "After the detail-focused listen, small groups write a summary capturing as many accurate specifics as possible, with the most detailed and accurate group winning by class vote or teacher judgment. This rewards precision and gives students a reason to compare what each person noticed, while also producing a piece of writing the teacher can use to assess how well the detail-listening objective was met.",
+    "anchor": "small groups write a summary that captures as many accurate specifics as possible, with the most detailed and accurate group winning"
+  }
+]

@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the first question a teacher should ask when sitting down to plan a lesson?",
+    "options": [
+      "Which texts or materials are most engaging for this level?",
+      "How long should each stage of the lesson last?",
+      "What will students be able to do with the content by the time the lesson ends?",
+      "Which activities have worked well with this class before?"
+    ],
+    "answer": "What will students be able to do with the content by the time the lesson ends?",
+    "anchor": "the first question is what his students will be able to do with a text by the time the lesson ends"
+  },
+  {
+    "type": "mc",
+    "question": "The unit argues that learners benefit from knowing the lesson aim in advance. Which of the following best explains why?",
+    "options": [
+      "It allows learners to prepare the correct materials before class begins.",
+      "It enables learners to monitor their own progress and recognize when they have succeeded.",
+      "It ensures learners complete every planned activity within the allotted time.",
+      "It helps learners memorize the target vocabulary more efficiently."
+    ],
+    "answer": "It enables learners to monitor their own progress and recognize when they have succeeded.",
+    "anchor": "can monitor his own progress and recognize when he has succeeded"
+  },
+  {
+    "type": "mc",
+    "question": "The unit warns against an aim that is too narrow as well as one that is too broad. What specific problem does a too-narrow aim create?",
+    "options": [
+      "It prevents the teacher from using communicative activities.",
+      "It makes informal assessment impossible during the lesson.",
+      "The remaining lesson time has no anchor and activities risk becoming disconnected from any clear purpose.",
+      "It forces the teacher to rely entirely on teacher-centered language."
+    ],
+    "answer": "The remaining lesson time has no anchor and activities risk becoming disconnected from any clear purpose.",
+    "anchor": "The remaining time has no anchor, and activities risk becoming disconnected from any clear purpose"
+  },
+  {
+    "type": "short",
+    "question": "The unit states that the same activity can serve two entirely different aims. Using the peer feedback example from the unit, explain how this is possible and what it implies for lesson planning.",
+    "options": null,
+    "answer": "The same peer feedback procedure can target either students' ability to identify unclear sentences (a reading and analytical aim) or their ability to give specific, constructive spoken comments (a spoken interaction aim). Because the activity is identical in both cases, the aim cannot be inferred from the activity itself. This means the teacher must decide on the intended outcome before the lesson begins, since that decision shapes how the activity is introduced, monitored, and assessed.",
+    "anchor": "A teacher named Ms. Reyes might use the same peer feedback procedure in two different lessons and write two entirely different aims"
+  }
+]

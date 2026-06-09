@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what distinguishes the self- and peer-assessment checklist from a worksheet or graphic organizer in terms of its primary function?",
+    "options": [
+      "It measures vocabulary knowledge through visual cues and a rubric",
+      "It supports the planning stage by making the organization of ideas visible to the whole class",
+      "It asks the student to shift from writer to evaluator by applying lesson criteria consciously",
+      "It provides a fill-in-the-blank structure so each finished product reflects individual responses"
+    ],
+    "answer": "It asks the student to shift from writer to evaluator by applying lesson criteria consciously",
+    "anchor": "That shift in perspective, from writer to evaluator, asks the student to apply the lesson's criteria consciously"
+  },
+  {
+    "type": "mc",
+    "question": "The unit explains why full-sized paper puppets are particularly suited to whole-group storytelling. Which of the following best captures that reasoning?",
+    "options": [
+      "They sit on the teacher's hand and can turn toward individual students to reduce speaking pressure",
+      "Their scale draws attention and signals to students that a narrative frame has opened",
+      "Students can color and cut them out, making construction itself a form of language work",
+      "They are simple enough for students to make, so class time goes toward the language activity"
+    ],
+    "answer": "Their scale draws attention and signals to students that a narrative frame has opened",
+    "anchor": "The scale of the figure draws attention and signals to students that a narrative frame has opened"
+  },
+  {
+    "type": "mc",
+    "question": "The unit presents Fatima's gap-fill activity built around a popular local song as an example of what broader principle?",
+    "options": [
+      "That supplementary materials should always replace formal reading texts in the coursebook",
+      "That self-made materials are a normal feature of experienced teaching, not a fallback when published resources are unavailable",
+      "That adaptation is a sign the coursebook has failed to meet students' needs",
+      "That teachers should only use materials requiring paper, scissors, and basic adhesives"
+    ],
+    "answer": "That self-made materials are a normal feature of experienced teaching, not a fallback when published resources are unavailable",
+    "anchor": "Self-made materials are also a normal feature of experienced teaching, not a fallback when published resources are unavailable"
+  },
+  {
+    "type": "short",
+    "question": "The unit describes how a finished pocket book has a practical advantage over a standard worksheet. What is that advantage, and how does the unit suggest it can extend learning beyond the classroom?",
+    "options": null,
+    "answer": "A pocket book fits into a school bag and can be reviewed at home, giving it a durability a worksheet lacks. The unit also notes that because each child produces a unique version of 'The Book About Me', the finished books can serve as reading material for classmates, extending the activity into a peer-reading task.",
+    "anchor": "a pocket book fits into a school bag and can be reviewed at home, while a flip book can be stored"
+  }
+]

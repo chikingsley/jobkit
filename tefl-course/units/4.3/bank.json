@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "What shift in the teacher's role occurs specifically at the Production stage of PPP?",
+    "options": [
+      "The teacher introduces new language items and models them repeatedly in context.",
+      "The teacher monitors and facilitates rather than directing, stepping in only when students are genuinely stuck.",
+      "The teacher provides immediate corrective feedback and uses elicitation to guide students toward correct forms.",
+      "The teacher controls what language appears and leads students through choral repetition."
+    ],
+    "answer": "The teacher monitors and facilitates rather than directing, stepping in only when students are genuinely stuck.",
+    "anchor": "The teacher's role shifts from instructor to facilitator, monitoring rather than directing."
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, why is variety of activity types within the Practice stage valuable rather than merely decorative?",
+    "options": [
+      "It allows the teacher to introduce several different target items within a single lesson.",
+      "It gives students repeated encounters with the target in forms that differ enough to hold attention without shifting the learning focus.",
+      "It reduces the need for concept-checking questions during the Presentation stage.",
+      "It prepares students to work independently before the teacher has finished modeling the target language."
+    ],
+    "answer": "It gives students repeated encounters with the target in forms that differ enough to hold attention without shifting the learning focus.",
+    "anchor": "Variety of this kind is not decoration; it gives students repeated encounters with the target in forms that differ enough to hold attention"
+  },
+  {
+    "type": "mc",
+    "question": "In the TTT framework, what is the teacher's primary role during the first Test stage?",
+    "options": [
+      "To model the target language clearly so students can repeat it accurately.",
+      "To correct errors immediately and guide students toward the right form through elicitation.",
+      "To observe and gather information about the gap between what students already control and what the lesson requires.",
+      "To set a freer production task that motivates genuine output through game-like conditions."
+    ],
+    "answer": "To observe and gather information about the gap between what students already control and what the lesson requires.",
+    "anchor": "the teacher's primary job is to observe rather than instruct"
+  },
+  {
+    "type": "short",
+    "question": "In the PPP framework, how does the teacher use individual student names during the Presentation stage, and what purpose does this serve?",
+    "options": null,
+    "answer": "The teacher uses individual student names to check whether specific learners have grasped a distinction—for example, asking whether a particular child is 'he' or 'she'—allowing the teacher to gauge the class's readiness before moving forward rather than assuming all students have understood.",
+    "anchor": "The teacher uses individual student names to check whether specific learners have grasped a distinction"
+  }
+]

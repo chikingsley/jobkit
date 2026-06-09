@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what distinguishes a critical thinking question from a comprehension check in terms of motivation?",
+    "options": [
+      "A comprehension check requires students to recall facts, while a critical thinking question invites students to predict, evaluate, or offer opinions, drawing on their own interpretive capacity.",
+      "A comprehension check is always given in written form, while a critical thinking question is always delivered orally.",
+      "A critical thinking question is used only at the start of a lesson to activate prior knowledge, while a comprehension check is used only at the end.",
+      "A comprehension check encourages personal storytelling, while a critical thinking question focuses on factual accuracy."
+    ],
+    "answer": "Critical thinking questions ask students to think on a higher and deeper level, inviting them to predict, evaluate, or offer opinions, whereas comprehension checks focus on factual recall.",
+    "anchor": "critical thinking questions 'ask the students to think on a higher and deeper level' and often invite students to predict, evaluate, or offer opinions"
+  },
+  {
+    "type": "mc",
+    "question": "The unit argues that a task pitched at the wrong level of difficulty undermines motivation. What specific outcome does the unit say results when the gap between a student's current ability and the task's demands is too wide?",
+    "options": [
+      "The student asks the teacher for a simpler version of the task.",
+      "The student copies answers from a peer to avoid embarrassment.",
+      "Effort gives way to withdrawal.",
+      "The student switches to a preferred learning style automatically."
+    ],
+    "answer": "If the gap between what a student can currently do and what the task demands is too wide, effort gives way to withdrawal.",
+    "anchor": "If the gap between what Carlos can currently do and what the task demands is too wide, effort gives way to withdrawal"
+  },
+  {
+    "type": "mc",
+    "question": "The unit describes a teacher circulating during group activities rather than waiting at the front of the room. What motivational function does this practice primarily serve, according to the unit?",
+    "options": [
+      "It allows the teacher to assign formal grades to each group before the lesson ends.",
+      "It enables the teacher to redirect, confirm, or prompt while work is happening, making moments of competence visible to the learner who produced them.",
+      "It discourages students from choosing partners, ensuring more balanced group compositions.",
+      "It replaces the need for any written feedback at the end of the lesson."
+    ],
+    "answer": "The teacher circulating is present while work is happening, available to redirect, confirm, or prompt, and makes small successes visible to learners while they are still fresh.",
+    "anchor": "she is present in the room while the work is happening, available to redirect, confirm, or prompt"
+  },
+  {
+    "type": "short",
+    "question": "The unit states that motivation is not a permanent characteristic. What evidence from the unit supports this claim, and why does it matter for how a teacher interprets a student's disengagement on a given day?",
+    "options": null,
+    "answer": "The unit states that a student who seems disengaged on a Tuesday afternoon may work with genuine concentration on a task that connects to something she cares about on Wednesday morning. This matters because it means a teacher should not treat disengagement as a fixed trait of the learner but rather as a response to conditions that can change, which keeps the focus on designing better tasks and environments rather than writing off particular students.",
+    "anchor": "A student who seems disengaged on a Tuesday afternoon may work with genuine concentration on a task that connects to something she cares about on Wednesday morning"
+  }
+]

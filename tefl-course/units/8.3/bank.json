@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "How does the unit say the Word Bricks activity adjusts to serve a mixed-level classroom without requiring the teacher to prepare entirely separate materials?",
+    "options": [
+      "The teacher assigns different colored bricks to beginning, intermediate, and advanced students",
+      "Adding one or two extra Wild Cards raises the ceiling for any group",
+      "The teacher removes the suffix bricks for beginners and adds them back for advanced students",
+      "Beginning students use only one face of each brick while advanced students use both faces"
+    ],
+    "answer": "Adding one or two extra Wild Cards raises the ceiling for any group, because a student who knows the word she wants but cannot find it on any tile can write it on the Wild Card and continue building.",
+    "anchor": "Adding one or two extra Wild Cards raises the ceiling for any group"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the role of explaining sentences in a paragraph, and how do they differ from evidence sentences?",
+    "options": [
+      "Explaining sentences provide specific examples that support the main idea, while evidence sentences expand the claim's scope",
+      "Explaining sentences restate the topic sentence in new language, while evidence sentences introduce the next paragraph's idea",
+      "Explaining sentences add more information about the main idea without yet offering proof, while evidence sentences provide specific examples",
+      "Explaining sentences connect evidence back to the topic sentence, while evidence sentences describe the paragraph's subject in general terms"
+    ],
+    "answer": "Explaining sentences expand the claim so that the reader understands its scope without yet offering proof, while evidence sentences provide the specific examples that support the main idea.",
+    "anchor": "They do not yet offer proof; they expand the claim so that the reader understands its scope"
+  },
+  {
+    "type": "mc",
+    "question": "The unit identifies a mutually reinforcing quality in the station-based peer feedback activity. What does this mean?",
+    "options": [
+      "Students who initial the checklist first are required to return to earlier stations and re-evaluate their own work",
+      "When a student notices a missing element in a classmate's essay, she tends to return to her own essay and check the same element",
+      "The teacher's summative feedback reinforces the peer feedback students have already received at each station",
+      "Working with several different peers ensures that each student's judgment is reinforced by multiple classmates"
+    ],
+    "answer": "When a student like Priya notices that a classmate's essay is missing a closing element, she tends to return to her own essay and check the same element, so evaluating someone else's writing sharpens attention to the writer's own work.",
+    "anchor": "Evaluating someone else's writing sharpens attention to the writer's own work"
+  },
+  {
+    "type": "short",
+    "question": "According to the unit, what specific relationship must a topic sentence maintain with the thesis statement, and why does this relationship matter?",
+    "options": null,
+    "answer": "A topic sentence should use language similar to the thesis so that a reader can trace the paragraph back to the essay's central argument; without this echo, the paragraph may drift away from the essay's controlling idea rather than developing it.",
+    "anchor": "A topic sentence should use language similar to the thesis, so that a reader can trace the paragraph back"
+  }
+]

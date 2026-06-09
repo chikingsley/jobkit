@@ -1,0 +1,44 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what distinguishes the four reflective teaching questions from evaluative questions?",
+    "options": [
+      "They require the teacher to rate herself on a numerical scale before and after each lesson",
+      "They ask what happened and what might be done differently, not whether the teacher was good or bad",
+      "They are designed to be shared with an administrator at the end of each term",
+      "They focus exclusively on student behavior rather than on instructional decisions"
+    ],
+    "answer": "They do not ask whether the teacher was good or bad; they ask what happened and what might be done differently.",
+    "anchor": "They do not ask whether the teacher was good or bad; they ask what happened and what might be done differently"
+  },
+  {
+    "type": "mc",
+    "question": "The unit names several sources from which good teachers continue to learn throughout their careers. Which of the following is listed among those sources?",
+    "options": [
+      "Annual standardized test results submitted by the school district",
+      "Academic information in their field",
+      "Observations conducted exclusively by external evaluators",
+      "Mandatory certification renewal courses"
+    ],
+    "answer": "Good teachers learn from academic information in their field, among other sources.",
+    "anchor": "from peers and colleagues, from mentors and supervisors, and from academic information in their field"
+  },
+  {
+    "type": "mc",
+    "question": "What does the unit identify as the indispensable step that makes a video or audio recording of a lesson genuinely useful for reflection?",
+    "options": [
+      "Sharing the recording with a mentor before watching it alone",
+      "Transcribing the recording word for word into the teacher diary",
+      "Conducting a follow-up analysis after watching or listening to the recording",
+      "Obtaining written consent from students before the lesson begins"
+    ],
+    "answer": "The follow-up analysis is the indispensable step; a recording left unwatched is a file and nothing more.",
+    "anchor": "The follow-up analysis is the indispensable step; a recording left unwatched is a file and nothing more"
+  },
+  {
+    "type": "short",
+    "question": "The unit describes two specific risks that can distort data collection during peer observation. What are they?",
+    "answer": "The two risks are an observer's own belief systems about teaching and learning, which can cause her to evaluate a lesson through a personal lens rather than on its own terms, and personal relationships and peer pressure, which can cause a close friend to soften feedback to the point of uselessness or a strained relationship to color observations negatively.",
+    "anchor": "Data collection can be distorted by an observer's own belief systems about teaching and learning"
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the primary reason a learner who mispronounces a vowel in a word may benefit from the teacher pointing silently to the chart rather than repeating the word aloud?",
+    "options": [
+      "Repeating the word aloud reinforces incorrect muscle memory in the learner.",
+      "Speaking the word again repeats the input that has already failed to land.",
+      "Silent pointing activates a different part of the brain than auditory input.",
+      "The chart displays stress patterns that spoken models cannot convey."
+    ],
+    "answer": "Speaking the word again repeats the input that has already failed to land.",
+    "anchor": "speaking the word again repeats the input that has already failed to land"
+  },
+  {
+    "type": "mc",
+    "question": "Which of the following best explains why the unit recommends that teachers introduce phonemic symbols in small clusters linked to vocabulary already being studied, rather than presenting the full chart in one lesson?",
+    "options": [
+      "Learners find it easier to memorize symbols when they are grouped by place of articulation.",
+      "Each symbol arrives with a concrete word attached to it, allowing familiarity to build gradually.",
+      "The full chart contains too many diphthongs for learners to process in a single session.",
+      "Introducing all 44 symbols at once violates the one symbol, one sound principle."
+    ],
+    "answer": "Each symbol arrives with a concrete word attached to it, allowing familiarity to build gradually.",
+    "anchor": "each symbol arrives with a concrete word attached to it"
+  },
+  {
+    "type": "mc",
+    "question": "The unit states that most learners' dictionaries print a full phonemic transcription alongside every headword. What practical benefit does this give a learner who can read those transcriptions?",
+    "options": [
+      "It allows the learner to identify which accent a word belongs to before pronouncing it.",
+      "It enables the learner to look up any unfamiliar word and know immediately how to say it.",
+      "It helps the learner distinguish between British and American vowel inventories.",
+      "It removes the need for the learner to study the phonemic chart independently."
+    ],
+    "answer": "It enables the learner to look up any unfamiliar word and know immediately how to say it.",
+    "anchor": "can look up any unfamiliar word and know immediately how to say it"
+  },
+  {
+    "type": "short",
+    "question": "What distinguishes a diphthong from a monophthong, and what problem arises for a learner who holds the starting position of a diphthong without completing the glide?",
+    "answer": "A monophthong is produced with the mouth holding a single steady position throughout the sound, while a diphthong involves the mouth gliding from one position to a second position within the same syllable. If a learner holds the starting position of a diphthong without completing the glide, they will produce something that sounds like a different word entirely.",
+    "anchor": "a learner who holds the starting position without completing the glide will produce something that sounds like a different word entirely"
+  }
+]

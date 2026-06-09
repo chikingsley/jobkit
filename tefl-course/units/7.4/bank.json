@@ -1,0 +1,45 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, why does rewriting an authentic text to lower its difficulty undermine its value?",
+    "options": [
+      "It makes the text too short to support a full lesson activity",
+      "It removes the idiomatic phrasing that reflects real language use in culturally appropriate contexts",
+      "It prevents teachers from using the material across multiple proficiency levels",
+      "It increases the cultural load by introducing unfamiliar simplified vocabulary"
+    ],
+    "answer": "It removes the idiomatic phrasing that reflects real language use in culturally appropriate contexts",
+    "anchor": "A simplified advertisement no longer reflects real use of language in culturally appropriate contexts"
+  },
+  {
+    "type": "mc",
+    "question": "The unit describes the tourist album project about the Sinai Peninsula as an example of authentic materials supporting which specific outcome beyond the classroom?",
+    "options": [
+      "Students submitted their work to an international language competition",
+      "The finished album was added to the school library, giving the project an audience beyond the classroom",
+      "Older students presented the album to a local tourism board",
+      "The album was published on the internet for other language learners"
+    ],
+    "answer": "The finished album was added to the school library, giving the project an audience beyond the classroom",
+    "anchor": "The finished album was added to the school library, giving the project an audience beyond the classroom"
+  },
+  {
+    "type": "mc",
+    "question": "Which of the following best explains why a student who follows local football will tolerate more linguistic difficulty in a match report than in an article about an unfamiliar sport?",
+    "options": [
+      "Football vocabulary is simpler and contains fewer technical terms than other sports",
+      "The student brings prior knowledge to the text and compensates for gaps in linguistic understanding",
+      "Match reports are always written at a lower reading level than other newspaper articles",
+      "The teacher has pre-taught the key vocabulary before the student reads the report"
+    ],
+    "answer": "The student brings prior knowledge to the text and compensates for gaps in linguistic understanding",
+    "anchor": "students bring prior knowledge to the text and compensate for gaps in linguistic understanding"
+  },
+  {
+    "type": "short",
+    "question": "The unit identifies a fifth reason authentic materials motivate learners that is distinct from interest, cultural relevance, personal connection, and survival skills. What is that fifth reason, and what does it train learners to do?",
+    "options": null,
+    "answer": "The fifth reason is that authentic materials train learners to extract meaning from language they do not fully understand, developing tolerance for partial comprehension — a skill no controlled exercise can replicate.",
+    "anchor": "authentic materials train learners to extract meaning from language they do not fully understand"
+  }
+]

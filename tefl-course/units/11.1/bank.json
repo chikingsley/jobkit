@@ -1,0 +1,44 @@
+[
+  {
+    "type": "mc",
+    "question": "According to the unit, what is the most significant consequence of large class size for language learning?",
+    "options": [
+      "A) Teachers are unable to write lesson plans that include grammar activities",
+      "B) Students have fewer opportunities to produce language because practice time is divided among too many learners",
+      "C) Discipline problems increase to the point where communicative activities become impossible",
+      "D) Teachers lose the ability to use pair work because rooms are too crowded to rearrange"
+    ],
+    "answer": "When sixty students share a single lesson hour, each individual's opportunity to produce language shrinks to a fraction of what a smaller class would allow.",
+    "anchor": "each individual's opportunity to produce language shrinks to a fraction of what a smaller class would allow"
+  },
+  {
+    "type": "mc",
+    "question": "The unit explains that displaying group work products on the classroom wall serves a purpose beyond the lesson itself. What does the unit identify as a key benefit of this practice?",
+    "options": [
+      "A) It allows the teacher to assess all students simultaneously without circulating",
+      "B) It reduces the need for written homework because students have already produced a public artifact",
+      "C) It creates a circulation of attention among students who read and respond to each other's work",
+      "D) It signals to administrators that communicative tasks are being completed"
+    ],
+    "answer": "Other groups have a reason to read and respond to work that is not their own, creating a circulation of attention that a single teacher-fronted display cannot replicate.",
+    "anchor": "creating a circulation of attention that a single teacher-fronted display cannot replicate"
+  },
+  {
+    "type": "mc",
+    "question": "The unit describes a specific risk when a teacher circulates without a plan during student work time. What is that risk?",
+    "options": [
+      "A) The teacher will spend too long at each desk and fail to complete the lesson",
+      "B) Students in the front rows will feel singled out and become reluctant to participate",
+      "C) The teacher will repeatedly return to confident students and front rows, leaving those who most need help unnoticed",
+      "D) Pair work will break down because students expect the teacher to visit every pair equally"
+    ],
+    "answer": "a teacher who circulates without a plan will inevitably return to the same confident students, the same front rows, and the same pairs who raise their hands",
+    "anchor": "a teacher who circulates without a plan will inevitably return to the same confident students, the same front rows"
+  },
+  {
+    "type": "short",
+    "question": "The unit argues that allowing students to participate in creating classroom rules produces a different outcome than a teacher-imposed list. What outcome does the unit say this participation produces, and what additional mechanisms does the unit recommend to reinforce those rules?",
+    "answer": "When students help decide the rules, the resulting conduct guide carries shared ownership. The unit also recommends using reward systems and peer reinforcement so the whole class works toward common behavioral goals.",
+    "anchor": "the resulting conduct guide carries a kind of shared ownership that a teacher-imposed list does not"
+  }
+]
