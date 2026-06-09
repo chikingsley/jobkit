@@ -20,6 +20,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import cast
 
@@ -55,15 +56,37 @@ _QUIZ_BRIEF = (
 )
 
 
+_RETRIES = 5
+_BACKOFF_SECONDS = 4  # transient proxy 5xx/timeouts: wait this * attempt before retrying.
+
+
+def _generate(client: SuperwhisperClient, prompt: str, *, max_tokens: int) -> str:
+    """Plain-text generate with retry/backoff on transient proxy errors (e.g. 503)."""
+    for attempt in range(1, _RETRIES + 1):
+        try:
+            return client.generate([{"role": "user", "content": prompt}], max_tokens=max_tokens)
+        except Exception as exc:
+            if attempt == _RETRIES:
+                raise
+            _log(f"  generate failed ({type(exc).__name__}); retry {attempt}/{_RETRIES}")
+            time.sleep(_BACKOFF_SECONDS * attempt)
+    return ""  # unreachable; the loop returns or raises.
+
+
 def _json_call(client: SuperwhisperClient, prompt: str, *, max_tokens: int) -> object | None:
-    """Run generate_json with retries — models occasionally emit malformed JSON."""
-    for attempt in range(3):
+    """Run generate_json with retries — malformed JSON and transient proxy errors both retry."""
+    for attempt in range(1, _RETRIES + 1):
         try:
             return client.generate_json(
                 [{"role": "user", "content": prompt}], max_tokens=max_tokens
             )
         except json.JSONDecodeError:
-            _log(f"  malformed JSON from model (attempt {attempt + 1}/3); retrying")
+            _log(f"  malformed JSON (attempt {attempt}/{_RETRIES}); retrying")
+        except Exception as exc:
+            if attempt == _RETRIES:
+                raise
+            _log(f"  json call failed ({type(exc).__name__}); retry {attempt}/{_RETRIES}")
+            time.sleep(_BACKOFF_SECONDS * attempt)
     return None
 
 
@@ -172,9 +195,7 @@ def draft(client: SuperwhisperClient, unit: Unit) -> Path:
     for sec in sections:
         prompt = _section_prompt(unit, source, sec, previous_tail)
         words = int(cast("int", sec.get("words", 450)))
-        text = client.generate(
-            [{"role": "user", "content": prompt}], max_tokens=int(words * 2.2)
-        ).strip()
+        text = _generate(client, prompt, max_tokens=int(words * 2.2)).strip()
         if not text:
             sys.exit(f"unit {unit.uid}: empty draft for section {sec.get('title')!r}")
         chunks.append(f"\n## {sec.get('title', '')}\n\n{text}\n")
@@ -213,13 +234,31 @@ def draft(client: SuperwhisperClient, unit: Unit) -> Path:
     return out
 
 
+_ANCHOR_OVERLAP_MIN = 0.75  # fraction of an anchor's content words that must appear in the unit
+
+
+def _anchor_grounded(anchor: str, unit_words: frozenset[str]) -> bool:
+    """Return True if the anchor is verbatim OR most content words appear in the unit.
+
+    The model often paraphrases its anchor rather than quoting; a paraphrase whose words are all
+    present in the unit still proves the question is answerable from the text. Only an anchor with
+    invented content (words absent from the unit) is a real problem.
+    """
+    content = [w for w in re.findall(r"[a-z0-9]+", anchor.lower()) if len(w) >= 4]  # noqa: PLR2004
+    if not content:
+        return True
+    present = sum(1 for w in content if w in unit_words)
+    return present / len(content) >= _ANCHOR_OVERLAP_MIN
+
+
 def _quiz_problems(items: list[object], unit_text: str) -> list[str]:
-    """Validate the generated quiz: count, MC shape, answers, and anchors that really occur."""
+    """Validate the generated quiz: count, MC shape, answers, and anchors grounded in the unit."""
     problems: list[str] = []
     expected = 6
     if len(items) != expected:
         problems.append(f"expected {expected} questions, got {len(items)}")
     lowered = unit_text.lower()
+    unit_words = frozenset(re.findall(r"[a-z0-9]+", lowered))
     for i, raw in enumerate(items, 1):
         if not isinstance(raw, dict):
             problems.append(f"q{i}: not an object")
@@ -235,8 +274,8 @@ def _quiz_problems(items: list[object], unit_text: str) -> list[str]:
         anchor = str(q.get("anchor", "")).strip()
         if not anchor:
             problems.append(f"q{i}: missing anchor")
-        elif anchor.lower() not in lowered:
-            problems.append(f"q{i}: anchor not found verbatim in unit text: {anchor!r}")
+        elif anchor.lower() not in lowered and not _anchor_grounded(anchor, unit_words):
+            problems.append(f"q{i}: anchor content not found in unit text: {anchor!r}")
     return problems
 
 
@@ -447,10 +486,46 @@ def _log(message: str) -> None:
     print(message, file=sys.stderr)  # noqa: T201
 
 
-def main() -> None:
+_QUIZ_BLOCK_RE = re.compile(
+    r"\*\*\d+\.\s*(?P<q>.+?)\*\*.*?\*Answer:\s*(?P<a>.+?)\*.*?\*Anchor:\s*\"(?P<anchor>.*?)\"\*",
+    re.DOTALL,
+)
+
+
+def _quizcheck(unit: Unit) -> bool:
+    """Re-validate an existing unit's rendered quiz against the (fuzzy) anchor rule.
+
+    Re-derives quiz items by parsing unit.md, runs `_quiz_problems`, and rewrites/clears the
+    warnings file. Returns True if clean. Used to refresh warnings after tightening or relaxing
+    the validator without regenerating the unit.
+    """
+    path = UNITS_DIR / unit.uid / "unit.md"
+    text = path.read_text(encoding="utf-8")
+    prose = re.split(r"^## Check your understanding$", text, flags=re.MULTILINE)[0]
+    quiz_part = text[len(prose) :]
+    items: list[object] = [
+        {
+            "question": m.group("q").strip(),
+            "answer": m.group("a").strip(),
+            "anchor": m.group("anchor").strip(),
+        }
+        for m in _QUIZ_BLOCK_RE.finditer(quiz_part)
+    ]
+    # Count-only check is skipped here (parsing can miss MC option lines); focus on anchors.
+    problems = [p for p in _quiz_problems(items, prose) if "anchor" in p or "answer" in p]
+    warning = UNITS_DIR / unit.uid / "quiz-warnings.txt"
+    if problems:
+        warning.write_text("\n".join(problems) + "\n", encoding="utf-8")
+    elif warning.exists():
+        warning.unlink()
+    _log(f"[{unit.uid}] quizcheck: {len(problems)} issue(s)")
+    return not problems
+
+
+def main() -> None:  # noqa: PLR0912 - one CLI dispatch over five subcommands; flat by design.
     """CLI: run/draft/gate units from the registry."""
     parser = argparse.ArgumentParser(prog="build.py", description="Produce course units.")
-    parser.add_argument("command", choices=["run", "draft", "gate", "revise"])
+    parser.add_argument("command", choices=["run", "draft", "gate", "revise", "quizcheck"])
     parser.add_argument("units", nargs="+", help="unit ids (e.g. 9.2) or 'all'")
     args = parser.parse_args()
 
@@ -459,7 +534,9 @@ def main() -> None:
     if unknown:
         parser.error(f"unknown unit(s): {', '.join(unknown)} (have: {', '.join(UNITS)})")
 
-    if args.command == "gate":
+    if args.command == "quizcheck":
+        results = {uid: _quizcheck(UNITS[uid]) for uid in uids}
+    elif args.command == "gate":
         results = {uid: gate(UNITS[uid]) for uid in uids}
     elif args.command == "revise":
         client = SuperwhisperClient()

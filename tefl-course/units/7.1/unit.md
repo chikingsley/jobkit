@@ -1,6 +1,5 @@
 # Teaching Listening
 
-
 ## Why Listening Needs to Be Taught
 
 Listening is a skill that develops through deliberate, structured practice, not through incidental exposure alone. A student who hears English spoken around her every day may still struggle to follow a recorded announcement or understand a colleague speaking quickly on the phone. The classroom is where that gap closes, because the teacher can control the input, sequence the tasks, and give the student repeated opportunities to process spoken language with a clear purpose.
@@ -12,7 +11,6 @@ One practical way to integrate audio is to present instructions and tasks in spo
 When audio-playing technology is unavailable, the teacher still has workable options. Dictation tasks, in which the teacher reads aloud and students transcribe, give students practice connecting sounds to written words under controlled conditions. Inviting a guest speaker into the classroom exposes students to a voice, a pace, and an accent that differ from the teacher's own, which is itself a form of listening challenge. Neither option requires equipment, and both keep listening at the centre of the activity.
 
 The sections that follow address how teachers design that deliberate practice from start to finish, from the tasks that prepare students to listen, through the listening activity itself, to the work students do once the audio has ended.
-
 
 ## The Pre-Listening Stage: Building the Bridge
 
@@ -26,7 +24,6 @@ The plan then addresses a smaller but equally important problem: certain words i
 
 The final move in this stage is to set expectations about the situation students are about to hear. The teacher tells the class that a police officer will be speaking with two people involved in a traffic accident, that the dialogue will play more than once, and that the first listening requires no textbook. This framing matters because it tells students what kind of attention to pay. Knowing the situation in advance, a student like Carlos can listen for the relationship between the speakers rather than trying to process every word from scratch. The pre-listening stage, in this sense, is not a warm-up in the casual sense of the word; it is the scaffolding that makes the listening task itself achievable.
 
-
 ## Listening for Gist: The First-Listen Task
 
 Gist, as a concept, means the overall meaning or general sense of a spoken text, as distinct from its specific details. A first-listen task asks students to grasp that overall meaning without yet attending to particular facts, names, or figures. The lesson plan from the source text makes this design principle concrete: the teacher tells students, "The first time you listen you do not need your textbook," and writes two or three broad orientation questions on the board before the audio begins.
@@ -38,7 +35,6 @@ The questions the teacher writes on the board serve a related function. In the s
 The source text also describes a broader classroom technique in which a teacher plays a short audio text, asks students to take notes as they listen, and then has them discuss the content in small groups before one member reports back to the class. This sequence shows how a gist task can do double work. The listening itself builds comprehension, and the small-group discussion that follows gives students an immediate communicative reason to consolidate what they heard. A student like Yuki, who caught the general situation but missed a name, can fill that gap through conversation with a partner rather than waiting for the teacher to supply the answer.
 
 First-listen design, then, rests on two coordinated decisions: what students are asked to do with the text, and what physical and cognitive conditions surround that task. Broad questions, no written support, and a clear statement of the situation in advance all work together to make the first encounter with the audio productive rather than overwhelming. The detail work comes later, once students have a stable sense of what the text is about.
-
 
 ## Listening for Detail: Returning to the Audio
 
@@ -66,7 +62,6 @@ That kind of question asks students to connect classroom language to real situat
 
 The key principle is continuity. The post-listening stage should feel like the same lesson continuing, not a new activity that happens to follow the audio. When the speaking task uses the same vocabulary the students heard, when the grammar they practised in the listening appears again in their own sentences, and when the final reflection ties the content to their lives, students experience the lesson as a coherent whole. A student like Amara, who struggled with the past continuous in an earlier grammar lesson, may find that hearing it in the audio and then using it immediately in conversation with Carlos is what finally makes the structure feel natural.
 
-
 ## Practical Task Sequences: Putting the Stages Together
 
 A complete listening lesson moves through a predictable arc, and the lesson plan built around a police interview after a traffic accident illustrates each stage clearly. The teacher opens with four photographs displayed on the whiteboard: a driver applying makeup, a man on a cell phone, a woman texting, and a man yawning at the wheel. Students identify what is happening in each image and discuss which behaviour is most dangerous. This warm-up does two things at once: it draws on knowledge students already carry into the room, and it builds the mental context they will need when the audio begins.
@@ -80,7 +75,6 @@ The second pass introduces focused listening, a skill label that appears across 
 The post-listening task completes the arc by asking students to produce language. In the traffic accident lesson, students use the past continuous and the unit vocabulary to interview a partner about a fictional accident, then report the details to another pair. The listening has supplied both the model and the raw material for the speaking. Writing tasks serve the same function: a summary competition, in which groups listen, discuss, and then write the most accurate account they can, keeps the audio at the centre while moving students toward independent production.
 
 One practical constraint governs the whole sequence: time. Extending the warm-up discussion because students are engaged, or replaying the audio a third time because one student asks, can consume the minutes allocated to the post-listening task and prevent the class from reaching its stated objectives. Each stage needs a realistic time allocation written into the plan before the lesson begins, and teachers should treat those allocations as genuine limits rather than rough suggestions. A lesson that ends before students have produced anything leaves the listening work unfinished, however well the earlier stages went.
-
 
 ## Check your understanding
 
@@ -128,7 +122,6 @@ One practical constraint governs the whole sequence: time. Extending the warm-up
 
    *Answer: Ms. Okafor should play the audio a second time and assign a focused listening task before replaying it, writing specific detail questions on the board so students like Priya know exactly what information to listen for. The unit states that replaying audio with a sharper, more specific question directs attention to parts of the text the first-listen task did not require students to notice, and that this changed task is what gives each repetition its purpose. She should keep this second pass brief and within her time allocation so the post-listening speaking task is not sacrificed, because the unit warns that a lesson ending before students have produced anything leaves the listening work unfinished.*
    *Anchor: "Replaying it with a sharper, more specific question directs attention to parts of the text"*
-
 
 ## References
 

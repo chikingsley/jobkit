@@ -1,0 +1,8 @@
+unit 4.1 — The Communicative Approach and Its Rivals: A Short, Honest History
+GATE PASS
+
+== dslop (prose body, exit 0) ==
+
+== patterns.js (full file) ==
+{"score":2,"label":"Minimal AI signals","issues":5}
+

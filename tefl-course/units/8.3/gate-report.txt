@@ -1,0 +1,8 @@
+unit 8.3 — Teaching Writing I: From Sentence to Paragraph
+GATE PASS
+
+== dslop (prose body, exit 0) ==
+
+== patterns.js (full file) ==
+{"score":2,"label":"Minimal AI signals","issues":4}
+

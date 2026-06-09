@@ -1,0 +1,8 @@
+unit 2.2 — Sentence Structure
+GATE PASS
+
+== dslop (prose body, exit 0) ==
+
+== patterns.js (full file) ==
+{"score":1,"label":"Minimal AI signals","issues":2}
+

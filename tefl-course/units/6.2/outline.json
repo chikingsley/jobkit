@@ -1,0 +1,32 @@
+[
+  {
+    "title": "What the Phonemic Chart Is",
+    "brief": "Explain that the phonemic chart is a organised display of the phonemes of English, drawn from the International Phonetic Alphabet (IPA). Cover the core idea that each symbol represents exactly one sound and each sound is represented by exactly one symbol, contrasting this with ordinary English spelling (e.g. the letter 'c' in 'cat', 'city', and 'church' represents three different sounds). Direct learners to the IPA chart in the course resources rather than reproducing it here. Clarify that the version used in ELT typically contains 44 phonemes for standard Southern British English, grouped into vowels and consonants.",
+    "words": 420
+  },
+  {
+    "title": "Vowel Sounds: Monophthongs and Diphthongs",
+    "brief": "Describe the two categories of English vowel phonemes shown on the chart: monophthongs (pure vowels where the mouth position stays steady) and diphthongs (gliding vowels where the mouth moves from one position to another). Give clear example words for representative symbols \u2014 for instance /\u026a/ as in 'sit', /i\u02d0/ as in 'seat', /\u028c/ as in 'cup', /\u0251\u02d0/ as in 'car', /\u0252/ as in 'hot', and the diphthongs /e\u026a/ as in 'day', /\u0259\u028a/ as in 'go', and /a\u026a/ as in 'fly'. Explain the length mark (\u02d0) and the schwa /\u0259/ as the most frequent vowel in English, appearing in unstressed syllables such as the first sound of 'about' or the final sound of 'teacher'. Keep all phonetic transcriptions accurate.",
+    "words": 460
+  },
+  {
+    "title": "Consonant Sounds: Voiced and Voiceless Pairs",
+    "brief": "Introduce the consonant section of the chart, explaining that many English consonants come in voiced and voiceless pairs that share the same place and manner of articulation \u2014 for example /p/ and /b/, /t/ and /d/, /s/ and /z/, /f/ and /v/, /\u0283/ as in 'ship' and /\u0292/ as in 'measure', and /t\u0283/ as in 'church' and /d\u0292/ as in 'judge'. Explain voicing in plain terms: voiced sounds involve vibration of the vocal cords, voiceless sounds do not, and learners can feel the difference by placing a hand on the throat. Also mention consonants without a pair, such as /h/, /m/, /n/, /\u014b/ as in 'sing', /l/, /r/, /w/, and /j/ as in 'yes'. Accurate phonetic examples are essential throughout.",
+    "words": 450
+  },
+  {
+    "title": "Why One Symbol, One Sound Matters for Teaching",
+    "brief": "Explain the practical teaching value of a consistent symbol-to-sound system. Because English spelling is highly irregular \u2014 the same letter combination can be pronounced differently in 'though', 'through', 'tough', 'cough', and 'bough' \u2014 learners cannot rely on spelling alone to know how a word sounds. The phonemic chart gives teachers and learners a reliable, spelling-independent reference: once a learner knows the symbol /\u03b8/ they know exactly how to pronounce the first sound in 'think', 'three', and 'throw'. Cover how this also helps with dictionary use, since most learners' dictionaries include phonemic transcriptions. Stress that the chart is a tool for clarity, not an end in itself.",
+    "words": 390
+  },
+  {
+    "title": "Using the Chart in the Classroom",
+    "brief": "Describe concrete ways a teacher uses the phonemic chart during lessons. Cover pointing to symbols on a displayed chart to show pronunciation without repeating a word aloud \u2014 useful when a learner keeps mishearing a spoken model. Explain writing a word's phonemic transcription on the board alongside its spelling, for example writing 'knight' and then /na\u026at/ to show which letters are silent. Describe using the chart for minimal-pair drilling, such as contrasting /\u026a/ and /i\u02d0/ with word pairs like 'ship/sheep' or 'bit/beat', to help learners distinguish sounds that do not exist in their first language. Note that the chart can be displayed as a poster, shown on a screen, or given as a handout, and that learners benefit from becoming familiar with the symbols gradually rather than all at once.",
+    "words": 460
+  },
+  {
+    "title": "Getting Started: Building Your Own Familiarity with the Chart",
+    "brief": "Offer practical guidance for trainee teachers who are new to the IPA. Suggest a step-by-step approach: begin with the sounds that map neatly onto familiar spellings, then move to the trickier symbols such as /\u0292/, /\u014b/, /\u03b8/, and /\u00f0/ (the voiced counterpart of /\u03b8/, heard in 'this', 'that', and 'those'). Recommend practising by transcribing simple, common words \u2014 for example transcribing 'fish' as /f\u026a\u0283/, 'dog' as /d\u0252\u0261/, and 'train' as /tre\u026an/ \u2014 and then checking against a reliable learners' dictionary. Emphasise that a teacher does not need to be a trained phonetician; a working knowledge of the 44 symbols and the confidence to point to them and model sounds is sufficient for effective classroom use.",
+    "words": 380
+  }
+]

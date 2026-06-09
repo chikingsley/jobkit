@@ -1,0 +1,8 @@
+unit 1.2 — How People Learn Languages: First Language, Second Language, and Input
+GATE PASS
+
+== dslop (prose body, exit 0) ==
+
+== patterns.js (full file) ==
+{"score":2,"label":"Minimal AI signals","issues":4}
+

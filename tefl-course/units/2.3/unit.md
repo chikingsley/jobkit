@@ -1,6 +1,5 @@
 # The Tense System: Time, Tense, and Aspect
 
-
 ## Time, Tense, and Aspect: Three Different Things
 
 Time, tense, and aspect are three distinct concepts, yet teachers and learners treat them as a single system so routinely that the conflation has become nearly invisible in ordinary classroom talk. A teacher who cannot distinguish them will reach for labels like "the future tense" or "the present continuous tense" and mislead students about how English works.
@@ -79,7 +78,6 @@ Minimal pairs are among the most direct ways to make aspectual meaning visible i
 
 Learners whose first languages handle tense and aspect differently will not absorb these distinctions by exposure alone. Mandarin, for instance, does not inflect verbs for tense; aspect is marked by particles rather than by changes to the verb stem. A learner coming from that background needs explicit, accurate explanation of what the English system is doing and why the choices matter. The conceptual clarity built across this unit, the separation of time from tense, the understanding of aspect as a choice about how to present an event's shape, gives the teacher the precise vocabulary and the principled framework to provide that explanation when it is needed.
 
-
 ## Check your understanding
 
 **1. Which of the following correctly describes what 'tense' means in a strictly grammatical sense?**
@@ -127,7 +125,4 @@ Learners whose first languages handle tense and aspect differently will not abso
    *Answer: The most principled move is to draw the two-by-four grid on the board, labelling the two tenses (present and past) across the top and the four aspects (simple, continuous, perfect, perfect continuous) down the side, then populate each cell with a sentence about a single character such as Mia. This makes visible that eight forms arise from combining two tenses with four aspects, and that 'twelve tenses' conflates tense with aspect and with modal structures for future time. The teacher can then explain that coursebooks sometimes count 'will + infinitive' and similar structures as separate tenses, but that these are grammatical means of expressing future time reference built from existing verb forms, not new inflectional categories. This move is justified because the unit states that presenting the system as 'a grid of eight meaningful choices, rather than a catalogue of twelve or sixteen separate tenses, gives learners a system they can reason about,' and because it addresses Carlos's confusion by showing the underlying logic rather than simply asserting that one count is correct.*
    *Anchor: "Combining these two tenses with four aspects produces eight core verb forms."*
 
-
 ## References
-
-

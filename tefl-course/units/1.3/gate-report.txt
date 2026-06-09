@@ -1,0 +1,8 @@
+unit 1.3 — What Makes an Effective Teacher
+GATE PASS
+
+== dslop (prose body, exit 0) ==
+
+== patterns.js (full file) ==
+{"score":3,"label":"Minimal AI signals","issues":7}
+

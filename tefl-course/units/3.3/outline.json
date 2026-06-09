@@ -1,0 +1,32 @@
+[
+  {
+    "title": "What Is Reported Speech and Why Does It Matter?",
+    "brief": "Introduce reported speech (also called indirect speech) as the grammatical system for conveying what someone said without quoting their exact words. Explain the contrast between direct speech (with quotation marks and the speaker's original words) and reported speech (integrated into a new sentence, with no quotation marks). Use two or three paired examples to show the transformation clearly, e.g. 'I am tired' \u2192 She said she was tired. Briefly explain why teachers need a firm grasp of this area: learners encounter it constantly in reading and listening, and errors in reported speech can cause genuine miscommunication. Do not yet discuss the mechanics of backshift or pronoun change \u2014 those are covered in later sections.",
+    "words": 380
+  },
+  {
+    "title": "Tense Backshift: The One-Step-Back Rule",
+    "brief": "Explain the core principle of tense backshift: when the reporting verb is in the past tense, the verb in the reported clause typically shifts one tense back into the past. Present a clear table or structured list covering the main backshift pairs: simple present \u2192 simple past, present continuous \u2192 past continuous, simple past \u2192 past perfect, present perfect \u2192 past perfect, will \u2192 would, can \u2192 could, may \u2192 might. For each pair, provide an original invented example sentence showing both the original direct speech and the reported version. Then address the two main learner difficulties: (1) over-applying backshift when the reporting verb is in the present tense (e.g. She says she is ready needs no backshift), and (2) confusion about when backshift is optional \u2014 specifically when the reported information is still true or current at the time of reporting. Keep the explanation grounded in practical classroom terms.",
+    "words": 520
+  },
+  {
+    "title": "Pronoun and Time/Place Reference Shifts",
+    "brief": "Cover the systematic changes to pronouns, possessive adjectives, and time/place adverbials that occur when speech is reported from a different person and moment. For pronouns, show how first- and second-person forms shift depending on who is now speaking and who is being addressed, using a set of invented examples that illustrate common combinations (e.g. 'I will call you' said by Ana to Ben, reported by a third party). For time and place words, present the standard shifts: now \u2192 then, today \u2192 that day, yesterday \u2192 the day before, tomorrow \u2192 the following day / the next day, here \u2192 there, this \u2192 that, these \u2192 those, ago \u2192 before/previously. Provide a short invented dialogue followed by its fully reported version so learners can see all the changes working together. Flag the most common learner error: forgetting to shift pronouns while correctly backshifting the verb, which produces sentences that are grammatically mixed and potentially confusing.",
+    "words": 490
+  },
+  {
+    "title": "Reporting Verbs: Beyond 'Said' and 'Told'",
+    "brief": "Explain that English has a rich set of reporting verbs that encode the speech act itself, allowing the reporter to convey not just content but intention or manner. Organise the verbs by the grammatical pattern they require, covering at least three patterns with invented examples for each: (1) verb + that-clause (e.g. claim, admit, explain, insist, warn \u2014 She admitted that she had forgotten the keys); (2) verb + object + to-infinitive (e.g. tell, ask, remind, advise, urge, order \u2014 He urged his students to revise carefully); (3) verb + to-infinitive with no object (e.g. offer, refuse, promise, agree, threaten \u2014 She offered to help with the marking). Note that 'say' takes a that-clause but never a personal object directly (say something, NOT say someone something), while 'tell' always requires a personal object. Highlight this say/tell distinction as one of the most persistent learner errors at all levels.",
+    "words": 460
+  },
+  {
+    "title": "Reported Questions",
+    "brief": "Explain that reported questions differ structurally from reported statements in two important ways: word order reverts to normal subject-verb order (no inversion), and auxiliary do/does/did is dropped. Divide the section into yes/no questions and wh- questions. For yes/no questions, show that the reported version uses whether or if as the connector, with an invented example pair (e.g. 'Are you ready?' \u2192 He asked whether she was ready). For wh- questions, show that the wh- word itself acts as the connector and that inversion disappears (e.g. 'Where do you live?' \u2192 She asked him where he lived). Provide three or four additional invented examples covering a range of question types. Identify the two most common learner errors: (1) keeping inverted word order in the reported clause (He asked where was she living), and (2) retaining the auxiliary do (She asked where did he work). Offer a simple self-check tip: if the reported clause sounds like a question, the word order is probably wrong.",
+    "words": 490
+  },
+  {
+    "title": "Reported Commands, Requests, and Advice",
+    "brief": "Cover the reporting of imperatives and other directive utterances, explaining that these are reported not with a that-clause but with a to-infinitive structure following an appropriate reporting verb. Show the pattern for affirmative commands (verb + object + to-infinitive) and negative commands (verb + object + not + to-infinitive), using invented examples such as 'Sit down' \u2192 The teacher told the students to sit down, and 'Don't open your books' \u2192 She told them not to open their books. Extend this to requests (ask + object + to-infinitive) and advice (advise/recommend + object + to-infinitive or advise + that-clause). Address the common learner error of using a that-clause with an infinitive verb form (She told them that sit down) or incorrectly using 'said' instead of 'told' or 'asked' for commands and requests. Close the section with a brief summary of the whole unit's key principles \u2014 backshift, reference shifts, verb choice, and structural changes for questions and commands \u2014 framed as a checklist a teacher could share with learners.",
+    "words": 430
+  }
+]

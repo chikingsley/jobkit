@@ -1,0 +1,8 @@
+unit 1.1 — The World of TEFL: Markets, Learners, and Contexts
+GATE PASS
+
+== dslop (prose body, exit 0) ==
+
+== patterns.js (full file) ==
+{"score":2,"label":"Minimal AI signals","issues":3}
+

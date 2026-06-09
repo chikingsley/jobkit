@@ -1,0 +1,32 @@
+[
+  {
+    "title": "What Makes a Test Item Fair and Clear",
+    "brief": "Define the core qualities of a well-written test item by drawing on the source's repeated emphasis that assessment tools should be 'clear, simple, and well aligned with learning goals.' Explain that alignment means every item targets a stated learning objective\u2014nothing more, nothing less\u2014and that clarity means students understand exactly what is being asked before they attempt an answer. Use the source's contrast between testing 'actual ability to use English for real-world communication' versus testing only 'knowledge of English' to frame the difference between items that measure meaningful performance and items that measure surface recall. Close with a brief checklist of three or four qualities (clarity, simplicity, alignment, authenticity) that the section writer should present as a practical filter teachers can apply before finalising any item.",
+    "words": 420
+  },
+  {
+    "title": "Writing Multiple-Choice and Gap-Fill Items: Dos and Don'ts",
+    "brief": "Provide concrete do/don't examples for multiple-choice and gap-fill item types, grounding every principle in the source's insistence that tools be 'clear, simple, and well aligned with learning goals.' For multiple-choice, show a flawed stem (ambiguous wording, implausible distractors, double-barrelled question) alongside a corrected version; explain what was fixed and why. For gap-fill, demonstrate an item where the blank could accept several plausible answers (a flaw) versus one where context constrains the answer to a single target form. Remind writers that the source links assessment quality directly to washback: poorly written items can produce negative washback if students 'don't see how [the assessment] relates to their learning,' so item design is not merely a technical matter but an instructional one.",
+    "words": 460
+  },
+  {
+    "title": "Writing Short-Answer Items and Simple Marking Guides",
+    "brief": "Explain how to write short-answer items that elicit focused, gradable responses, again anchoring advice in the source's criteria of clarity, simplicity, and alignment with learning goals. Show a do/don't pair: a vague prompt ('Write about the topic') versus a focused one that specifies length, purpose, and the language feature being assessed. Then introduce simple marking: draw on the source's description of rubrics that use a five-point Likert scale (1 = needs improvement, 5 = excellent) and the principle that 'all of the learning goals for this activity are the same as the categories on the rubric.' Translate this into a short-answer marking guide format\u2014two or three criteria, each with brief descriptors\u2014so teachers can score consistently without lengthy training. Note that the source warns against tools that are not 'well aligned with learning goals,' and show how a misaligned mark scheme undermines both fairness and washback.",
+    "words": 490
+  },
+  {
+    "title": "The Testing Effect: Why Retrieval Beats Re-Studying",
+    "brief": "Introduce the testing effect as the empirical foundation for using frequent, low-stakes tests as a learning tool rather than merely a measurement tool. Cite Karpicke & Roediger (2008) directly: in a study of foreign-language vocabulary (Swahili-English pairs), repeated retrieval practice produced approximately 80% correct recall after one week, compared with approximately 33% for a group that spent the same additional time re-studying; crucially, repeated studying after a first correct recall had no measurable effect on delayed retention (Karpicke & Roediger, 2008). Explain what this means practically: once a student has successfully recalled an item once, further passive review of that item adds little\u2014but being tested on it again consolidates the memory substantially. Connect this finding to the TEFL classroom by noting that quizzes, gap-fills, and short-answer tasks are not just assessment events; they are among the most efficient study activities a teacher can assign.",
+    "words": 430
+  },
+  {
+    "title": "Positive and Negative Washback: How Test Design Shapes Learning",
+    "brief": "Explain washback\u2014the effect that assessment has on learning and teaching\u2014using the source's explicit treatment of positive and negative washback effects. Draw directly on the source's conditions for negative washback: students are unfamiliar with the assessment form, do not think it is valid, do not see how it relates to their learning, or are unprepared for the quality or type of feedback they will receive. Then present the source's conditions for positive washback: students see the value of the assessment method, are well prepared to give and receive feedback, and clearly see the connection to language learning outcomes. Apply these conditions to written test items: a multiple-choice quiz on decontextualised grammar rules may produce negative washback if students cannot connect it to real communication, while a gap-fill or short-answer task visibly tied to a lesson objective is more likely to produce positive washback. End with two or three practical design tips\u2014drawn from the source's advice on rubrics and checklists\u2014that help teachers build positive washback into written tests from the outset.",
+    "words": 460
+  },
+  {
+    "title": "Putting It Together: A Simple Test-Writing Workflow",
+    "brief": "Synthesise the unit by walking teachers through a step-by-step workflow for writing a short classroom test, drawing together all source-based principles covered in earlier sections. Step one: list the lesson's learning goals (the source states that rubric categories should match learning goals exactly). Step two: choose item types that match those goals\u2014multiple-choice for recognition, gap-fill for form-focused production, short answer for meaning-focused production. Step three: draft items and apply the do/don't checklist from earlier sections (clear, simple, aligned). Step four: write a brief marking guide using the source's five-point scale logic or a simplified two- or three-point equivalent. Step five: consider washback\u2014ask whether students will see the connection between the test and their learning. Close by reinforcing the Karpicke & Roediger (2008) insight: building regular retrieval practice into lessons through these well-designed items does double duty, both measuring progress and accelerating it.",
+    "words": 400
+  }
+]

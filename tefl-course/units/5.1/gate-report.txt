@@ -1,0 +1,8 @@
+unit 5.1 — How Vocabulary Is Learned: Retrieval Beats Re-Reading
+GATE PASS
+
+== dslop (prose body, exit 0) ==
+
+== patterns.js (full file) ==
+{"score":4,"label":"Minimal AI signals","issues":6}
+

@@ -1,0 +1,8 @@
+unit 2.4 — The Twelve Forms in Use
+GATE PASS
+
+== dslop (prose body, exit 0) ==
+
+== patterns.js (full file) ==
+{"score":2,"label":"Minimal AI signals","issues":5}
+

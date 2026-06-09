@@ -1,0 +1,32 @@
+[
+  {
+    "title": "Why Sounds Matter: Phonological Awareness in the Classroom",
+    "brief": "Open by defining phonological awareness as a teacher's conscious understanding of how spoken English works at the level of individual sounds. Explain that English spelling is a poor guide to pronunciation \u2014 the same letter or combination of letters can represent multiple sounds (e.g., the letter 'c' in 'cat', 'city', and 'school') \u2014 and that teachers who understand this can anticipate and address learner confusion before it becomes a habit. Emphasise that this unit focuses on the teacher's own awareness, not on how to teach pronunciation to students (that is covered elsewhere in the module).",
+    "words": 400
+  },
+  {
+    "title": "The Building Blocks: Consonants and How They Are Made",
+    "brief": "Introduce consonants as sounds produced when the airflow from the lungs is partially or fully blocked somewhere in the mouth or throat. Walk through the main places where this blocking happens \u2014 lips (bilabial: /p/, /b/, /m/), teeth and lower lip (labiodental: /f/, /v/), tongue tip behind the upper teeth (alveolar: /t/, /d/, /s/, /z/, /n/, /l/), the hard palate (/\u0283/ as in 'ship', /\u0292/ as in 'measure'), and the back of the throat (velar: /k/, /g/, /\u014b/ as in 'sing'). Use plain, jargon-light descriptions and a concrete example word for every sound mentioned. Do not introduce the full IPA chart or stress and intonation, which are reserved for later sections of the module.",
+    "words": 480
+  },
+  {
+    "title": "Voiced and Voiceless: Turning the Voice On and Off",
+    "brief": "Explain the voiced/voiceless distinction in accessible terms: voiced sounds are made when the vocal cords vibrate, voiceless sounds when they do not. Demonstrate this with the simple self-check of placing a hand on the throat \u2014 a buzz means voiced, silence means voiceless. Present the key voiced/voiceless pairs that share the same place of articulation: /p/\u2013/b/, /t/\u2013/d/, /k/\u2013/g/, /f/\u2013/v/, /s/\u2013/z/, /\u0283/\u2013/\u0292/, /t\u0283/\u2013/d\u0292/ (as in 'cheap' vs 'jeep'). Explain why this distinction matters for teachers: learners whose first languages do not have certain voiced or voiceless sounds (for example, final voiced consonants) will predictably struggle, and a teacher who understands the pairing can give precise, targeted feedback.",
+    "words": 460
+  },
+  {
+    "title": "Vowels: Pure Sounds and the Mouth as a Resonating Chamber",
+    "brief": "Describe vowels as sounds produced with an open vocal tract \u2014 no blocking \u2014 where the shape of the mouth, the height of the tongue, and the rounding of the lips determine which vowel is heard. Distinguish short vowels (the /\u026a/ in 'sit', the /e/ in 'bed', the /\u00e6/ in 'cat', the /\u0252/ in 'hot', the /\u028c/ in 'cup', the /\u028a/ in 'foot') from long vowels (/i\u02d0/ in 'feet', /\u0251\u02d0/ in 'car', /\u0254\u02d0/ in 'door', /u\u02d0/ in 'moon', /\u025c\u02d0/ in 'bird'). Introduce the schwa /\u0259/ \u2014 the most frequent vowel sound in English, heard in unstressed syllables such as the first syllable of 'about' or the final syllable of 'teacher' \u2014 and note that its frequency makes it essential teacher knowledge. Keep descriptions concrete and tied to example words throughout.",
+    "words": 500
+  },
+  {
+    "title": "The Spelling\u2013Sound Gap: When Letters Lie",
+    "brief": "Examine the mismatch between English spelling and English pronunciation using clear, teacher-relevant examples. Show that one spelling can map to multiple sounds: 'ough' is pronounced differently in 'though', 'through', 'thought', 'tough', and 'cough'. Show the reverse \u2014 one sound can be spelled many ways: the /i\u02d0/ sound appears in 'see', 'sea', 'seize', 'these', 'machine', and 'key'. Explain that this gap is a product of English borrowing vocabulary from many languages while spelling became fixed before pronunciation finished changing. Stress that teachers who are aware of these mismatches can pre-empt learner errors rather than simply correcting them after the fact, and can explain to learners why English spelling is not a reliable pronunciation guide.",
+    "words": 430
+  },
+  {
+    "title": "Putting It Together: What Phonological Awareness Looks Like in Practice",
+    "brief": "Bring the unit's concepts together by showing how a teacher's phonological awareness shapes everyday classroom decisions. Give concrete examples: noticing that a new vocabulary set contains several minimal pairs (e.g., 'ship'/'sheep', 'bit'/'beat') and deciding to highlight the vowel contrast; recognising that a grammar structure introduces a sound cluster that learners will find difficult (e.g., the /ts/ ending of third-person singular 'wants', 'gets'); or understanding why a learner writes 'wether' for 'weather' \u2014 both words are homophones in some accents. Close by framing phonological awareness not as a specialist skill but as a basic professional tool that any teacher can develop through careful listening and the kind of systematic thinking introduced in this unit.",
+    "words": 390
+  }
+]

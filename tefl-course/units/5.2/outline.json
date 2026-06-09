@@ -1,0 +1,32 @@
+[
+  {
+    "title": "Why Spacing Beats Massing: The Core Principle",
+    "brief": "Introduce the fundamental distinction between spaced and massed practice for L2 vocabulary learning. Draw directly on Nakata (2015) to explain that spreading practice over time produces stronger retention than concentrating it in a single block, and on Kim & Webb (2022) to show that this finding holds robustly across a wide range of studies (48 experiments, N=3,411, confirming a positive effect). Explain what 'massed' practice looks like in a typical classroom (drilling all new words in one lesson) versus what 'spaced' practice means (returning to the same words across multiple, separated sessions). Keep the explanation conceptual and accessible; do not yet move into scheduling specifics or software tools.",
+    "words": 420
+  },
+  {
+    "title": "Equal Spacing vs. Expanding Schedules",
+    "brief": "Distinguish between two forms of spaced practice: equal-interval spacing (reviewing words at fixed, uniform gaps) and expanding schedules (gaps that grow progressively longer after each successful retrieval). Draw exclusively on Nakata (2015) to explain that expanding schedules show a limited but significant edge over equal spacing for L2 vocabulary. Clarify what 'limited but significant' means in practical terms\u2014teachers should not expect dramatic differences between the two approaches, but expanding gaps remain a worthwhile design principle. Avoid overstating the advantage or introducing effect-size figures not present in the verified facts.",
+    "words": 380
+  },
+  {
+    "title": "What the Research Base Looks Like",
+    "brief": "Give trainees a clear picture of the evidence underpinning spacing recommendations so they can speak confidently to learners or colleagues. Describe the scope of Kim & Webb (2022)\u2014a meta-analysis drawing on 48 experiments with 3,411 participants\u2014and explain what a meta-analysis is and why its breadth strengthens confidence in the spacing effect for L2 learning. Reference Nakata (2015) as a complementary study published in Studies in Second Language Acquisition that examines schedule type (equal vs. expanding) specifically. Emphasise that both sources converge on the same practical message: spacing works, and teachers are justified in building it into their courses.",
+    "words": 400
+  },
+  {
+    "title": "Translating Spacing into a Course Structure",
+    "brief": "Move from research to course design by showing how a teacher can embed spaced review across a multi-week unit without relying on any software. Explain the principle of distributing review across lessons rather than front-loading all vocabulary work into the introduction lesson. Describe how a teacher can map new vocabulary onto a simple weekly planner: introduce words in lesson one, return to them briefly in lesson two, again in lesson four, and once more at the start of the following week\u2014approximating an expanding schedule. Connect this structure back to Nakata (2015) and Kim & Webb (2022) to justify the design. Note that even brief review moments (five to ten minutes) count as spaced practice.",
+    "words": 450
+  },
+  {
+    "title": "A Practical Low-Tech Review Routine",
+    "brief": "Provide a concrete, step-by-step review routine a teacher can run in any classroom using only paper, a board, and the vocabulary items already present in the course. Draw on the vocabulary review and recycling activities described in the source texts\u2014such as eliciting vocabulary with questions, pair discussion before whole-class review, and using new words in creative production tasks like chain stories or group projects\u2014to populate the routine with real classroom moves. Structure the routine as a sequence: a brief retrieval prompt at the start of the lesson, a pair-check phase, and a whole-class confirmation. Tie each step back to the spacing rationale from Nakata (2015) and Kim & Webb (2022): each return to the words is a spaced retrieval event that strengthens retention.",
+    "words": 490
+  },
+  {
+    "title": "Planning and Monitoring Your Spacing Schedule",
+    "brief": "Help trainees turn the routine into a sustainable habit by showing how to plan and track spacing across a course. Describe a simple paper-based record\u2014a vocabulary log or grid\u2014where the teacher notes which words were introduced and on which dates they were reviewed, allowing gaps to be monitored and adjusted. Explain how to decide when a word has been reviewed enough times to be considered consolidated, drawing on the expanding-schedule logic from Nakata (2015): once a word survives several increasingly long gaps without error, review frequency can be reduced. Close by reminding trainees that the goal is not perfection but consistency: even an imperfect spacing plan, grounded in the evidence from Kim & Webb (2022), will outperform no plan at all.",
+    "words": 420
+  }
+]

@@ -1,0 +1,8 @@
+unit 11.4 — Classroom Language and Giving Instructions
+GATE PASS
+
+== dslop (prose body, exit 0) ==
+
+== patterns.js (full file) ==
+{"score":2,"label":"Minimal AI signals","issues":4}
+

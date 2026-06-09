@@ -1,0 +1,32 @@
+[
+  {
+    "title": "What Is Extensive Reading?",
+    "brief": "Define extensive reading as reading large quantities of easy, self-chosen texts for enjoyment and meaning, contrasting it with the intensive, teacher-directed reading typical of most classrooms. Draw on the source's description of a Reading Station \u2014 independent or quiet partner reading, comfortable seating, a variety of books, and a quiet atmosphere \u2014 as a concrete classroom image of what ER looks like in practice. Explain that student choice and autonomy are central: students select their own texts so they can enjoy the experience and take responsibility for their own learning. Close by noting that this unit examines the research evidence for ER's effectiveness before turning to practical set-up guidance.",
+    "words": 400
+  },
+  {
+    "title": "The Research Base: Nakanishi (2015)",
+    "brief": "Present the findings of Nakanishi's (2015) TESOL Quarterly meta-analysis (34 studies) as the first major pillar of evidence. Report both effect sizes accurately and separately: group-comparison d = 0.46 and pre-post d = 0.71 (Nakanishi, 2015). Explain in plain language what a meta-analysis is and what Cohen's d means so that TEFL trainees without a statistics background can interpret the numbers \u2014 a d of 0.46 is a moderate effect, while 0.71 approaches a large effect. Note that the pre-post figure is higher partly because it lacks a control group, which is why the between-group figure is the more conservative and informative estimate. Do not merge these numbers with those from any other study.",
+    "words": 430
+  },
+  {
+    "title": "The Research Base: Jeon and Day (2016)",
+    "brief": "Present the findings of Jeon and Day's (2016) Reading in a Foreign Language meta-analysis (49 studies) as the second independent pillar of evidence, keeping all figures entirely separate from Nakanishi (2015). Report the experimental-vs-control d = 0.57 and the pre-post d = 0.79 (Jeon & Day, 2016). Discuss what the larger sample of studies (49 vs. 34) adds to confidence in the findings, and note that the between-group effect of 0.57 again exceeds Nakanishi's comparable figure of 0.46, suggesting a consistent moderate-to-strong benefit. Remind trainees that both studies measure reading proficiency broadly and that neither should be read as a guarantee of results in every teaching context.",
+    "words": 420
+  },
+  {
+    "title": "An Honest Look at the Numbers: Hamada's Caveat",
+    "brief": "Introduce Hamada's (2020) selection-bias caveat as a necessary corrective to uncritical enthusiasm. Explain what selection bias means in ER research: studies that show positive results are more likely to be published, and classrooms that adopt ER may already have more motivated readers, inflating observed gains. Note that when Hamada (2020) adjusts for this bias, the effect size falls to approximately d = 0.37 \u2014 still positive, but meaningfully smaller than the unadjusted figures from Nakanishi (2015) and Jeon and Day (2016). Encourage trainees to cite all three sets of figures when discussing ER with colleagues or school administrators, presenting ER as a well-supported but not miraculous intervention. This section should model the intellectual honesty expected of reflective practitioners.",
+    "words": 410
+  },
+  {
+    "title": "Setting Up an Extensive Reading Programme",
+    "brief": "Draw directly on the source's guidance for setting up a Reading Station and learning stations more broadly to give trainees a practical framework. Cover the physical environment: comfortable seating, a variety of books, a quiet atmosphere separated from high-activity areas, and display shelves along walls to save floor space. Address student involvement: ask students where stations should go, what activities they would enjoy, and let them help define appropriate behaviour for each station \u2014 reinforcing the autonomy principle central to ER. Discuss posting activity guidelines and behaviour rules at the station, role-playing expected behaviour, and starting with one station before expanding. Emphasise that the environment should feel organised, stimulating, and comfortable so that students develop positive attitudes toward reading.",
+    "words": 450
+  },
+  {
+    "title": "Putting It Together: What the Evidence Means for Your Classroom",
+    "brief": "Synthesise the unit by helping trainees translate the research into realistic expectations. Revisit the three effect-size findings side by side \u2014 Nakanishi (2015) d = 0.46 / 0.71, Jeon and Day (2016) d = 0.57 / 0.79, and Hamada's (2020) adjusted ~d = 0.37 \u2014 and explain that even the most conservative figure represents a meaningful, consistent benefit worth pursuing. Connect the evidence back to the practical set-up guidance: student choice, comfortable reading spaces, a wide variety of accessible texts, and a quiet, low-pressure atmosphere are the conditions under which these gains were observed. Close by encouraging trainees to frame ER to learners and parents honestly \u2014 as a proven, enjoyable complement to other instruction rather than a standalone solution \u2014 and to monitor their own students' progress rather than relying solely on published averages.",
+    "words": 450
+  }
+]

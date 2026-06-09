@@ -1,0 +1,8 @@
+unit 10.5 — Supplementary and Self-Made Materials, Teaching Aids
+GATE PASS
+
+== dslop (prose body, exit 0) ==
+
+== patterns.js (full file) ==
+{"score":2,"label":"Minimal AI signals","issues":4}
+

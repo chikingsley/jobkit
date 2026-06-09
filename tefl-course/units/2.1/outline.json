@@ -1,0 +1,32 @@
+[
+  {
+    "title": "Why Teachers Need Grammatical Metalanguage",
+    "brief": "Explain what metalanguage is (language used to talk about language) and why a working knowledge of grammatical terms is essential for teachers even when those same terms are not taught directly to students. Cover how metalanguage allows teachers to identify errors precisely, plan lessons around specific language points, consult grammars and syllabuses, and give clear feedback. Use invented classroom scenarios \u2014 for example, a teacher noticing a student confuses an adjective with an adverb \u2014 to make the argument concrete. Do not discuss individual parts of speech in detail here; that is reserved for later sections.",
+    "words": 400
+  },
+  {
+    "title": "Nouns, Pronouns, and Determiners",
+    "brief": "Define nouns as words that name people, places, things, or ideas, and distinguish count nouns (a chair, three chairs) from non-count nouns (advice, furniture) using invented examples. Define pronouns as words that stand in place of a noun phrase and cover the main types: personal (she, them), possessive (hers, their), reflexive (herself, themselves), and demonstrative (this, those), each with an invented example sentence. Define determiners as words that introduce a noun phrase and signal definiteness, quantity, or possession \u2014 covering articles (a, an, the), quantifiers (some, every, few), and possessive determiners (my, your) with invented examples. Note how confusing pronouns with determiners (e.g., treating 'my' as a pronoun) is a common teacher error worth flagging.",
+    "words": 500
+  },
+  {
+    "title": "Verbs: Main Verbs, Auxiliaries, and Basic Categories",
+    "brief": "Define verbs as words that express actions, states, or occurrences and explain the distinction between main verbs (run, believe, contain) and auxiliary verbs (be, have, do, will, can). Clarify that auxiliaries help form tenses, aspects, voices, and questions, using invented example sentences for each function. Introduce the sub-categories of stative verbs (know, prefer, belong) versus dynamic verbs (kick, build, laugh) and explain why this distinction matters for teaching the present continuous. Do not cover tense or aspect in depth, as those topics belong to later units; keep the focus on identifying and labelling verb types.",
+    "words": 460
+  },
+  {
+    "title": "Adjectives and Adverbs",
+    "brief": "Define adjectives as words that modify nouns or pronouns and describe qualities, quantities, or states, distinguishing attributive position (a dusty road) from predicative position (the road is dusty) with invented examples. Define adverbs as words that modify verbs, adjectives, other adverbs, or whole clauses, and cover the main semantic categories: manner (carefully, loudly), degree (extremely, barely), frequency (always, rarely), and time (yesterday, soon), each illustrated with an invented sentence. Address the common learner confusion between adjectives and adverbs \u2014 for example, writing 'she sings beautiful' instead of 'she sings beautifully' \u2014 and explain how knowing the distinction helps a teacher diagnose and correct this error systematically.",
+    "words": 480
+  },
+  {
+    "title": "Prepositions and Conjunctions",
+    "brief": "Define prepositions as words that link a noun phrase to the rest of the sentence, expressing relationships of place (on the shelf), time (at noon), direction (towards the exit), and other logical relations (despite the rain), using invented examples throughout. Distinguish simple prepositions (in, on, at, by) from complex prepositions (in front of, because of, next to). Define conjunctions and distinguish coordinating conjunctions (and, but, or, so), which join elements of equal grammatical rank, from subordinating conjunctions (because, although, unless, whenever), which introduce dependent clauses \u2014 illustrating each type with invented sentences. Explain how mislabelling a subordinating conjunction as a preposition (e.g., treating 'despite' and 'although' as interchangeable in structure) is a mistake teachers should be equipped to avoid.",
+    "words": 490
+  },
+  {
+    "title": "Putting the Parts of Speech to Work in the Classroom",
+    "brief": "Synthesise the unit by showing how a teacher uses the full set of part-of-speech labels together in practical situations: annotating a model sentence for lesson planning, writing a grammar-focused learning objective, and giving precise corrective feedback on a student's written error. Use two or three fully invented example sentences \u2014 label every word by its part of speech \u2014 to model the kind of analysis a teacher should be able to perform fluently. Close by reinforcing the unit's central argument: grammatical metalanguage is a professional tool for the teacher, not necessarily a teaching tool for the student, and fluency with these terms underpins every grammar-focused decision a teacher makes.",
+    "words": 380
+  }
+]
