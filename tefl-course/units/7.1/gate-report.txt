@@ -1,0 +1,8 @@
+unit 7.1 — Teaching Listening
+GATE PASS
+
+== dslop (prose body, exit 0) ==
+
+== patterns.js (full file) ==
+{"score":1,"label":"Minimal AI signals","issues":3}
+

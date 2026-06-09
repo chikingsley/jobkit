@@ -27,6 +27,7 @@ from jobkit.llm import SuperwhisperClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from registry import TEXT_DIR, UNITS, Unit  # ty: ignore[unresolved-import]
+from retrieve import retrieve  # ty: ignore[unresolved-import]
 
 ROOT = Path(__file__).resolve().parents[1]  # tefl-course/
 UNITS_DIR = ROOT / "units"
@@ -67,9 +68,28 @@ def _json_call(client: SuperwhisperClient, prompt: str, *, max_tokens: int) -> o
 
 
 def _load_sources(unit: Unit) -> str:
-    """Concatenate the unit's extracted source text files."""
+    """Return the unit's source text per its mode (exact files / retrieval / none for facts)."""
+    if unit.mode == "retrieval":
+        return retrieve(unit.retrieval_query, top_k=6)
+    if unit.mode == "facts":
+        return ""
     parts = [(ROOT / TEXT_DIR / name).read_text(encoding="utf-8") for name in unit.sources]
     return "\n\n".join(parts)
+
+
+_FACTS_SOURCE_NOTE = (
+    "This unit has NO source document. Write from well-established, uncopyrightable facts (the "
+    "rules of English grammar / phonetics / standard ELT practice). Invent ALL your own example "
+    "sentences and classroom examples. Reproduce no textbook's wording, explanations, or "
+    "exercises. Accuracy matters: state only what is grammatically/factually correct."
+)
+
+
+def _source_section(unit: Unit, source: str) -> str:
+    """Render the SOURCE block for a prompt, handling the facts (no-source) mode."""
+    if unit.mode == "facts":
+        return "== SOURCE ==\n" + _FACTS_SOURCE_NOTE
+    return "== SOURCE TEXT (public domain — the unit's factual basis) ==\n" + source
 
 
 def _citations_block(unit: Unit) -> str:
@@ -101,8 +121,7 @@ def outline(client: SuperwhisperClient, unit: Unit) -> list[dict[str, object]]:
             "",
             _citations_block(unit),
             "",
-            "== SOURCE TEXT ==",
-            _load_sources(unit),
+            _source_section(unit, _load_sources(unit)),
         ]
     )
     parsed = _json_call(client, prompt, max_tokens=1400)
@@ -130,8 +149,7 @@ def _section_prompt(unit: Unit, source: str, sec: dict[str, object], previous_ta
         "",
         "== " + _citations_block(unit),
         "",
-        "== SOURCE TEXT (public domain — the unit's factual basis) ==",
-        source,
+        _source_section(unit, source),
         "",
         f"== SECTION TO WRITE: {sec.get('title', '')} ==",
         str(sec.get("brief", "")),
