@@ -9,11 +9,11 @@ This repository contains personal contact information and job-search records. Ke
 ```text
 src/jobkit/              Python package (uv project)
   llm.py                 Superwhisper LLM client (shared by job enrichment)
-  jobs/                  pull listings → normalize → export: cli, http, models, state, enrich, export
+  jobs/                  pull listings -> normalize -> SQLite: db, registry, http, models, enrich
     boards/              one adapter per site (anesl, seriousteachers, eslcafe_modern, ajarn, tefl)
   resume/                build.py (`build-resume` script) + assets/ (HTML template + print CSS)
 resumes/                 source resume markdown + pdfs/ (generated PDF output)
-job-data/                application-tracker.csv + job documents/ (identity/credential PDFs)
+job-data/                jobs.sqlite + application-tracker.csv + job documents/ (credential PDFs)
 templates/               reusable email + reference templates
 leads/<lead-slug>/       an ACTIVE lead: application.md + job-description.md (created on demand)
 archive/                 dead/closed material (see Archiving)
@@ -44,17 +44,14 @@ Outputs go to `resumes/pdfs/`. Lint/typecheck like the other Python projects:
 ## Job Boards
 
 `job-boards.md` tracks the boards we monitor, how scrapable each is, and whether the *entire* set is
-pullable. Readers live in `src/jobkit/jobs/boards/` (one adapter per source) behind the
-`fetch-jobs` console script:
+pullable. Readers live in `src/jobkit/jobs/boards/` (one adapter per source). `jobs` is the
+stateful job inventory command:
 
 ```bash
-uv run fetch-jobs                       # all boards, newest listings, digest
-uv run fetch-jobs anesl --limit 10      # one board
-uv run fetch-jobs anesl --new-only      # only postings new since last run (state in .cache/)
-uv run fetch-jobs anesl --all-pages --max-pages 50   # deep crawl (slow; polite sleeps)
-uv run fetch-jobs --json                # raw structured JSON
-uv run fetch-jobs --csv -o jobs.csv     # normalized CSV across all boards
-uv run fetch-jobs --json --enriched     # normalized schema as JSON
+uv run jobs refresh             # refresh all boards into job-data/jobs.sqlite
+uv run jobs refresh anesl tefl  # refresh selected boards
+uv run jobs stats               # board/status counts
+uv run jobs countries           # active country counts
 ```
 
 Implemented adapters: **anesl** (cafe.anesl.com — full ~4k-job DB pullable), **seriousteachers**
@@ -66,17 +63,19 @@ HTML, direct employer emails), **tefl** (tefl.com — global ELT board, JSON-LD 
 listings is in scope; *auto-applying* is deliberately not — those go through email/logged-in forms
 and are handled manually.
 
-Add `--csv` for a normalized spreadsheet, or `--json --enriched` for the same schema as JSON;
-both flatten every board into one consistent column set (see `jobs/enrich.py`). Every row carries
-a final `raw` column with the full unparsed text that was pulled, alongside the extracted fields.
-`-o FILE` writes to disk instead of stdout; enrichment fans out across boards concurrently
-(`--no-llm` forces the offline heuristics).
+`job-data/jobs.sqlite` is the source of truth for scraped postings. Refreshes upsert by
+`(board, job_id)`, preserving manual statuses such as `applied` and `ignored`. The refresh policy
+lives in `jobs/registry.py`; boards that produce a complete current set close DB rows missing from
+that refresh. Page caps and crawl depth are code-level board policy, not day-to-day CLI flags.
 
-**Field extraction.** Structured boards (ANESL) map cleanly; the free-text ones (Ajarn, ESL Cafe,
-SeriousTeachers descriptions) are normalized by **Claude Sonnet 4.6**, reached through the
-Superwhisper signed proxy (`src/jobkit/llm.py`; see `~/github/peacock-asr`). The LLM corrects a
-regex first-pass — keeping adapter-captured facts, blanking spurious ones — and degrades to the
-pure offline heuristics on any failure. Pass `--no-llm` to force the offline heuristics.
+Enrichment flattens every board into one consistent column set (see `jobs/enrich.py`). Every row
+carries a final `raw` column with the full unparsed text that was pulled, alongside the extracted
+fields. Routine DB refresh uses the offline extractor; LLM enrichment should be reserved for
+selected ranking or outreach work, not the whole periodic refresh.
+
+**Field extraction.** Structured boards (ANESL) map cleanly; free-text boards use transparent
+offline heuristics during refresh. Claude-backed cleanup remains available in `jobs/enrich.py` for
+selected downstream workflows, but it is not part of the default inventory update.
 
 ### Send-out file naming
 

@@ -65,7 +65,7 @@ def _rows_from_json(text: str) -> list[dict[str, str]]:
 
 
 def _rows_from_csv(text: str) -> list[dict[str, str]]:
-    """Parse normalized CSV (the `fetch-jobs --csv` header is the SCHEMA order)."""
+    """Parse normalized CSV rows with the `jobkit.jobs.enrich.SCHEMA` header order."""
     reader = csv.DictReader(io.StringIO(text))
     return [{str(k): _as_str(v) for k, v in row.items()} for row in reader]
 
@@ -116,7 +116,7 @@ def _build_initial_parser() -> argparse.ArgumentParser:
             "Subcommands: 'sync' (refresh follow-up tracking), 'follow-ups' (draft due nudges)."
         ),
     )
-    parser.add_argument("input", help="JSON or CSV of normalized job rows (from fetch-jobs)")
+    parser.add_argument("input", help="JSON or CSV of normalized job rows")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
         "--dry-run",

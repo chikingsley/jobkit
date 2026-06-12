@@ -7,8 +7,8 @@ facts we need to decide cadence (when we last sent, how many follow-ups we have 
 reply arrived) and lets `due_followups()` answer instantly without touching the network. `sync()`
 reconciles the ledger with the live mailbox incrementally; everything else reads the ledger.
 
-DB LOCATION. `~/github/jobkit/.cache/outreach/track.db` (under the gitignored `.cache/`, mirroring
-`jobkit.jobs.state`). The schema is created/migrated on open.
+DB LOCATION. `~/github/jobkit/.cache/outreach/track.db` (under the gitignored `.cache/`). The
+schema is created/migrated on open.
 
 REPLY DETECTION. A thread counts as `replied` when it contains any message that is NOT from us
 (no SENT label and a From that is not the sender) dated after our first send — i.e. a genuine

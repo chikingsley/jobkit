@@ -6,7 +6,7 @@ Per-adapter scraping details (pagination mechanics, API shapes, obfuscation hand
 
 - IIS/ASP.NET WebForms. No robots.txt/sitemap/RSS/export, but `joblist.aspx` reports **Total Records: 4005** and paginates via an `AspNetPager` `__doPostBack`. The page-size dropdown goes to **100**, collapsing the DB to **~41 pages**. No `__EVENTVALIDATION` field; postbacks just need the carried-forward `__VIEWSTATE`/`__VIEWSTATEGENERATOR` + `__EVENTTARGET`/`__EVENTARGUMENT`.
 - Detail pages are a clean label/value table (Position ID, Employer's Type, Location, Salary/M, Degree, Age, Nationality, Vacancy, Airfare, …). Apply routes through `hr@anesl.com`.
-- Adapter: `fetch_listings(limit)` (page 1, cheap), `list_page_ids(max_pages)`, `fetch_all(max_pages, limit)` (full crawl, 1s sleeps). Recommended daily monitor: `fetch_listings` + `--new-only`.
+- Adapter: `fetch_listings(limit)` (page 1, cheap), `list_page_ids(max_pages)`, `fetch_all(max_pages, limit)` (full crawl, 1s sleeps). The normal inventory path is `uv run jobs refresh anesl`; crawl depth lives in `jobs/registry.py`, not a day-to-day CLI flag.
 
 ### SeriousTeachers — static but no pagination
 

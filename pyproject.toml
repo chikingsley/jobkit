@@ -20,7 +20,7 @@ dev = [
 
 [project.scripts]
 build-resume = "jobkit.resume.build:main"
-fetch-jobs = "jobkit.jobs.cli:main"
+jobs = "jobkit.jobs.db_cli:main"
 outreach = "jobkit.outreach.cli:main"
 
 [build-system]
@@ -64,5 +64,5 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "src/jobkit/resume/build.py" = ["T201"]
-"src/jobkit/jobs/cli.py" = ["T201"]
+"src/jobkit/jobs/db_cli.py" = ["T201"]
 "src/jobkit/outreach/cli.py" = ["T201"]

@@ -66,7 +66,7 @@ ENV_EMAIL = "SERIOUSTEACHERS_EMAIL"
 ENV_PASSWORD = "SERIOUSTEACHERS_PASSWORD"  # noqa: S105
 
 # Repo root (this file sits at src/jobkit/jobs/boards/) — keeps the .env lookup
-# independent of the directory fetch-jobs is launched from.
+# independent of the directory the jobs command is launched from.
 _ENV_FILE = Path(__file__).resolve().parents[4] / ".env"
 
 

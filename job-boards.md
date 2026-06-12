@@ -5,17 +5,21 @@ Boards we monitor, with how accessible each is to pull listings programmatically
 - **Read** = can we pull the *listings*? **Apply** = can we *submit* an application (harder; usually login/forms/captcha and often against ToS — kept manual for now).
 - **Bulk** = can we pull the *entire* current set at once (so we filter locally), or only a slice?
 
-Readers live in `src/jobkit/jobs/boards/` (one adapter per source) behind the `fetch-jobs` console script:
+Readers live in `src/jobkit/jobs/boards/` (one adapter per source). `jobs` updates the durable
+SQLite inventory:
 
 ```bash
-uv run fetch-jobs                                    # all boards, newest listings, digest
-uv run fetch-jobs anesl --limit 10                   # one board
-uv run fetch-jobs anesl --new-only                   # only postings new since last run (state in .cache/)
-uv run fetch-jobs anesl --all-pages --max-pages 50   # deep crawl (slow; polite 1s sleeps)
-uv run fetch-jobs --json                             # structured JSON
+uv run jobs refresh             # update job-data/jobs.sqlite
+uv run jobs refresh tefl ajarn  # refresh selected boards
+uv run jobs stats
+uv run jobs countries
 ```
 
 Be polite: real User-Agent (the `http.fetch` helper sets one), low request rate, cache. Reading listings only — no auto-applying.
+
+Closure is governed by code-level board policy in `src/jobkit/jobs/registry.py`: a board that
+produces a complete current set may close active DB rows missing from that refresh. Crawl depth and
+page caps are not normal CLI choices.
 
 | Board | URL | Read | Bulk (entire set?) | Apply | Status |
 |---|---|---|---|---|---|

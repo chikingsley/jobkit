@@ -9,6 +9,9 @@ __pycache__/
 .ruff_cache/
 .ty_cache/
 .cache/
+job-data/*.sqlite-shm
+job-data/*.sqlite-wal
+job-data/exports/*.csv
 
 # Copyrighted third-party course content — local reference only, never commit
 tefl-course/sources/teacherrecord-120hr-tefl/
