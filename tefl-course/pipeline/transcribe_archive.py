@@ -3,7 +3,7 @@
 Pass B of the archive transcription (Pass A is the batch `superwhisper-audio --diarize` run that
 produces `transcripts-diarized.jsonl`). For each record this script:
 
-1. folds the word-level diarization into speaker turns (`superwhisper_api.audio.formats`),
+1. folds the word-level diarization into speaker turns (vendored local `turns` helper),
 2. derives consistent frontmatter from the archive's folder structure (book, audio name, units,
    duration, speaker count, source path),
 3. asks Sonnet 4.6 (via the same proxy) to NAME the speakers from context — "Narrator",
@@ -15,10 +15,11 @@ PERSONAL USE ONLY: these transcripts are derivatives of copyrighted textbook aud
 for his own lesson preparation. They live inside the gitignored archive dir and are never
 published or shipped with the course.
 
-Run with the superwhisper-api environment (NOT the jobkit one):
+Run from the jobkit environment (it now talks to the deployed HTTP API via ``jobkit.llm``, so it
+no longer needs the superwhisper-api package). ``SUPERWHISPER_API_BASE`` + ``SUPERWHISPER_API_KEY``
+must be set (env or ``.env``):
 
-    cd ~/github/peacock-asr && uv run --project packages/superwhisper-api \
-        python ~/github/jobkit/tefl-course/pipeline/transcribe_archive.py
+    cd ~/github/jobkit && uv run python tefl-course/pipeline/transcribe_archive.py
 """
 
 from __future__ import annotations
@@ -30,14 +31,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any, cast
 
-from superwhisper_api.audio.formats import (  # ty: ignore[unresolved-import]
-    Turn,
-    to_markdown,
-    words_to_turns,
-)
-from superwhisper_api.text.client import (  # ty: ignore[unresolved-import]
-    SuperwhisperClient,
-)
+from turns import Turn, to_markdown, words_to_turns  # ty: ignore[unresolved-import]
+
+from jobkit.llm import SuperwhisperClient
 
 ARCHIVE = Path("/home/simon/github/jobkit/tefl-course/sources/las-vegas-teaching-archive")
 JSONL = ARCHIVE / "transcripts-diarized.jsonl"
@@ -59,18 +55,6 @@ _UNITS_RE = re.compile(r"UNITS?\s*(\d+(?:\s*[-\u2013]\s*\d+)?)", re.IGNORECASE)
 # Narrators frequently announce the book page ("Page 215. Exercise five..."), so the page number
 # can be read straight off the transcript. First announcement wins.
 _PAGE_RE = re.compile(r"\bpage\s+(\d{1,3})\b", re.IGNORECASE)
-
-_LABEL_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "description": {"type": "string"},
-        "speakers": {
-            "type": "object",
-            "additionalProperties": {"type": "string"},
-        },
-    },
-    "required": ["description", "speakers"],
-}
 
 _LABEL_BRIEF = (
     "You are labelling a diarized transcript of ESL textbook listening audio. Based on the "
@@ -132,10 +116,9 @@ def _label_speakers(
     preview = "\n".join(f"{t.speaker}: {t.text}" for t in turns)[:6000]
     try:
         parsed = client.generate_json(
-            MODEL,
             [{"role": "user", "content": f"{_LABEL_BRIEF}\n\nFile: {context}\n\n{preview}"}],
-            schema=_LABEL_SCHEMA,
             max_tokens=500,
+            model=MODEL,
         )
     except Exception as exc:  # noqa: BLE001 - labelling is best-effort decoration.
         print(f"  labelling failed ({exc}); using raw ids", file=sys.stderr)  # noqa: T201
