@@ -1,6 +1,6 @@
 # Ben Teaches English Overseas — Correspondence Archive
 
-Paid ESL career consultation, **2019**. Mailbox: `chibuzor.ejimofor@gmail.com`; Ben: `ben@benteachesenglishoverseas.com` (site now defunct, so this is the surviving record). Bodies are cleaned (quoted text + signature boilerplate trimmed). Distilled, actionable advice lives in [`../../job-search-playbook.md`](../../job-search-playbook.md); attachments are in [`attachments/`](attachments/).
+Paid ESL career consultation, **2019**. Mailbox: `chibuzor.ejimofor@gmail.com`; Ben: `ben@benteachesenglishoverseas.com` (site now defunct, so this is the surviving record). Bodies are cleaned (quoted text + signature boilerplate trimmed). Distilled, actionable advice lives in [`../../docs/job-search-playbook.md`](../../docs/job-search-playbook.md); attachments are in [`attachments/`](attachments/).
 
 ## Thread: New Client Questionnaire + Contract review (Jun 2019)
 

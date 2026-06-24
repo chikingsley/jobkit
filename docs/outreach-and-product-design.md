@@ -1,7 +1,7 @@
 # Outreach tracking & product design
 
 Notes on how follow-up tracking works, where the state should live (local now, Cloudflare later),
-and what this could become as a product. See [`../job-search-playbook.md`](../job-search-playbook.md)
+and what this could become as a product. See [`job-search-playbook.md`](job-search-playbook.md)
 for the strategy this implements and [`../job-data/outreach-sent/review.md`](../job-data/outreach-sent/review.md)
 for the data that motivates it.
 

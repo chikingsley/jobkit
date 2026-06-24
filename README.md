@@ -14,10 +14,12 @@ src/jobkit/              Python package (uv project)
   resume/                build.py (`build-resume` script) + assets/ (HTML template + print CSS)
 resumes/                 source resume markdown + pdfs/ (generated PDF output)
 job-data/                jobs.sqlite + application-tracker.csv + job documents/ (credential PDFs)
+docs/                    board notes, job-search playbook, product plans, and design notes
 templates/               reusable email + reference templates
 leads/<lead-slug>/       an ACTIVE lead: application.md + job-description.md (created on demand)
 archive/                 dead/closed material (see Archiving)
   leads/<lead-slug>/     a closed lead's application.md + job-description.md together
+  interview-prep/        closed interview-prep packets
   old-resumes/           superseded resume files
 .agents/skills/          local skills for resume/job-application agents
 ```
@@ -43,7 +45,7 @@ Outputs go to `resumes/pdfs/`. Lint/typecheck like the other Python projects:
 
 ## Job Boards
 
-`job-boards.md` tracks the boards we monitor, how scrapable each is, and whether the *entire* set is
+`docs/job-boards.md` tracks the boards we monitor, how scrapable each is, and whether the *entire* set is
 pullable. Readers live in `src/jobkit/jobs/boards/` (one adapter per source). `jobs` is the
 stateful job inventory command:
 
@@ -59,7 +61,7 @@ Implemented adapters: **anesl** (cafe.anesl.com — full ~4k-job DB pullable), *
 (eslcafe.com/jobs — the AngularJS job board, JSON listing API across the korea/china/international
 boards + server-rendered detail pages), **ajarn** (ajarn.com — Thailand board, server-rendered
 HTML, direct employer emails), **tefl** (tefl.com — global ELT board, JSON-LD detail pages,
-`?pageNo` pagination). See `job-boards.md` for the bulk-access findings per board. Reading
+`?pageNo` pagination). See `docs/job-boards.md` for the bulk-access findings per board. Reading
 listings is in scope; *auto-applying* is deliberately not — those go through email/logged-in forms
 and are handled manually.
 

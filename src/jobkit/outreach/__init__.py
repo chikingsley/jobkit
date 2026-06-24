@@ -6,10 +6,11 @@ by construction: the single mailbox write it performs is `users.drafts.create` (
 `jobkit.outreach.draft`). There is deliberately no code path that calls `messages.send` or
 `drafts.send`, so this module can never send mail — a human reviews and sends every draft.
 
-The outreach rules are Ben's (see `job-search-playbook.md`): lead with what the candidate offers,
-keep it short and professional, ALWAYS include at least one open-ended question that requires a
-reply, and sign as Chibuzor. `compose.compose_outreach` enforces the question + signature in code
-even when an LLM writes the body, and falls back to a pure template fill when no LLM is available.
+The outreach rules are Ben's (see `docs/job-search-playbook.md`): lead with what the candidate
+offers, keep it short and professional, ALWAYS include at least one open-ended question that
+requires a reply, and sign as Chibuzor. `compose.compose_outreach` enforces the question +
+signature in code even when an LLM writes the body, and falls back to a pure template fill when no
+LLM is available.
 """
 
 from __future__ import annotations

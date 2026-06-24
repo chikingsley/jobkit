@@ -1,6 +1,6 @@
 # Outreach Review — His Real Sent Emails vs. the Playbook
 
-Reviewed against `job-search-playbook.md` (Ben's 2019 paid consultation). Evidence base: **113 distinct
+Reviewed against [`docs/job-search-playbook.md`](../../docs/job-search-playbook.md) (Ben's 2019 paid consultation). Evidence base: **113 distinct
 ESL cold-outreach threads** recovered from `chibuzor.ejimofor@gmail.com` SENT mail, 2019-06 → 2025-07
 (8 non-ESL template clones — bartending, field-engineer, life-sciences — were excluded from the corpus).
 See `corpus.md` for bodies and `index.csv` for the row-level data.

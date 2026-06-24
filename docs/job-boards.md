@@ -17,6 +17,12 @@ uv run jobs countries
 
 Be polite: real User-Agent (the `http.fetch` helper sets one), low request rate, cache. Reading listings only — no auto-applying.
 
+Full `uv run jobs refresh` is intentionally slow: ANESL fetches every detail page in its large
+historical database, SeriousTeachers crawls the country×subject grid, and several adapters sleep
+between requests. ANESL detail pages are fetched with a small bounded worker pool, but the board
+still does not checkpoint mid-refresh. Use board-specific refreshes for quick checks, and reserve
+the all-board refresh for when you actually want the durable SQLite inventory brought fully current.
+
 Closure is governed by code-level board policy in `src/jobkit/jobs/registry.py`: a board that
 produces a complete current set may close active DB rows missing from that refresh. Crawl depth and
 page caps are not normal CLI choices.
@@ -29,7 +35,7 @@ page caps are not normal CLI choices.
 | Ajarn | <https://www.ajarn.com/recruitment/jobs> | curl | **Yes** — full board on one page (~142 jobs; `?page=N` returns the same set) | direct employer email (CF-obfuscated, decoded) | ✅ `ajarn` |
 | TEFL.com | <https://www.tefl.com/job-seeker/> | curl | **Yes** — `?pageNo=N` pagination (~175 jobs across ~18 pages); detail pages carry JSON-LD `JobPosting` | on-site, login-gated (`apply_url` captured) | ✅ `tefl` |
 
-Deep per-adapter notes (pagination mechanics, API shapes, email de-obfuscation) live in [docs/board-notes.md](docs/board-notes.md).
+Deep per-adapter notes (pagination mechanics, API shapes, email de-obfuscation) live in [board-notes.md](board-notes.md).
 
 ## To assess (add more boards here)
 

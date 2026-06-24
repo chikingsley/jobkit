@@ -1,6 +1,6 @@
 """Base outreach template, signature, and the default open-ended questions.
 
-These bake in Ben's outreach rules from `job-search-playbook.md`: lead with what the candidate
+These bake in Ben's outreach rules from `docs/job-search-playbook.md`: lead with what the candidate
 offers, keep it short, always include at least one open-ended question that requires a reply, and
 sign as Chibuzor (the `chibuzor.ejimofor@gmail.com` account used for this whole job search). The
 signature mirrors `templates/email-templates.md`. `compose.py` uses these for the no-LLM fallback

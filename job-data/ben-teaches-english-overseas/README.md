@@ -9,4 +9,4 @@ Raw archive of the user's **2019 paid ESL career consultation** with Ben (`ben@b
   - Chi's credentials: `Passport.pdf`, `TEFL Certificate.pdf`, `Diploma.pdf`, `professional photo.png`.
   - **`Native English Teacher Available - Moscow.eml`** — the real outreach email Chi sent and asked Ben to review; its subject is the standard jobkit outreach subject format.
 
-Distilled, actionable advice from all this lives in [`../../job-search-playbook.md`](../../job-search-playbook.md).
+Distilled, actionable advice from all this lives in [`../../docs/job-search-playbook.md`](../../docs/job-search-playbook.md).

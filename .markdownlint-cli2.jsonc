@@ -4,7 +4,9 @@
   "config": {
     "MD013": false,
     // table pipe-spacing style consistency — cosmetic, our compact delimiters are intentional
-    "MD060": false
+    "MD060": false,
+    // bold quiz-question labels (**1. ...**) are intentional, not headings
+    "MD036": false
   },
   "ignores": [
     "node_modules",
