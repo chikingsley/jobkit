@@ -53,7 +53,7 @@ def _run_refresh(args: argparse.Namespace) -> None:
     try:
         for name in names:
             policy = BOARD_POLICIES[name]
-            print(f"refreshing {name}...")
+            print(f"refreshing {name}...", flush=True)
             postings = policy.fetch()
             result = db.refresh_postings(
                 conn,
@@ -104,8 +104,9 @@ def _print_result(label: str, result: db.RefreshResult) -> None:
         f"{label} run {result.run_id}: seen={result.seen}, "
         f"new={result.inserted}, updated={result.updated}, reopened={result.reopened}, "
         f"closed={result.closed}, skipped={result.skipped}",
+        flush=True,
     )
-    print(f"DB: {result.db_path}")
+    print(f"DB: {result.db_path}", flush=True)
 
 
 if __name__ == "__main__":

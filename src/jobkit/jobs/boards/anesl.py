@@ -7,9 +7,11 @@ clean label/value table (Position ID, Employer's Type, Location, Salary/M, Degre
 from __future__ import annotations
 
 import re
+import sys
 import time
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from bs4 import BeautifulSoup
 
@@ -39,6 +41,8 @@ PAGE_SIZE = 100  # largest page size the dppagesize dropdown offers (fewer reque
 CRAWL_SLEEP_SECONDS = 1.0  # be polite between postbacks
 POST_TIMEOUT_SECONDS = 60  # postbacks carry a large __VIEWSTATE and can be slow to render
 DEFAULT_MAX_PAGES = 50  # safety cap; 4005 records / 100 ≈ 41 pages covers the whole DB
+DETAIL_WORKERS = 4
+PROGRESS_EVERY = 50
 
 
 def _parse_detail(job_id: str, html: str) -> JobPosting:
@@ -154,8 +158,32 @@ def fetch_all(*, max_pages: int = DEFAULT_MAX_PAGES, limit: int | None = None) -
     ids = list_page_ids(max_pages=max_pages)
     if limit is not None:
         ids = ids[:limit]
-    postings: list[JobPosting] = []
-    for jid in ids:
-        postings.append(_parse_detail(jid, fetch(f"{BASE}/jobdetail.aspx?id={jid}")))
-        time.sleep(CRAWL_SLEEP_SECONDS)
-    return postings
+    return _fetch_details(ids)
+
+
+def _fetch_detail(job_id: str) -> JobPosting:
+    """Fetch and parse one ANESL detail page."""
+    return _parse_detail(job_id, fetch(f"{BASE}/jobdetail.aspx?id={job_id}"))
+
+
+def _fetch_details(ids: list[str]) -> list[JobPosting]:
+    """Fetch ANESL detail pages with bounded concurrency, preserving listing order."""
+    if not ids:
+        return []
+    postings: dict[str, JobPosting] = {}
+    total = len(ids)
+    _warn(f"fetching {total} ANESL detail pages with {DETAIL_WORKERS} workers")
+    with ThreadPoolExecutor(max_workers=DETAIL_WORKERS) as executor:
+        futures = {executor.submit(_fetch_detail, job_id): job_id for job_id in ids}
+        for count, future in enumerate(as_completed(futures), start=1):
+            job_id = futures[future]
+            postings[job_id] = future.result()
+            if count == total or count % PROGRESS_EVERY == 0:
+                _warn(f"fetched {count}/{total} ANESL detail pages")
+    return [postings[job_id] for job_id in ids]
+
+
+def _warn(message: str) -> None:
+    """Write adapter progress to stderr without polluting stdout result streams."""
+    sys.stderr.write(f"anesl: {message}\n")
+    sys.stderr.flush()
