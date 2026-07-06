@@ -9,7 +9,7 @@ Slot: the error-correction/feedback unit (teacherrecord's mid9 Unit 3 territory,
 | 1. What feedback is and why it matters | feedback as information about performance; effects on learners (the "Aha" vs discouragement framing); positive/negative/unclear | State Dept Module 5 manual (public domain), pp. 45–46 |
 | 2. Types of feedback | oral vs written; immediate vs delayed; teacher / peer / self; form vs content | Module 5 manual |
 | 3. When and what to correct | accuracy vs fluency stages; selective correction; affective cost of over-correction | Module 5 manual + Lyster & Saito (2010) durability finding |
-| 4. How to correct: the evidence | recasts vs prompts taxonomy; corrective feedback works and lasts (Lyster & Saito 2010, 15 classroom studies, N=827, prompts > recasts); corroborated by Li (2010, 33 studies) | verified citations (curriculum-research.md §4) |
+| 4. How to correct: the evidence | recasts vs prompts taxonomy; corrective feedback works and lasts (Lyster & Saito 2010, 15 classroom studies, N=827, prompts > recasts); corroborated by Li (2010, 33 studies) | verified citations (../docs/curriculum-research.md §4) |
 | 5. Techniques in practice | 4–6 concrete techniques with classroom dialogue examples, adapted from the module's activities | Module 5 manual activities, rewritten student-facing |
 | Quiz | 6 questions; each question records the section/passage that answers it | per pipeline design |
 
@@ -22,7 +22,7 @@ Slot: the error-correction/feedback unit (teacherrecord's mid9 Unit 3 territory,
 ## Gate (Layer 3) — every draft, in order
 
 1. `uv run dslop <file>` — must exit 0.
-2. `node .claude/skills/avoid-ai-writing/detector/patterns.js` score — must be < 20 ("minimal AI signals" band).
+2. `uv run tefl-course-detect-style <file>` — score must be < 20 ("minimal AI signals" band).
 3. avoid-ai-writing skill audit (P0/P1 must be zero).
 4. Adversarial critic pass: any sentence that could not have come from the cited source or a print textbook gets flagged and rewritten.
 5. Owner reads it.

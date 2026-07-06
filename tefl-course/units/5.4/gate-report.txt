@@ -3,7 +3,8 @@ GATE PASS
 
 == dslop (prose body, exit 0) ==
 
-== patterns.js (full file) ==
-{"score":2,"label":"Minimal AI signals","issues":5}
-
+== style detector (full file) ==
+{"score": 5, "label": "Minimal AI signals", "issues": [{"category": "stock-contrast", "pattern": "\\bnot (?:only|just|merely) .{0,80}\\bbut (?:also|rather)\\b", "line": 15, "weight": 5, "snippet": "per for the situation. A learner who notices not only that a phrase is grammatically possible but also that it would sound too formal, too casual,"}]}
 == quiz: clean ==
+== option labels ==
+clean

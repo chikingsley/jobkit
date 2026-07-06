@@ -99,30 +99,30 @@ This unit has covered the main transformations that occur when direct speech bec
 
 **1. Which sentence correctly reports the direct speech 'I am tired,' she said?**
 
-   a. A) She said she is tired.
-   b. B) She said she was tired.
-   c. C) She said me she was tired.
-   d. D) She told she was tired.
+   a. She said she is tired.
+   b. She said she was tired.
+   c. She said me she was tired.
+   d. She told she was tired.
 
    *Answer: B) She said she was tired.*
    *Anchor: ""I am tired," she said becomes She said she was tired."*
 
 **2. A student named Fatima writes: 'My teacher says that we had to submit the essay by Friday.' Why is this sentence incorrect?**
 
-   a. A) The reporting verb should be 'told,' not 'says.'
-   b. B) The reporting verb is in the present tense, so no backshift is needed.
-   c. C) The infinitive 'to submit' should replace 'had to submit.'
-   d. D) The time adverbial 'by Friday' must shift to 'the following day.'
+   a. The reporting verb should be 'told,' not 'says.'
+   b. The reporting verb is in the present tense, so no backshift is needed.
+   c. The infinitive 'to submit' should replace 'had to submit.'
+   d. The time adverbial 'by Friday' must shift to 'the following day.'
 
    *Answer: B) The reporting verb is in the present tense, so no backshift is needed.*
    *Anchor: "Because the reporting verb "says" is in the present tense, no backshift is needed."*
 
 **3. Which of the following sentences correctly reports the direct question 'Where does Priya work?'**
 
-   a. A) He asked where does Priya work.
-   b. B) He asked where did Priya work.
-   c. C) He asked where Priya worked.
-   d. D) He asked where was Priya working.
+   a. He asked where does Priya work.
+   b. He asked where did Priya work.
+   c. He asked where Priya worked.
+   d. He asked where was Priya working.
 
    *Answer: C) He asked where Priya worked.*
    *Anchor: ""Where does Priya work?" becomes "He asked where Priya worked.""*

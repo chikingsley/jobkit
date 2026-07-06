@@ -3,7 +3,8 @@ GATE PASS
 
 == dslop (prose body, exit 0) ==
 
-== patterns.js (full file) ==
-{"score":2,"label":"Minimal AI signals","issues":3}
-
+== style detector (full file) ==
+{"score": 16, "label": "Moderate AI signals", "issues": [{"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 39, "weight": 2, "snippet": "sroom teaching, separates stative verbs from dynamic verbs. A stative verb describes a state that"}, {"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 39, "weight": 2, "snippet": "efer*, *belong*, *contain*, and *believe*. A dynamic verb describes an action or process that can"}, {"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 41, "weight": 2, "snippet": "us form. The present continuous is used with dynamic verbs to describe actions in progress, so a"}, {"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 41, "weight": 2, "snippet": "nt: *I know the answer*. Without the stative/dynamic distinction in their grammatical vocabulary,"}, {"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 47, "weight": 2, "snippet": "verb as main or auxiliary, and as stative or dynamic, gives teachers the labels they need to expl"}, {"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 55, "weight": 2, "snippet": "beautifully*. In that sentence, *sings* is a dynamic verb, not a linking verb, so the modifier de"}, {"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 136, "weight": 2, "snippet": "**5. What is the stative/dynamic distinction, and why does it matter when tea"}, {"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 138, "weight": 2, "snippet": "exists rather than an action that unfolds; a dynamic verb describes an action or process that can"}]}
 == quiz: clean ==
+== option labels ==
+clean

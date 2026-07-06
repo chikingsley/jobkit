@@ -9,13 +9,14 @@ __pycache__/
 .ruff_cache/
 .ty_cache/
 .cache/
-job-data/*.sqlite-shm
-job-data/*.sqlite-wal
-job-data/exports/*.csv
+job-search/.cache/
+job-search/job-data/*.sqlite-shm
+job-search/job-data/*.sqlite-wal
+job-search/job-data/exports/*.csv
 
 # Copyrighted third-party course content — local reference only, never commit
 tefl-course/sources/teacherrecord-120hr-tefl/
 tefl-course/sources/las-vegas-teaching-archive/
-# Bulk public-domain downloads — re-fetchable, see tefl-course/SOURCES.md (SHA256SUMS is committed)
+# Bulk public-domain downloads — re-fetchable, see tefl-course/docs/SOURCES.md (SHA256SUMS is committed)
 tefl-course/sources/state-dept-shaping/*
 !tefl-course/sources/state-dept-shaping/SHA256SUMS

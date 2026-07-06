@@ -1,0 +1,68 @@
+[project]
+name = "tefl-course"
+version = "0.1.0"
+description = "TEFL course generation, assessment, and prose-gate tooling"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "httpx>=0.28",
+]
+
+[dependency-groups]
+dev = [
+  "dslop>=0.2.2",
+  "ruff>=0.15.13",
+  "ty>=0.0.35",
+]
+
+[project.scripts]
+tefl-course-build = "tefl_course.pipeline.build:main"
+tefl-course-assessments = "tefl_course.pipeline.assessments:main"
+tefl-course-check = "tefl_course.checks:main"
+tefl-course-detect-style = "tefl_course.detectors.ai_style:main"
+tefl-course-pilot-draft = "tefl_course.pilot.draft_unit:main"
+tefl-course-transcribe-archive = "tefl_course.pipeline.transcribe_archive:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tefl_course"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  "W191",
+  "E111",
+  "E114",
+  "E117",
+  "D203",
+  "D206",
+  "D300",
+  "Q000",
+  "Q001",
+  "Q002",
+  "Q003",
+  "Q004",
+  "COM812",
+  "COM819",
+  "ISC002",
+  "D213",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"src/tefl_course/checks.py" = ["T201"]
+"src/tefl_course/detectors/ai_style.py" = ["T201"]
+"src/tefl_course/pipeline/assessments.py" = ["T201"]
+"src/tefl_course/pipeline/build.py" = ["T201"]
+"src/tefl_course/pipeline/transcribe_archive.py" = ["T201"]
+"src/tefl_course/pilot/draft_unit.py" = ["T201"]
+
+[tool.ty.environment]
+root = ["./src"]

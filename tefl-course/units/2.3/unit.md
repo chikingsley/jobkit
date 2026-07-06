@@ -82,30 +82,30 @@ Learners whose first languages handle tense and aspect differently will not abso
 
 **1. Which of the following correctly describes what 'tense' means in a strictly grammatical sense?**
 
-   a. A. The speaker's choice about whether to present an event as ongoing or complete
-   b. B. A morphological change to the verb form itself that signals past or present
-   c. C. The relationship between an event and the moment of speaking
-   d. D. A multi-word structure such as 'will + infinitive' used to express future time
+   a. The speaker's choice about whether to present an event as ongoing or complete
+   b. A morphological change to the verb form itself that signals past or present
+   c. The relationship between an event and the moment of speaking
+   d. A multi-word structure such as 'will + infinitive' used to express future time
 
    *Answer: B. A morphological change to the verb form itself that signals past or present*
    *Anchor: "Tense is a grammatical category realized by a change to the verb form itself."*
 
 **2. A student named Daniel objects that 'I am seeing the dentist tomorrow' is a present tense form and cannot refer to the future. According to the unit, what is the root cause of this confusion?**
 
-   a. A. Daniel has not yet studied the present continuous aspect.
-   b. B. The teacher failed to explain that English has three morphological tenses.
-   c. C. Calling 'will + infinitive' a tense implies it is the only grammatical mechanism for future time.
-   d. D. Daniel's first language does not distinguish tense from aspect.
+   a. Daniel has not yet studied the present continuous aspect.
+   b. The teacher failed to explain that English has three morphological tenses.
+   c. Calling 'will + infinitive' a tense implies it is the only grammatical mechanism for future time.
+   d. Daniel's first language does not distinguish tense from aspect.
 
    *Answer: C. Calling 'will + infinitive' a tense implies it is the only grammatical mechanism for future time.*
    *Anchor: "The teacher's difficulty in that moment traces back to the original label."*
 
 **3. Which sentence best illustrates the perfect continuous aspect as described in the unit?**
 
-   a. A. She finished the report before the meeting.
-   b. B. She has finished the report.
-   c. C. She was finishing the report when the phone rang.
-   d. D. She has been working on the report all morning.
+   a. She finished the report before the meeting.
+   b. She has finished the report.
+   c. She was finishing the report when the phone rang.
+   d. She has been working on the report all morning.
 
    *Answer: D. She has been working on the report all morning.*
    *Anchor: "This construction signals that an activity began at an earlier point and continued up to the reference point."*

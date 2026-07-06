@@ -91,30 +91,30 @@ The teacher's role in making this progress visible is to build confidence steadi
 
 **1. According to the unit, what is the primary reason young learners benefit more from rich, comprehensible input than from formal grammar explanation?**
 
-   a. A) Children find grammar tables too long to read carefully.
-   b. B) Children have the capacity to construct internal rules from language input without being taught those rules explicitly.
-   c. C) Formal explanation requires literacy skills that teachers of young learners rarely possess.
-   d. D) Grammar tables are designed for adult cognitive systems and contain vocabulary children cannot decode.
+   a. Children find grammar tables too long to read carefully.
+   b. Children have the capacity to construct internal rules from language input without being taught those rules explicitly.
+   c. Formal explanation requires literacy skills that teachers of young learners rarely possess.
+   d. Grammar tables are designed for adult cognitive systems and contain vocabulary children cannot decode.
 
    *Answer: B) Children have the capacity to construct internal rules from language input without being taught those rules explicitly.*
    *Anchor: "This capacity for implicit rule formation means that rich, comprehensible input, delivered repeatedly and in context"*
 
 **2. In the unit's description of Total Physical Response (TPR), what grammatical form does the teacher use to direct students during a TPR activity?**
 
-   a. A) The present continuous, to describe ongoing actions as students perform them.
-   b. B) The simple past, to narrate what students have just completed.
-   c. C) The imperative form of the verb.
-   d. D) The present perfect, to connect each action to the one before it.
+   a. The present continuous, to describe ongoing actions as students perform them.
+   b. The simple past, to narrate what students have just completed.
+   c. The imperative form of the verb.
+   d. The present perfect, to connect each action to the one before it.
 
    *Answer: C) The imperative form of the verb.*
    *Anchor: "the teacher uses the imperative form of the verb to direct students, and students respond with their bodies"*
 
 **3. The unit defines classroom management as covering which four elements?**
 
-   a. A) Lesson objectives, student grouping, assessment criteria, and homework design.
-   b. B) The use of time, the physical arrangement of the room, the direction of students, and the choice of activities.
-   c. C) Seating plans, noise levels, transition signals, and grading rubrics.
-   d. D) Teacher positioning, student motivation, material selection, and parent communication.
+   a. Lesson objectives, student grouping, assessment criteria, and homework design.
+   b. The use of time, the physical arrangement of the room, the direction of students, and the choice of activities.
+   c. Seating plans, noise levels, transition signals, and grading rubrics.
+   d. Teacher positioning, student motivation, material selection, and parent communication.
 
    *Answer: B) The use of time, the physical arrangement of the room, the direction of students, and the choice of activities.*
    *Anchor: "classroom management, as the source defines it, covers the use of time, the physical arrangement of the room, the direction of students, and the choice of activities"*

@@ -3,7 +3,8 @@ GATE PASS
 
 == dslop (prose body, exit 0) ==
 
-== patterns.js (full file) ==
-{"score":2,"label":"Minimal AI signals","issues":4}
-
+== style detector (full file) ==
+{"score": 4, "label": "Minimal AI signals", "issues": [{"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 73, "weight": 2, "snippet": "ived.\" English applies this aspect freely to dynamic verbs but not to stative verbs, a category t"}, {"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 159, "weight": 2, "snippet": "chor: \"English applies this aspect freely to dynamic verbs but not to stative verbs, a category t"}]}
 == quiz: clean ==
+== option labels ==
+clean

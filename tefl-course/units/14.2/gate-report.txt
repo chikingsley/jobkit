@@ -3,7 +3,8 @@ GATE PASS
 
 == dslop (prose body, exit 0) ==
 
-== patterns.js (full file) ==
-{"score":2,"label":"Minimal AI signals","issues":5}
-
+== style detector (full file) ==
+{"score": 4, "label": "Minimal AI signals", "issues": [{"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 54, "weight": 2, "snippet": "han group lessons, because there is no class dynamic to carry momentum when energy dips or a task"}, {"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 76, "weight": 2, "snippet": "one-to-one settings where there is no group dynamic to diffuse the pressure. A teacher in their"}]}
 == quiz: clean ==
+== option labels ==
+clean

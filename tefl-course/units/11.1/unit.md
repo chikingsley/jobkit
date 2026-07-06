@@ -82,30 +82,30 @@ When persistent negative behavior does appear despite these measures, the source
 
 **1. According to the unit, what is the primary purpose of a diagnostic test given at the start of term in a large class?**
 
-   a. A) To assign students a grade that determines their placement in ability groups
-   b. B) To discover each student's strengths and areas of need so results feed into lesson planning
-   c. C) To motivate students by showing them how much they already know
-   d. D) To satisfy administrative requirements for formal assessment records
+   a. To assign students a grade that determines their placement in ability groups
+   b. To discover each student's strengths and areas of need so results feed into lesson planning
+   c. To motivate students by showing them how much they already know
+   d. To satisfy administrative requirements for formal assessment records
 
    *Answer: The test is a tool for discovering each student's strengths and areas of need, and its results feed directly into lesson planning.*
    *Anchor: "it is a tool for discovering each student's strengths and areas of need"*
 
 **2. The unit describes 'proactive behavior' in discipline management as distinct from reactive behavior. Which of the following best captures the unit's definition of proactive behavior?**
 
-   a. A) Responding firmly to disruptions the moment they occur so students see consequences immediately
-   b. B) Sending disruptive students out of the room to protect the learning of the majority
-   c. C) Anticipating student reactions and organizing the classroom to prevent problems from developing
-   d. D) Rewarding well-behaved students publicly so others are motivated to follow their example
+   a. Responding firmly to disruptions the moment they occur so students see consequences immediately
+   b. Sending disruptive students out of the room to protect the learning of the majority
+   c. Anticipating student reactions and organizing the classroom to prevent problems from developing
+   d. Rewarding well-behaved students publicly so others are motivated to follow their example
 
    *Answer: Proactive behavior anticipates student reactions and organizes the classroom to prevent problems from developing.*
    *Anchor: "Proactive behavior anticipates student reactions and organizes the classroom to prevent problems"*
 
 **3. The unit explains why peer-checking is described as a particularly efficient structure in large classes. Which answer best reflects the unit's reasoning?**
 
-   a. A) It allows the teacher to sit at the front and mark papers while students work independently
-   b. B) It gives students immediate feedback, gives partners a reason to read carefully, and gives the teacher information about class-wide difficulties
-   c. C) It removes the need for the teacher to plan correction activities because students correct all errors themselves
-   d. D) It works best when the teacher assigns the strongest student in each pair to do all the checking
+   a. It allows the teacher to sit at the front and mark papers while students work independently
+   b. It gives students immediate feedback, gives partners a reason to read carefully, and gives the teacher information about class-wide difficulties
+   c. It removes the need for the teacher to plan correction activities because students correct all errors themselves
+   d. It works best when the teacher assigns the strongest student in each pair to do all the checking
 
    *Answer: That exchange gives the student immediate feedback, gives the partner a reason to read carefully, and gives the teacher information about where the class as a whole is struggling.*
    *Anchor: "gives the student immediate feedback, gives the partner a reason to read carefully"*

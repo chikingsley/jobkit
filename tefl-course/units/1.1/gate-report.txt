@@ -3,7 +3,8 @@ GATE PASS
 
 == dslop (prose body, exit 0) ==
 
-== patterns.js (full file) ==
-{"score":2,"label":"Minimal AI signals","issues":3}
-
+== style detector (full file) ==
+{"score": 2, "label": "Minimal AI signals", "issues": [{"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 21, "weight": 2, "snippet": "aterial feels irrelevant or if the classroom dynamic does not feel safe. Classroom management at"}]}
 == quiz: clean ==
+== option labels ==
+clean
