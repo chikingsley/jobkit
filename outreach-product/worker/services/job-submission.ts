@@ -79,9 +79,9 @@ export async function approveAndSubmitApplication(
     return { message: "Submission is already in progress", status: 409 };
   }
 
-  let appliedDate: string;
+  let submission: Awaited<ReturnType<typeof submitApplication>>;
   try {
-    appliedDate = await submitApplication(env, row.apply_url, row.message);
+    submission = await submitApplication(env, row.apply_url, row.message);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown submission error";
@@ -96,6 +96,24 @@ export async function approveAndSubmitApplication(
   }
 
   const submittedAt = new Date().toISOString();
+  if (!submission.submittedNow) {
+    await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE jobs SET status='applied',updated_at=? WHERE id=?"
+      ).bind(submittedAt, jobId),
+      jobEventStatement(
+        env.DB,
+        jobId,
+        "submission_reconciled",
+        `Serious Teachers already recorded an application on ${submission.appliedDate}; the current draft was not submitted`
+      ),
+    ]);
+    return {
+      message: `Application was already recorded (${submission.appliedDate})`,
+      status: 200,
+    };
+  }
+
   await env.DB.batch([
     env.DB.prepare(
       "UPDATE jobs SET status='applied',updated_at=? WHERE id=?"
@@ -107,12 +125,12 @@ export async function approveAndSubmitApplication(
       env.DB,
       jobId,
       "submitted",
-      `Serious Teachers verified last applied on ${appliedDate}`,
+      `Serious Teachers verified last applied on ${submission.appliedDate}`,
       draftId
     ),
   ]);
   return {
-    message: `Application sent and verified (${appliedDate})`,
+    message: `Application sent and verified (${submission.appliedDate})`,
     status: 200,
   };
 }

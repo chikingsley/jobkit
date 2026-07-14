@@ -20,6 +20,6 @@ export default defineConfig({
     }),
   ],
   test: {
-    include: ["worker/**/*.test.ts"],
+    include: ["tests/integration/worker/**/*.test.ts"],
   },
 });

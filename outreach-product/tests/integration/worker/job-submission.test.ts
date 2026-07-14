@@ -195,7 +195,7 @@ describe("application submission", () => {
     ).toEqual({ draft_status: "approved", job_status: "failed" });
   });
 
-  it("reconciles a previous send without posting a duplicate", async () => {
+  it("reconciles a pre-existing board application without claiming this draft was sent", async () => {
     const jobId = "900003";
     const employerId = "800003";
     await seedSubmission({
@@ -215,9 +215,16 @@ describe("application submission", () => {
     expect(response.status).toBe(200);
     expect(board.submissionPostCount()).toBe(0);
     expect(
-      await env.DB.prepare("SELECT status FROM jobs WHERE id=?")
+      await env.DB.prepare(
+        `SELECT j.status job_status,d.status draft_status,d.submitted_at
+         FROM jobs j JOIN application_drafts d ON d.job_id=j.id WHERE j.id=?`
+      )
         .bind(jobId)
         .first()
-    ).toEqual({ status: "applied" });
+    ).toEqual({
+      draft_status: "approved",
+      job_status: "applied",
+      submitted_at: null,
+    });
   });
 });

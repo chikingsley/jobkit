@@ -4,13 +4,12 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "check": "wrangler types --check && ultracite check && tsc --noEmit && vitest run && vitest run --config vitest.worker.config.ts",
+    "check": "wrangler types --check && ultracite check && tsc --noEmit && vitest run --config tests/vitest.config.ts",
     "dev": "vite",
     "fix": "ultracite fix",
     "seed:private": "uv run --no-project scripts/sync_private_board.py --api http://localhost:5173",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:worker": "vitest --config vitest.worker.config.ts",
+    "test": "vitest --config tests/vitest.config.ts",
+    "test:run": "vitest run --config tests/vitest.config.ts",
     "types:worker": "wrangler types"
   },
   "dependencies": {

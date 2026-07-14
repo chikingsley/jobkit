@@ -5,6 +5,11 @@ interface Session {
   cookie: string;
 }
 
+export interface ApplicationSubmissionResult {
+  appliedDate: string;
+  submittedNow: boolean;
+}
+
 const MAX_HTML_BYTES = 1_500_000;
 const SERIOUS_TEACHERS_ORIGIN = "https://www.seriousteachers.com";
 const browserHeaders = {
@@ -104,7 +109,7 @@ export async function submitApplication(
   env: AppEnv,
   applyUrl: string,
   message: string
-): Promise<string> {
+): Promise<ApplicationSubmissionResult> {
   const session = await login(env);
   const match = /\/te2\/respond\/(\d+)\/(\d+)/.exec(applyUrl);
   if (!(match?.[1] && match[2])) {
@@ -115,7 +120,7 @@ export async function submitApplication(
   const [, jobId, employerId] = match;
   const existing = await appliedDate(session, jobId, employerId);
   if (existing) {
-    return existing;
+    return { appliedDate: existing, submittedNow: false };
   }
   const formPage = await fetch(applyUrl, {
     headers: { ...browserHeaders, cookie: session.cookie },
@@ -163,7 +168,7 @@ export async function submitApplication(
       "Serious Teachers accepted the POST but did not show a last-applied record"
     );
   }
-  return verified;
+  return { appliedDate: verified, submittedNow: true };
 }
 
 async function appliedDate(
