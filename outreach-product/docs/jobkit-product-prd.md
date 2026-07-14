@@ -1,14 +1,14 @@
 # Jobkit Product PRD
 
-Status: draft  
-Last updated: 2026-06-13  
+Status: V1 implementation in progress
+Last updated: 2026-07-11
 Scope: personal ESL/teaching job search product, Cloudflare-first backend, web dashboard, Expo mobile app
 
 ## 1. Summary
 
 Jobkit should become a private Indeed-like job search and application workstation for English teaching jobs. It should keep the current board ingestion pipeline, but expose the inventory through a Cloudflare-hosted product surface with strong search, faceted filtering, multi-sort, job detail review, email draft creation, and safe manual application tracking.
 
-The app is not an auto-apply bot. It is a job inventory, triage, drafting, and application evidence system. It can prepare drafts, open source pages, and later prefill forms after explicit user action, but it must not submit applications or mark jobs applied without explicit manual confirmation.
+The app is not an unattended auto-apply bot. It is a job inventory, triage, drafting, and application evidence system. It may submit an application only after the user has reviewed and explicitly approved the exact immutable message for that job. It must verify and record the result rather than inferring success from a request alone.
 
 ## 2. Why This Exists
 
@@ -72,13 +72,13 @@ Implications:
 4. Keep scraped inventory separate from application state.
 5. Create Gmail drafts from selected jobs without sending.
 6. Track events: viewed, saved, ignored, draft created, source opened, prefilled, manually submitted, replied, closed.
-7. Support SeriousTeachers and other logged-in form workflows safely: open, inspect, optionally prefill, then require the user to submit manually.
+7. Support SeriousTeachers safely: generate and revise a draft, require exact-message approval, submit through the authenticated form, then verify and record the result.
 8. Make the web dashboard useful first, then provide an Expo mobile app that consumes the same API and supports review, saved searches, and light triage.
 
 ## 5. Non-Goals
 
-- No automatic application submission.
-- No automatic clicking on submit, apply, next, continue, send, or respond controls.
+- No unattended or bulk application submission.
+- No submission without approval of the exact job and immutable message version.
 - No bulk cold-email blasting.
 - No dependency on private Indeed APIs or WAF-bypassing scraping.
 - No CSV export as a normal workflow.
@@ -274,19 +274,44 @@ Acceptance criteria:
 - Opening a route records `source_opened` or `apply_opened`.
 - The user can manually mark `submitted` only after they confirm they submitted outside the app.
 
-### 10.8 SeriousTeachers prefill helper
+### 10.8 SeriousTeachers reviewed submission
 
-As the user, I can safely prefill SeriousTeachers forms later.
+As the user, I can review, revise, approve, and submit a SeriousTeachers application from JobKit.
 
 Acceptance criteria:
 
-- Browser extension or controlled helper opens the resolved apply URL.
-- Helper scans visible fields and shows a review table: field, proposed value, confidence, source.
-- User explicitly chooses fill.
-- Helper may fill fields but must not click submit-like controls.
-- Helper must not upload files unless the user explicitly selects a file in that session.
-- Helper records `prefill_ready` or `prefilled`, not `applied`.
-- Only explicit user confirmation records `submitted_manually` or `applied`.
+- The private-board sync resolves the job and employer identifiers.
+- A tailored message exists before the job enters review.
+- Revisions create a new immutable draft version.
+- The user explicitly approves the exact message version.
+- Submission refuses unapproved, superseded, or duplicate versions.
+- The executor logs in, fetches a fresh antiforgery token, and submits the approved message.
+- The application is marked applied only after an authoritative SeriousTeachers verification signal is recorded.
+
+### 10.9 Candidate profile, preferences, and qualification matching
+
+The private beta stores an editable candidate profile and preference set in D1. Matching evaluates
+each mapped requirement as `match`, `conflict`, `unknown`, or `preference` and presents both the
+overall state and its evidence. Hard conflicts are hidden by default but remain available through
+“Show ineligible”; missing data remains visible as “Needs verification.”
+
+Initial preference controls cover countries, audiences, full-time/part-time/contract work, benefits
+including visa sponsorship, and minimum monthly USD. Theme is a device-local interface setting,
+not matching data. Profile and preference JSON documents carry explicit schema versions; migrations
+upgrade and persist older documents instead of transforming them on every read. The initial 14
+Serious Teachers jobs use a manually reviewed criterion map; future ingestion should normalize
+requirements before expanding this beyond the specimen set.
+
+Job compensation is normalized at import into amount, currency, period, qualifier, source,
+confidence, and notes fields. Queue and detail views consume that single stored representation;
+manually reviewed corrections are preserved across later imports.
+
+### 10.10 Private application documents
+
+Candidate documents live in a private R2 bucket and are indexed by D1 metadata. Objects are never
+published as static assets. All upload, listing, view, and delete requests require the same private
+beta authorization as the rest of the API. Authenticated reads stream object bodies with private,
+no-store caching so the same files can later be attached to outbound email workflows.
 
 ## 11. Data Model
 

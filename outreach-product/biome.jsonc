@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/react",
+    "ultracite/biome/vitest"
+  ],
+  "linter": {
+    "rules": {
+      "complexity": { "noVoid": "off" },
+      "performance": {
+        "noAwaitInLoops": "off",
+        "noJsxPropsBind": "off",
+        "useTopLevelRegex": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "off",
+        "useFilenamingConvention": "off"
+      },
+      "suspicious": { "noAlert": "off" }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["src/components/ui/**", "src/hooks/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noLabelWithoutControl": "off",
+            "noNoninteractiveElementInteractions": "off",
+            "useKeyWithClickEvents": "off",
+            "useSemanticElements": "off"
+          },
+          "correctness": {
+            "noNestedComponentDefinitions": "off",
+            "useExhaustiveDependencies": "off"
+          },
+          "performance": { "noNamespaceImport": "off" },
+          "style": { "useConsistentTypeDefinitions": "off" },
+          "suspicious": {
+            "noDocumentCookie": "off",
+            "noArrayIndexKey": "off",
+            "noDoubleEquals": "off",
+            "noLeakedRender": "off",
+            "noShadow": "off",
+            "noUnnecessaryConditions": "off"
+          }
+        }
+      }
+    }
+  ]
+}

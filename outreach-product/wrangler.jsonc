@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "jobkit-outreach",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-07-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "outreach-product.peacockery.studio",
+      "custom_domain": true
+    }
+  ],
+  "secrets": {
+    "required": [
+      "MAPBOX_ACCESS_TOKEN",
+      "SERIOUSTEACHERS_EMAIL",
+      "SERIOUSTEACHERS_PASSWORD",
+      "SUPERWHISPER_API_BASE",
+      "SUPERWHISPER_API_KEY"
+    ]
+  },
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/openapi.json"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "jobkit-outreach",
+      "database_id": "69fde96a-43c1-4297-94dc-7d869a7d50d7",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "DOCUMENTS",
+      "bucket_name": "jobkit-private-documents"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}
