@@ -1,6 +1,6 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
-import { DraftGenerationError } from "./ai/drafts";
+import { ApplicationMessageGenerationError } from "./ai/application-messages";
 import type { AppEnv } from "./env";
 import { compensationFromRow } from "./repositories/jobs";
 import {
@@ -15,7 +15,7 @@ import {
   importJobsWithDrafts,
   regenerateDrafts,
   reviseJobDraft,
-} from "./services/draft-workflow";
+} from "./services/application-drafts";
 import { approveAndSubmitApplication } from "./services/job-submission";
 import {
   fetchExchangeRates,
@@ -45,7 +45,7 @@ app.onError((error, c) => {
       path: c.req.path,
     })
   );
-  if (error instanceof DraftGenerationError) {
+  if (error instanceof ApplicationMessageGenerationError) {
     return c.json({ message: error.message, ok: false }, 502);
   }
   if (error instanceof DraftProfileRequiredError) {

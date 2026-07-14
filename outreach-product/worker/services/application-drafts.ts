@@ -1,6 +1,10 @@
 import type { Profile } from "../../src/features/profile/schema";
-import { generateDraft, reviseDraft } from "../ai/drafts";
+import {
+  generateApplicationMessage,
+  reviseApplicationMessage,
+} from "../ai/application-messages";
 import type { AppEnv } from "../env";
+import { readApplicationMessageModel } from "../repositories/ai-model-settings";
 import { recordJobEvent } from "../repositories/job-events";
 import { upsertJob } from "../repositories/jobs";
 import { readProfile } from "../repositories/user-settings";
@@ -9,7 +13,10 @@ import { type JobImport, JobImportSchema } from "../schemas";
 export class DraftProfileRequiredError extends Error {}
 
 export async function regenerateDrafts(env: AppEnv): Promise<number> {
-  const profile = await savedProfile(env.DB);
+  const [model, profile] = await Promise.all([
+    readApplicationMessageModel(env.DB),
+    savedProfile(env.DB),
+  ]);
   const rows = await env.DB.prepare(
     "SELECT * FROM jobs WHERE status IN ('new','review')"
   ).all();
@@ -21,7 +28,7 @@ export async function regenerateDrafts(env: AppEnv): Promise<number> {
     )
       .bind(job.id)
       .first<{ version: number }>();
-    const draft = await generateDraft(env, job, profile);
+    const draft = await generateApplicationMessage(env, model, job, profile);
     const timestamp = new Date().toISOString();
     await env.DB.batch([
       env.DB.prepare(
@@ -49,7 +56,10 @@ export async function importJobsWithDrafts(
   env: AppEnv,
   jobs: JobImport[]
 ): Promise<void> {
-  const profile = await savedProfile(env.DB);
+  const [model, profile] = await Promise.all([
+    readApplicationMessageModel(env.DB),
+    savedProfile(env.DB),
+  ]);
   for (const job of jobs) {
     const timestamp = new Date().toISOString();
     await upsertJob(env.DB, job, timestamp);
@@ -61,7 +71,7 @@ export async function importJobsWithDrafts(
     if (existing) {
       continue;
     }
-    const draft = await generateDraft(env, job, profile);
+    const draft = await generateApplicationMessage(env, model, job, profile);
     await env.DB.prepare(
       "INSERT INTO application_drafts (id,job_id,version,message,change_summary,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?)"
     )
@@ -90,12 +100,14 @@ export async function reviseJobDraft(
   jobId: string,
   instruction: string
 ) {
-  const [profile, row] = await Promise.all([
+  const [model, profile, row] = await Promise.all([
+    readApplicationMessageModel(env.DB),
     savedProfile(env.DB),
     currentJobAndDraft(env.DB, jobId),
   ]);
-  const revised = await reviseDraft(
+  const revised = await reviseApplicationMessage(
     env,
+    model,
     row.job,
     profile,
     row.message,

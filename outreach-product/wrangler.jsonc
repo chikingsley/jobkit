@@ -4,11 +4,6 @@
   "main": "worker/index.ts",
   "compatibility_date": "2026-07-11",
   "compatibility_flags": ["nodejs_compat"],
-  "vars": {
-    "DRAFT_MODEL_PROVIDER": "cerebras",
-    "CEREBRAS_DRAFT_MODEL": "gpt-oss-120b",
-    "MISTRAL_DRAFT_MODEL": "mistral-small-latest"
-  },
   "routes": [
     {
       "pattern": "outreach-product.peacockery.studio",

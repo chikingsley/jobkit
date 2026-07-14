@@ -3,7 +3,10 @@ import { z } from "zod";
 import type { Profile } from "../../src/features/profile/schema";
 import type { AppEnv } from "../env";
 import type { JobImport } from "../schemas";
-import { draftModel } from "./model";
+import {
+  type AiModelSelection,
+  createApplicationMessageModel,
+} from "./model-catalog";
 
 const DraftOutputSchema = z
   .object({
@@ -21,12 +24,13 @@ const ProviderDraftOutputSchema = z
   })
   .strict();
 
-export interface GeneratedDraft extends z.infer<typeof DraftOutputSchema> {
+export interface GeneratedApplicationMessage
+  extends z.infer<typeof DraftOutputSchema> {
   modelId: string;
   provider: "cerebras" | "mistral";
 }
 
-export class DraftGenerationError extends Error {}
+export class ApplicationMessageGenerationError extends Error {}
 
 const instructions = `You write concise, truthful job-application messages for the candidate.
 
@@ -41,13 +45,14 @@ Rules:
 - The message must end with the exact requiredEnding string supplied in the request.
 - The summary must state specifically what was tailored in one short sentence.`;
 
-export function generateDraft(
+export function generateApplicationMessage(
   env: AppEnv,
+  model: AiModelSelection,
   job: JobImport,
   profile: Profile
-): Promise<GeneratedDraft> {
+): Promise<GeneratedApplicationMessage> {
   const signature = signatureFor(profile);
-  return runModel(env, {
+  return runModel(env, model, {
     job,
     profile,
     request: "Write a new application message.",
@@ -55,15 +60,16 @@ export function generateDraft(
   });
 }
 
-export function reviseDraft(
+export function reviseApplicationMessage(
   env: AppEnv,
+  model: AiModelSelection,
   job: JobImport,
   profile: Profile,
   currentMessage: string,
   revisionInstruction: string
-): Promise<GeneratedDraft> {
+): Promise<GeneratedApplicationMessage> {
   const signature = signatureFor(profile);
-  return runModel(env, {
+  return runModel(env, model, {
     currentMessage,
     job,
     profile,
@@ -76,21 +82,26 @@ export function reviseDraft(
 
 async function runModel(
   env: AppEnv,
+  selection: AiModelSelection,
   input: Record<string, unknown> & { requiredEnding: string }
-): Promise<GeneratedDraft> {
-  const selected = draftModel(env);
+): Promise<GeneratedApplicationMessage> {
+  const model = createApplicationMessageModel(env, selection);
   try {
     const result = await generateText({
       instructions,
       maxOutputTokens: 1200,
       maxRetries: 2,
-      model: selected.value,
+      model,
       output: Output.object({
         description: "A truthful job application and its tailoring summary",
         name: "job_application_draft",
         schema: ProviderDraftOutputSchema,
       }),
       prompt: JSON.stringify(input),
+      providerOptions:
+        selection.provider === "cerebras" && selection.modelId === "zai-glm-4.7"
+          ? { cerebras: { reasoningEffort: "none" } }
+          : undefined,
       temperature: 0.2,
       timeout: { totalMs: 45_000 },
     });
@@ -103,8 +114,8 @@ async function runModel(
     }
     return {
       message,
-      modelId: selected.id,
-      provider: selected.provider,
+      modelId: selection.modelId,
+      provider: selection.provider,
       summary: output.summary.trim(),
     };
   } catch (error) {
@@ -112,12 +123,12 @@ async function runModel(
       JSON.stringify({
         error: error instanceof Error ? error.message : String(error),
         event: "draft_generation_failed",
-        model: selected.id,
-        provider: selected.provider,
+        model: selection.modelId,
+        provider: selection.provider,
       })
     );
-    throw new DraftGenerationError(
-      `Draft generation failed using ${selected.provider}/${selected.id}`,
+    throw new ApplicationMessageGenerationError(
+      `Application-message generation failed using ${selection.provider}/${selection.modelId}`,
       { cause: error }
     );
   }
