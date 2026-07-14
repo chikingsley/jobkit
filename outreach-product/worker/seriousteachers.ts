@@ -6,6 +6,14 @@ interface Session {
 }
 
 const MAX_HTML_BYTES = 1_500_000;
+const SERIOUS_TEACHERS_ORIGIN = "https://www.seriousteachers.com";
+const browserHeaders = {
+  accept:
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "accept-language": "en-US,en;q=0.9",
+  "user-agent":
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/138.0.0.0 Safari/537.36",
+};
 
 async function boundedHtml(response: Response): Promise<string> {
   const declared = Number(response.headers.get("content-length") ?? 0);
@@ -23,23 +31,38 @@ async function boundedHtml(response: Response): Promise<string> {
   return text;
 }
 
-function cookiePart(value: string | null): string {
-  return (
-    value
-      ?.split(",")
-      .map((part) => part.split(";")[0]?.trim())
-      .filter(Boolean)
-      .join("; ") ?? ""
-  );
+function addResponseCookies(jar: Map<string, string>, response: Response) {
+  const values = response.headers.getSetCookie();
+  const setCookies = values.length
+    ? values
+    : [response.headers.get("set-cookie")].filter((value): value is string =>
+        Boolean(value)
+      );
+  for (const value of setCookies) {
+    const pair = value.split(";", 1)[0]?.trim();
+    const separator = pair?.indexOf("=") ?? -1;
+    if (pair && separator > 0) {
+      jar.set(pair.slice(0, separator), pair.slice(separator + 1));
+    }
+  }
+}
+
+function cookieHeader(jar: Map<string, string>): string {
+  return [...jar].map(([name, value]) => `${name}=${value}`).join("; ");
 }
 
 export async function login(env: AppEnv): Promise<Session> {
   if (!(env.SERIOUSTEACHERS_EMAIL && env.SERIOUSTEACHERS_PASSWORD)) {
     throw new Error("Serious Teachers credentials are not configured");
   }
-  const first = await fetch("https://www.seriousteachers.com/te2/login", {
+  const loginUrl = `${SERIOUS_TEACHERS_ORIGIN}/te2/login`;
+  const first = await fetch(loginUrl, {
+    headers: browserHeaders,
     redirect: "manual",
   });
+  if (!first.ok) {
+    throw new Error(`Serious Teachers login page returned ${first.status}`);
+  }
   const html = await boundedHtml(first);
   const token = parse(html)
     .querySelector('input[name="__RequestVerificationToken"]')
@@ -47,7 +70,8 @@ export async function login(env: AppEnv): Promise<Session> {
   if (!token) {
     throw new Error("Serious Teachers login token was missing");
   }
-  const initialCookie = cookiePart(first.headers.get("set-cookie"));
+  const cookies = new Map<string, string>();
+  addResponseCookies(cookies, first);
   const form = new URLSearchParams({
     __RequestVerificationToken: token,
     email: env.SERIOUSTEACHERS_EMAIL,
@@ -55,11 +79,14 @@ export async function login(env: AppEnv): Promise<Session> {
     idjob: "0",
     password: env.SERIOUSTEACHERS_PASSWORD,
   });
-  const response = await fetch("https://www.seriousteachers.com/te2/login", {
+  const response = await fetch(loginUrl, {
     body: form,
     headers: {
+      ...browserHeaders,
       "content-type": "application/x-www-form-urlencoded",
-      cookie: initialCookie,
+      cookie: cookieHeader(cookies),
+      origin: SERIOUS_TEACHERS_ORIGIN,
+      referer: loginUrl,
     },
     method: "POST",
     redirect: "manual",
@@ -67,10 +94,9 @@ export async function login(env: AppEnv): Promise<Session> {
   if (response.status < 300 || response.status >= 400) {
     throw new Error(`Serious Teachers login failed (${response.status})`);
   }
+  addResponseCookies(cookies, response);
   return {
-    cookie: [initialCookie, cookiePart(response.headers.get("set-cookie"))]
-      .filter(Boolean)
-      .join("; "),
+    cookie: cookieHeader(cookies),
   };
 }
 
@@ -89,12 +115,10 @@ export async function submitApplication(
   const [, jobId, employerId] = match;
   const existing = await appliedDate(session, jobId, employerId);
   if (existing) {
-    throw new Error(
-      `Serious Teachers already shows this job as applied on ${existing}`
-    );
+    return existing;
   }
   const formPage = await fetch(applyUrl, {
-    headers: { cookie: session.cookie },
+    headers: { ...browserHeaders, cookie: session.cookie },
   });
   if (!formPage.ok) {
     throw new Error(`Application form returned ${formPage.status}`);
@@ -121,8 +145,11 @@ export async function submitApplication(
   const response = await fetch(applyUrl, {
     body,
     headers: {
+      ...browserHeaders,
       "content-type": "application/x-www-form-urlencoded",
       cookie: session.cookie,
+      origin: SERIOUS_TEACHERS_ORIGIN,
+      referer: applyUrl,
     },
     method: "POST",
     redirect: "manual",
@@ -148,7 +175,7 @@ async function appliedDate(
   for (const page of [0, 1]) {
     const response = await fetch(
       `https://www.seriousteachers.com/te2/seriousteachers_panel/${page}/0/0`,
-      { headers: { cookie: session.cookie } }
+      { headers: { ...browserHeaders, cookie: session.cookie } }
     );
     if (!response.ok) {
       throw new Error(`Private-board verification returned ${response.status}`);

@@ -177,6 +177,7 @@ export function App() {
       await loadJobs();
       toast.success(result.message ?? "Workspace updated");
     } catch (error) {
+      await loadJobs().catch(() => undefined);
       toast.error(error instanceof Error ? error.message : "Request failed");
     } finally {
       setBusy("");

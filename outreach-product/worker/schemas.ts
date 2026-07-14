@@ -22,7 +22,7 @@ export const ImportSchema = z.object({
 export const ReviseSchema = z.object({
   instruction: z.string().min(1).max(1000),
 });
-export const ApproveSchema = z.object({ draftId: z.string().min(1) });
+export const SubmitSchema = z.object({ draftId: z.string().min(1) });
 
 export type JobImport = z.infer<typeof JobImportSchema>;
 

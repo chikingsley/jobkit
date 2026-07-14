@@ -4,19 +4,7 @@ import {
   CircleHelp,
   ExternalLink,
   FileText,
-  Send,
 } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,9 +15,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { curatedJobs, eligibilityNotes } from "@/curated-jobs";
+import { ApplicationAction } from "@/features/jobs/application-action";
 import { compensationDisplay } from "@/features/jobs/compensation";
 import { formatDescription, questionsFor } from "@/features/jobs/content";
 import { humanize } from "@/features/jobs/format";
@@ -243,51 +231,8 @@ export function JobDetail({
             </Button>
           </div>
         </CardContent>
-        <CardFooter className="flex-wrap justify-end gap-2">
-          <AlertDialog>
-            <AlertDialogTrigger
-              disabled={
-                !job.draft || Boolean(busy) || job.draft.status !== "draft"
-              }
-              render={<Button variant="outline" />}
-            >
-              <Check />
-              Review and approve
-            </AlertDialogTrigger>
-            <AlertDialogContent className="max-w-2xl">
-              <AlertDialogHeader>
-                <AlertDialogTitle>Approve this exact message?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Draft version {job.draft?.version}. Approval locks this text
-                  for submission.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <ScrollArea className="max-h-[50svh] rounded-lg border bg-muted/30 p-4">
-                <p className="whitespace-pre-wrap text-sm leading-6">
-                  {job.draft?.message}
-                </p>
-              </ScrollArea>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() =>
-                    void onAction(`/api/jobs/${job.id}/approve`, {
-                      draftId: job.draft?.id,
-                    })
-                  }
-                >
-                  Approve exact message
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <Button
-            disabled={job.status !== "approved" || Boolean(busy)}
-            onClick={() => void onAction(`/api/jobs/${job.id}/submit`)}
-          >
-            <Send />
-            Submit approved application
-          </Button>
+        <CardFooter className="justify-end">
+          <ApplicationAction busy={busy} job={job} onAction={onAction} />
         </CardFooter>
       </Card>
     </div>

@@ -224,7 +224,7 @@ export function WorkspaceHeader({ activeView }: { activeView: WorkspaceView }) {
       <h1 className="font-semibold text-sm">{title}</h1>
       {activeView === "jobs" ? (
         <span className="ml-auto hidden text-muted-foreground text-xs sm:block">
-          Review the facts, edit the message, then approve
+          Review the facts, edit the message, then approve and send
         </span>
       ) : (
         <span className="ml-auto" />

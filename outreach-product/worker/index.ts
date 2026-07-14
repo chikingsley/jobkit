@@ -2,6 +2,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { fallbackDraft, reviseWithModel } from "./drafts";
 import type { AppEnv } from "./env";
+import { recordJobEvent } from "./repositories/job-events";
 import { compensationFromRow, upsertJob } from "./repositories/jobs";
 import {
   readPreferences,
@@ -10,12 +11,12 @@ import {
   writeProfile,
 } from "./repositories/user-settings";
 import {
-  ApproveSchema,
   ImportSchema,
   JobImportSchema,
   ReviseSchema,
+  SubmitSchema,
 } from "./schemas";
-import { submitApplication } from "./seriousteachers";
+import { approveAndSubmitApplication } from "./services/job-submission";
 import {
   fetchExchangeRates,
   searchLocations,
@@ -44,7 +45,7 @@ app.onError((error, c) => {
       path: c.req.path,
     })
   );
-  return c.json({ error: error.message, ok: false }, 500);
+  return c.json({ message: error.message, ok: false }, 500);
 });
 
 app.get("/api/health", (c) => c.json({ ok: true }));
@@ -137,7 +138,7 @@ app.openapi(
         )
           .bind(uid(), job.id, 1, draft.message, draft.summary, timestamp)
           .run();
-        await event(
+        await recordJobEvent(
           c.env.DB,
           job.id,
           "draft_generated",
@@ -323,7 +324,13 @@ app.openapi(
         "UPDATE jobs SET status='review',updated_at=? WHERE id=?"
       ).bind(now(), id),
     ]);
-    await event(c.env.DB, id, "draft_revised", revised.summary, draftId);
+    await recordJobEvent(
+      c.env.DB,
+      id,
+      "draft_revised",
+      revised.summary,
+      draftId
+    );
     return c.json({ message: revised.message, ok: true });
   }
 );
@@ -331,122 +338,45 @@ app.openapi(
 app.openapi(
   createRoute({
     method: "post",
-    path: "/api/jobs/{id}/approve",
+    path: "/api/jobs/{id}/submit",
     request: {
-      body: { content: { "application/json": { schema: ApproveSchema } } },
+      body: { content: { "application/json": { schema: SubmitSchema } } },
       params: z.object({ id: z.string() }),
     },
     responses: {
       200: {
         content: { "application/json": { schema: jsonMessage } },
-        description: "Approved",
+        description: "Application submitted",
       },
       409: {
         content: { "application/json": { schema: jsonMessage } },
-        description: "Draft conflict",
+        description: "Draft or submission conflict",
+      },
+      502: {
+        content: { "application/json": { schema: jsonMessage } },
+        description: "Application board rejected the submission",
       },
     },
   }),
   async (c) => {
     const { id } = c.req.valid("param");
     const { draftId } = c.req.valid("json");
-    const result = await c.env.DB.batch([
-      c.env.DB.prepare(
-        "UPDATE application_drafts SET status='approved',approved_at=? WHERE id=? AND job_id=? AND status='draft'"
-      ).bind(now(), draftId, id),
-      c.env.DB.prepare(
-        "UPDATE jobs SET status='approved',updated_at=? WHERE id=?"
-      ).bind(now(), id),
-    ]);
-    if ((result[0]?.meta.changes ?? 0) !== 1) {
-      return c.json({ message: "Draft was not approvable", ok: false }, 409);
+    const outcome = await approveAndSubmitApplication(c.env, id, draftId);
+    const body = { message: outcome.message, ok: outcome.status === 200 };
+    if (outcome.status === 409) {
+      return c.json(body, 409);
     }
-    await event(c.env.DB, id, "approved", "Exact draft approved", draftId);
-    return c.json({ message: "Approved", ok: true });
+    if (outcome.status === 502) {
+      return c.json(body, 502);
+    }
+    return c.json(body, 200);
   }
 );
-
-app.post("/api/jobs/:id/submit", async (c) => {
-  const id = c.req.param("id");
-  const row = await c.env.DB.prepare(
-    `SELECT j.apply_url,j.status,d.id draft_id,d.message FROM jobs j JOIN application_drafts d ON d.job_id=j.id WHERE j.id=? AND d.status='approved' ORDER BY d.version DESC LIMIT 1`
-  )
-    .bind(id)
-    .first<{
-      apply_url: string;
-      status: string;
-      draft_id: string;
-      message: string;
-    }>();
-  if (row?.status !== "approved") {
-    return c.json(
-      { message: "An exact draft must be approved first", ok: false },
-      409
-    );
-  }
-  await c.env.DB.prepare(
-    "UPDATE jobs SET status='submitting',updated_at=? WHERE id=? AND status='approved'"
-  )
-    .bind(now(), id)
-    .run();
-  try {
-    const appliedDate = await submitApplication(
-      c.env,
-      row.apply_url,
-      row.message
-    );
-    await c.env.DB.batch([
-      c.env.DB.prepare(
-        "UPDATE jobs SET status='applied',updated_at=? WHERE id=?"
-      ).bind(now(), id),
-      c.env.DB.prepare(
-        "UPDATE application_drafts SET status='submitted',submitted_at=? WHERE id=?"
-      ).bind(now(), row.draft_id),
-    ]);
-    await event(
-      c.env.DB,
-      id,
-      "submitted",
-      `Serious Teachers verified last applied on ${appliedDate}`,
-      row.draft_id
-    );
-    return c.json({ message: "Submitted", ok: true });
-  } catch (error) {
-    await c.env.DB.prepare(
-      "UPDATE jobs SET status='failed',updated_at=? WHERE id=?"
-    )
-      .bind(now(), id)
-      .run();
-    await event(
-      c.env.DB,
-      id,
-      "submission_failed",
-      error instanceof Error ? error.message : "Unknown submission error",
-      row.draft_id
-    );
-    throw error;
-  }
-});
 
 app.doc("/openapi.json", {
   info: { title: "JobKit Outreach API", version: "0.1.0" },
   openapi: "3.1.0",
 });
-
-async function event(
-  db: D1Database,
-  jobId: string,
-  type: string,
-  detail: string,
-  draftId?: string
-) {
-  await db
-    .prepare(
-      "INSERT INTO job_events (id,job_id,event_type,draft_id,detail,created_at) VALUES (?,?,?,?,?,?)"
-    )
-    .bind(uid(), jobId, type, draftId ?? null, detail, now())
-    .run();
-}
 
 async function currentJobAndDraft(db: D1Database, id: string) {
   const row = await db
