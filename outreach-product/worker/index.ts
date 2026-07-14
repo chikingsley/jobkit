@@ -1,21 +1,21 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
-import { fallbackDraft, reviseWithModel } from "./drafts";
+import { DraftGenerationError } from "./ai/drafts";
 import type { AppEnv } from "./env";
-import { recordJobEvent } from "./repositories/job-events";
-import { compensationFromRow, upsertJob } from "./repositories/jobs";
+import { compensationFromRow } from "./repositories/jobs";
 import {
   readPreferences,
   readProfile,
   writePreferences,
   writeProfile,
 } from "./repositories/user-settings";
+import { ImportSchema, ReviseSchema, SubmitSchema } from "./schemas";
 import {
-  ImportSchema,
-  JobImportSchema,
-  ReviseSchema,
-  SubmitSchema,
-} from "./schemas";
+  DraftProfileRequiredError,
+  importJobsWithDrafts,
+  regenerateDrafts,
+  reviseJobDraft,
+} from "./services/draft-workflow";
 import { approveAndSubmitApplication } from "./services/job-submission";
 import {
   fetchExchangeRates,
@@ -45,6 +45,12 @@ app.onError((error, c) => {
       path: c.req.path,
     })
   );
+  if (error instanceof DraftGenerationError) {
+    return c.json({ message: error.message, ok: false }, 502);
+  }
+  if (error instanceof DraftProfileRequiredError) {
+    return c.json({ message: error.message, ok: false }, 409);
+  }
   return c.json({ message: error.message, ok: false }, 500);
 });
 
@@ -73,37 +79,7 @@ app.get("/api/locations", async (c) => {
 });
 
 app.post("/api/drafts/regenerate", async (c) => {
-  const rows = await c.env.DB.prepare(
-    "SELECT * FROM jobs WHERE status IN ('new','review')"
-  ).all();
-  let regenerated = 0;
-  for (const row of rows.results) {
-    const job = toJobImport(row);
-    const latest = await c.env.DB.prepare(
-      "SELECT version FROM application_drafts WHERE job_id=? ORDER BY version DESC LIMIT 1"
-    )
-      .bind(job.id)
-      .first<{ version: number }>();
-    const draft = fallbackDraft(job);
-    await c.env.DB.prepare(
-      "INSERT INTO application_drafts (id,job_id,version,message,change_summary,created_at) VALUES (?,?,?,?,?,?)"
-    )
-      .bind(
-        uid(),
-        job.id,
-        (latest?.version ?? 0) + 1,
-        draft.message,
-        draft.summary,
-        now()
-      )
-      .run();
-    await c.env.DB.prepare(
-      "UPDATE jobs SET status='review',updated_at=? WHERE id=?"
-    )
-      .bind(now(), job.id)
-      .run();
-    regenerated += 1;
-  }
+  const regenerated = await regenerateDrafts(c.env);
   return c.json({ message: `Regenerated ${regenerated} drafts`, ok: true });
 });
 
@@ -119,33 +95,15 @@ app.openapi(
         content: { "application/json": { schema: jsonMessage } },
         description: "Imported jobs",
       },
+      409: {
+        content: { "application/json": { schema: jsonMessage } },
+        description: "Profile required",
+      },
     },
   }),
   async (c) => {
     const { jobs } = c.req.valid("json");
-    for (const job of jobs) {
-      const timestamp = now();
-      await upsertJob(c.env.DB, job, timestamp);
-      const existing = await c.env.DB.prepare(
-        "SELECT id FROM application_drafts WHERE job_id=? ORDER BY version DESC LIMIT 1"
-      )
-        .bind(job.id)
-        .first();
-      if (!existing) {
-        const draft = fallbackDraft(job);
-        await c.env.DB.prepare(
-          "INSERT INTO application_drafts (id,job_id,version,message,change_summary,created_at) VALUES (?,?,?,?,?,?)"
-        )
-          .bind(uid(), job.id, 1, draft.message, draft.summary, timestamp)
-          .run();
-        await recordJobEvent(
-          c.env.DB,
-          job.id,
-          "draft_generated",
-          "Automatic tailored draft created"
-        );
-      }
-    }
+    await importJobsWithDrafts(c.env, jobs);
     return c.json({ message: `Imported ${jobs.length} jobs`, ok: true });
   }
 );
@@ -292,45 +250,20 @@ app.openapi(
         content: { "application/json": { schema: jsonMessage } },
         description: "Revised",
       },
+      409: {
+        content: { "application/json": { schema: jsonMessage } },
+        description: "Profile required",
+      },
+      502: {
+        content: { "application/json": { schema: jsonMessage } },
+        description: "Draft model failed",
+      },
     },
   }),
   async (c) => {
     const { id } = c.req.valid("param");
     const { instruction } = c.req.valid("json");
-    const row = await currentJobAndDraft(c.env.DB, id);
-    const revised = await reviseWithModel(
-      c.env,
-      row.job,
-      row.message,
-      instruction
-    );
-    const draftId = uid();
-    await c.env.DB.batch([
-      c.env.DB.prepare(
-        "UPDATE application_drafts SET status='superseded' WHERE job_id=? AND status='draft'"
-      ).bind(id),
-      c.env.DB.prepare(
-        "INSERT INTO application_drafts (id,job_id,version,message,change_summary,revision_instruction,created_at) VALUES (?,?,?,?,?,?,?)"
-      ).bind(
-        draftId,
-        id,
-        row.version + 1,
-        revised.message,
-        revised.summary,
-        instruction,
-        now()
-      ),
-      c.env.DB.prepare(
-        "UPDATE jobs SET status='review',updated_at=? WHERE id=?"
-      ).bind(now(), id),
-    ]);
-    await recordJobEvent(
-      c.env.DB,
-      id,
-      "draft_revised",
-      revised.summary,
-      draftId
-    );
+    const revised = await reviseJobDraft(c.env, id, instruction);
     return c.json({ message: revised.message, ok: true });
   }
 );
@@ -378,33 +311,6 @@ app.doc("/openapi.json", {
   openapi: "3.1.0",
 });
 
-async function currentJobAndDraft(db: D1Database, id: string) {
-  const row = await db
-    .prepare(
-      "SELECT j.*,d.version,d.message FROM jobs j JOIN application_drafts d ON d.job_id=j.id WHERE j.id=? ORDER BY d.version DESC LIMIT 1"
-    )
-    .bind(id)
-    .first<Record<string, unknown>>();
-  if (!row) {
-    throw new Error("Job or draft not found");
-  }
-  const job = JobImportSchema.parse({
-    applyUrl: row.apply_url,
-    board: row.board,
-    company: row.company,
-    country: row.country,
-    description: row.description,
-    employerId: row.employer_id,
-    id: row.id,
-    location: row.location,
-    priority: row.priority,
-    salary: row.salary,
-    sourceUrl: row.source_url,
-    title: row.title,
-  });
-  return { job, message: String(row.message), version: Number(row.version) };
-}
-
 function toReviewJob(row: Record<string, unknown>) {
   return {
     applyUrl: String(row.apply_url),
@@ -431,25 +337,6 @@ function toReviewJob(row: Record<string, unknown>) {
 }
 
 export default app;
-
-function toJobImport(
-  row: Record<string, unknown>
-): z.infer<typeof JobImportSchema> {
-  return JobImportSchema.parse({
-    applyUrl: row.apply_url,
-    board: row.board,
-    company: row.company,
-    country: row.country,
-    description: row.description,
-    employerId: row.employer_id,
-    id: row.id,
-    location: row.location,
-    priority: row.priority,
-    salary: row.salary,
-    sourceUrl: row.source_url,
-    title: row.title,
-  });
-}
 
 function safeFilename(value: string) {
   return value
