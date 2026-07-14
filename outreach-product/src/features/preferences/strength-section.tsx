@@ -161,7 +161,7 @@ function StrengthToggle<Value extends string>({
           key={option.value}
         >
           <RadioGroupItem
-            className="sr-only"
+            className="absolute size-px overflow-hidden opacity-0"
             id={`${groupId}-${option.value}`}
             value={option.value}
           />
