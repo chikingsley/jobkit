@@ -31,7 +31,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { WorkspaceView } from "@/features/workspace/store";
+import type { WorkspaceView } from "@/features/workspace/routes";
 
 const navigation = [
   { icon: BriefcaseBusiness, id: "jobs", label: "Jobs" },

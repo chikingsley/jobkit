@@ -1,11 +1,19 @@
 import {
   lazy,
+  type PropsWithChildren,
   Suspense,
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from "react";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -13,6 +21,11 @@ import { monthlyCompensationUsd } from "@/features/jobs/compensation";
 import { filterJobs, selectVisibleJob } from "@/features/jobs/filters";
 import type { FxData, Job } from "@/features/jobs/types";
 import { JobsWorkspace } from "@/features/jobs/workspace";
+import {
+  type WorkspaceView,
+  workspacePaths,
+  workspaceViewFromPathname,
+} from "@/features/workspace/routes";
 import {
   ViewLoading,
   WorkspaceHeader,
@@ -33,9 +46,18 @@ const ProfileView = lazy(async () => ({
   default: (await import("@/views/profile-view")).ProfileView,
 }));
 
+function WorkspacePage({ children }: PropsWithChildren) {
+  return (
+    <ScrollArea className="min-h-0 flex-1">
+      <Suspense fallback={<ViewLoading />}>{children}</Suspense>
+    </ScrollArea>
+  );
+}
+
 export function App() {
-  const activeView = useWorkspaceStore((state) => state.activeView);
-  const setActiveView = useWorkspaceStore((state) => state.setActiveView);
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const activeView = workspaceViewFromPathname(pathname);
   const countryFilter = useWorkspaceStore((state) => state.countryFilter);
   const setCountryFilter = useWorkspaceStore((state) => state.setCountryFilter);
   const fitFilter = useWorkspaceStore((state) => state.fitFilter);
@@ -52,6 +74,10 @@ export function App() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [preferences, setPreferences] = useState<Preferences | null>(null);
   const [documents, setDocuments] = useState<StoredDocument[]>([]);
+  const setActiveView = useCallback(
+    (view: WorkspaceView) => navigate(workspacePaths[view]),
+    [navigate]
+  );
   const loadJobs = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -169,57 +195,83 @@ export function App() {
       />
       <SidebarInset className="h-svh min-h-0 min-w-0 overflow-hidden">
         <WorkspaceHeader activeView={activeView} />
-        {activeView === "jobs" ? (
-          <JobsWorkspace
-            busy={busy}
-            countries={countries}
-            countryFilter={countryFilter}
-            fitFilter={fitFilter}
-            fx={fx}
-            instruction={instruction}
-            jobs={visibleJobs}
-            matches={matches}
-            onAction={action}
-            onCountryFilter={setCountryFilter}
-            onFitFilter={setFitFilter}
-            onInstruction={setInstruction}
-            onRefresh={loadJobs}
-            onSelect={setSelectedId}
-            onShowExcluded={setShowExcluded}
-            preferences={preferences}
-            profile={profile}
-            refreshing={refreshing}
-            selected={selected}
-            showExcluded={showExcluded}
+        <Routes>
+          <Route
+            element={
+              <JobsWorkspace
+                busy={busy}
+                countries={countries}
+                countryFilter={countryFilter}
+                fitFilter={fitFilter}
+                fx={fx}
+                instruction={instruction}
+                jobs={visibleJobs}
+                matches={matches}
+                onAction={action}
+                onCountryFilter={setCountryFilter}
+                onFitFilter={setFitFilter}
+                onInstruction={setInstruction}
+                onRefresh={loadJobs}
+                onSelect={setSelectedId}
+                onShowExcluded={setShowExcluded}
+                preferences={preferences}
+                profile={profile}
+                refreshing={refreshing}
+                selected={selected}
+                showExcluded={showExcluded}
+              />
+            }
+            path={workspacePaths.jobs}
           />
-        ) : null}
-        {activeView === "jobs" ? null : (
-          <ScrollArea className="min-h-0 flex-1" key={activeView}>
-            <Suspense fallback={<ViewLoading />}>
-              {activeView === "profile" && profile ? (
-                <ProfileView
-                  onSaved={setProfile}
-                  profile={profile}
-                  request={apiRequest}
-                />
-              ) : null}
-              {activeView === "preferences" && preferences ? (
-                <PreferencesView
-                  onSaved={setPreferences}
-                  preferences={preferences}
-                  request={apiRequest}
-                />
-              ) : null}
-              {activeView === "documents" ? (
+          <Route
+            element={
+              <WorkspacePage>
+                {profile ? (
+                  <ProfileView
+                    onSaved={setProfile}
+                    profile={profile}
+                    request={apiRequest}
+                  />
+                ) : (
+                  <ViewLoading />
+                )}
+              </WorkspacePage>
+            }
+            path={workspacePaths.profile}
+          />
+          <Route
+            element={
+              <WorkspacePage>
+                {preferences ? (
+                  <PreferencesView
+                    onSaved={setPreferences}
+                    preferences={preferences}
+                    request={apiRequest}
+                  />
+                ) : (
+                  <ViewLoading />
+                )}
+              </WorkspacePage>
+            }
+            path={workspacePaths.preferences}
+          />
+          <Route
+            element={
+              <WorkspacePage>
                 <DocumentsView
                   documents={documents}
                   onChanged={loadDocuments}
                   request={apiRequest}
                 />
-              ) : null}
-            </Suspense>
-          </ScrollArea>
-        )}
+              </WorkspacePage>
+            }
+            path={workspacePaths.documents}
+          />
+          <Route
+            element={<Navigate replace to={workspacePaths.jobs} />}
+            path="*"
+          />
+        </Routes>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -6,17 +6,15 @@ const initialState = useWorkspaceStore.getInitialState();
 describe("workspace store", () => {
   beforeEach(() => useWorkspaceStore.setState(initialState, true));
 
-  it("keeps transient workspace controls together", () => {
+  it("keeps transient job controls together", () => {
     const state = useWorkspaceStore.getState();
 
-    state.setActiveView("documents");
     state.setCountryFilter("Japan");
     state.setFitFilter("Strong match");
     state.setSelectedJobId("job-1");
     state.setShowExcluded(true);
 
     expect(useWorkspaceStore.getState()).toMatchObject({
-      activeView: "documents",
       countryFilter: "Japan",
       fitFilter: "Strong match",
       selectedJobId: "job-1",
