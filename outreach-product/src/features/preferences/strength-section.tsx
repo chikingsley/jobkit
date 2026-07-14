@@ -11,59 +11,22 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { BenefitStrength, RuleStrength } from "@/profile-types";
 
 const preferenceStrengthOptions: Array<{
-  activeClassName: string;
   label: string;
   value: RuleStrength;
 }> = [
-  {
-    activeClassName:
-      "has-data-checked:border-destructive has-data-checked:bg-destructive/10 has-data-checked:text-destructive",
-    label: "Exclude",
-    value: "exclude",
-  },
-  {
-    activeClassName:
-      "has-data-checked:border-amber-500 has-data-checked:bg-amber-500/10 has-data-checked:text-amber-800 dark:has-data-checked:text-amber-300",
-    label: "Avoid",
-    value: "avoid",
-  },
-  {
-    activeClassName:
-      "has-data-checked:border-foreground/30 has-data-checked:bg-muted has-data-checked:text-foreground",
-    label: "Open",
-    value: "accept",
-  },
-  {
-    activeClassName:
-      "has-data-checked:border-primary has-data-checked:bg-primary/10 has-data-checked:text-primary",
-    label: "Prefer",
-    value: "prefer",
-  },
+  { label: "Exclude", value: "exclude" },
+  { label: "Avoid", value: "avoid" },
+  { label: "Open", value: "accept" },
+  { label: "Prefer", value: "prefer" },
 ];
 
 const benefitStrengthOptions: Array<{
-  activeClassName: string;
   label: string;
   value: BenefitStrength;
 }> = [
-  {
-    activeClassName:
-      "has-data-checked:border-foreground/30 has-data-checked:bg-muted has-data-checked:text-foreground",
-    label: "Optional",
-    value: "accept",
-  },
-  {
-    activeClassName:
-      "has-data-checked:border-primary has-data-checked:bg-primary/10 has-data-checked:text-primary",
-    label: "Preferred",
-    value: "prefer",
-  },
-  {
-    activeClassName:
-      "has-data-checked:border-primary has-data-checked:bg-primary has-data-checked:text-primary-foreground",
-    label: "Required",
-    value: "required",
-  },
+  { label: "Optional", value: "accept" },
+  { label: "Preferred", value: "prefer" },
+  { label: "Required", value: "required" },
 ];
 
 export function PreferenceSection<Key extends string>({
@@ -176,18 +139,14 @@ function StrengthToggle<Value extends string>({
 }: {
   label: string;
   onChange: (value: Value) => void;
-  options: Array<{
-    activeClassName: string;
-    label: string;
-    value: Value;
-  }>;
+  options: Array<{ label: string; value: Value }>;
   value: Value;
 }) {
   const groupId = useId();
   return (
     <RadioGroup
       aria-label={label}
-      className="grid grid-cols-2 gap-1 sm:auto-cols-fr sm:grid-flow-col"
+      className="grid auto-cols-fr grid-flow-col gap-0 overflow-hidden rounded-md border border-input shadow-xs"
       onValueChange={(next) => {
         if (options.some((option) => option.value === next)) {
           onChange(next as Value);
@@ -197,7 +156,7 @@ function StrengthToggle<Value extends string>({
     >
       {options.map((option) => (
         <label
-          className={`flex min-h-9 cursor-pointer items-center justify-center rounded-md border border-input px-2 font-medium text-muted-foreground text-xs transition-colors hover:bg-accent hover:text-accent-foreground ${option.activeClassName}`}
+          className="flex min-h-9 min-w-0 cursor-pointer items-center justify-center border-input border-l px-2 font-medium text-muted-foreground text-xs transition-colors first:border-l-0 hover:bg-muted hover:text-foreground has-focus-visible:z-10 has-data-checked:bg-primary has-data-checked:text-primary-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring has-data-checked:hover:bg-primary/90 has-data-checked:hover:text-primary-foreground"
           htmlFor={`${groupId}-${option.value}`}
           key={option.value}
         >
