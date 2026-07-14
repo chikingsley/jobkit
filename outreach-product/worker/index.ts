@@ -1,8 +1,10 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { ApplicationMessageGenerationError } from "./ai/application-messages";
+import { createAuth } from "./auth";
 import type { AppEnv } from "./env";
 import { compensationFromRow } from "./repositories/jobs";
+import { claimLegacyData } from "./repositories/legacy-data";
 import {
   readPreferences,
   readProfile,
@@ -23,7 +25,16 @@ import {
   searchUniversities,
 } from "./services/lookups";
 
-const app = new OpenAPIHono<{ Bindings: AppEnv }>();
+interface AuthUser {
+  email: string;
+  id: string;
+  name: string;
+}
+
+const app = new OpenAPIHono<{
+  Bindings: AppEnv;
+  Variables: { user: AuthUser };
+}>();
 const jsonMessage = z.object({
   message: z.string().optional(),
   ok: z.boolean(),
@@ -56,6 +67,26 @@ app.onError((error, c) => {
 
 app.get("/api/health", (c) => c.json({ ok: true }));
 
+app.on(["GET", "POST"], "/api/auth/*", (c) =>
+  createAuth(c.env, c.req.raw).handler(c.req.raw)
+);
+
+app.use("/api/*", async (c, next) => {
+  const session = await createAuth(c.env, c.req.raw).api.getSession({
+    headers: c.req.raw.headers,
+  });
+  if (!session) {
+    return c.json({ message: "Authentication required", ok: false }, 401);
+  }
+  c.set("user", {
+    email: session.user.email,
+    id: session.user.id,
+    name: session.user.name,
+  });
+  await claimLegacyData(c.env.DB, session.user.id);
+  await next();
+});
+
 app.get("/api/fx", async (c) => c.json(await fetchExchangeRates()));
 
 app.get("/api/universities", async (c) => {
@@ -79,7 +110,7 @@ app.get("/api/locations", async (c) => {
 });
 
 app.post("/api/drafts/regenerate", async (c) => {
-  const regenerated = await regenerateDrafts(c.env);
+  const regenerated = await regenerateDrafts(c.env, c.get("user").id);
   return c.json({ message: `Regenerated ${regenerated} drafts`, ok: true });
 });
 
@@ -103,21 +134,36 @@ app.openapi(
   }),
   async (c) => {
     const { jobs } = c.req.valid("json");
-    await importJobsWithDrafts(c.env, jobs);
+    await importJobsWithDrafts(c.env, c.get("user").id, jobs);
     return c.json({ message: `Imported ${jobs.length} jobs`, ok: true });
   }
 );
 
 app.get("/api/jobs", async (c) => {
-  const rows =
-    await c.env.DB.prepare(`SELECT j.*,d.id draft_id,d.version,d.message,d.change_summary,d.status draft_status FROM jobs j
-    LEFT JOIN application_drafts d ON d.id=(SELECT id FROM application_drafts WHERE job_id=j.id ORDER BY version DESC LIMIT 1)
-    ORDER BY j.priority DESC, CASE j.status WHEN 'new' THEN 0 WHEN 'review' THEN 1 WHEN 'approved' THEN 2 WHEN 'applied' THEN 4 ELSE 3 END, j.updated_at DESC`).all();
+  const rows = await c.env.DB.prepare(
+    `SELECT j.*,uj.status,uj.priority,
+              d.id draft_id,d.version,d.message,d.change_summary,d.status draft_status
+       FROM user_jobs uj
+       JOIN jobs j ON j.id=uj.job_id
+       LEFT JOIN application_drafts d ON d.id=(
+         SELECT id FROM application_drafts
+         WHERE user_job_id=uj.id ORDER BY version DESC LIMIT 1
+       )
+       WHERE uj.user_id=?
+       ORDER BY uj.priority DESC,
+         CASE uj.status
+           WHEN 'new' THEN 0 WHEN 'review' THEN 1 WHEN 'approved' THEN 2
+           WHEN 'applied' THEN 4 ELSE 3
+         END,
+         uj.updated_at DESC`
+  )
+    .bind(c.get("user").id)
+    .all();
   return c.json({ jobs: rows.results.map(toReviewJob) });
 });
 
 app.get("/api/profile", async (c) => {
-  const result = await readProfile(c.env.DB);
+  const result = await readProfile(c.env.DB, c.get("user").id);
   return c.json({
     profile: result.value,
     updatedAt: result.updatedAt,
@@ -125,12 +171,12 @@ app.get("/api/profile", async (c) => {
 });
 
 app.put("/api/profile", async (c) => {
-  await writeProfile(c.env.DB, await c.req.json());
+  await writeProfile(c.env.DB, c.get("user").id, await c.req.json());
   return c.json({ message: "Profile saved", ok: true });
 });
 
 app.get("/api/preferences", async (c) => {
-  const result = await readPreferences(c.env.DB);
+  const result = await readPreferences(c.env.DB, c.get("user").id);
   return c.json({
     preferences: result.value,
     updatedAt: result.updatedAt,
@@ -138,14 +184,16 @@ app.get("/api/preferences", async (c) => {
 });
 
 app.put("/api/preferences", async (c) => {
-  await writePreferences(c.env.DB, await c.req.json());
+  await writePreferences(c.env.DB, c.get("user").id, await c.req.json());
   return c.json({ message: "Preferences saved", ok: true });
 });
 
 app.get("/api/documents", async (c) => {
   const rows = await c.env.DB.prepare(
-    "SELECT id,category,filename,content_type,size_bytes,is_default,created_at FROM user_documents ORDER BY category,created_at DESC"
-  ).all();
+    "SELECT id,category,filename,content_type,size_bytes,is_default,created_at FROM user_documents WHERE user_id=? ORDER BY category,created_at DESC"
+  )
+    .bind(c.get("user").id)
+    .all();
   return c.json({ documents: rows.results });
 });
 
@@ -179,7 +227,8 @@ app.put("/api/documents", async (c) => {
     return c.json({ message: "File body required", ok: false }, 400);
   }
   const id = uid();
-  const objectKey = `owner/${id}/${filename}`;
+  const userId = c.get("user").id;
+  const objectKey = `users/${userId}/${id}/${filename}`;
   await c.env.DOCUMENTS.put(objectKey, c.req.raw.body, {
     httpMetadata: {
       contentDisposition: `inline; filename="${filename}"`,
@@ -188,9 +237,18 @@ app.put("/api/documents", async (c) => {
   });
   try {
     await c.env.DB.prepare(
-      "INSERT INTO user_documents (id,category,filename,object_key,content_type,size_bytes,created_at) VALUES (?,?,?,?,?,?,?)"
+      "INSERT INTO user_documents (id,user_id,category,filename,object_key,content_type,size_bytes,created_at) VALUES (?,?,?,?,?,?,?,?)"
     )
-      .bind(id, category, filename, objectKey, contentType, length, now())
+      .bind(
+        id,
+        userId,
+        category,
+        filename,
+        objectKey,
+        contentType,
+        length,
+        now()
+      )
       .run();
   } catch (error) {
     await c.env.DOCUMENTS.delete(objectKey);
@@ -201,9 +259,9 @@ app.put("/api/documents", async (c) => {
 
 app.get("/api/documents/:id", async (c) => {
   const row = await c.env.DB.prepare(
-    "SELECT filename,object_key,content_type FROM user_documents WHERE id=?"
+    "SELECT filename,object_key,content_type FROM user_documents WHERE id=? AND user_id=?"
   )
-    .bind(c.req.param("id"))
+    .bind(c.req.param("id"), c.get("user").id)
     .first<{ filename: string; object_key: string; content_type: string }>();
   if (!row) {
     return c.json({ message: "Document not found", ok: false }, 404);
@@ -223,16 +281,16 @@ app.get("/api/documents/:id", async (c) => {
 
 app.delete("/api/documents/:id", async (c) => {
   const row = await c.env.DB.prepare(
-    "SELECT object_key FROM user_documents WHERE id=?"
+    "SELECT object_key FROM user_documents WHERE id=? AND user_id=?"
   )
-    .bind(c.req.param("id"))
+    .bind(c.req.param("id"), c.get("user").id)
     .first<{ object_key: string }>();
   if (!row) {
     return c.json({ message: "Document not found", ok: false }, 404);
   }
   await c.env.DOCUMENTS.delete(row.object_key);
-  await c.env.DB.prepare("DELETE FROM user_documents WHERE id=?")
-    .bind(c.req.param("id"))
+  await c.env.DB.prepare("DELETE FROM user_documents WHERE id=? AND user_id=?")
+    .bind(c.req.param("id"), c.get("user").id)
     .run();
   return c.json({ message: "Document deleted", ok: true });
 });
@@ -263,7 +321,12 @@ app.openapi(
   async (c) => {
     const { id } = c.req.valid("param");
     const { instruction } = c.req.valid("json");
-    const revised = await reviseJobDraft(c.env, id, instruction);
+    const revised = await reviseJobDraft(
+      c.env,
+      c.get("user").id,
+      id,
+      instruction
+    );
     return c.json({ message: revised.message, ok: true });
   }
 );
@@ -294,7 +357,12 @@ app.openapi(
   async (c) => {
     const { id } = c.req.valid("param");
     const { draftId } = c.req.valid("json");
-    const outcome = await approveAndSubmitApplication(c.env, id, draftId);
+    const outcome = await approveAndSubmitApplication(
+      c.env,
+      c.get("user").id,
+      id,
+      draftId
+    );
     const body = { message: outcome.message, ok: outcome.status === 200 };
     if (outcome.status === 409) {
       return c.json(body, 409);

@@ -22,6 +22,7 @@
     ]
   },
   "include": [
+    "auth.config.ts",
     "src",
     "worker",
     "vite.config.ts",

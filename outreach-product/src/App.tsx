@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useCurrentUser } from "@/features/auth/auth-gate";
 import { monthlyCompensationUsd } from "@/features/jobs/compensation";
 import { filterJobs, selectVisibleJob } from "@/features/jobs/filters";
 import type { FxData, Job } from "@/features/jobs/types";
@@ -33,6 +34,7 @@ import {
 } from "@/features/workspace/shell";
 import { useWorkspaceStore } from "@/features/workspace/store";
 import { apiRequest } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 import { evaluateJob } from "@/matching";
 import type { Preferences, Profile, StoredDocument } from "@/profile-types";
 
@@ -55,6 +57,7 @@ function WorkspacePage({ children }: PropsWithChildren) {
 }
 
 export function App() {
+  const currentUser = useCurrentUser();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const activeView = workspaceViewFromPathname(pathname);
@@ -189,8 +192,9 @@ export function App() {
       <WorkspaceSidebar
         activeView={activeView}
         applied={jobs.filter((job) => job.status === "applied").length}
-        email={profile?.email ?? "Private workspace"}
-        name={profile?.preferredName ?? "Simon"}
+        email={currentUser.email}
+        name={currentUser.name}
+        onSignOut={() => authClient.signOut()}
         onViewChange={setActiveView}
         totalJobs={jobs.length}
       />

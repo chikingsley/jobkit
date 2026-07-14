@@ -111,46 +111,19 @@ export const ProfileSchema: z.ZodType<Profile> = z
   .strict();
 
 export const defaultProfile: Profile = {
-  availability: "immediately",
-  citizenship: "United States",
-  credentials: [
-    "240-hour TEFL Certificate",
-    "Arizona Standard Adult Education Certificate",
-    "Arizona Substitute Certificate, PreK-12",
-    "Arizona Subject Matter Expert Certificate, 6-12 Chemistry",
-  ],
-  currentLocation: "Scottsdale, Arizona, United States",
-  education: [
-    {
-      country: "United States",
-      degree: "Bachelor of Science",
-      field: "Chemical Engineering",
-      institution: "West Virginia University",
-      level: "bachelor",
-    },
-  ],
-  email: "chibuzor.ejimofor@gmail.com",
-  experienceLabel: "More than five years",
-  fields: [
-    "English / ESL",
-    "Adult education",
-    "Biology",
-    "Chemistry / science",
-    "College learners",
-    "Children and teenagers",
-    "Online instruction",
-  ],
-  fullName: "Chibuzor Ejimofor",
-  introduction:
-    "TEFL-certified educator with experience teaching adult learners, children, teenagers, and mixed-proficiency classes in the United States and Russia. Background includes biology teaching assistance, youth coaching, technical training, and cross-cultural communication.",
-  languages: [{ language: "English", level: "native" }],
-  phone: "+13042168700",
-  preferredName: "Simon",
-  profileReviewNotes: [
-    "Confirm whether the public experience label should be 5+ or 7+ years.",
-    "Add references only after confirming current contact details and consent.",
-  ],
-  workAuthorization: [
-    { country: "United States", expiresAt: "", status: "citizen" },
-  ],
+  availability: "",
+  citizenship: "",
+  credentials: [],
+  currentLocation: "",
+  education: [],
+  email: "",
+  experienceLabel: "",
+  fields: [],
+  fullName: "",
+  introduction: "",
+  languages: [],
+  phone: "",
+  preferredName: "",
+  profileReviewNotes: [],
+  workAuthorization: [],
 };

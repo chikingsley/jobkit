@@ -8,6 +8,7 @@ interface SubmissionRow {
   draft_status: string;
   job_status: string;
   message: string;
+  user_job_id: string;
 }
 
 export interface SubmissionOutcome {
@@ -20,17 +21,20 @@ const retryableJobStatuses = new Set(["approved", "failed", "review"]);
 
 export async function approveAndSubmitApplication(
   env: AppEnv,
+  userId: string,
   jobId: string,
   draftId: string
 ): Promise<SubmissionOutcome> {
   const row = await env.DB.prepare(
-    `SELECT j.apply_url,j.status job_status,d.id draft_id,d.status draft_status,d.message
-     FROM jobs j
-     JOIN application_drafts d ON d.job_id=j.id
-     WHERE j.id=? AND d.id=?
-       AND d.id=(SELECT id FROM application_drafts WHERE job_id=j.id ORDER BY version DESC LIMIT 1)`
+    `SELECT j.apply_url,uj.id user_job_id,uj.status job_status,
+            d.id draft_id,d.status draft_status,d.message
+     FROM user_jobs uj
+     JOIN jobs j ON j.id=uj.job_id
+     JOIN application_drafts d ON d.user_job_id=uj.id
+     WHERE uj.user_id=? AND j.id=? AND d.id=?
+       AND d.id=(SELECT id FROM application_drafts WHERE user_job_id=uj.id ORDER BY version DESC LIMIT 1)`
   )
-    .bind(jobId, draftId)
+    .bind(userId, jobId, draftId)
     .first<SubmissionRow>();
 
   if (!row) {
@@ -54,8 +58,8 @@ export async function approveAndSubmitApplication(
   const timestamp = new Date().toISOString();
   const approvalStatements = [
     env.DB.prepare(
-      "UPDATE jobs SET status='submitting',updated_at=? WHERE id=? AND status IN ('review','approved','failed')"
-    ).bind(timestamp, jobId),
+      "UPDATE user_jobs SET status='submitting',updated_at=? WHERE id=? AND user_id=? AND status IN ('review','approved','failed')"
+    ).bind(timestamp, row.user_job_id, userId),
     env.DB.prepare(
       "UPDATE application_drafts SET status='approved',approved_at=COALESCE(approved_at,?) WHERE id=? AND status IN ('draft','approved')"
     ).bind(timestamp, draftId),
@@ -64,7 +68,7 @@ export async function approveAndSubmitApplication(
     approvalStatements.push(
       jobEventStatement(
         env.DB,
-        jobId,
+        row.user_job_id,
         "approved",
         "Exact draft approved for submission",
         draftId
@@ -88,9 +92,15 @@ export async function approveAndSubmitApplication(
     const failedAt = new Date().toISOString();
     await env.DB.batch([
       env.DB.prepare(
-        "UPDATE jobs SET status='failed',updated_at=? WHERE id=?"
-      ).bind(failedAt, jobId),
-      jobEventStatement(env.DB, jobId, "submission_failed", message, draftId),
+        "UPDATE user_jobs SET status='failed',updated_at=? WHERE id=? AND user_id=?"
+      ).bind(failedAt, row.user_job_id, userId),
+      jobEventStatement(
+        env.DB,
+        row.user_job_id,
+        "submission_failed",
+        message,
+        draftId
+      ),
     ]);
     return { message, status: 502 };
   }
@@ -99,11 +109,11 @@ export async function approveAndSubmitApplication(
   if (!submission.submittedNow) {
     await env.DB.batch([
       env.DB.prepare(
-        "UPDATE jobs SET status='applied',updated_at=? WHERE id=?"
-      ).bind(submittedAt, jobId),
+        "UPDATE user_jobs SET status='applied',updated_at=? WHERE id=? AND user_id=?"
+      ).bind(submittedAt, row.user_job_id, userId),
       jobEventStatement(
         env.DB,
-        jobId,
+        row.user_job_id,
         "submission_reconciled",
         `Serious Teachers already recorded an application on ${submission.appliedDate}; the current draft was not submitted`
       ),
@@ -116,14 +126,14 @@ export async function approveAndSubmitApplication(
 
   await env.DB.batch([
     env.DB.prepare(
-      "UPDATE jobs SET status='applied',updated_at=? WHERE id=?"
-    ).bind(submittedAt, jobId),
+      "UPDATE user_jobs SET status='applied',updated_at=? WHERE id=? AND user_id=?"
+    ).bind(submittedAt, row.user_job_id, userId),
     env.DB.prepare(
       "UPDATE application_drafts SET status='submitted',submitted_at=? WHERE id=?"
     ).bind(submittedAt, draftId),
     jobEventStatement(
       env.DB,
-      jobId,
+      row.user_job_id,
       "submitted",
       `Serious Teachers verified last applied on ${submission.appliedDate}`,
       draftId

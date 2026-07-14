@@ -11,6 +11,7 @@ export default defineConfig({
     cloudflareTest({
       miniflare: {
         bindings: {
+          BETTER_AUTH_SECRET: "integration-test-secret-at-least-32-characters",
           SERIOUSTEACHERS_EMAIL: "teacher@example.test",
           SERIOUSTEACHERS_PASSWORD: "test-password",
           TEST_MIGRATIONS: migrations,

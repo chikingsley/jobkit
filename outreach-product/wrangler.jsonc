@@ -13,6 +13,7 @@
   "secrets": {
     "required": [
       "MAPBOX_ACCESS_TOKEN",
+      "BETTER_AUTH_SECRET",
       "CEREBRAS_API_KEY",
       "MISTRAL_API_KEY",
       "SERIOUSTEACHERS_EMAIL",

@@ -2,6 +2,7 @@ import {
   BriefcaseBusiness,
   ChevronsUpDown,
   Files,
+  LogOut,
   SlidersHorizontal,
   UserRound,
 } from "lucide-react";
@@ -53,6 +54,7 @@ export function WorkspaceSidebar({
   applied,
   email,
   name,
+  onSignOut,
   onViewChange,
   totalJobs,
 }: {
@@ -60,6 +62,7 @@ export function WorkspaceSidebar({
   applied: number;
   email: string;
   name: string;
+  onSignOut: () => Promise<unknown>;
   onViewChange: (view: WorkspaceView) => void;
   totalJobs: number;
 }) {
@@ -116,6 +119,7 @@ export function WorkspaceSidebar({
         <NavUser
           email={email}
           name={name}
+          onSignOut={onSignOut}
           onViewChange={onViewChange}
           summary={`${applied} of ${totalJobs} applications sent`}
         />
@@ -127,11 +131,13 @@ export function WorkspaceSidebar({
 function NavUser({
   email,
   name,
+  onSignOut,
   onViewChange,
   summary,
 }: {
   email: string;
   name: string;
+  onSignOut: () => Promise<unknown>;
   onViewChange: (view: WorkspaceView) => void;
   summary: string;
 }) {
@@ -200,6 +206,10 @@ function NavUser({
                 <Files /> Documents
               </DropdownMenuItem>
             </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => void onSignOut()}>
+              <LogOut /> Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

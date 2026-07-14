@@ -17,7 +17,6 @@ import {
   WorkAuthorizationEntrySchema,
 } from "../../src/features/profile/schema";
 
-const OWNER_ID = "owner";
 const legacyRuleStrength = z.enum(["prefer", "accept", "avoid", "exclude"]);
 const legacyBenefitStrength = z.enum([
   "required",
@@ -74,13 +73,14 @@ interface VersionedValue<Value> {
 }
 
 export async function readProfile(
-  db: D1Database
+  db: D1Database,
+  userId: string
 ): Promise<VersionedValue<Profile>> {
   const row = await db
     .prepare(
-      "SELECT profile_json AS payload,schema_version,updated_at FROM user_profiles WHERE id=?"
+      "SELECT profile_json AS payload,schema_version,updated_at FROM user_profiles WHERE user_id=?"
     )
-    .bind(OWNER_ID)
+    .bind(userId)
     .first<VersionedRow>();
   if (!row) {
     return { updatedAt: null, value: defaultProfile };
@@ -99,36 +99,47 @@ export async function readProfile(
   const updatedAt = new Date().toISOString();
   const result = await db
     .prepare(
-      "UPDATE user_profiles SET profile_json=?,schema_version=?,updated_at=? WHERE id=? AND schema_version=1"
+      "UPDATE user_profiles SET profile_json=?,schema_version=?,updated_at=? WHERE user_id=? AND schema_version=1"
     )
-    .bind(JSON.stringify(profile), PROFILE_SCHEMA_VERSION, updatedAt, OWNER_ID)
+    .bind(JSON.stringify(profile), PROFILE_SCHEMA_VERSION, updatedAt, userId)
     .run();
   if ((result.meta.changes ?? 0) === 0) {
-    return readProfile(db);
+    return readProfile(db, userId);
   }
   return { updatedAt, value: profile };
 }
 
-export async function writeProfile(db: D1Database, input: unknown) {
+export async function writeProfile(
+  db: D1Database,
+  userId: string,
+  input: unknown
+) {
   const profile = ProfileSchema.parse(input);
   const updatedAt = new Date().toISOString();
   await db
     .prepare(
-      "INSERT INTO user_profiles (id,profile_json,updated_at,schema_version) VALUES (?,?,?,?) ON CONFLICT(id) DO UPDATE SET profile_json=excluded.profile_json,updated_at=excluded.updated_at,schema_version=excluded.schema_version"
+      "INSERT INTO user_profiles (id,user_id,profile_json,updated_at,schema_version) VALUES (?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET profile_json=excluded.profile_json,updated_at=excluded.updated_at,schema_version=excluded.schema_version"
     )
-    .bind(OWNER_ID, JSON.stringify(profile), updatedAt, PROFILE_SCHEMA_VERSION)
+    .bind(
+      crypto.randomUUID(),
+      userId,
+      JSON.stringify(profile),
+      updatedAt,
+      PROFILE_SCHEMA_VERSION
+    )
     .run();
   return { updatedAt, value: profile };
 }
 
 export async function readPreferences(
-  db: D1Database
+  db: D1Database,
+  userId: string
 ): Promise<VersionedValue<Preferences>> {
   const row = await db
     .prepare(
-      "SELECT preferences_json AS payload,schema_version,updated_at FROM user_preferences WHERE id=?"
+      "SELECT preferences_json AS payload,schema_version,updated_at FROM user_preferences WHERE user_id=?"
     )
-    .bind(OWNER_ID)
+    .bind(userId)
     .first<VersionedRow>();
   if (!row) {
     return { updatedAt: null, value: defaultPreferences };
@@ -149,30 +160,35 @@ export async function readPreferences(
   const updatedAt = new Date().toISOString();
   const result = await db
     .prepare(
-      "UPDATE user_preferences SET preferences_json=?,schema_version=?,updated_at=? WHERE id=? AND schema_version=1"
+      "UPDATE user_preferences SET preferences_json=?,schema_version=?,updated_at=? WHERE user_id=? AND schema_version=1"
     )
     .bind(
       JSON.stringify(preferences),
       PREFERENCES_SCHEMA_VERSION,
       updatedAt,
-      OWNER_ID
+      userId
     )
     .run();
   if ((result.meta.changes ?? 0) === 0) {
-    return readPreferences(db);
+    return readPreferences(db, userId);
   }
   return { updatedAt, value: preferences };
 }
 
-export async function writePreferences(db: D1Database, input: unknown) {
+export async function writePreferences(
+  db: D1Database,
+  userId: string,
+  input: unknown
+) {
   const preferences = PreferencesSchema.parse(input);
   const updatedAt = new Date().toISOString();
   await db
     .prepare(
-      "INSERT INTO user_preferences (id,preferences_json,updated_at,schema_version) VALUES (?,?,?,?) ON CONFLICT(id) DO UPDATE SET preferences_json=excluded.preferences_json,updated_at=excluded.updated_at,schema_version=excluded.schema_version"
+      "INSERT INTO user_preferences (id,user_id,preferences_json,updated_at,schema_version) VALUES (?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET preferences_json=excluded.preferences_json,updated_at=excluded.updated_at,schema_version=excluded.schema_version"
     )
     .bind(
-      OWNER_ID,
+      crypto.randomUUID(),
+      userId,
       JSON.stringify(preferences),
       updatedAt,
       PREFERENCES_SCHEMA_VERSION

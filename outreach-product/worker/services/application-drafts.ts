@@ -6,36 +6,45 @@ import {
 import type { AppEnv } from "../env";
 import { readApplicationMessageModel } from "../repositories/ai-model-settings";
 import { recordJobEvent } from "../repositories/job-events";
-import { upsertJob } from "../repositories/jobs";
+import { upsertJob, upsertUserJob } from "../repositories/jobs";
 import { readProfile } from "../repositories/user-settings";
 import { type JobImport, JobImportSchema } from "../schemas";
 
 export class DraftProfileRequiredError extends Error {}
 
-export async function regenerateDrafts(env: AppEnv): Promise<number> {
+export async function regenerateDrafts(
+  env: AppEnv,
+  userId: string
+): Promise<number> {
   const [model, profile] = await Promise.all([
     readApplicationMessageModel(env.DB),
-    savedProfile(env.DB),
+    savedProfile(env.DB, userId),
   ]);
   const rows = await env.DB.prepare(
-    "SELECT * FROM jobs WHERE status IN ('new','review')"
-  ).all();
+    `SELECT j.*,uj.id user_job_id,uj.priority
+       FROM user_jobs uj
+       JOIN jobs j ON j.id=uj.job_id
+       WHERE uj.user_id=? AND uj.status IN ('new','review')`
+  )
+    .bind(userId)
+    .all();
   let regenerated = 0;
   for (const row of rows.results) {
     const job = toJobImport(row);
+    const userJobId = String(row.user_job_id);
     const latest = await env.DB.prepare(
-      "SELECT version FROM application_drafts WHERE job_id=? ORDER BY version DESC LIMIT 1"
+      "SELECT version FROM application_drafts WHERE user_job_id=? ORDER BY version DESC LIMIT 1"
     )
-      .bind(job.id)
+      .bind(userJobId)
       .first<{ version: number }>();
     const draft = await generateApplicationMessage(env, model, job, profile);
     const timestamp = new Date().toISOString();
     await env.DB.batch([
       env.DB.prepare(
-        "INSERT INTO application_drafts (id,job_id,version,message,change_summary,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?)"
+        "INSERT INTO application_drafts (id,user_job_id,version,message,change_summary,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?)"
       ).bind(
         crypto.randomUUID(),
-        job.id,
+        userJobId,
         (latest?.version ?? 0) + 1,
         draft.message,
         draft.summary,
@@ -44,8 +53,8 @@ export async function regenerateDrafts(env: AppEnv): Promise<number> {
         timestamp
       ),
       env.DB.prepare(
-        "UPDATE jobs SET status='review',updated_at=? WHERE id=?"
-      ).bind(timestamp, job.id),
+        "UPDATE user_jobs SET status='review',updated_at=? WHERE id=? AND user_id=?"
+      ).bind(timestamp, userJobId, userId),
     ]);
     regenerated += 1;
   }
@@ -54,30 +63,38 @@ export async function regenerateDrafts(env: AppEnv): Promise<number> {
 
 export async function importJobsWithDrafts(
   env: AppEnv,
+  userId: string,
   jobs: JobImport[]
 ): Promise<void> {
   const [model, profile] = await Promise.all([
     readApplicationMessageModel(env.DB),
-    savedProfile(env.DB),
+    savedProfile(env.DB, userId),
   ]);
   for (const job of jobs) {
     const timestamp = new Date().toISOString();
     await upsertJob(env.DB, job, timestamp);
+    const userJobId = await upsertUserJob(
+      env.DB,
+      userId,
+      job.id,
+      job.priority,
+      timestamp
+    );
     const existing = await env.DB.prepare(
-      "SELECT id FROM application_drafts WHERE job_id=? ORDER BY version DESC LIMIT 1"
+      "SELECT id FROM application_drafts WHERE user_job_id=? ORDER BY version DESC LIMIT 1"
     )
-      .bind(job.id)
+      .bind(userJobId)
       .first();
     if (existing) {
       continue;
     }
     const draft = await generateApplicationMessage(env, model, job, profile);
     await env.DB.prepare(
-      "INSERT INTO application_drafts (id,job_id,version,message,change_summary,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?)"
+      "INSERT INTO application_drafts (id,user_job_id,version,message,change_summary,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?)"
     )
       .bind(
         crypto.randomUUID(),
-        job.id,
+        userJobId,
         1,
         draft.message,
         draft.summary,
@@ -88,7 +105,7 @@ export async function importJobsWithDrafts(
       .run();
     await recordJobEvent(
       env.DB,
-      job.id,
+      userJobId,
       "draft_generated",
       `Automatic tailored draft created with ${draft.provider}/${draft.modelId}`
     );
@@ -97,13 +114,14 @@ export async function importJobsWithDrafts(
 
 export async function reviseJobDraft(
   env: AppEnv,
+  userId: string,
   jobId: string,
   instruction: string
 ) {
   const [model, profile, row] = await Promise.all([
     readApplicationMessageModel(env.DB),
-    savedProfile(env.DB),
-    currentJobAndDraft(env.DB, jobId),
+    savedProfile(env.DB, userId),
+    currentJobAndDraft(env.DB, userId, jobId),
   ]);
   const revised = await reviseApplicationMessage(
     env,
@@ -117,13 +135,13 @@ export async function reviseJobDraft(
   const timestamp = new Date().toISOString();
   await env.DB.batch([
     env.DB.prepare(
-      "UPDATE application_drafts SET status='superseded' WHERE job_id=? AND status='draft'"
-    ).bind(jobId),
+      "UPDATE application_drafts SET status='superseded' WHERE user_job_id=? AND status='draft'"
+    ).bind(row.userJobId),
     env.DB.prepare(
-      "INSERT INTO application_drafts (id,job_id,version,message,change_summary,revision_instruction,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?,?)"
+      "INSERT INTO application_drafts (id,user_job_id,version,message,change_summary,revision_instruction,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?,?)"
     ).bind(
       draftId,
-      jobId,
+      row.userJobId,
       row.version + 1,
       revised.message,
       revised.summary,
@@ -133,12 +151,12 @@ export async function reviseJobDraft(
       timestamp
     ),
     env.DB.prepare(
-      "UPDATE jobs SET status='review',updated_at=? WHERE id=?"
-    ).bind(timestamp, jobId),
+      "UPDATE user_jobs SET status='review',updated_at=? WHERE id=? AND user_id=?"
+    ).bind(timestamp, row.userJobId, userId),
   ]);
   await recordJobEvent(
     env.DB,
-    jobId,
+    row.userJobId,
     "draft_revised",
     revised.summary,
     draftId
@@ -146,12 +164,21 @@ export async function reviseJobDraft(
   return revised;
 }
 
-async function currentJobAndDraft(db: D1Database, jobId: string) {
+async function currentJobAndDraft(
+  db: D1Database,
+  userId: string,
+  jobId: string
+) {
   const row = await db
     .prepare(
-      "SELECT j.*,d.version,d.message FROM jobs j JOIN application_drafts d ON d.job_id=j.id WHERE j.id=? ORDER BY d.version DESC LIMIT 1"
+      `SELECT j.*,uj.id user_job_id,uj.priority,d.version,d.message
+       FROM user_jobs uj
+       JOIN jobs j ON j.id=uj.job_id
+       JOIN application_drafts d ON d.user_job_id=uj.id
+       WHERE uj.user_id=? AND j.id=?
+       ORDER BY d.version DESC LIMIT 1`
     )
-    .bind(jobId)
+    .bind(userId, jobId)
     .first<Record<string, unknown>>();
   if (!row) {
     throw new Error("Job or draft not found");
@@ -159,12 +186,13 @@ async function currentJobAndDraft(db: D1Database, jobId: string) {
   return {
     job: toJobImport(row),
     message: String(row.message),
+    userJobId: String(row.user_job_id),
     version: Number(row.version),
   };
 }
 
-async function savedProfile(db: D1Database): Promise<Profile> {
-  const profile = await readProfile(db);
+async function savedProfile(db: D1Database, userId: string): Promise<Profile> {
+  const profile = await readProfile(db, userId);
   if (!profile.updatedAt) {
     throw new DraftProfileRequiredError(
       "Save a profile before generating or revising drafts"

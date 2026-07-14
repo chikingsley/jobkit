@@ -4,7 +4,7 @@ export type ApiRequest = (
 ) => Promise<Response>;
 
 export const apiRequest: ApiRequest = async (path, init) => {
-  const response = await fetch(path, init);
+  const response = await fetch(path, { credentials: "same-origin", ...init });
   if (response.ok) {
     return response;
   }

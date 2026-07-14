@@ -1,6 +1,7 @@
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createAuthenticatedUser } from "./auth";
 
 interface TestEnv extends Env {
   TEST_MIGRATIONS: D1Migration[];
@@ -13,6 +14,7 @@ interface SeedOptions {
   employerId: string;
   jobId: string;
   jobStatus?: "failed" | "review";
+  userId: string;
 }
 
 async function seedSubmission({
@@ -20,13 +22,15 @@ async function seedSubmission({
   employerId,
   jobId,
   jobStatus = "review",
+  userId,
 }: SeedOptions) {
   const timestamp = "2026-07-14T00:00:00.000Z";
+  const userJobId = `user-job-${jobId}`;
   await env.DB.batch([
     env.DB.prepare(
       `INSERT INTO jobs
-       (id,title,company,country,apply_url,employer_id,status,first_seen_at,updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?)`
+       (id,title,company,country,apply_url,employer_id,first_seen_at,updated_at)
+       VALUES (?,?,?,?,?,?,?,?)`
     ).bind(
       jobId,
       "Test teaching role",
@@ -34,17 +38,21 @@ async function seedSubmission({
       "Poland",
       `https://www.seriousteachers.com/te2/respond/${jobId}/${employerId}`,
       employerId,
-      jobStatus,
       timestamp,
       timestamp
     ),
     env.DB.prepare(
+      `INSERT INTO user_jobs
+       (id,user_id,job_id,status,created_at,updated_at)
+       VALUES (?,?,?,?,?,?)`
+    ).bind(userJobId, userId, jobId, jobStatus, timestamp, timestamp),
+    env.DB.prepare(
       `INSERT INTO application_drafts
-       (id,job_id,version,message,status,created_at,approved_at)
+       (id,user_job_id,version,message,status,created_at,approved_at)
        VALUES (?,?,?,?,?,?,?)`
     ).bind(
       `draft-${jobId}`,
-      jobId,
+      userJobId,
       1,
       "A precise test application.",
       draftStatus,
@@ -125,12 +133,12 @@ function mockSeriousTeachers({
   };
 }
 
-function submit(jobId: string) {
+function submit(jobId: string, cookie: string) {
   return exports.default.fetch(
     `https://outreach.test/api/jobs/${jobId}/submit`,
     {
       body: JSON.stringify({ draftId: `draft-${jobId}` }),
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", cookie },
       method: "POST",
     }
   );
@@ -143,10 +151,13 @@ describe("application submission", () => {
   it("approves, submits, and verifies through one request", async () => {
     const jobId = "900001";
     const employerId = "800001";
-    await seedSubmission({ employerId, jobId });
+    const { cookie, userId } = await createAuthenticatedUser(
+      "submission-one@example.test"
+    );
+    await seedSubmission({ employerId, jobId, userId });
     const board = mockSeriousTeachers({ employerId, jobId });
 
-    const response = await submit(jobId);
+    const response = await submit(jobId, cookie);
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
@@ -159,8 +170,10 @@ describe("application submission", () => {
     ).toBe(true);
     expect(
       await env.DB.prepare(
-        `SELECT j.status job_status,d.status draft_status,d.submitted_at
-         FROM jobs j JOIN application_drafts d ON d.job_id=j.id WHERE j.id=?`
+        `SELECT uj.status job_status,d.status draft_status,d.submitted_at
+         FROM user_jobs uj
+         JOIN application_drafts d ON d.user_job_id=uj.id
+         WHERE uj.job_id=?`
       )
         .bind(jobId)
         .first()
@@ -172,13 +185,16 @@ describe("application submission", () => {
 
   it("keeps a failed submission retryable and returns the real error", async () => {
     const jobId = "900002";
-    await seedSubmission({ employerId: "800002", jobId });
+    const { cookie, userId } = await createAuthenticatedUser(
+      "submission-two@example.test"
+    );
+    await seedSubmission({ employerId: "800002", jobId, userId });
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response("Blocked", { status: 403 }))
     );
 
-    const response = await submit(jobId);
+    const response = await submit(jobId, cookie);
 
     expect(response.status).toBe(502);
     expect(await response.json()).toEqual({
@@ -187,8 +203,10 @@ describe("application submission", () => {
     });
     expect(
       await env.DB.prepare(
-        `SELECT j.status job_status,d.status draft_status
-         FROM jobs j JOIN application_drafts d ON d.job_id=j.id WHERE j.id=?`
+        `SELECT uj.status job_status,d.status draft_status
+         FROM user_jobs uj
+         JOIN application_drafts d ON d.user_job_id=uj.id
+         WHERE uj.job_id=?`
       )
         .bind(jobId)
         .first()
@@ -198,11 +216,15 @@ describe("application submission", () => {
   it("reconciles a pre-existing board application without claiming this draft was sent", async () => {
     const jobId = "900003";
     const employerId = "800003";
+    const { cookie, userId } = await createAuthenticatedUser(
+      "submission-three@example.test"
+    );
     await seedSubmission({
       draftStatus: "approved",
       employerId,
       jobId,
       jobStatus: "failed",
+      userId,
     });
     const board = mockSeriousTeachers({
       appliedDate: "13 July 2026",
@@ -210,14 +232,16 @@ describe("application submission", () => {
       jobId,
     });
 
-    const response = await submit(jobId);
+    const response = await submit(jobId, cookie);
 
     expect(response.status).toBe(200);
     expect(board.submissionPostCount()).toBe(0);
     expect(
       await env.DB.prepare(
-        `SELECT j.status job_status,d.status draft_status,d.submitted_at
-         FROM jobs j JOIN application_drafts d ON d.job_id=j.id WHERE j.id=?`
+        `SELECT uj.status job_status,d.status draft_status,d.submitted_at
+         FROM user_jobs uj
+         JOIN application_drafts d ON d.user_job_id=uj.id
+         WHERE uj.job_id=?`
       )
         .bind(jobId)
         .first()

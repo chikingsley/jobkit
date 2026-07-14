@@ -15,8 +15,8 @@ export async function upsertJob(
         compensation_display,compensation_amount_min,compensation_amount_max,
         compensation_currency,compensation_period,compensation_qualifier,
         compensation_source,compensation_confidence,compensation_notes_json,
-        description,source_url,apply_url,employer_id,status,priority,first_seen_at,updated_at
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'new',?,?,?)
+        description,source_url,apply_url,employer_id,first_seen_at,updated_at
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       ON CONFLICT(id) DO UPDATE SET
         title=excluded.title,
         company=excluded.company,
@@ -36,7 +36,6 @@ export async function upsertJob(
         source_url=excluded.source_url,
         apply_url=excluded.apply_url,
         employer_id=excluded.employer_id,
-        priority=excluded.priority,
         updated_at=excluded.updated_at`
     )
     .bind(
@@ -60,11 +59,35 @@ export async function upsertJob(
       job.sourceUrl,
       job.applyUrl,
       job.employerId,
-      job.priority,
       timestamp,
       timestamp
     )
     .run();
+}
+
+export async function upsertUserJob(
+  db: D1Database,
+  userId: string,
+  jobId: string,
+  priority: number,
+  timestamp: string
+): Promise<string> {
+  const row = await db
+    .prepare(
+      `INSERT INTO user_jobs
+        (id,user_id,job_id,status,priority,created_at,updated_at)
+       VALUES (?,?,?,'new',?,?,?)
+       ON CONFLICT(user_id,job_id) DO UPDATE SET
+         priority=excluded.priority,
+         updated_at=excluded.updated_at
+       RETURNING id`
+    )
+    .bind(crypto.randomUUID(), userId, jobId, priority, timestamp, timestamp)
+    .first<{ id: string }>();
+  if (!row) {
+    throw new Error("User job could not be saved");
+  }
+  return row.id;
 }
 
 export function compensationFromRow(
