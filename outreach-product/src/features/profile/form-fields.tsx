@@ -23,13 +23,15 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { commonLanguageOptions, countryOptions } from "@/form-options";
-import {
-  type LanguageSearchEntry,
-  loadLanguageEntries,
-  searchLanguageNames,
-} from "@/language-search";
+import { countryOptions, languageOptions } from "@/form-options";
 import type { ApiRequest } from "@/lib/api";
+
+function normalizeSearchText(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("en");
+}
 
 export function TextField({
   className,
@@ -117,37 +119,22 @@ export function LanguageField({
   value: string;
 }) {
   const [query, setQuery] = useState(value);
-  const [entries, setEntries] = useState<LanguageSearchEntry[] | null>(null);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => setQuery(value), [value]);
 
   const items = useMemo(() => {
     const trimmed = query.trim();
     if (!trimmed) {
-      return commonLanguageOptions;
+      return languageOptions;
     }
-    const matches = entries
-      ? searchLanguageNames(entries, trimmed)
-      : commonLanguageOptions.filter((name) =>
-          name.toLocaleLowerCase("en").includes(trimmed.toLocaleLowerCase("en"))
-        );
-    return matches.some(
-      (name) => name.toLocaleLowerCase("en") === trimmed.toLocaleLowerCase("en")
-    )
+    const normalizedQuery = normalizeSearchText(trimmed);
+    const matches = languageOptions.filter((name) =>
+      normalizeSearchText(name).includes(normalizedQuery)
+    );
+    return matches.some((name) => normalizeSearchText(name) === normalizedQuery)
       ? matches
       : [trimmed, ...matches].slice(0, 50);
-  }, [entries, query]);
-
-  const ensureLanguages = () => {
-    if (entries || loading) {
-      return;
-    }
-    setLoading(true);
-    void loadLanguageEntries()
-      .then(setEntries)
-      .finally(() => setLoading(false));
-  };
+  }, [query]);
 
   return (
     <Field className={className}>
@@ -156,14 +143,8 @@ export function LanguageField({
         inputValue={query}
         items={items}
         onInputValueChange={(next) => {
-          ensureLanguages();
           setQuery(next);
           onChange(next);
-        }}
-        onOpenChange={(open) => {
-          if (open) {
-            ensureLanguages();
-          }
         }}
         onValueChange={(next) => {
           if (next) {
@@ -176,7 +157,7 @@ export function LanguageField({
       >
         <ComboboxInput
           aria-label={label}
-          placeholder="Search languages"
+          placeholder="Search or type a language"
           showClear
         />
         <ComboboxContent>
@@ -192,9 +173,6 @@ export function LanguageField({
           </ComboboxList>
         </ComboboxContent>
       </Combobox>
-      {loading ? (
-        <FieldDescription>Loading language names…</FieldDescription>
-      ) : null}
     </Field>
   );
 }
