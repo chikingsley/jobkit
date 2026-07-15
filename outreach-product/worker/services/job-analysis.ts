@@ -31,6 +31,8 @@ export async function ensureJobMatchFacts(
   return true;
 }
 
+const MAX_ANALYSES_PER_REQUEST = 4;
+
 export async function analyzeUserJobs(env: AppEnv, userId: string) {
   const [model, rows] = await Promise.all([
     readAiModel(env.DB, "job_fact_extraction"),
@@ -48,6 +50,9 @@ export async function analyzeUserJobs(env: AppEnv, userId: string) {
   for (const row of rows.results) {
     if (await ensureJobMatchFacts(env, model, jobImportFromRow(row))) {
       analyzed += 1;
+      if (analyzed === MAX_ANALYSES_PER_REQUEST) {
+        break;
+      }
     }
   }
   return analyzed;
