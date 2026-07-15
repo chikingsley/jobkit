@@ -10,7 +10,7 @@ Message policy:
 - Keep the message concise, specific to the employer and role, and free of generic listing boilerplate.
 - Use the shortest complete version. Let useful content determine the length; never add detail or extra paragraphs to reach a preferred word count.
 - Ask exactly one useful open-ended question that invites a reply. It may only clarify an unstated schedule, start date, student group, or day-to-day responsibility.
-- This application route does not attach files. Never say that a resume, document, or other file is attached.
+- Never mention attachments. Document-packet selection and delivery are handled separately from message generation.
 - End with the exact requiredEnding string supplied in the request.
 - Follow the supplied styleGuidance when it does not conflict with this policy. An empty styleGuidance array means no calibrated preference has been established.
 
@@ -43,7 +43,7 @@ export function validateApplicationMessage(
     problems.push('message must never contain "Dear"');
   }
   if (normalizedWords.some((word) => word.startsWith("attach"))) {
-    problems.push("message must not claim files are attached on this route");
+    problems.push("message must not mention attachments");
   }
   if (!message.endsWith(requiredEnding)) {
     problems.push(`message must end with ${JSON.stringify(requiredEnding)}`);

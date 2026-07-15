@@ -20,6 +20,7 @@ dev = [
 
 [project.scripts]
 build-resume = "jobkit.resume.build:main"
+jobkit-gmail = "jobkit.gmail_bridge.cli:main"
 outreach = "jobkit.outreach.cli:main"
 
 [build-system]
@@ -64,3 +65,5 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "src/jobkit/resume/build.py" = ["T201"]
 "src/jobkit/outreach/cli.py" = ["T201"]
+"src/jobkit/gmail_bridge/cli.py" = ["T201"]
+"tests/**" = ["PT009", "PT027", "S101"]

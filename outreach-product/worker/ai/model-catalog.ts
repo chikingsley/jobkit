@@ -64,7 +64,7 @@ export const DEFAULT_AI_MODELS = {
     provider: "cerebras",
   },
   job_fact_extraction: {
-    modelId: "gpt-oss-120b",
+    modelId: "gemma-4-31b",
     provider: "cerebras",
   },
   profile_extraction: {

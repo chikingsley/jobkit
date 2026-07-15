@@ -26,10 +26,15 @@ export async function approveAndSubmitApplication(
   draftId: string
 ): Promise<SubmissionOutcome> {
   const row = await env.DB.prepare(
-    `SELECT j.apply_url,uj.id user_job_id,uj.status job_status,
+    `SELECT ar.destination apply_url,uj.id user_job_id,uj.status job_status,
             d.id draft_id,d.status draft_status,d.message
      FROM user_jobs uj
      JOIN jobs j ON j.id=uj.job_id
+     JOIN application_routes ar ON ar.id=(
+       SELECT id FROM application_routes
+       WHERE job_id=j.id AND kind='board_form' AND status='active'
+       ORDER BY last_verified_at DESC,updated_at DESC LIMIT 1
+     )
      JOIN application_drafts d ON d.user_job_id=uj.id
      WHERE uj.user_id=? AND j.id=? AND d.id=?
        AND d.id=(SELECT id FROM application_drafts WHERE user_job_id=uj.id ORDER BY version DESC LIMIT 1)`

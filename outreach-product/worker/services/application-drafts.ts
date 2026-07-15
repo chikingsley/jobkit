@@ -8,6 +8,7 @@ import {
   readAiModel,
   readApplicationMessageModel,
 } from "../repositories/ai-model-settings";
+import { upsertApplicationRoutes } from "../repositories/application-routes";
 import {
   copyPacketSnapshotStatements,
   defaultPacketSnapshotStatements,
@@ -17,7 +18,7 @@ import { upsertJob, upsertUserJob } from "../repositories/jobs";
 import { readMessageStyleGuidance } from "../repositories/message-style";
 import { readProfile } from "../repositories/user-settings";
 import { type JobImport, JobImportSchema } from "../schemas";
-import { ensureJobMatchFacts } from "./job-analysis";
+import { ensureJobMatchFactsForImport } from "./job-analysis";
 
 export class DraftProfileRequiredError extends Error {}
 
@@ -102,6 +103,7 @@ export async function importJobsWithDrafts(
   for (const job of jobs) {
     const timestamp = new Date().toISOString();
     await upsertJob(env.DB, job, timestamp);
+    await upsertApplicationRoutes(env.DB, job, timestamp);
     const userJobId = await upsertUserJob(
       env.DB,
       userId,
@@ -115,12 +117,12 @@ export async function importJobsWithDrafts(
       .bind(userJobId)
       .first();
     if (existing) {
-      await ensureJobMatchFacts(env, factsModel, job);
+      await ensureJobMatchFactsForImport(env, factsModel, job);
       continue;
     }
     const [draft] = await Promise.all([
       generateApplicationMessage(env, model, job, profile, styleGuidance),
-      ensureJobMatchFacts(env, factsModel, job),
+      ensureJobMatchFactsForImport(env, factsModel, job),
     ]);
     const draftId = crypto.randomUUID();
     const snapshotStatements = await defaultPacketSnapshotStatements(

@@ -12,7 +12,18 @@ export function registerJobRoutes(app: JobKitApp) {
     const rows = await c.env.DB.prepare(
       `SELECT j.*,uj.status,uj.priority,
                 mf.facts_json,mf.schema_version match_facts_schema_version,
-                d.id draft_id,d.version,d.message,d.change_summary,d.status draft_status
+                d.id draft_id,d.version,d.message,d.change_summary,d.status draft_status,
+                COALESCE((
+                  SELECT json_group_array(json_object(
+                    'id',ar.id,
+                    'kind',ar.kind,
+                    'destination',ar.destination,
+                    'status',ar.status,
+                    'lastVerifiedAt',ar.last_verified_at
+                  ))
+                  FROM application_routes ar
+                  WHERE ar.job_id=j.id
+                ),'[]') application_routes_json
          FROM user_jobs uj
          JOIN jobs j ON j.id=uj.job_id
          LEFT JOIN job_match_facts mf ON mf.job_id=j.id
@@ -66,6 +77,9 @@ export function registerJobRoutes(app: JobKitApp) {
 
 function toReviewJob(row: Record<string, unknown>) {
   return {
+    applicationRoutes: JSON.parse(
+      String(row.application_routes_json)
+    ) as unknown,
     applyUrl: String(row.apply_url),
     board: String(row.board),
     company: String(row.company),

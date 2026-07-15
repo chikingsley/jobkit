@@ -1,5 +1,9 @@
 import { JOB_MATCH_FACTS_SCHEMA_VERSION } from "../../src/features/matching/version";
-import { extractJobMatchFacts, jobSourceHash } from "../ai/job-fact-extraction";
+import {
+  extractJobMatchFacts,
+  JobFactExtractionError,
+  jobSourceHash,
+} from "../ai/job-fact-extraction";
 import type { AiModelSelection } from "../ai/model-catalog";
 import type { AppEnv } from "../env";
 import { readAiModel } from "../repositories/ai-model-settings";
@@ -29,6 +33,23 @@ export async function ensureJobMatchFacts(
     JOB_MATCH_FACTS_SCHEMA_VERSION
   );
   return true;
+}
+
+export async function ensureJobMatchFactsForImport(
+  env: AppEnv,
+  model: AiModelSelection,
+  job: JobImport
+) {
+  try {
+    return await ensureJobMatchFacts(env, model, job);
+  } catch (error) {
+    if (!(error instanceof JobFactExtractionError)) {
+      throw error;
+    }
+    // Match facts are derived metadata. A provider failure must not discard a
+    // verified job route or an otherwise valid application draft.
+    return false;
+  }
 }
 
 const MAX_ANALYSES_PER_REQUEST = 4;

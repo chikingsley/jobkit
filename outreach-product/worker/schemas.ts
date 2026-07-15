@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Compensation } from "../src/features/jobs/types";
 
 export const JobImportSchema = z.object({
+  applyEmail: z.union([z.literal(""), z.email()]).default(""),
   applyUrl: z.string().url(),
   board: z.string().default("seriousteachers"),
   company: z.string().default(""),
@@ -27,6 +28,13 @@ export const SubmitSchema = z.object({ draftId: z.string().min(1) });
 export type JobImport = z.infer<typeof JobImportSchema>;
 
 export interface ReviewJob {
+  applicationRoutes: Array<{
+    destination: string;
+    id: string;
+    kind: string;
+    lastVerifiedAt: string | null;
+    status: string;
+  }>;
   applyUrl: string;
   company: string;
   compensation: Compensation;

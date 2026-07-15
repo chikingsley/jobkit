@@ -14,6 +14,7 @@ import {
   writeProfile,
 } from "./repositories/user-settings";
 import { registerDocumentRoutes } from "./routes/documents";
+import { registerEmailAttemptRoutes } from "./routes/email-attempts";
 import { registerJobRoutes } from "./routes/jobs";
 import { registerOnboardingRoutes } from "./routes/onboarding";
 import { registerUserSettingsRoutes } from "./routes/user-settings";
@@ -25,6 +26,7 @@ import {
   reviseJobDraft,
 } from "./services/application-drafts";
 import { DocumentConversionError } from "./services/document-text";
+import { EmailAttemptError } from "./services/email-attempts";
 import { approveAndSubmitApplication } from "./services/job-submission";
 import {
   fetchExchangeRates,
@@ -73,6 +75,9 @@ app.onError((error, c) => {
   if (error instanceof DraftProfileRequiredError) {
     return c.json({ message: error.message, ok: false }, 409);
   }
+  if (error instanceof EmailAttemptError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
   if (error instanceof OnboardingIncompleteError) {
     return c.json({ message: error.message, ok: false }, 409);
   }
@@ -103,6 +108,7 @@ app.use("/api/*", async (c, next) => {
 registerOnboardingRoutes(app);
 registerJobRoutes(app);
 registerDocumentRoutes(app);
+registerEmailAttemptRoutes(app);
 registerUserSettingsRoutes(app);
 
 app.get("/api/fx", async (c) => c.json(await fetchExchangeRates()));

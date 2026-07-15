@@ -47,6 +47,19 @@ async function seedSubmission({
        VALUES (?,?,?,?,?,?)`
     ).bind(userJobId, userId, jobId, jobStatus, timestamp, timestamp),
     env.DB.prepare(
+      `INSERT INTO application_routes
+       (id,job_id,kind,destination,source_evidence,last_verified_at,status,created_at,updated_at)
+       VALUES (?,?,'board_form',?,?,?,'active',?,?)`
+    ).bind(
+      `route-${jobId}`,
+      jobId,
+      `https://www.seriousteachers.com/te2/respond/${jobId}/${employerId}`,
+      `https://www.seriousteachers.com/job_details/${jobId}/0/`,
+      timestamp,
+      timestamp,
+      timestamp
+    ),
+    env.DB.prepare(
       `INSERT INTO application_drafts
        (id,user_job_id,version,message,status,created_at,approved_at)
        VALUES (?,?,?,?,?,?,?)`
