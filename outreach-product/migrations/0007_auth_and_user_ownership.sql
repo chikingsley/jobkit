@@ -1,16 +1,54 @@
-create table "users" ("id" text not null primary key, "name" text not null, "email" text not null unique, "email_verified" integer not null, "image" text, "created_at" date not null, "updated_at" date not null);
+PRAGMA foreign_keys = ON;
 
-create table "user_sessions" ("id" text not null primary key, "expires_at" date not null, "token" text not null unique, "created_at" date not null, "updated_at" date not null, "ip_address" text, "user_agent" text, "user_id" text not null references "users" ("id") on delete cascade);
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  email_verified INTEGER NOT NULL,
+  image TEXT,
+  created_at DATE NOT NULL,
+  updated_at DATE NOT NULL
+);
 
-create table "user_accounts" ("id" text not null primary key, "account_id" text not null, "provider_id" text not null, "user_id" text not null references "users" ("id") on delete cascade, "access_token" text, "refresh_token" text, "id_token" text, "access_token_expires_at" date, "refresh_token_expires_at" date, "scope" text, "password" text, "created_at" date not null, "updated_at" date not null);
+CREATE TABLE user_sessions (
+  id TEXT PRIMARY KEY,
+  expires_at DATE NOT NULL,
+  token TEXT NOT NULL UNIQUE,
+  created_at DATE NOT NULL,
+  updated_at DATE NOT NULL,
+  ip_address TEXT,
+  user_agent TEXT,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE
+);
 
-create table "auth_verifications" ("id" text not null primary key, "identifier" text not null, "value" text not null, "expires_at" date not null, "created_at" date not null, "updated_at" date not null);
+CREATE TABLE user_accounts (
+  id TEXT PRIMARY KEY,
+  account_id TEXT NOT NULL,
+  provider_id TEXT NOT NULL,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  access_token TEXT,
+  refresh_token TEXT,
+  id_token TEXT,
+  access_token_expires_at DATE,
+  refresh_token_expires_at DATE,
+  scope TEXT,
+  password TEXT,
+  created_at DATE NOT NULL,
+  updated_at DATE NOT NULL
+);
 
-create index "user_sessions_user_id_idx" on "user_sessions" ("user_id");
+CREATE TABLE auth_verifications (
+  id TEXT PRIMARY KEY,
+  identifier TEXT NOT NULL,
+  value TEXT NOT NULL,
+  expires_at DATE NOT NULL,
+  created_at DATE NOT NULL,
+  updated_at DATE NOT NULL
+);
 
-create index "user_accounts_user_id_idx" on "user_accounts" ("user_id");
-
-create index "auth_verifications_identifier_idx" on "auth_verifications" ("identifier");
+CREATE INDEX user_sessions_user_id_idx ON user_sessions(user_id);
+CREATE INDEX user_accounts_user_id_idx ON user_accounts(user_id);
+CREATE INDEX auth_verifications_identifier_idx ON auth_verifications(identifier);
 
 CREATE TABLE jobs_next (
   id TEXT PRIMARY KEY,
@@ -54,17 +92,14 @@ FROM jobs;
 
 CREATE TABLE user_jobs (
   id TEXT PRIMARY KEY,
-  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   job_id TEXT NOT NULL REFERENCES jobs_next(id) ON DELETE CASCADE,
   status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new','review','approved','submitting','applied','ignored','failed')),
   priority INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
-  UNIQUE(user_id, job_id)
+  UNIQUE(user_id,job_id)
 );
-
-INSERT INTO user_jobs (id,user_id,job_id,status,priority,created_at,updated_at)
-SELECT 'legacy:' || id,NULL,id,status,priority,first_seen_at,updated_at FROM jobs;
 
 CREATE TABLE application_drafts_next (
   id TEXT PRIMARY KEY,
@@ -79,17 +114,8 @@ CREATE TABLE application_drafts_next (
   submitted_at TEXT,
   model_provider TEXT,
   model_id TEXT,
-  UNIQUE(user_job_id, version)
+  UNIQUE(user_job_id,version)
 );
-
-INSERT INTO application_drafts_next (
-  id,user_job_id,version,message,change_summary,revision_instruction,status,
-  created_at,approved_at,submitted_at,model_provider,model_id
-)
-SELECT
-  id,'legacy:' || job_id,version,message,change_summary,revision_instruction,status,
-  created_at,approved_at,submitted_at,model_provider,model_id
-FROM application_drafts;
 
 CREATE TABLE job_events_next (
   id TEXT PRIMARY KEY,
@@ -97,44 +123,29 @@ CREATE TABLE job_events_next (
   event_type TEXT NOT NULL,
   draft_id TEXT REFERENCES application_drafts_next(id) ON DELETE SET NULL,
   detail TEXT NOT NULL DEFAULT '',
-  metadata_json TEXT NOT NULL DEFAULT '{}',
+  metadata_json TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata_json)),
   created_at TEXT NOT NULL
 );
 
-INSERT INTO job_events_next (
-  id,user_job_id,event_type,draft_id,detail,metadata_json,created_at
-)
-SELECT
-  id,'legacy:' || job_id,event_type,draft_id,detail,metadata_json,created_at
-FROM job_events;
-
 CREATE TABLE user_profiles_next (
   id TEXT PRIMARY KEY,
-  user_id TEXT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-  profile_json TEXT NOT NULL,
+  user_id TEXT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  profile_json TEXT NOT NULL CHECK (json_valid(profile_json)),
   updated_at TEXT NOT NULL,
-  schema_version INTEGER NOT NULL DEFAULT 1
+  schema_version INTEGER NOT NULL DEFAULT 3
 );
-
-INSERT INTO user_profiles_next (id,user_id,profile_json,updated_at,schema_version)
-SELECT id,NULL,profile_json,updated_at,schema_version FROM user_profiles;
 
 CREATE TABLE user_preferences_next (
   id TEXT PRIMARY KEY,
-  user_id TEXT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-  preferences_json TEXT NOT NULL,
+  user_id TEXT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  preferences_json TEXT NOT NULL CHECK (json_valid(preferences_json)),
   updated_at TEXT NOT NULL,
-  schema_version INTEGER NOT NULL DEFAULT 1
+  schema_version INTEGER NOT NULL DEFAULT 2
 );
-
-INSERT INTO user_preferences_next (
-  id,user_id,preferences_json,updated_at,schema_version
-)
-SELECT id,NULL,preferences_json,updated_at,schema_version FROM user_preferences;
 
 CREATE TABLE user_documents_next (
   id TEXT PRIMARY KEY,
-  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   category TEXT NOT NULL,
   filename TEXT NOT NULL,
   object_key TEXT NOT NULL UNIQUE,
@@ -144,12 +155,45 @@ CREATE TABLE user_documents_next (
   created_at TEXT NOT NULL
 );
 
-INSERT INTO user_documents_next (
-  id,user_id,category,filename,object_key,content_type,size_bytes,is_default,created_at
-)
-SELECT
-  id,NULL,category,filename,object_key,content_type,size_bytes,is_default,created_at
-FROM user_documents;
+CREATE TABLE profile_imports (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  document_id TEXT NOT NULL REFERENCES user_documents_next(id) ON DELETE CASCADE,
+  status TEXT NOT NULL CHECK (status IN ('processing','ready','failed','applied')),
+  source_text_key TEXT,
+  proposal_json TEXT CHECK (proposal_json IS NULL OR json_valid(proposal_json)),
+  model_provider TEXT,
+  model_id TEXT,
+  error_message TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  applied_at TEXT
+);
+
+CREATE TABLE user_onboarding (
+  user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  completed_at TEXT,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE job_match_facts (
+  job_id TEXT PRIMARY KEY REFERENCES jobs_next(id) ON DELETE CASCADE,
+  facts_json TEXT NOT NULL CHECK (json_valid(facts_json)),
+  schema_version INTEGER NOT NULL,
+  model_provider TEXT,
+  model_id TEXT,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE job_feedback (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  job_id TEXT NOT NULL REFERENCES jobs_next(id) ON DELETE CASCADE,
+  event_type TEXT NOT NULL CHECK (event_type IN ('viewed','saved','dismissed','applied')),
+  reason TEXT,
+  metadata_json TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata_json)),
+  created_at TEXT NOT NULL
+);
 
 DROP TABLE job_events;
 DROP TABLE application_drafts;
@@ -165,14 +209,6 @@ ALTER TABLE user_profiles_next RENAME TO user_profiles;
 ALTER TABLE user_preferences_next RENAME TO user_preferences;
 ALTER TABLE user_documents_next RENAME TO user_documents;
 
-CREATE TABLE legacy_data_claims (
-  id INTEGER PRIMARY KEY CHECK (id = 1),
-  claimed_by TEXT REFERENCES users(id) ON DELETE RESTRICT,
-  claimed_at TEXT
-);
-
-INSERT INTO legacy_data_claims (id,claimed_by,claimed_at) VALUES (1,NULL,NULL);
-
 CREATE INDEX idx_user_jobs_user_status_priority
   ON user_jobs(user_id,status,priority DESC,updated_at DESC);
 CREATE INDEX idx_user_jobs_job ON user_jobs(job_id);
@@ -182,3 +218,9 @@ CREATE INDEX idx_events_user_job_created
   ON job_events(user_job_id,created_at DESC);
 CREATE INDEX idx_user_documents_user
   ON user_documents(user_id,category,created_at DESC);
+CREATE INDEX idx_profile_imports_user_created
+  ON profile_imports(user_id,created_at DESC);
+CREATE INDEX idx_job_feedback_user_created
+  ON job_feedback(user_id,created_at DESC);
+CREATE INDEX idx_job_feedback_user_job
+  ON job_feedback(user_id,job_id,created_at DESC);

@@ -52,6 +52,7 @@ import {
   UniversityField,
 } from "@/features/profile/form-fields";
 import { type Profile, ProfileSchema } from "@/features/profile/schema";
+import { WorkExperienceSection } from "@/features/profile/work-experience-section";
 import {
   availabilityOptions,
   countryNamesOnly,
@@ -261,6 +262,12 @@ export function ProfileView({
             </FieldGroup>
           </CardContent>
         </Card>
+
+        <WorkExperienceSection
+          control={control}
+          errors={errors}
+          register={register}
+        />
 
         <Card>
           <CardHeader>

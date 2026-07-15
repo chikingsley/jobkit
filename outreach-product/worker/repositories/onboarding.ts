@@ -1,0 +1,172 @@
+import {
+  type ProfileImportProposal,
+  ProfileImportProposalSchema,
+} from "../../src/features/onboarding/schema";
+
+interface ImportRow {
+  error_message: string | null;
+  id: string;
+  proposal_json: string | null;
+  status: "processing" | "ready" | "failed" | "applied";
+}
+
+export interface StoredProfileImport {
+  errorMessage: string | null;
+  id: string;
+  proposal: ProfileImportProposal | null;
+  status: ImportRow["status"];
+}
+
+export class OnboardingIncompleteError extends Error {}
+
+export async function createProfileImportRecords(
+  db: D1Database,
+  input: {
+    contentType: string;
+    createdAt: string;
+    documentId: string;
+    filename: string;
+    importId: string;
+    objectKey: string;
+    sizeBytes: number;
+    userId: string;
+  }
+) {
+  await db.batch([
+    db
+      .prepare(
+        "INSERT INTO user_documents (id,user_id,category,filename,object_key,content_type,size_bytes,is_default,created_at) VALUES (?,?,?,?,?,?,?,1,?)"
+      )
+      .bind(
+        input.documentId,
+        input.userId,
+        "resume",
+        input.filename,
+        input.objectKey,
+        input.contentType,
+        input.sizeBytes,
+        input.createdAt
+      ),
+    db
+      .prepare(
+        "INSERT INTO profile_imports (id,user_id,document_id,status,created_at,updated_at) VALUES (?,?,?,'processing',?,?)"
+      )
+      .bind(
+        input.importId,
+        input.userId,
+        input.documentId,
+        input.createdAt,
+        input.createdAt
+      ),
+  ]);
+}
+
+export async function finishProfileImport(
+  db: D1Database,
+  input: {
+    importId: string;
+    modelId: string;
+    modelProvider: string;
+    proposal: ProfileImportProposal;
+    sourceTextKey: string;
+    updatedAt: string;
+    userId: string;
+  }
+) {
+  const result = await db
+    .prepare(
+      "UPDATE profile_imports SET status='ready',source_text_key=?,proposal_json=?,model_provider=?,model_id=?,error_message=NULL,updated_at=? WHERE id=? AND user_id=? AND status='processing'"
+    )
+    .bind(
+      input.sourceTextKey,
+      JSON.stringify(input.proposal),
+      input.modelProvider,
+      input.modelId,
+      input.updatedAt,
+      input.importId,
+      input.userId
+    )
+    .run();
+  if ((result.meta.changes ?? 0) !== 1) {
+    throw new Error("Profile import could not be completed");
+  }
+}
+
+export async function failProfileImport(
+  db: D1Database,
+  input: {
+    errorMessage: string;
+    importId: string;
+    updatedAt: string;
+    userId: string;
+  }
+) {
+  await db
+    .prepare(
+      "UPDATE profile_imports SET status='failed',error_message=?,updated_at=? WHERE id=? AND user_id=? AND status='processing'"
+    )
+    .bind(
+      input.errorMessage.slice(0, 500),
+      input.updatedAt,
+      input.importId,
+      input.userId
+    )
+    .run();
+}
+
+export async function readLatestProfileImport(
+  db: D1Database,
+  userId: string
+): Promise<StoredProfileImport | null> {
+  const row = await db
+    .prepare(
+      "SELECT id,status,proposal_json,error_message FROM profile_imports WHERE user_id=? ORDER BY created_at DESC LIMIT 1"
+    )
+    .bind(userId)
+    .first<ImportRow>();
+  if (!row) {
+    return null;
+  }
+  return {
+    errorMessage: row.error_message,
+    id: row.id,
+    proposal: row.proposal_json
+      ? ProfileImportProposalSchema.parse(JSON.parse(row.proposal_json))
+      : null,
+    status: row.status,
+  };
+}
+
+export async function readOnboardingCompletion(db: D1Database, userId: string) {
+  const row = await db
+    .prepare("SELECT completed_at FROM user_onboarding WHERE user_id=?")
+    .bind(userId)
+    .first<{ completed_at: string | null }>();
+  return row?.completed_at ?? null;
+}
+
+export async function completeOnboarding(db: D1Database, userId: string) {
+  const [profile, preferences] = await Promise.all([
+    db
+      .prepare("SELECT 1 present FROM user_profiles WHERE user_id=?")
+      .bind(userId)
+      .first<{ present: number }>(),
+    db
+      .prepare("SELECT 1 present FROM user_preferences WHERE user_id=?")
+      .bind(userId)
+      .first<{ present: number }>(),
+  ]);
+  if (!(profile && preferences)) {
+    throw new OnboardingIncompleteError(
+      "Profile and preferences are required before onboarding"
+    );
+  }
+  const timestamp = new Date().toISOString();
+  await db
+    .prepare(
+      "INSERT INTO user_onboarding (user_id,completed_at,updated_at) VALUES (?,?,?) ON CONFLICT(user_id) DO UPDATE SET completed_at=excluded.completed_at,updated_at=excluded.updated_at"
+    )
+    .bind(userId, timestamp, timestamp)
+    .run();
+  return timestamp;
+}

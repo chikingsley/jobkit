@@ -1,10 +1,7 @@
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
-import {
-  defaultProfile,
-  PROFILE_SCHEMA_VERSION,
-} from "../../../src/features/profile/schema";
+import { defaultProfile } from "../../../src/features/profile/schema";
 import { createAuthenticatedUser } from "./auth";
 
 interface TestEnv extends Env {
@@ -92,58 +89,50 @@ describe("outreach Worker", () => {
     ).toMatchObject({ user_id: userId });
   });
 
-  it("claims the pre-auth workspace for the first authenticated user only", async () => {
-    await testEnv.DB.prepare(
-      "UPDATE legacy_data_claims SET claimed_by=NULL,claimed_at=NULL WHERE id=1"
-    ).run();
-    await testEnv.DB.prepare("DELETE FROM users").run();
-    await testEnv.DB.prepare(
-      "INSERT INTO user_profiles (id,user_id,profile_json,updated_at,schema_version) VALUES ('legacy',NULL,?,?,?)"
-    )
-      .bind(
-        JSON.stringify({
-          ...defaultProfile,
-          citizenship: "Canada",
-          currentLocation: "Toronto, Canada",
-          email: "legacy@example.test",
-          fullName: "Legacy Candidate",
-          preferredName: "Legacy",
-        }),
-        "2026-07-14T00:00:00.000Z",
-        PROFILE_SCHEMA_VERSION
-      )
-      .run();
+  it("keeps each candidate profile scoped to its explicit owner", async () => {
     const first = await createAuthenticatedUser("first@example.test");
+    const savedProfile = {
+      ...defaultProfile,
+      citizenship: "Canada",
+      currentLocation: "Toronto, Canada",
+      email: "first@example.test",
+      fullName: "First Candidate",
+      preferredName: "First",
+    };
+    const saveResponse = await exports.default.fetch(
+      "https://outreach.test/api/profile",
+      {
+        body: JSON.stringify(savedProfile),
+        headers: {
+          "content-type": "application/json",
+          cookie: first.cookie,
+        },
+        method: "PUT",
+      }
+    );
     const firstResponse = await exports.default.fetch(
       "https://outreach.test/api/profile",
       { headers: { cookie: first.cookie } }
     );
-    const ownership = await testEnv.DB.prepare(
-      `SELECT c.claimed_by,p.user_id
-       FROM legacy_data_claims c
-       LEFT JOIN user_profiles p ON p.id='legacy'
-       WHERE c.id=1`
-    ).first();
     const second = await createAuthenticatedUser("second@example.test");
     const secondResponse = await exports.default.fetch(
       "https://outreach.test/api/profile",
       { headers: { cookie: second.cookie } }
     );
 
-    expect(ownership).toEqual({
-      claimed_by: first.userId,
-      user_id: first.userId,
-    });
+    expect(saveResponse.status).toBe(200);
     expect(await firstResponse.json()).toMatchObject({
-      profile: { fullName: "Legacy Candidate" },
+      profile: { fullName: "First Candidate" },
     });
     expect(await secondResponse.json()).toMatchObject({
       profile: { fullName: "" },
     });
     expect(
       await testEnv.DB.prepare(
-        "SELECT claimed_by FROM legacy_data_claims WHERE id=1"
-      ).first()
-    ).toEqual({ claimed_by: first.userId });
+        "SELECT user_id FROM user_profiles WHERE user_id=?"
+      )
+        .bind(first.userId)
+        .first()
+    ).toEqual({ user_id: first.userId });
   });
 });

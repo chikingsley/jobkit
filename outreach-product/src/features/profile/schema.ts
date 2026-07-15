@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const PROFILE_SCHEMA_VERSION = 2;
+export const PROFILE_SCHEMA_VERSION = 3;
 
 export const DegreeLevelSchema = z.enum([
   "associate",
@@ -38,6 +38,16 @@ export interface WorkAuthorizationEntry {
     | "other";
 }
 
+export interface WorkExperienceEntry {
+  current: boolean;
+  employer: string;
+  endDate: string;
+  highlights: string[];
+  location: string;
+  startDate: string;
+  title: string;
+}
+
 export interface Profile {
   availability: string;
   citizenship: string;
@@ -54,6 +64,7 @@ export interface Profile {
   preferredName: string;
   profileReviewNotes: string[];
   workAuthorization: WorkAuthorizationEntry[];
+  workExperience: WorkExperienceEntry[];
 }
 
 export const EducationEntrySchema: z.ZodType<EducationEntry> = z
@@ -87,6 +98,18 @@ export const WorkAuthorizationEntrySchema: z.ZodType<WorkAuthorizationEntry> = z
   })
   .strict();
 
+export const WorkExperienceEntrySchema = z
+  .object({
+    current: z.boolean(),
+    employer: z.string().min(1, "Enter the employer").max(180),
+    endDate: z.string().max(40),
+    highlights: z.array(z.string().min(1).max(500)).max(30),
+    location: z.string().max(180),
+    startDate: z.string().max(40),
+    title: z.string().min(1, "Enter the role").max(180),
+  })
+  .strict() satisfies z.ZodType<WorkExperienceEntry>;
+
 export const ProfileSchema: z.ZodType<Profile> = z
   .object({
     availability: z.string().max(120),
@@ -107,6 +130,7 @@ export const ProfileSchema: z.ZodType<Profile> = z
     preferredName: z.string().min(1, "Enter a preferred name").max(100),
     profileReviewNotes: z.array(z.string().max(240)).max(20),
     workAuthorization: z.array(WorkAuthorizationEntrySchema).max(30),
+    workExperience: z.array(WorkExperienceEntrySchema).max(80),
   })
   .strict();
 
@@ -126,4 +150,5 @@ export const defaultProfile: Profile = {
   preferredName: "",
   profileReviewNotes: [],
   workAuthorization: [],
+  workExperience: [],
 };

@@ -1,16 +1,19 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { ApplicationMessageGenerationError } from "./ai/application-messages";
+import { ProfileExtractionError } from "./ai/profile-extraction";
+import type { AuthUser, JobKitApp } from "./app-types";
 import { createAuth } from "./auth";
 import type { AppEnv } from "./env";
 import { compensationFromRow } from "./repositories/jobs";
-import { claimLegacyData } from "./repositories/legacy-data";
+import { OnboardingIncompleteError } from "./repositories/onboarding";
 import {
   readPreferences,
   readProfile,
   writePreferences,
   writeProfile,
 } from "./repositories/user-settings";
+import { registerOnboardingRoutes } from "./routes/onboarding";
 import { ImportSchema, ReviseSchema, SubmitSchema } from "./schemas";
 import {
   DraftProfileRequiredError,
@@ -18,20 +21,16 @@ import {
   regenerateDrafts,
   reviseJobDraft,
 } from "./services/application-drafts";
+import { DocumentConversionError } from "./services/document-text";
 import { approveAndSubmitApplication } from "./services/job-submission";
 import {
   fetchExchangeRates,
   searchLocations,
   searchUniversities,
 } from "./services/lookups";
+import { ResumeUploadError } from "./services/profile-imports";
 
-interface AuthUser {
-  email: string;
-  id: string;
-  name: string;
-}
-
-const app = new OpenAPIHono<{
+const app: JobKitApp = new OpenAPIHono<{
   Bindings: AppEnv;
   Variables: { user: AuthUser };
 }>();
@@ -59,7 +58,19 @@ app.onError((error, c) => {
   if (error instanceof ApplicationMessageGenerationError) {
     return c.json({ message: error.message, ok: false }, 502);
   }
+  if (error instanceof ResumeUploadError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
+  if (error instanceof DocumentConversionError) {
+    return c.json({ message: error.message, ok: false }, 422);
+  }
+  if (error instanceof ProfileExtractionError) {
+    return c.json({ message: error.message, ok: false }, 502);
+  }
   if (error instanceof DraftProfileRequiredError) {
+    return c.json({ message: error.message, ok: false }, 409);
+  }
+  if (error instanceof OnboardingIncompleteError) {
     return c.json({ message: error.message, ok: false }, 409);
   }
   return c.json({ message: error.message, ok: false }, 500);
@@ -83,9 +94,10 @@ app.use("/api/*", async (c, next) => {
     id: session.user.id,
     name: session.user.name,
   });
-  await claimLegacyData(c.env.DB, session.user.id);
   await next();
 });
+
+registerOnboardingRoutes(app);
 
 app.get("/api/fx", async (c) => c.json(await fetchExchangeRates()));
 
