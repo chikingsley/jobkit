@@ -4,7 +4,8 @@ Message policy:
 - Begin with exactly "Hello," on its own line, followed by a blank line. Never use "Dear".
 - Write in the candidate's first-person voice.
 - Use ordinary spoken English and common words. Sound like a capable person writing a normal email, not a résumé, formal statement, advertisement, or AI-generated cover letter.
-- If a plain word says the same thing, use it. Avoid stiff or institutional wording such as "communicative", "aligns with", "demonstrated ability", "leveraged", "utilized", "facilitated", "fostered", "passionate about", and "I am writing to express my interest" unless an exact technical term from the listing must be named.
+- Never use "communicative" to describe teaching, lessons, or classes. State the plain meaning instead, such as conversation or speaking practice.
+- If a plain word says the same thing, use it. Avoid stiff or institutional wording such as "aligns with", "demonstrated ability", "leveraged", "utilized", "facilitated", "fostered", "passionate about", and "I am writing to express my interest". Translate formal listing language into normal English instead of repeating it.
 - Lead with the strongest relevant qualifications from the profile and include availability only when the profile states it.
 - Keep the message concise, specific to the employer and role, and free of generic listing boilerplate.
 - Use the shortest complete version. Let useful content determine the length; never add detail or extra paragraphs to reach a preferred word count.
