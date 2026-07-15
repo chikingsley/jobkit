@@ -4,7 +4,9 @@ const CRLF = "\r\n";
 const MAX_RAW_ATTACHMENT_BYTES = 18 * 1024 * 1024;
 
 interface DraftAttachmentRow {
+  category: string;
   content_type: string;
+  document_packet_manifest_json: string;
   etag: string;
   filename: string;
   message: string;
@@ -41,7 +43,8 @@ export async function buildGmailMessagePayload(
   envelope: GmailEnvelope
 ): Promise<GmailMessagePayload> {
   const rows = await env.DB.prepare(
-    `SELECT d.message,a.position,a.filename,a.object_key,a.content_type,
+    `SELECT d.message,d.document_packet_manifest_json,a.position,a.category,
+            a.filename,a.object_key,a.content_type,
             a.size_bytes,a.r2_version,a.etag
        FROM application_drafts d
        JOIN user_jobs uj ON uj.id=d.user_job_id
@@ -55,6 +58,24 @@ export async function buildGmailMessagePayload(
     throw new GmailMessagePayloadError("Application draft not found");
   }
   const attachmentRows = rows.results.filter((row) => row.object_key);
+  const expectedCategories = JSON.parse(
+    first.document_packet_manifest_json
+  ) as unknown;
+  if (!Array.isArray(expectedCategories)) {
+    throw new GmailMessagePayloadError("Draft attachment manifest is invalid");
+  }
+  const attachedCategories = new Set(
+    attachmentRows.map((attachment) => attachment.category)
+  );
+  const missingCategories = expectedCategories.filter(
+    (category): category is string =>
+      typeof category === "string" && !attachedCategories.has(category)
+  );
+  if (missingCategories.length > 0) {
+    throw new GmailMessagePayloadError(
+      `The selected attachment packet is incomplete: ${missingCategories.join(", ")}`
+    );
+  }
   const totalBytes = attachmentRows.reduce(
     (total, row) => total + row.size_bytes,
     0

@@ -110,6 +110,30 @@ describe("versioned document delivery", () => {
         .bind(draftId)
         .first()
     ).toEqual({ count: 5 });
+    expect(
+      await testEnv.DB.prepare(
+        "SELECT document_packet_slug,document_packet_manifest_json FROM application_drafts WHERE id=?"
+      )
+        .bind(draftId)
+        .first()
+    ).toEqual({
+      document_packet_manifest_json:
+        '["resume","degree","tefl","passport","photo"]',
+      document_packet_slug: "visa-market",
+    });
+
+    await testEnv.DB.prepare(
+      "DELETE FROM application_draft_attachments WHERE draft_id=? AND category='photo'"
+    )
+      .bind(draftId)
+      .run();
+    await expect(
+      buildGmailMessagePayload(testEnv, userId, draftId, {
+        from: "Test Candidate <candidate@example.test>",
+        subject: "Native English Teacher Available - Test City",
+        to: "school@example.test",
+      })
+    ).rejects.toThrow("attachment packet is incomplete: photo");
   });
 });
 

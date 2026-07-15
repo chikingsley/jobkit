@@ -1,7 +1,9 @@
+import { documentPacketDefinitions } from "../../src/features/documents/types";
 import type { AppEnv } from "../env";
 import { ensureDocumentPackets } from "./document-packets";
 
 interface PacketDocumentRow {
+  category: string;
   content_type: string;
   document_id: string;
   etag: string;
@@ -9,6 +11,7 @@ interface PacketDocumentRow {
   object_key: string;
   packet_id: string;
   packet_name: string;
+  packet_slug: string;
   position: number;
   r2_version: string;
   size_bytes: number;
@@ -24,8 +27,8 @@ export async function defaultPacketSnapshotStatements(
 ): Promise<D1PreparedStatement[]> {
   await ensureDocumentPackets(env.DB, userId);
   const rows = await env.DB.prepare(
-    `SELECT p.id packet_id,p.name packet_name,i.position,
-            d.id document_id,d.filename,d.object_key,d.content_type,
+    `SELECT p.id packet_id,p.name packet_name,p.slug packet_slug,i.position,
+            i.category,d.id document_id,d.filename,d.object_key,d.content_type,
             d.size_bytes,d.r2_version,d.etag
        FROM user_document_packets p
        LEFT JOIN user_document_packet_items i ON i.packet_id=p.id
@@ -38,6 +41,14 @@ export async function defaultPacketSnapshotStatements(
   const [first] = rows.results;
   if (!first) {
     return [];
+  }
+  const definition = documentPacketDefinitions.find(
+    (candidate) => candidate.slug === first.packet_slug
+  );
+  if (!definition) {
+    throw new DocumentPacketSnapshotError(
+      "Document packet definition is invalid"
+    );
   }
 
   const documents = rows.results.filter((row) => row.document_id);
@@ -64,9 +75,16 @@ export async function defaultPacketSnapshotStatements(
   const statements: D1PreparedStatement[] = [
     env.DB.prepare(
       `UPDATE application_drafts
-          SET document_packet_id=?,document_packet_name=?
+          SET document_packet_id=?,document_packet_name=?,
+              document_packet_slug=?,document_packet_manifest_json=?
         WHERE id=?`
-    ).bind(first.packet_id, first.packet_name, draftId),
+    ).bind(
+      first.packet_id,
+      first.packet_name,
+      first.packet_slug,
+      JSON.stringify(definition.categories),
+      draftId
+    ),
   ];
   for (const item of resolved) {
     statements.push(
@@ -76,13 +94,14 @@ export async function defaultPacketSnapshotStatements(
       ).bind(item.r2Version, item.etag, item.document.document_id, userId),
       env.DB.prepare(
         `INSERT INTO application_draft_attachments
-          (draft_id,position,source_document_id,filename,object_key,
+          (draft_id,position,source_document_id,category,filename,object_key,
            content_type,size_bytes,r2_version,etag,created_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?)`
+         VALUES (?,?,?,?,?,?,?,?,?,?,?)`
       ).bind(
         draftId,
         item.document.position,
         item.document.document_id,
+        item.document.category,
         item.document.filename,
         item.document.object_key,
         item.document.content_type,
@@ -111,16 +130,28 @@ export function copyPacketSnapshotStatements(
               ),
               document_packet_name=(
                 SELECT document_packet_name FROM application_drafts WHERE id=?
+              ),
+              document_packet_slug=(
+                SELECT document_packet_slug FROM application_drafts WHERE id=?
+              ),
+              document_packet_manifest_json=(
+                SELECT document_packet_manifest_json FROM application_drafts WHERE id=?
               )
         WHERE id=?`
       )
-      .bind(sourceDraftId, sourceDraftId, targetDraftId),
+      .bind(
+        sourceDraftId,
+        sourceDraftId,
+        sourceDraftId,
+        sourceDraftId,
+        targetDraftId
+      ),
     db
       .prepare(
         `INSERT INTO application_draft_attachments
-        (draft_id,position,source_document_id,filename,object_key,content_type,
+        (draft_id,position,source_document_id,category,filename,object_key,content_type,
          size_bytes,r2_version,etag,created_at)
-       SELECT ?,position,source_document_id,filename,object_key,content_type,
+       SELECT ?,position,source_document_id,category,filename,object_key,content_type,
               size_bytes,r2_version,etag,?
          FROM application_draft_attachments WHERE draft_id=?`
       )
