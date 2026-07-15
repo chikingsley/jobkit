@@ -101,7 +101,7 @@ export function AuthPage() {
               <Input
                 autoComplete={signingUp ? "new-password" : "current-password"}
                 id="auth-password"
-                minLength={12}
+                minLength={signingUp ? 12 : undefined}
                 name="password"
                 required
                 type="password"
