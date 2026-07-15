@@ -4,7 +4,10 @@ import type { LanguageModel } from "ai";
 import type { AppEnv } from "../env";
 
 export type AiModelProvider = "cerebras" | "mistral";
-export type AiPurpose = "application_message" | "profile_extraction";
+export type AiPurpose =
+  | "application_message"
+  | "job_fact_extraction"
+  | "profile_extraction";
 
 export interface AiModelSelection {
   modelId: string;
@@ -58,6 +61,10 @@ export const AI_MODELS = [
 export const DEFAULT_AI_MODELS = {
   application_message: {
     modelId: "gemma-4-31b",
+    provider: "cerebras",
+  },
+  job_fact_extraction: {
+    modelId: "zai-glm-4.7",
     provider: "cerebras",
   },
   profile_extraction: {

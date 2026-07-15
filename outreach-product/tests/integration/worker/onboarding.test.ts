@@ -117,9 +117,9 @@ describe("candidate onboarding", () => {
       {
         body: "not a resume",
         headers: {
-          "content-type": "text/plain",
+          "content-type": "application/zip",
           cookie,
-          "x-jobkit-filename": "resume.txt",
+          "x-jobkit-filename": "resume.zip",
         },
         method: "PUT",
       }

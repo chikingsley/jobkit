@@ -18,6 +18,8 @@ export interface StoredDocument {
 export type MatchState = "match" | "conflict" | "unknown" | "preference";
 
 export interface MatchCriterion {
+  evidence?: string;
+  importance?: "required" | "preferred";
   label: string;
   state: MatchState;
 }
@@ -30,5 +32,6 @@ export interface JobMatch {
     | "Needs verification"
     | "Preference mismatch"
     | "Ineligible";
+  score: number;
   tone: "positive" | "neutral" | "warning" | "negative";
 }

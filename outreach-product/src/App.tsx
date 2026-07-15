@@ -22,6 +22,7 @@ import { monthlyCompensationUsd } from "@/features/jobs/compensation";
 import { filterJobs, selectVisibleJob } from "@/features/jobs/filters";
 import type { FxData, Job } from "@/features/jobs/types";
 import { JobsWorkspace } from "@/features/jobs/workspace";
+import { evaluateJob } from "@/features/matching/evaluate";
 import {
   type WorkspaceView,
   workspacePaths,
@@ -35,7 +36,6 @@ import {
 import { useWorkspaceStore } from "@/features/workspace/store";
 import { apiRequest } from "@/lib/api";
 import { authClient } from "@/lib/auth-client";
-import { evaluateJob } from "@/matching";
 import type { Preferences, Profile, StoredDocument } from "@/profile-types";
 
 const DocumentsView = lazy(async () => ({
@@ -142,8 +142,7 @@ export function App() {
           ? jobs.map((job) => [
               job.id,
               evaluateJob(
-                job.id,
-                job.country,
+                job,
                 profile,
                 preferences,
                 monthlyCompensationUsd(job.compensation, fx)

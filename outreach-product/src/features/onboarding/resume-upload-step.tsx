@@ -15,7 +15,13 @@ import { apiRequest } from "@/lib/api";
 
 const acceptedTypes = new Set([
   "application/pdf",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "text/markdown",
+  "text/plain",
 ]);
 
 export function ResumeUploadStep({
@@ -38,7 +44,7 @@ export function ResumeUploadStep({
     }
     if (!acceptedTypes.has(next.type)) {
       setFile(null);
-      setError("Choose a PDF or DOCX resume.");
+      setError("Choose a PDF, DOCX, PPTX, image, Markdown, or text resume.");
       return;
     }
     if (next.size > 5 * 1024 * 1024) {
@@ -92,8 +98,8 @@ export function ResumeUploadStep({
         <CardHeader>
           <CardTitle>Upload a resume</CardTitle>
           <CardDescription>
-            PDF or DOCX, up to 5 MB. The original stays private in your document
-            storage.
+            PDF, Word, PowerPoint, image, Markdown, or text, up to 5 MB. The
+            original stays private in your document storage.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -117,7 +123,7 @@ export function ResumeUploadStep({
             </span>
           </button>
           <Input
-            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            accept=".pdf,.docx,.pptx,.jpg,.jpeg,.png,.webp,.md,.txt,application/pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/webp,text/markdown,text/plain"
             className="sr-only"
             onChange={(event) => choose(event.target.files?.[0] ?? null)}
             ref={input}

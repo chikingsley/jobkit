@@ -15,82 +15,85 @@ const providerText = z
 const providerListItem = z
   .object({ confidence, evidence: z.string(), value: z.string() })
   .strict();
+const providerEducation = z
+  .object({
+    confidence,
+    country: z.string(),
+    degree: z.string(),
+    evidence: z.string(),
+    field: z.string(),
+    institution: z.string(),
+    level: z.enum([
+      "associate",
+      "bachelor",
+      "master",
+      "doctorate",
+      "certificate",
+      "diploma",
+      "other",
+    ]),
+  })
+  .strict();
+const providerLanguage = z
+  .object({
+    confidence,
+    evidence: z.string(),
+    language: z.string(),
+    level: z.enum([
+      "unspecified",
+      "A1",
+      "A2",
+      "B1",
+      "B2",
+      "C1",
+      "C2",
+      "native",
+    ]),
+  })
+  .strict();
+const providerWorkExperience = z
+  .object({
+    confidence,
+    current: z.boolean(),
+    employer: z.string(),
+    endDate: z.string(),
+    evidence: z.string(),
+    highlights: z.array(z.string()),
+    location: z.string(),
+    startDate: z.string(),
+    title: z.string(),
+  })
+  .strict();
 
 // Cerebras rejects JSON Schema length constraints. This provider-facing schema
 // describes only the shape; ProfileImportProposalSchema enforces all limits.
-const ProviderProfileImportProposalSchema = z
+const ProviderProfileDetailsSchema = z
   .object({
     citizenship: providerText,
     credentials: z.array(providerListItem),
     currentLocation: providerText,
-    education: z.array(
-      z
-        .object({
-          confidence,
-          country: z.string(),
-          degree: z.string(),
-          evidence: z.string(),
-          field: z.string(),
-          institution: z.string(),
-          level: z.enum([
-            "associate",
-            "bachelor",
-            "master",
-            "doctorate",
-            "certificate",
-            "diploma",
-            "other",
-          ]),
-        })
-        .strict()
-    ),
+    education: z.array(providerEducation),
     email: providerText,
     experienceLabel: providerText,
     fullName: providerText,
     introduction: providerText,
-    languages: z.array(
-      z
-        .object({
-          confidence,
-          evidence: z.string(),
-          language: z.string(),
-          level: z.enum([
-            "unspecified",
-            "A1",
-            "A2",
-            "B1",
-            "B2",
-            "C1",
-            "C2",
-            "native",
-          ]),
-        })
-        .strict()
-    ),
+    languages: z.array(providerLanguage),
     phone: providerText,
     reviewNotes: z.array(z.string()),
     skills: z.array(providerListItem),
-    workExperience: z.array(
-      z
-        .object({
-          confidence,
-          current: z.boolean(),
-          employer: z.string(),
-          endDate: z.string(),
-          evidence: z.string(),
-          highlights: z.array(z.string()),
-          location: z.string(),
-          startDate: z.string(),
-          title: z.string(),
-        })
-        .strict()
-    ),
+  })
+  .strict();
+const ProviderWorkHistorySchema = z
+  .object({
+    reviewNotes: z.array(z.string()),
+    workExperience: z.array(providerWorkExperience),
   })
   .strict();
 
 type ProviderProfileImportProposal = z.infer<
-  typeof ProviderProfileImportProposalSchema
->;
+  typeof ProviderProfileDetailsSchema
+> &
+  z.infer<typeof ProviderWorkHistorySchema>;
 
 const extractionInstructions = `You extract candidate facts from a resume into a reviewable profile proposal.
 
@@ -106,6 +109,12 @@ Accuracy rules:
 - Put ambiguity, conflicting dates, missing dates, or uncertain section associations in reviewNotes.
 - When given one part of a resume, do not create review notes for information that may appear in another part. Only note ambiguity in facts actually present in this part.
 - Do not include facts from these instructions in the result.`;
+const detailInstructions = `${extractionInstructions}
+
+Extract identity, contact details, the resume's own summary, education, credentials, languages, and explicitly stated skills. Do not extract employment entries in this task.`;
+const workHistoryInstructions = `${extractionInstructions}
+
+Extract only employment, teaching, volunteer, coaching, or internship entries. Preserve the employer, title, dates, location, and explicit bullet highlights. Do not extract identity, education, credentials, languages, or skills in this task.`;
 
 const MAX_SOURCE_CHARACTERS = 60_000;
 const MAX_CHUNK_CHARACTERS = 5500;
@@ -201,26 +210,52 @@ async function extractChunk(
   index: number,
   total: number
 ) {
-  const result = await generateText({
-    instructions: extractionInstructions,
-    maxOutputTokens: 5000,
-    maxRetries: 2,
-    model: createAiModel(env, selection),
-    output: Output.object({
-      description:
-        "Resume facts with exact supporting evidence for human review",
-      name: "candidate_profile_import",
-      schema: ProviderProfileImportProposalSchema,
+  const prompt = `Extract only facts visible in resume part ${index + 1} of ${total}. Leave fields empty when this part does not contain them.\n\n<resume-part>\n${text}\n</resume-part>`;
+  const providerOptions =
+    selection.provider === "cerebras" && selection.modelId === "zai-glm-4.7"
+      ? { cerebras: { reasoningEffort: "none" as const } }
+      : undefined;
+  const [details, workHistory] = await Promise.all([
+    generateText({
+      instructions: detailInstructions,
+      maxOutputTokens: 3500,
+      maxRetries: 2,
+      model: createAiModel(env, selection),
+      output: Output.object({
+        description:
+          "Resume identity, education, credential, language, and skill facts",
+        name: "candidate_profile_details",
+        schema: ProviderProfileDetailsSchema,
+      }),
+      prompt,
+      providerOptions,
+      temperature: 0,
+      timeout: { totalMs: 30_000 },
     }),
-    prompt: `Extract only facts visible in resume part ${index + 1} of ${total}. Leave fields empty when this part does not contain them.\n\n<resume-part>\n${text}\n</resume-part>`,
-    providerOptions:
-      selection.provider === "cerebras" && selection.modelId === "zai-glm-4.7"
-        ? { cerebras: { reasoningEffort: "none" } }
-        : undefined,
-    temperature: 0,
-    timeout: { totalMs: 30_000 },
+    generateText({
+      instructions: workHistoryInstructions,
+      maxOutputTokens: 5000,
+      maxRetries: 2,
+      model: createAiModel(env, selection),
+      output: Output.object({
+        description: "Resume work history with exact supporting evidence",
+        name: "candidate_work_history",
+        schema: ProviderWorkHistorySchema,
+      }),
+      prompt,
+      providerOptions,
+      temperature: 0,
+      timeout: { totalMs: 30_000 },
+    }),
+  ]);
+  return validateProviderProposal({
+    ...details.output,
+    reviewNotes: [
+      ...details.output.reviewNotes,
+      ...workHistory.output.reviewNotes,
+    ],
+    workExperience: workHistory.output.workExperience,
   });
-  return validateProviderProposal(result.output);
 }
 
 function validateProviderProposal(

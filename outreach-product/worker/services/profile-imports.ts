@@ -28,7 +28,10 @@ export async function importResume(
 ) {
   const contentType = request.headers.get("content-type") ?? "";
   if (!RESUME_CONTENT_TYPES.has(contentType)) {
-    throw new ResumeUploadError("Use a PDF or DOCX resume", 415);
+    throw new ResumeUploadError(
+      "Use a PDF, DOCX, PPTX, image, Markdown, or text resume",
+      415
+    );
   }
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (!(contentLength > 0 && contentLength <= MAX_RESUME_BYTES)) {
@@ -119,8 +122,9 @@ export async function importResume(
 }
 
 function safeFilename(value: string) {
-  return value
+  const sanitized = value
     .replaceAll(/[^a-z0-9._ -]/giu, "_")
     .replaceAll(/\s+/gu, " ")
     .slice(0, 120);
+  return sanitized || "resume";
 }
