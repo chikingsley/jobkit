@@ -1,5 +1,7 @@
 import {
+  Check,
   ChevronLeft,
+  CircleAlert,
   Download,
   ExternalLink,
   File,
@@ -7,7 +9,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { SettingsPage } from "@/components/settings-page";
 import {
@@ -51,6 +53,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { DocumentPacket } from "@/features/documents/types";
 import { documentCategories, documentCategoryLabel } from "@/form-options";
 import type { ApiRequest } from "@/lib/api";
 import type { StoredDocument } from "@/profile-types";
@@ -69,6 +72,23 @@ export function DocumentsView({
   const [selected, setSelected] = useState<StoredDocument | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [previewing, setPreviewing] = useState(false);
+  const [packets, setPackets] = useState<DocumentPacket[]>([]);
+
+  const loadPackets = useCallback(async () => {
+    const response = await request("/api/document-packets");
+    const data = (await response.json()) as { packets: DocumentPacket[] };
+    setPackets(data.packets);
+  }, [request]);
+
+  useEffect(() => {
+    void loadPackets().catch((error) =>
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Document packets could not load"
+      )
+    );
+  }, [loadPackets]);
 
   useEffect(() => {
     if (!selected) {
@@ -119,6 +139,7 @@ export function DocumentsView({
         );
       }
       await onChanged();
+      await loadPackets();
       toast.success("Document uploaded");
     } finally {
       setUploading(false);
@@ -136,7 +157,18 @@ export function DocumentsView({
       setSelected(null);
     }
     await onChanged();
+    await loadPackets();
     toast.success("Document deleted");
+  }
+
+  async function setDefaultPacket(packetId: string) {
+    await request("/api/document-packets/default", {
+      body: JSON.stringify({ packetId }),
+      headers: { "content-type": "application/json" },
+      method: "PUT",
+    });
+    await loadPackets();
+    toast.success("Default attachment packet saved");
   }
 
   return (
@@ -144,6 +176,64 @@ export function DocumentsView({
       description="Private files stored in R2 for applications and future email attachments."
       title="Application documents"
     >
+      {selected ? null : (
+        <div className="mb-4 grid gap-3 md:grid-cols-2">
+          {packets.map((packet) => (
+            <Card key={packet.id}>
+              <CardHeader>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <CardTitle>{packet.name}</CardTitle>
+                    <CardDescription className="mt-1">
+                      {packet.description}
+                    </CardDescription>
+                  </div>
+                  {packet.isDefault ? (
+                    <span className="rounded-md bg-primary px-2 py-1 font-medium text-primary-foreground text-xs">
+                      Default
+                    </span>
+                  ) : null}
+                </div>
+              </CardHeader>
+              <CardContent className="grid gap-2">
+                {packet.items.map((item) => (
+                  <div
+                    className="flex items-center gap-2 text-sm"
+                    key={item.category}
+                  >
+                    <Check className="size-4 text-emerald-600" />
+                    <span className="min-w-0 truncate">{item.filename}</span>
+                  </div>
+                ))}
+                {packet.missingCategories.map((missing) => (
+                  <div
+                    className="flex items-center gap-2 text-muted-foreground text-sm"
+                    key={missing}
+                  >
+                    <CircleAlert className="size-4 text-amber-600" />
+                    <span>{documentCategoryLabel(missing)} missing</span>
+                  </div>
+                ))}
+                <p className="pt-2 text-muted-foreground text-xs">
+                  This preset chooses email attachments. It does not decide
+                  whether you qualify for a job.
+                </p>
+                {packet.isDefault ? null : (
+                  <Button
+                    className="mt-1 w-fit"
+                    disabled={packet.missingCategories.length > 0}
+                    onClick={() => void setDefaultPacket(packet.id)}
+                    variant="outline"
+                  >
+                    Use by default
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
       {selected ? null : (
         <Card className="mb-4">
           <CardContent className="py-3">

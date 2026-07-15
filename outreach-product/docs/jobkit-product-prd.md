@@ -1,14 +1,17 @@
 # Jobkit Product PRD
 
 Status: V1 implementation in progress
-Last updated: 2026-07-11
-Scope: personal ESL/teaching job search product, Cloudflare-first backend, web dashboard, Expo mobile app
+Last updated: 2026-07-14
+Scope: ESL/teaching job discovery, qualification matching, outreach, and verified application execution
 
 ## 1. Summary
 
-Jobkit should become a private Indeed-like job search and application workstation for English teaching jobs. It should keep the current board ingestion pipeline, but expose the inventory through a Cloudflare-hosted product surface with strong search, faceted filtering, multi-sort, job detail review, email draft creation, and safe manual application tracking.
+Jobkit is an application system for international teaching work. It combines two acquisition paths:
 
-The app is not an unattended auto-apply bot. It is a job inventory, triage, drafting, and application evidence system. It may submit an application only after the user has reviewed and explicitly approved the exact immutable message for that job. It must verify and record the result rather than inferring success from a request alone.
+1. normalized listings from job boards; and
+2. structured country sweeps that discover schools, contacts, vacancies, and cold-outreach routes.
+
+Both paths feed the same user-specific qualification matching, message generation, application-route execution, follow-up, and outcome tracking. The product should move safely from review to one-click and eventually policy-controlled automatic submission. Every external action must be idempotent, auditable, and verified against the authoritative destination rather than inferred from a request alone.
 
 ## 2. Why This Exists
 
@@ -70,16 +73,19 @@ Implications:
 2. Search and filter by the things that matter: country, location, source, salary visibility, apply method, recency, status, and teaching-specific fit.
 3. Sort by multiple fields, including country, first seen, salary-derived fields, source, and status.
 4. Keep scraped inventory separate from application state.
-5. Create Gmail drafts from selected jobs without sending.
-6. Track events: viewed, saved, ignored, draft created, source opened, prefilled, manually submitted, replied, closed.
-7. Support SeriousTeachers safely: generate and revise a draft, require exact-message approval, submit through the authenticated form, then verify and record the result.
-8. Make the web dashboard useful first, then provide an Expo mobile app that consumes the same API and supports review, saved searches, and light triage.
+5. Use one explicit, testable message policy across email, board forms, and future application routes.
+6. Create Gmail drafts with the selected application packet, send when the user's automation policy permits it, and reconcile sent/reply state from Gmail.
+7. Let users resolve qualification questions directly. A user-confirmed “yes” is a match; document storage is a separate convenience and submission concern.
+8. Track events: viewed, saved, ignored, drafted, approved, sent/submitted, replied, interviewed, offered, rejected, bounced, and closed.
+9. Support route-specific executors, beginning with Gmail and SeriousTeachers, with exact-message history, deduplication, and authoritative verification.
+10. Build a reusable global catalog of schools, contacts, evidence, and freshness state from bounded country sweeps.
+11. Make the web dashboard useful first, then provide a mobile client that consumes the same API and supports review, triage, and application status.
 
 ## 5. Non-Goals
 
-- No unattended or bulk application submission.
-- No submission without approval of the exact job and immutable message version.
-- No bulk cold-email blasting.
+- No blind submission to stale listings, duplicate recipients, or unresolved destinations.
+- No unbounded cold-email blasting or shared-domain sending that damages deliverability.
+- No model-only eligibility, attachment, recipient, or success decisions where deterministic state is available.
 - No dependency on private Indeed APIs or WAF-bypassing scraping.
 - No CSV export as a normal workflow.
 - No second source of truth outside the database.
@@ -97,9 +103,11 @@ Future user:
 
 ## 7. Product Principles
 
-- Inventory is not application state.
-- Manual application confirmation is required.
-- Draft-first for email.
+- Inventory is not application state, and a school is not a job.
+- Qualification and proof are separate: a user's explicit “yes” resolves matching; a stored document only determines whether proof is ready to attach or upload.
+- One message policy governs every channel. Platform constraints are deterministic; the model only tailors within them.
+- Application routes are explicit executors: email, board form, external URL, login-gated form, phone, or manual.
+- Automation is graduated from preview to one-click to policy-controlled auto-submit. Every level retains deduplication, rate limits, event history, and destination verification.
 - URL state matters: filters, sort, page, and selected job should be shareable/bookmarkable.
 - Data quality should be visible. The UI should show when salary, posted date, country, or apply method is inferred.
 - Cloudflare from day one for product backend and web hosting.
@@ -252,16 +260,22 @@ Acceptance criteria:
 
 ### 10.6 Draft an email application
 
-As the user, I can create a Gmail draft for email-based jobs.
+As the user, I can create, review, and send a Gmail application through an explicit email route.
 
 Acceptance criteria:
 
 - Button appears only when an email route exists or when the user manually adds an email.
-- The UI shows the message before draft creation.
-- Draft creation calls the backend and creates a Gmail draft, not a sent email.
+- The message follows the shared message policy and is stored as an immutable version.
+- The greeting is `Hello,`; `Dear` is not valid output.
+- Email subjects use the proven `Native English Teacher Available - {location}` shape unless a route-specific policy overrides it.
+- The selected application packet is visible before draft creation or sending.
+- Draft creation and sending are distinct executor actions.
 - Gmail account/profile is explicit.
-- Event log records `draft_created` with Gmail draft/thread identifiers.
-- The app never sends email directly in MVP.
+- The personal Linux workflow may use the existing authenticated `gws-profile chibuzor` bridge.
+- The hosted multi-user product uses per-user Google OAuth; refresh tokens never enter frontend storage.
+- Event history records exact recipient, subject, message version, attachment IDs, Gmail draft/message/thread IDs, and the executor result.
+- Re-running the same route and message does not create a duplicate draft or send.
+- Gmail sent/thread state is authoritative for whether email actually left the account and whether a reply arrived.
 
 ### 10.7 Open external or login-gated apply flow
 
@@ -306,6 +320,16 @@ Job compensation is normalized at import into amount, currency, period, qualifie
 confidence, and notes fields. Queue and detail views consume that single stored representation;
 manually reviewed corrections are preserved across later imports.
 
+Each unresolved qualification can be answered directly from the job detail view with `Yes`, `No`,
+or `Not sure`. `Yes` immediately resolves that criterion as a match and saves the answer to the
+user's qualifications for later jobs. It does not require documentary proof. The answer remains
+editable from Profile / Qualifications.
+
+Documents are a parallel concern. A qualification can be satisfied without a file on the platform;
+the UI may recommend uploading proof so later attachment or form-upload steps are automatic. A
+missing file blocks execution only when the destination requires that file during the current
+submission, not merely because the listing mentions that the candidate may need it later.
+
 ### 10.10 Private application documents
 
 Candidate documents live in a private R2 bucket and are indexed by D1 metadata. Objects are never
@@ -313,17 +337,85 @@ published as static assets. All upload, listing, view, and delete requests requi
 beta authorization as the rest of the API. Authenticated reads stream object bodies with private,
 no-store caching so the same files can later be attached to outbound email workflows.
 
+Email packets select specific document versions rather than attaching every file in a category.
+Initial presets:
+
+- `English teaching core`: default resume, degree/diploma, and TEFL certificate.
+- `Visa-market`: core packet plus passport and recent professional photo.
+- `Requested proof`: only documents explicitly required by the destination, such as a background
+  check, transcript, teaching credential, or reference letter.
+
+Packet presets are recommendations and user-editable. The personal profile may choose
+`Visa-market` as its normal packet. The product must not claim a file is attached unless the exact
+immutable draft records that attachment and the Gmail MIME payload contains it.
+
+### 10.11 Message policy and preference calibration
+
+Every generated message is constrained by a platform policy before user-specific style is applied:
+
+- greet with `Hello,`; never generate `Dear`;
+- write in the candidate's first-person voice;
+- lead with truthful qualifications and availability relevant to the route;
+- stay concise and specific without copying listing boilerplate;
+- ask exactly one useful question that invites a reply;
+- never invent qualifications, duration, relocation intent, authorization, or document availability;
+- use the profile-selected signature; and
+- pass deterministic validation before approval or automatic execution.
+
+Style calibration presents two outputs for the same context and lets the user choose A, B, or equal.
+Decisions can focus on a whole message or one changed sentence. Each decision stores the context,
+both variants, the chosen variant, optional reason tags, models/prompts, and timestamp. The selected
+examples become an editable style instruction plus a compact few-shot example set; this is prompt
+and evaluation data, not an RL-training requirement.
+
+The same calibration set evaluates candidate models and prompt revisions. Human pairwise choices
+are ground truth; deterministic rules score hard constraints; model judges may assist with soft
+rubrics only after they are calibrated against those human choices.
+
+### 10.12 School catalog and country sweeps
+
+Country sweeps populate a global catalog, not user-specific fake jobs. The catalog stores schools,
+locations, domains, multiple contact points, evidence URLs, last-verified dates, career pages, and
+outreach eligibility. Active opportunities reference schools but remain distinct records.
+
+A bounded sweep has three phases:
+
+1. discovery across directories, search, maps, and known sources;
+2. verification of the official site, contacts, vacancies, and evidence; and
+3. a coverage audit for missed cities, school types, and duplicates.
+
+The persisted result is reusable by every user. Applications, replies, and outcomes remain
+user-owned; later aggregate response metrics must preserve user privacy.
+
+### 10.13 Policy-controlled execution
+
+Each user chooses an automation level per channel: preview only, one-click approve/send, or
+auto-submit. Auto-submit is allowed only when the route is fresh, the recipient is valid, hard
+requirements are not declined, any required-at-submission files are attached, message validation
+passes, deduplication passes, and daily/channel limits permit the action. Otherwise the item returns
+to review with a specific reason.
+
+Non-response belongs to an outreach attempt, not permanently to the school. School/contact response
+rates are computed only after a defined response window and sufficient attempts; the initial
+display threshold is at least three independent sends.
+
 ## 11. Data Model
 
-The existing `jobs` table remains the inventory root. Product work should add application/event tables instead of overloading scraped fields.
+The existing `jobs` table remains the opportunity inventory root. Schools, contacts, qualification
+claims, application routes, messages, attempts, and events are separate entities rather than extra
+columns forced onto a job row.
 
 ### 11.1 Jobs
 
-Current key:
+The local ingestion inventory is keyed by:
 
 ```sql
 PRIMARY KEY (board, job_id)
 ```
+
+The hosted D1 table currently uses the board's stable ID as `jobs.id`. Before importing multiple
+sources, use an unambiguous hosted identifier such as `${board}:${job_id}` or store `board` and
+`source_job_id` under a unique constraint. Do not assume two boards cannot emit the same numeric ID.
 
 Important existing fields:
 
@@ -365,6 +457,24 @@ Near-term derived fields:
 - `posted_date_confidence`
 - `country_confidence`
 - `source_url_canonical`
+
+Application destinations belong in a related table because one opportunity may expose email, URL,
+board-form, phone, and manual routes simultaneously:
+
+```sql
+CREATE TABLE application_routes (
+    id TEXT PRIMARY KEY,
+    job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK (kind IN ('email','board_form','external_url','login_gated_form','phone','manual')),
+    destination TEXT NOT NULL,
+    contact_point_id TEXT,
+    source_evidence TEXT NOT NULL DEFAULT '',
+    last_verified_at TEXT,
+    status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active','stale','closed','invalid')),
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+```
 
 ### 11.2 Job events
 
@@ -491,6 +601,54 @@ States:
 - `sent_detected`
 - `reply_detected`
 - `closed`
+
+### 11.7 User-confirmed qualifications
+
+User answers are first-class matching inputs, not document-verification records:
+
+```sql
+CREATE TABLE user_qualification_claims (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,
+    concept_key TEXT NOT NULL,
+    answer TEXT NOT NULL CHECK (answer IN ('yes','no')),
+    details_json TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(details_json)),
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    UNIQUE(user_id, kind, concept_key)
+);
+```
+
+The matcher checks an exact normalized claim before falling back to structured profile fields and
+documents. `yes` resolves the requirement to `match`; `no` resolves a required criterion to
+`conflict`; deleting the answer restores `unknown`. Reuse is allowed only when the normalized
+concept is genuinely equivalent—for example, `document:grade_transcript` must not resolve an
+unrelated transcript or degree requirement.
+
+### 11.8 Document packets
+
+```sql
+CREATE TABLE user_document_packets (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    is_default INTEGER NOT NULL DEFAULT 0 CHECK (is_default IN (0,1)),
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    UNIQUE(user_id, name)
+);
+
+CREATE TABLE user_document_packet_items (
+    packet_id TEXT NOT NULL REFERENCES user_document_packets(id) ON DELETE CASCADE,
+    document_id TEXT NOT NULL REFERENCES user_documents(id) ON DELETE CASCADE,
+    position INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (packet_id, document_id)
+);
+```
+
+An application draft snapshots the selected document IDs so changing a packet later cannot change
+what an approved or sent draft claims to contain.
 
 ## 12. API Requirements
 
@@ -654,17 +812,20 @@ Settings:
 
 ## 15. Gmail and Outreach
 
-Gmail remains draft-first:
+Gmail supports preview, draft, explicit send, and policy-controlled automatic send. Drafting and
+sending remain separate executor actions even when automation advances directly from one to the
+other.
 
-- The product can create drafts.
-- The product can read sent/reply state when authorized.
-- The product must not send messages in MVP.
-
-Before any send-capable feature exists:
-
-- Gmail account must be explicit.
-- Sending must require a separate confirmation boundary.
-- Logs must record exact subject/body/draft/thread IDs.
+- The local personal bridge uses the existing encrypted `gws-profile chibuzor` OAuth credentials.
+- The hosted product uses per-user Google OAuth and Gmail API scopes appropriate to the enabled
+  actions.
+- MIME messages include the exact selected document versions; text that claims attachments must be
+  rejected if the MIME payload does not contain them.
+- Gmail is authoritative for sent state, thread membership, replies, bounces, and delivery-adjacent
+  signals available through the API.
+- Logs record exact recipient, subject, message version, attachment IDs, draft/message/thread IDs,
+  executor, automation policy, and result.
+- Per-user rate limits, deduplication, suppression, and pause controls apply before every send.
 
 ## 16. Ingestion and Refresh
 
@@ -675,8 +836,11 @@ Cloudflare product can import/sync from the local SQLite or from generated D1 mi
 Short-term:
 
 - Keep `uv run jobs refresh` as the ingestion command.
-- Add a D1 import/sync path.
+- Refresh and reconcile a source before importing its active rows; do not bulk-import the existing
+  SQLite snapshot as if every listing were current.
+- Add a D1 import/sync path that preserves source freshness and closure evidence.
 - Product reads from D1 after sync.
+- Normalize one or more application routes per opportunity instead of overloading a single URL.
 
 Medium-term:
 
@@ -692,6 +856,7 @@ Board-specific notes:
 - ESL Cafe modern: JSON list API plus detail pages.
 - TEFL: URL apply route.
 - SeriousTeachers: login-gated apply route, no exposed employer emails, manual respond form.
+- Country sweeps: school/contact discovery and verification, not job-board rows.
 
 ## 17. Authentication and Privacy
 
@@ -712,7 +877,9 @@ Personal MVP:
 
 - Time from refresh to shortlist is under 10 minutes.
 - User can find jobs by country/source/apply method without CLI queries.
-- User can create a reviewed Gmail draft from a job.
+- User can create a reviewed Gmail draft with the correct attachment packet from a job.
+- User can confirm a qualification once and reuse it across future matches.
+- User can send or submit through a supported executor and see authoritative verification.
 - User can see which jobs were opened, ignored, drafted, or applied.
 - No duplicate CSV exports or clutter are produced.
 
@@ -723,59 +890,49 @@ Product metrics later:
 - Draft creation rate.
 - Manual application completion rate.
 - Reply rate by country/source/template.
+- Delivery, reply, interview, and offer rates by route, contact, school, country, and message policy.
+- Automatic-execution hold rate and reason distribution.
 - Time from job first seen to action.
 
 ## 19. Phased Roadmap
 
-### Phase 0: PRD and architecture
+### Phase 1: Current private beta — complete the application core
 
-- Create this PRD.
-- Decide repo layout for `apps/web`, `apps/mobile`, `packages/shared`, and `packages/api` or equivalent.
-- Decide D1 migration strategy.
+- Enforce one shared message policy in the hosted generator and local email path.
+- Add reversible user-confirmed qualification resolutions.
+- Add document packet selection and real Gmail MIME attachments.
+- Keep the existing SeriousTeachers executor idempotent and authoritative.
+- Build the 10–20 item pairwise message calibration flow and model comparison dataset.
 
-### Phase 1: Cloudflare web skeleton
+### Phase 2: Fresh multi-source inventory and email execution
 
-- Scaffold React/Vite app deployed through Workers Static Assets.
-- Add Worker API with D1 binding.
-- Import current `jobs` schema into D1.
-- Implement read-only jobs list/detail.
-- Implement URL-backed filters and sorting.
+- Refresh each existing board and import only reconciled active rows into D1.
+- Add normalized application routes, including multiple emails or URLs when supported.
+- Connect Gmail through the current local bridge for personal dogfooding.
+- Add hosted per-user Google OAuth before exposing Gmail execution to other users.
+- Reconcile drafts, sends, replies, bounces, interviews, offers, and rejections.
 
-### Phase 2: Application state
+### Phase 3: School catalog and country sweeps
 
-- Add `job_events`.
-- Add save/ignore/open/mark-applied actions.
-- Add event timeline in detail pane.
-- Add saved filters.
+- Add organizations, locations, contact points, evidence, and discovery-run state.
+- Convert the prior Tajikistan research into the first persisted sweep.
+- Run Georgia as the second market and use the coverage comparison to refine the workflow.
+- Add freshness scheduling and deduplication by canonical domain, organization, and location.
 
-### Phase 3: Search and salary normalization
+### Phase 4: Controlled automation
 
-- Add FTS5 table.
-- Add salary parser producing min/max/currency/period/confidence.
-- Add fit insights extraction.
+- Add per-user/channel automation policies, daily limits, suppression, and pause controls.
+- Auto-submit only the safe subset; hold anything with a specific unresolved execution condition.
+- Measure delivery, reply, interview, and offer outcomes by route and message policy.
+- Permit model or prompt changes only when they pass the human-labeled calibration set.
 
-### Phase 4: Gmail draft workflow
+### Phase 5: Additional executors and mobile
 
-- Add draft preview UI.
-- Add Gmail draft creation backend.
-- Record draft events and Gmail IDs.
-- Keep send manual.
-
-### Phase 5: Expo mobile MVP
-
-- Scaffold Expo Router app.
-- Add NativeWind and React Native Reusables baseline.
-- Use shared API types.
-- Implement jobs list, detail, saved, drafts, settings.
-- Add deep links to job detail.
-
-### Phase 6: SeriousTeachers helper
-
-- Build a browser extension or controlled helper.
-- Scan visible fields.
-- Review proposed values.
-- Fill only after explicit user action.
-- Never submit.
+- Investigate TEFL.com login and application automation after credentials and destination behavior
+  are verified.
+- Add other board/ATS executors only when they can be made idempotent and observable.
+- Build the mobile client around triage, confirmations, approvals, and outcome notifications after
+  the web application flow is stable.
 
 ## 20. Risks
 
@@ -807,16 +964,20 @@ Cloudflare constraints:
 
 Safety:
 
-- The system must not blur the line between prefill/draft and submit/send.
+- The system must record the exact transition from preview to draft to send/submit.
+- User-confirmed qualifications are sufficient for matching; the platform must not represent them
+  as independently verified credentials.
+- Official document contents and dates are never altered by the platform.
+- Automation must be pausable, rate-limited, deduplicated, and scoped per user and channel.
 
 ## 21. Open Questions
 
-1. Should the product be single-user private indefinitely, or designed for multi-user from the first D1 schema?
-2. Should D1 be the only job DB once the web app exists, or should local SQLite remain canonical with D1 as a mirror during MVP?
-3. Which salary periods matter most for sorting: monthly, annual, hourly, per class/contact hour?
-4. Should saved filters support alerts from day one?
-5. Should mobile notifications exist before Gmail follow-up tracking is productized?
-6. Should SeriousTeachers helper be a browser extension, Playwright-assisted local tool, or a userscript?
+1. Which document packet should be the personal default: `English teaching core` or `Visa-market`?
+2. Which Gmail actions should the first hosted OAuth consent request: compose only, or compose and
+   send?
+3. What route-specific daily send limits should apply during personal dogfooding?
+4. Which salary periods matter most for sorting: monthly, annual, hourly, or per contact hour?
+5. Should saved filters support alerts before country-sweep freshness notifications exist?
 
 ## 22. Current Docs Checked
 
@@ -838,3 +999,7 @@ Safety:
 - [TanStack Table filtering](https://tanstack.com/table/latest/docs/guide/column-filtering)
 - [TanStack Table pagination](https://tanstack.com/table/latest/docs/guide/pagination)
 - [TanStack Router search params](https://tanstack.com/router/latest/docs/guide/search-params)
+- [Anthropic custom styles from writing samples and instructions](https://support.anthropic.com/en/articles/10181068-configuring-and-using-styles)
+- [LangSmith pairwise annotation queues](https://docs.langchain.com/langsmith/annotation-queues)
+- [Google Gemini prompt design and few-shot examples](https://ai.google.dev/gemini-api/docs/prompting-strategies)
+- [Google Vertex AI pairwise evaluation against human preferences](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/models/evaluate-judge-model)

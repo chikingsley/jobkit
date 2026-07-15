@@ -22,6 +22,11 @@ import { monthlyCompensationUsd } from "@/features/jobs/compensation";
 import { filterJobs, selectVisibleJob } from "@/features/jobs/filters";
 import type { FxData, Job } from "@/features/jobs/types";
 import { JobsWorkspace } from "@/features/jobs/workspace";
+import type {
+  QualificationClaim,
+  QualificationClaimAnswer,
+  QualificationClaims,
+} from "@/features/matching/claims";
 import { evaluateJob } from "@/features/matching/evaluate";
 import {
   type WorkspaceView,
@@ -40,6 +45,9 @@ import type { Preferences, Profile, StoredDocument } from "@/profile-types";
 
 const DocumentsView = lazy(async () => ({
   default: (await import("@/views/documents-view")).DocumentsView,
+}));
+const MessageStyleView = lazy(async () => ({
+  default: (await import("@/views/message-style-view")).MessageStyleView,
 }));
 const PreferencesView = lazy(async () => ({
   default: (await import("@/views/preferences-view")).PreferencesView,
@@ -72,11 +80,14 @@ export function App() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [instruction, setInstruction] = useState("");
   const [busy, setBusy] = useState("");
+  const [busyClaimKey, setBusyClaimKey] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [fx, setFx] = useState<FxData>({ rates: {}, updatedAt: null });
   const [profile, setProfile] = useState<Profile | null>(null);
   const [preferences, setPreferences] = useState<Preferences | null>(null);
   const [documents, setDocuments] = useState<StoredDocument[]>([]);
+  const [qualificationClaims, setQualificationClaims] =
+    useState<QualificationClaims>({});
   const setActiveView = useCallback(
     (view: WorkspaceView) => navigate(workspacePaths[view]),
     [navigate]
@@ -128,6 +139,12 @@ export function App() {
         setPreferences(value);
       }),
       loadDocuments(),
+      apiRequest("/api/qualification-claims").then(async (response) => {
+        const value = (await response.json()) as {
+          claims: QualificationClaims;
+        };
+        setQualificationClaims(value.claims);
+      }),
     ]).catch((error) =>
       toast.error(
         error instanceof Error ? error.message : "Workspace could not load"
@@ -146,12 +163,13 @@ export function App() {
                 profile,
                 preferences,
                 monthlyCompensationUsd(job.compensation, fx),
-                documents
+                documents,
+                qualificationClaims
               ),
             ])
           : []
       ),
-    [documents, fx, jobs, preferences, profile]
+    [documents, fx, jobs, preferences, profile, qualificationClaims]
   );
   const countries = [...new Set(jobs.map((job) => job.country))].sort();
   const visibleJobs = filterJobs(jobs, matches, {
@@ -187,6 +205,40 @@ export function App() {
     }
   }
 
+  async function saveQualificationClaim(input: {
+    answer: QualificationClaimAnswer | null;
+    claimKey: string;
+    kind: string;
+    label: string;
+  }) {
+    setBusyClaimKey(input.claimKey);
+    try {
+      const response = await apiRequest("/api/qualification-claims", {
+        body: JSON.stringify(input),
+        headers: { "content-type": "application/json" },
+        method: "PUT",
+      });
+      const { claim } = (await response.json()) as {
+        claim: QualificationClaim | null;
+      };
+      setQualificationClaims((current) => {
+        const next = { ...current };
+        if (claim) {
+          next[claim.claimKey] = claim;
+        } else {
+          delete next[input.claimKey];
+        }
+        return next;
+      });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Qualification answer failed"
+      );
+    } finally {
+      setBusyClaimKey("");
+    }
+  }
+
   return (
     <SidebarProvider className="h-svh min-h-0 overflow-hidden">
       <WorkspaceSidebar
@@ -205,6 +257,7 @@ export function App() {
             element={
               <JobsWorkspace
                 busy={busy}
+                busyClaimKey={busyClaimKey}
                 countries={countries}
                 countryFilter={countryFilter}
                 fitFilter={fitFilter}
@@ -216,6 +269,7 @@ export function App() {
                 onCountryFilter={setCountryFilter}
                 onFitFilter={setFitFilter}
                 onInstruction={setInstruction}
+                onQualificationClaim={saveQualificationClaim}
                 onRefresh={loadJobs}
                 onSelect={setSelectedId}
                 onShowExcluded={setShowExcluded}
@@ -271,6 +325,14 @@ export function App() {
               </WorkspacePage>
             }
             path={workspacePaths.documents}
+          />
+          <Route
+            element={
+              <WorkspacePage>
+                <MessageStyleView request={apiRequest} />
+              </WorkspacePage>
+            }
+            path={workspacePaths.messageStyle}
           />
           <Route
             element={<Navigate replace to={workspacePaths.jobs} />}

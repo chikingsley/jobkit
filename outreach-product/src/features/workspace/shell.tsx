@@ -3,6 +3,7 @@ import {
   ChevronsUpDown,
   Files,
   LogOut,
+  MessageSquareText,
   SlidersHorizontal,
   UserRound,
 } from "lucide-react";
@@ -39,6 +40,7 @@ const navigation = [
   { icon: UserRound, id: "profile", label: "Profile" },
   { icon: SlidersHorizontal, id: "preferences", label: "Preferences" },
   { icon: Files, id: "documents", label: "Documents" },
+  { icon: MessageSquareText, id: "messageStyle", label: "Writing style" },
 ] as const;
 
 export function ViewLoading() {
@@ -205,6 +207,9 @@ function NavUser({
               <DropdownMenuItem onClick={() => go("documents")}>
                 <Files /> Documents
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => go("messageStyle")}>
+                <MessageSquareText /> Writing style
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => void onSignOut()}>
@@ -221,6 +226,7 @@ export function WorkspaceHeader({ activeView }: { activeView: WorkspaceView }) {
   const title = {
     documents: "Documents",
     jobs: "Job review",
+    messageStyle: "Writing style",
     preferences: "Preferences",
     profile: "Profile",
   }[activeView];

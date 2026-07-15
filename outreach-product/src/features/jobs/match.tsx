@@ -1,4 +1,5 @@
 import { CheckCircle2, CircleHelp, Minus, XCircle } from "lucide-react";
+import { useId } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -7,6 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import type { QualificationClaimAnswer } from "@/features/matching/claims";
 import type { JobMatch, MatchState } from "@/profile-types";
 
 export function MatchBadge({ match }: { match?: JobMatch }) {
@@ -17,7 +20,20 @@ export function MatchBadge({ match }: { match?: JobMatch }) {
   );
 }
 
-export function MatchPanel({ match }: { match: JobMatch }) {
+export function MatchPanel({
+  busyClaimKey,
+  match,
+  onQualificationClaim,
+}: {
+  busyClaimKey: string;
+  match: JobMatch;
+  onQualificationClaim: (input: {
+    answer: QualificationClaimAnswer | null;
+    claimKey: string;
+    kind: string;
+    label: string;
+  }) => Promise<void>;
+}) {
   const matched = match.criteria.filter(
     (item) => item.state === "match"
   ).length;
@@ -43,15 +59,72 @@ export function MatchPanel({ match }: { match: JobMatch }) {
       <CardContent className="grid gap-2 sm:grid-cols-2">
         {match.criteria.map((item) => (
           <div
-            className="flex items-start gap-2 rounded-lg border bg-muted/20 p-3 text-sm"
+            className="grid gap-3 rounded-lg border bg-muted/20 p-3 text-sm"
             key={item.label}
           >
-            <CriterionIcon state={item.state} />
-            <span className="leading-5">{item.label}</span>
+            <div className="flex items-start gap-2">
+              <CriterionIcon state={item.state} />
+              <span className="leading-5">{item.label}</span>
+            </div>
+            {item.claimKey ? (
+              <QualificationAnswer
+                busy={busyClaimKey === item.claimKey}
+                onChange={(answer) =>
+                  onQualificationClaim({
+                    answer,
+                    claimKey: item.claimKey ?? "",
+                    kind: item.claimKind ?? "other",
+                    label: item.label,
+                  })
+                }
+                value={item.claimAnswer ?? null}
+              />
+            ) : null}
           </div>
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+function QualificationAnswer({
+  busy,
+  onChange,
+  value,
+}: {
+  busy: boolean;
+  onChange: (value: QualificationClaimAnswer | null) => Promise<void>;
+  value: QualificationClaimAnswer | null;
+}) {
+  const groupId = useId();
+  const options = [
+    { label: "Yes", value: "yes" },
+    { label: "No", value: "no" },
+    { label: "Not sure", value: "unknown" },
+  ] as const;
+  return (
+    <RadioGroup
+      aria-label="Do you meet this requirement?"
+      className="grid auto-cols-fr grid-flow-col gap-0 overflow-hidden rounded-md border border-input shadow-xs"
+      disabled={busy}
+      onValueChange={(next) => void onChange(next === "unknown" ? null : next)}
+      value={value ?? "unknown"}
+    >
+      {options.map((option) => (
+        <label
+          className="flex min-h-8 min-w-0 cursor-pointer items-center justify-center border-input border-l px-2 font-medium text-muted-foreground text-xs transition-colors first:border-l-0 hover:bg-muted hover:text-foreground has-focus-visible:z-10 has-data-checked:bg-primary has-data-checked:text-primary-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring has-data-checked:hover:bg-primary/90 has-data-checked:hover:text-primary-foreground"
+          htmlFor={`${groupId}-${option.value}`}
+          key={option.value}
+        >
+          <RadioGroupItem
+            className="absolute size-px overflow-hidden opacity-0"
+            id={`${groupId}-${option.value}`}
+            value={option.value}
+          />
+          {option.label}
+        </label>
+      ))}
+    </RadioGroup>
   );
 }
 

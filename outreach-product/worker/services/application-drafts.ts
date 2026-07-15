@@ -8,8 +8,13 @@ import {
   readAiModel,
   readApplicationMessageModel,
 } from "../repositories/ai-model-settings";
+import {
+  copyPacketSnapshotStatements,
+  defaultPacketSnapshotStatements,
+} from "../repositories/draft-attachments";
 import { recordJobEvent } from "../repositories/job-events";
 import { upsertJob, upsertUserJob } from "../repositories/jobs";
+import { readMessageStyleGuidance } from "../repositories/message-style";
 import { readProfile } from "../repositories/user-settings";
 import { type JobImport, JobImportSchema } from "../schemas";
 import { ensureJobMatchFacts } from "./job-analysis";
@@ -20,9 +25,10 @@ export async function regenerateDrafts(
   env: AppEnv,
   userId: string
 ): Promise<number> {
-  const [model, profile] = await Promise.all([
+  const [model, profile, styleGuidance] = await Promise.all([
     readApplicationMessageModel(env.DB),
     savedProfile(env.DB, userId),
+    readMessageStyleGuidance(env.DB, userId),
   ]);
   const rows = await env.DB.prepare(
     `SELECT j.*,uj.id user_job_id,uj.priority
@@ -41,13 +47,29 @@ export async function regenerateDrafts(
     )
       .bind(userJobId)
       .first<{ version: number }>();
-    const draft = await generateApplicationMessage(env, model, job, profile);
+    const draft = await generateApplicationMessage(
+      env,
+      model,
+      job,
+      profile,
+      styleGuidance
+    );
+    const draftId = crypto.randomUUID();
     const timestamp = new Date().toISOString();
+    const snapshotStatements = await defaultPacketSnapshotStatements(
+      env,
+      userId,
+      draftId,
+      timestamp
+    );
     await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE application_drafts SET status='superseded' WHERE user_job_id=? AND status='draft'"
+      ).bind(userJobId),
       env.DB.prepare(
         "INSERT INTO application_drafts (id,user_job_id,version,message,change_summary,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?)"
       ).bind(
-        crypto.randomUUID(),
+        draftId,
         userJobId,
         (latest?.version ?? 0) + 1,
         draft.message,
@@ -56,6 +78,7 @@ export async function regenerateDrafts(
         draft.modelId,
         timestamp
       ),
+      ...snapshotStatements,
       env.DB.prepare(
         "UPDATE user_jobs SET status='review',updated_at=? WHERE id=? AND user_id=?"
       ).bind(timestamp, userJobId, userId),
@@ -70,10 +93,11 @@ export async function importJobsWithDrafts(
   userId: string,
   jobs: JobImport[]
 ): Promise<void> {
-  const [model, factsModel, profile] = await Promise.all([
+  const [model, factsModel, profile, styleGuidance] = await Promise.all([
     readApplicationMessageModel(env.DB),
     readAiModel(env.DB, "job_fact_extraction"),
     savedProfile(env.DB, userId),
+    readMessageStyleGuidance(env.DB, userId),
   ]);
   for (const job of jobs) {
     const timestamp = new Date().toISOString();
@@ -95,14 +119,21 @@ export async function importJobsWithDrafts(
       continue;
     }
     const [draft] = await Promise.all([
-      generateApplicationMessage(env, model, job, profile),
+      generateApplicationMessage(env, model, job, profile, styleGuidance),
       ensureJobMatchFacts(env, factsModel, job),
     ]);
-    await env.DB.prepare(
-      "INSERT INTO application_drafts (id,user_job_id,version,message,change_summary,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?)"
-    )
-      .bind(
-        crypto.randomUUID(),
+    const draftId = crypto.randomUUID();
+    const snapshotStatements = await defaultPacketSnapshotStatements(
+      env,
+      userId,
+      draftId,
+      timestamp
+    );
+    await env.DB.batch([
+      env.DB.prepare(
+        "INSERT INTO application_drafts (id,user_job_id,version,message,change_summary,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?)"
+      ).bind(
+        draftId,
         userJobId,
         1,
         draft.message,
@@ -110,8 +141,9 @@ export async function importJobsWithDrafts(
         draft.provider,
         draft.modelId,
         timestamp
-      )
-      .run();
+      ),
+      ...snapshotStatements,
+    ]);
     await recordJobEvent(
       env.DB,
       userJobId,
@@ -127,10 +159,11 @@ export async function reviseJobDraft(
   jobId: string,
   instruction: string
 ) {
-  const [model, profile, row] = await Promise.all([
+  const [model, profile, row, styleGuidance] = await Promise.all([
     readApplicationMessageModel(env.DB),
     savedProfile(env.DB, userId),
     currentJobAndDraft(env.DB, userId, jobId),
+    readMessageStyleGuidance(env.DB, userId),
   ]);
   const revised = await reviseApplicationMessage(
     env,
@@ -138,7 +171,8 @@ export async function reviseJobDraft(
     row.job,
     profile,
     row.message,
-    instruction
+    instruction,
+    styleGuidance
   );
   const draftId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
@@ -159,6 +193,7 @@ export async function reviseJobDraft(
       revised.modelId,
       timestamp
     ),
+    ...copyPacketSnapshotStatements(env.DB, row.draftId, draftId, timestamp),
     env.DB.prepare(
       "UPDATE user_jobs SET status='review',updated_at=? WHERE id=? AND user_id=?"
     ).bind(timestamp, row.userJobId, userId),
@@ -180,7 +215,7 @@ async function currentJobAndDraft(
 ) {
   const row = await db
     .prepare(
-      `SELECT j.*,uj.id user_job_id,uj.priority,d.version,d.message
+      `SELECT j.*,uj.id user_job_id,uj.priority,d.id draft_id,d.version,d.message
        FROM user_jobs uj
        JOIN jobs j ON j.id=uj.job_id
        JOIN application_drafts d ON d.user_job_id=uj.id
@@ -193,6 +228,7 @@ async function currentJobAndDraft(
     throw new Error("Job or draft not found");
   }
   return {
+    draftId: String(row.draft_id),
     job: toJobImport(row),
     message: String(row.message),
     userJobId: String(row.user_job_id),

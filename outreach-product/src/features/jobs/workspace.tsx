@@ -14,6 +14,7 @@ import {
 import { JobDetail } from "@/features/jobs/job-detail";
 import { JobQueueItem } from "@/features/jobs/job-queue-item";
 import type { FxData, Job } from "@/features/jobs/types";
+import type { QualificationClaimAnswer } from "@/features/matching/claims";
 import { cn } from "@/lib/utils";
 import type { JobMatch, Preferences, Profile } from "@/profile-types";
 
@@ -28,6 +29,7 @@ const fitFilterOptions = [
 
 export function JobsWorkspace({
   busy,
+  busyClaimKey,
   countries,
   countryFilter,
   fitFilter,
@@ -39,6 +41,7 @@ export function JobsWorkspace({
   onCountryFilter,
   onFitFilter,
   onInstruction,
+  onQualificationClaim,
   onRefresh,
   onSelect,
   onShowExcluded,
@@ -49,6 +52,7 @@ export function JobsWorkspace({
   showExcluded,
 }: {
   busy: string;
+  busyClaimKey: string;
   countries: string[];
   countryFilter: string;
   fitFilter: string;
@@ -60,6 +64,12 @@ export function JobsWorkspace({
   onCountryFilter: (value: string) => void;
   onFitFilter: (value: string) => void;
   onInstruction: (value: string) => void;
+  onQualificationClaim: (input: {
+    answer: QualificationClaimAnswer | null;
+    claimKey: string;
+    kind: string;
+    label: string;
+  }) => Promise<void>;
   onRefresh: () => Promise<void>;
   onSelect: (id: string) => void;
   onShowExcluded: (value: boolean) => void;
@@ -178,6 +188,7 @@ export function JobsWorkspace({
             </div>
             <JobDetail
               busy={busy}
+              busyClaimKey={busyClaimKey}
               fx={fx}
               instruction={instruction}
               job={selected}
@@ -186,6 +197,7 @@ export function JobsWorkspace({
               }
               onAction={onAction}
               onInstruction={onInstruction}
+              onQualificationClaim={onQualificationClaim}
             />
           </>
         ) : (

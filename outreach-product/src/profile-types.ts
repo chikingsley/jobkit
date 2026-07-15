@@ -1,3 +1,5 @@
+import type { QualificationClaimAnswer } from "@/features/matching/claims";
+
 export type {
   BenefitStrength,
   Preferences,
@@ -18,6 +20,9 @@ export interface StoredDocument {
 export type MatchState = "match" | "conflict" | "unknown" | "preference";
 
 export interface MatchCriterion {
+  claimAnswer?: QualificationClaimAnswer;
+  claimKey?: string;
+  claimKind?: string;
   evidence?: string;
   importance?: "required" | "preferred";
   label: string;

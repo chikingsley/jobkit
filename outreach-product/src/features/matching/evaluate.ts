@@ -1,4 +1,9 @@
 import type { Job } from "@/features/jobs/types";
+import {
+  alternativeQualificationClaimKey,
+  type QualificationClaims,
+  qualificationClaimKey,
+} from "@/features/matching/claims";
 import type { JobRequirement } from "@/features/matching/schema";
 import type {
   JobMatch,
@@ -34,7 +39,8 @@ export function evaluateJob(
   profile: Profile,
   preferences: Preferences,
   monthlySalaryUsd?: number,
-  documents: StoredDocument[] = []
+  documents: StoredDocument[] = [],
+  claims: QualificationClaims = {}
 ): JobMatch {
   const criteria: MatchCriterion[] = [];
   if (preferences.countries.excluded.includes(job.country)) {
@@ -47,7 +53,12 @@ export function evaluateJob(
 
   if (job.matchFacts) {
     criteria.push(
-      ...evaluateRequirements(job.matchFacts.requirements, profile, documents),
+      ...evaluateRequirements(
+        job.matchFacts.requirements,
+        profile,
+        documents,
+        claims
+      ),
       ...job.matchFacts.audiences.map((fact) =>
         preferenceCriterion(
           audienceLabel(fact.value),
@@ -91,10 +102,18 @@ export function evaluateJob(
 function evaluateRequirement(
   requirement: JobRequirement,
   profile: Profile,
-  documents: StoredDocument[]
+  documents: StoredDocument[],
+  claims: QualificationClaims
 ): MatchCriterion {
-  const state = requirementState(requirement, profile, documents);
+  const claimKey = qualificationClaimKey(requirement);
+  const claim = claims[claimKey];
+  const state = claim
+    ? matchStateForAnswer(claim.answer)
+    : requirementState(requirement, profile, documents);
   return {
+    claimAnswer: claim?.answer,
+    claimKey,
+    claimKind: requirement.kind,
     evidence: requirement.evidence,
     importance: requirement.importance,
     label: requirement.label,
@@ -210,13 +229,16 @@ function documentEvidence(document: StoredDocument) {
 function evaluateRequirements(
   requirements: JobRequirement[],
   profile: Profile,
-  documents: StoredDocument[]
+  documents: StoredDocument[],
+  claims: QualificationClaims
 ) {
   const criteria: MatchCriterion[] = [];
   const alternatives = new Map<string, JobRequirement[]>();
   for (const requirement of requirements) {
     if (!requirement.alternativeGroup) {
-      criteria.push(evaluateRequirement(requirement, profile, documents));
+      criteria.push(
+        evaluateRequirement(requirement, profile, documents, claims)
+      );
       continue;
     }
     const group = alternatives.get(requirement.alternativeGroup) ?? [];
@@ -224,9 +246,13 @@ function evaluateRequirements(
     alternatives.set(requirement.alternativeGroup, group);
   }
   for (const [groupName, group] of alternatives) {
-    const states = group.map((requirement) =>
-      requirementState(requirement, profile, documents)
-    );
+    const claimKey = alternativeQualificationClaimKey(groupName, group);
+    const claim = claims[claimKey];
+    const states: MatchState[] = claim
+      ? [matchStateForAnswer(claim.answer)]
+      : group.map((requirement) =>
+          requirementState(requirement, profile, documents)
+        );
     let state: MatchState = "conflict";
     if (states.includes("match")) {
       state = "match";
@@ -239,6 +265,9 @@ function evaluateRequirements(
       ? "required"
       : "preferred";
     criteria.push({
+      claimAnswer: claim?.answer,
+      claimKey,
+      claimKind: "alternative",
       evidence: group.map((requirement) => requirement.evidence).join(" | "),
       importance,
       label: `${groupName}: ${group.map((requirement) => requirement.label).join(" or ")}`,
@@ -247,6 +276,10 @@ function evaluateRequirements(
     });
   }
   return criteria;
+}
+
+function matchStateForAnswer(answer: "yes" | "no"): MatchState {
+  return answer === "yes" ? "match" : "conflict";
 }
 
 function degreeRequirement(requirement: JobRequirement, profile: Profile) {

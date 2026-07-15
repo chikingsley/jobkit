@@ -23,24 +23,34 @@ import { formatDescription, questionsFor } from "@/features/jobs/content";
 import { humanize } from "@/features/jobs/format";
 import { MatchPanel } from "@/features/jobs/match";
 import type { FxData, Job } from "@/features/jobs/types";
+import type { QualificationClaimAnswer } from "@/features/matching/claims";
 import type { JobMatch } from "@/profile-types";
 
 export function JobDetail({
   busy,
+  busyClaimKey,
   fx,
   instruction,
   job,
   match,
   onAction,
   onInstruction,
+  onQualificationClaim,
 }: {
   busy: string;
+  busyClaimKey: string;
   fx: FxData;
   instruction: string;
   job: Job;
   match?: JobMatch;
   onAction: (path: string, body?: object) => Promise<void>;
   onInstruction: (value: string) => void;
+  onQualificationClaim: (input: {
+    answer: QualificationClaimAnswer | null;
+    claimKey: string;
+    kind: string;
+    label: string;
+  }) => Promise<void>;
 }) {
   const sections = curatedJobs[job.id] ?? [];
   const salary = compensationDisplay(job.compensation, fx);
@@ -81,7 +91,13 @@ export function JobDetail({
         <Badge variant="outline">Draft v{job.draft?.version}</Badge>
       </div>
 
-      {match ? <MatchPanel match={match} /> : null}
+      {match ? (
+        <MatchPanel
+          busyClaimKey={busyClaimKey}
+          match={match}
+          onQualificationClaim={onQualificationClaim}
+        />
+      ) : null}
 
       {eligibility.length ? (
         <Card className="mt-5 border-amber-500/25 bg-amber-500/[0.04] ring-amber-500/20">

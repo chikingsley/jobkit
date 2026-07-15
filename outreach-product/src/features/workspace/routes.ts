@@ -1,6 +1,7 @@
 export const workspacePaths = {
   documents: "/documents",
   jobs: "/",
+  messageStyle: "/message-style",
   preferences: "/preferences",
   profile: "/profile",
 } as const;
