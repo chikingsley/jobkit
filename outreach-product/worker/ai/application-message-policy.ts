@@ -4,12 +4,17 @@ Message policy:
 - Begin with exactly "Hello," on its own line, followed by a blank line. Never use "Dear".
 - Write in the candidate's first-person voice.
 - Use ordinary spoken English and common words. Sound like a capable person writing a normal email, not a résumé, formal statement, advertisement, or AI-generated cover letter.
+- Follow the supplied referencePatterns closely. They are the default sentence shapes, not optional inspiration. Add job-specific detail only when it is useful and supported by the candidate profile.
 - Never use "communicative" to describe teaching, lessons, or classes. State the plain meaning instead, such as conversation or speaking practice.
 - If a plain word says the same thing, use it. Avoid stiff or institutional wording such as "aligns with", "demonstrated ability", "leveraged", "utilized", "facilitated", "fostered", "passionate about", and "I am writing to express my interest". Translate formal listing language into normal English instead of repeating it.
 - Lead with the strongest relevant qualifications from the profile and include availability only when the profile states it.
+- Describe prior teaching through the learner groups, countries, teaching setting, and concrete work performed. Never name a past employer, school, university, or client. A target employer may be named only when it makes the opening sentence clearer.
+- For a university role, prefer concrete higher-education evidence such as leading review lectures or tutoring students. Do not replace that evidence with a past institution name.
 - Keep the message concise, specific to the employer and role, and free of generic listing boilerplate.
 - Use the shortest complete version. Let useful content determine the length; never add detail or extra paragraphs to reach a preferred word count.
-- Ask exactly one useful open-ended question that invites a reply. It may only clarify an unstated schedule, start date, student group, or day-to-day responsibility.
+- Ask exactly one useful question that first establishes whether the employer is still hiring or the position is still open. If useful, the same question may then ask for one missing detail about location, schedule, start date, student group, or day-to-day responsibilities.
+- Put that question in the final content paragraph immediately before the required ending. Do not place qualifications or other content after it.
+- For a listing covering many schools or positions, do not write as though one placement is already established. Ask whether they are currently hiring and, if so, which locations or student groups have openings.
 - Never mention attachments. Document-packet selection and delivery are handled separately from message generation.
 - End with the exact requiredEnding string supplied in the request.
 - Follow the supplied styleGuidance when it does not conflict with this policy. An empty styleGuidance array means no calibrated preference has been established.
@@ -26,11 +31,20 @@ Truthfulness rules:
 
 The summary must state specifically what was tailored in one short sentence.`;
 
+export const APPLICATION_MESSAGE_REFERENCE_PATTERNS = [
+  "General teaching evidence: I have experience teaching adults, children, and teenagers in the United States and Russia, both in person and online. My work has included speaking and grammar lessons, lesson planning, assessment, and adapting classes for different levels.",
+  "University evidence: At the university level, I worked as a teaching assistant, led monthly review lectures for classes of more than 200 students, and tutored students one-on-one.",
+  "Direct-role question: Are you still hiring for this position?",
+  "Direct-role question with one missing detail: Are you still hiring for this position, and if so, what would the usual schedule and student groups look like?",
+  "Multiple-position question: Are you currently hiring, and if so, which locations and student groups have openings?",
+] as const;
+
 const MAX_MESSAGE_WORDS = 220;
 
 export function validateApplicationMessage(
   rawMessage: string,
-  requiredEnding: string
+  requiredEnding: string,
+  forbiddenInstitutionNames: string[] = []
 ): string {
   const message = rawMessage.replaceAll("\r\n", "\n").trim();
   const problems: string[] = [];
@@ -48,6 +62,14 @@ export function validateApplicationMessage(
   if (!message.endsWith(requiredEnding)) {
     problems.push(`message must end with ${JSON.stringify(requiredEnding)}`);
   }
+  const contentBeforeEnding = message
+    .slice(0, Math.max(0, message.length - requiredEnding.length))
+    .trimEnd();
+  if (!contentBeforeEnding.endsWith("?")) {
+    problems.push(
+      "the hiring question must be the final content before the ending"
+    );
+  }
 
   let questionCount = 0;
   for (const character of message) {
@@ -58,6 +80,51 @@ export function validateApplicationMessage(
   if (questionCount !== 1) {
     problems.push(
       `message must contain exactly one question; found ${questionCount}`
+    );
+  }
+
+  const questionEnd = message.lastIndexOf("?");
+  const questionPrefix = message.slice(0, questionEnd);
+  const questionStart = Math.max(
+    questionPrefix.lastIndexOf("\n"),
+    questionPrefix.lastIndexOf("."),
+    questionPrefix.lastIndexOf("!")
+  );
+  const question = message.slice(questionStart + 1, questionEnd + 1);
+  const questionWords = new Set(
+    question
+      .toLowerCase()
+      .split(/[^a-z]+/u)
+      .filter(Boolean)
+  );
+  const hiringWords = [
+    "applications",
+    "available",
+    "hire",
+    "hiring",
+    "open",
+    "opening",
+    "openings",
+    "recruiting",
+    "seeking",
+  ];
+  if (!hiringWords.some((word) => questionWords.has(word))) {
+    problems.push("the question must establish whether hiring is still open");
+  }
+
+  const normalizedMessage = comparisonWords(message).join(" ");
+  const forbiddenName = forbiddenInstitutionNames.find((name) => {
+    const meaningfulWords = comparisonWords(name).filter(
+      (word) => !GENERIC_INSTITUTION_WORDS.has(word)
+    );
+    return (
+      meaningfulWords.length > 0 &&
+      normalizedMessage.includes(meaningfulWords.join(" "))
+    );
+  });
+  if (forbiddenName) {
+    problems.push(
+      `message must not name past institution ${JSON.stringify(forbiddenName)}`
     );
   }
 
@@ -74,4 +141,23 @@ export function validateApplicationMessage(
     );
   }
   return message;
+}
+
+const GENERIC_INSTITUTION_WORDS = new Set([
+  "center",
+  "centre",
+  "company",
+  "education",
+  "inc",
+  "institute",
+  "llc",
+  "school",
+  "university",
+]);
+
+function comparisonWords(value: string) {
+  return value
+    .toLowerCase()
+    .split(/[^a-z0-9]+/u)
+    .filter(Boolean);
 }

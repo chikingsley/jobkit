@@ -85,10 +85,7 @@ export function evaluateJob(
           fact.evidence
         )
       ),
-      ...benefitCriteria(job, preferences),
-      ...job.matchFacts.reviewNotes.map((note) =>
-        criterion(`Human review: ${note}`, "unknown")
-      )
+      ...benefitCriteria(job, preferences)
     );
   } else {
     criteria.push(

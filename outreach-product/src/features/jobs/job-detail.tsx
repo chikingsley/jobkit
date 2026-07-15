@@ -273,7 +273,7 @@ export function JobDetail({
               }
               variant="secondary"
             >
-              Apply change
+              Revise message
             </Button>
           </div>
         </CardContent>

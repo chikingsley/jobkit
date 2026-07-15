@@ -180,8 +180,13 @@ export async function reviseJobDraft(
   const timestamp = new Date().toISOString();
   await env.DB.batch([
     env.DB.prepare(
-      "UPDATE application_drafts SET status='superseded' WHERE user_job_id=? AND status='draft'"
-    ).bind(row.userJobId),
+      `DELETE FROM application_attempts
+       WHERE draft_id=? AND status='approved' AND send_requested_at IS NULL
+         AND gmail_draft_id=''`
+    ).bind(row.draftId),
+    env.DB.prepare(
+      "UPDATE application_drafts SET status='superseded' WHERE id=? AND status IN ('draft','approved')"
+    ).bind(row.draftId),
     env.DB.prepare(
       "INSERT INTO application_drafts (id,user_job_id,version,message,change_summary,revision_instruction,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?,?)"
     ).bind(

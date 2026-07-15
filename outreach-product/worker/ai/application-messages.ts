@@ -5,6 +5,7 @@ import type { AppEnv } from "../env";
 import type { JobImport } from "../schemas";
 import {
   APPLICATION_MESSAGE_INSTRUCTIONS,
+  APPLICATION_MESSAGE_REFERENCE_PATTERNS,
   validateApplicationMessage,
 } from "./application-message-policy";
 import { type AiModelSelection, createAiModel } from "./model-catalog";
@@ -42,8 +43,10 @@ export function generateApplicationMessage(
 ): Promise<GeneratedApplicationMessage> {
   const signature = signatureFor(profile);
   return runModel(env, model, {
+    candidateProfile: messageProfile(profile),
+    forbiddenInstitutionNames: institutionNames(profile),
     job,
-    profile,
+    referencePatterns: APPLICATION_MESSAGE_REFERENCE_PATTERNS,
     request: "Write a new application message.",
     requiredEnding: `Best,\n${signature}`,
     styleGuidance,
@@ -61,9 +64,11 @@ export function reviseApplicationMessage(
 ): Promise<GeneratedApplicationMessage> {
   const signature = signatureFor(profile);
   return runModel(env, model, {
+    candidateProfile: messageProfile(profile),
     currentMessage,
+    forbiddenInstitutionNames: institutionNames(profile),
     job,
-    profile,
+    referencePatterns: APPLICATION_MESSAGE_REFERENCE_PATTERNS,
     request:
       "Revise the current message according to revisionInstruction while preserving every rule.",
     requiredEnding: `Best,\n${signature}`,
@@ -75,39 +80,62 @@ export function reviseApplicationMessage(
 async function runModel(
   env: AppEnv,
   selection: AiModelSelection,
-  input: Record<string, unknown> & { requiredEnding: string }
+  input: Record<string, unknown> & {
+    forbiddenInstitutionNames: string[];
+    requiredEnding: string;
+  }
 ): Promise<GeneratedApplicationMessage> {
   const model = createAiModel(env, selection);
   try {
-    const result = await generateText({
-      instructions: APPLICATION_MESSAGE_INSTRUCTIONS,
-      maxOutputTokens: 1200,
-      maxRetries: 2,
-      model,
-      output: Output.object({
-        description: "A truthful job application and its tailoring summary",
-        name: "job_application_draft",
-        schema: ProviderDraftOutputSchema,
-      }),
-      prompt: JSON.stringify(input),
-      providerOptions:
-        selection.provider === "cerebras" && selection.modelId === "zai-glm-4.7"
-          ? { cerebras: { reasoningEffort: "none" } }
-          : undefined,
-      temperature: 0.2,
-      timeout: { totalMs: 45_000 },
-    });
-    const output = DraftOutputSchema.parse(result.output);
-    const message = validateApplicationMessage(
-      output.message,
-      input.requiredEnding
-    );
-    return {
-      message,
-      modelId: selection.modelId,
-      provider: selection.provider,
-      summary: output.summary.trim(),
-    };
+    let validationFeedback = "";
+    for (
+      let generationAttempt = 1;
+      generationAttempt <= 3;
+      generationAttempt += 1
+    ) {
+      try {
+        const result = await generateText({
+          instructions: APPLICATION_MESSAGE_INSTRUCTIONS,
+          maxOutputTokens: 1200,
+          maxRetries: 2,
+          model,
+          output: Output.object({
+            description: "A truthful job application and its tailoring summary",
+            name: "job_application_draft",
+            schema: ProviderDraftOutputSchema,
+          }),
+          prompt: JSON.stringify({ ...input, validationFeedback }),
+          providerOptions:
+            selection.provider === "cerebras" &&
+            selection.modelId === "zai-glm-4.7"
+              ? { cerebras: { reasoningEffort: "none" } }
+              : undefined,
+          temperature: 0.1,
+          timeout: { totalMs: 45_000 },
+        });
+        const output = DraftOutputSchema.parse(result.output);
+        const message = validateApplicationMessage(
+          output.message,
+          input.requiredEnding,
+          input.forbiddenInstitutionNames
+        );
+        return {
+          message,
+          modelId: selection.modelId,
+          provider: selection.provider,
+          summary: output.summary.trim(),
+        };
+      } catch (error) {
+        validationFeedback =
+          error instanceof Error
+            ? error.message
+            : "The output did not pass validation";
+        if (generationAttempt === 3) {
+          throw error;
+        }
+      }
+    }
+    throw new Error("Application-message generation exhausted all attempts");
   } catch (error) {
     console.error(
       JSON.stringify({
@@ -122,6 +150,31 @@ async function runModel(
       { cause: error }
     );
   }
+}
+
+function institutionNames(profile: Profile) {
+  return [
+    ...profile.workExperience.map((entry) => entry.employer),
+    ...profile.education.map((entry) => entry.institution),
+  ].filter(Boolean);
+}
+
+function messageProfile(profile: Profile) {
+  return {
+    availability: profile.availability,
+    citizenship: profile.citizenship,
+    credentials: profile.credentials,
+    currentLocation: profile.currentLocation,
+    education: profile.education.map(
+      ({ institution: _institution, ...entry }) => entry
+    ),
+    fields: profile.fields,
+    languages: profile.languages,
+    workAuthorization: profile.workAuthorization,
+    workExperience: profile.workExperience.map(
+      ({ employer: _employer, ...entry }) => entry
+    ),
+  };
 }
 
 function signatureFor(profile: Profile): string {
