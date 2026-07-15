@@ -11,6 +11,8 @@ interface CalibrationOption {
 }
 
 export interface MessageStyleComparison {
+  equalGuidance: string;
+  equalLabel: string;
   id: string;
   optionA: CalibrationOption;
   optionB: CalibrationOption;
@@ -19,6 +21,9 @@ export interface MessageStyleComparison {
 
 export const messageStyleComparisons: MessageStyleComparison[] = [
   {
+    equalGuidance:
+      "Choose the opening that communicates a useful fact most naturally for the specific job. Do not add a generic statement of interest when the application already shows interest.",
+    equalLabel: "Use whichever earns its place",
     id: "opening",
     optionA: {
       example:
@@ -36,6 +41,9 @@ export const messageStyleComparisons: MessageStyleComparison[] = [
     prompt: "How should the first sentence begin?",
   },
   {
+    equalGuidance:
+      "Use a natural, direct tone. Sound like a capable person writing a normal email, never like a formal statement or marketing copy.",
+    equalLabel: "Natural and direct",
     id: "tone",
     optionA: {
       example:
@@ -52,16 +60,18 @@ export const messageStyleComparisons: MessageStyleComparison[] = [
     prompt: "Which overall tone sounds more like you?",
   },
   {
+    equalGuidance:
+      "Let relevance determine the amount of detail. Include only facts that help with this particular role, and do not pad the message to reach a target length.",
+    equalLabel: "Only what helps this job",
     id: "detail",
     optionA: {
-      example:
-        "I’ve taught adults and university students in communicative English classes.",
+      example: "I’ve taught adults and university students.",
       guidance: "Use one or two highly relevant supporting facts.",
       label: "Only the strongest facts",
     },
     optionB: {
       example:
-        "I’ve taught adults and university students, designed communicative lessons, and supported speaking and exam preparation.",
+        "I’ve taught adults and university students, planned lessons, and helped students with speaking and exam preparation.",
       guidance:
         "Use several relevant supporting facts when the listing supports them.",
       label: "A little more evidence",
@@ -69,6 +79,9 @@ export const messageStyleComparisons: MessageStyleComparison[] = [
     prompt: "How much supporting detail should a short message carry?",
   },
   {
+    equalGuidance:
+      "Let the useful content determine the paragraph count. Keep paragraphs short and give each one a clear purpose.",
+    equalLabel: "Let the content decide",
     id: "paragraphs",
     optionA: {
       example: "Two compact body paragraphs before the question and sign-off.",
@@ -83,6 +96,9 @@ export const messageStyleComparisons: MessageStyleComparison[] = [
     prompt: "Which structure is easier to read?",
   },
   {
+    equalGuidance:
+      "Place supported availability where it reads most naturally and helps the employer. Omit it when it adds nothing useful.",
+    equalLabel: "Put it where it reads naturally",
     id: "availability",
     optionA: {
       example:
@@ -99,6 +115,9 @@ export const messageStyleComparisons: MessageStyleComparison[] = [
     prompt: "Where should concrete availability appear?",
   },
   {
+    equalGuidance:
+      "Ask whichever single question addresses the most useful unanswered point in the listing. Do not add a question merely to sound engaged.",
+    equalLabel: "Ask what is actually useful",
     id: "question",
     optionA: {
       example:
@@ -116,6 +135,9 @@ export const messageStyleComparisons: MessageStyleComparison[] = [
     prompt: "What kind of final question is most useful?",
   },
   {
+    equalGuidance:
+      "Mention a specific employer detail only when it adds useful meaning. Do not perform personalization by repeating a detail from the listing.",
+    equalLabel: "Be specific only when it helps",
     id: "employer_reference",
     optionA: {
       example:
@@ -133,6 +155,9 @@ export const messageStyleComparisons: MessageStyleComparison[] = [
     prompt: "How specifically should the employer be referenced?",
   },
   {
+    equalGuidance:
+      "Use the shortest complete version. Length must follow the useful content and application route, not a word-count target.",
+    equalLabel: "Let the content set the length",
     id: "brevity",
     optionA: {
       example: "Aim for roughly 110–150 words when the necessary facts fit.",
@@ -157,6 +182,25 @@ export function messageStyleGuidance(choices: MessageStyleChoices): string[] {
     }
     if (choice === "b") {
       return [comparison.optionB.guidance];
+    }
+    if (choice === "equal") {
+      return [comparison.equalGuidance];
+    }
+    return [];
+  });
+}
+
+export function messageStyleSummary(choices: MessageStyleChoices): string[] {
+  return messageStyleComparisons.flatMap((comparison) => {
+    const choice = choices[comparison.id];
+    if (choice === "a") {
+      return [comparison.optionA.label];
+    }
+    if (choice === "b") {
+      return [comparison.optionB.label];
+    }
+    if (choice === "equal") {
+      return [comparison.equalLabel];
     }
     return [];
   });

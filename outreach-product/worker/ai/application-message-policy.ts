@@ -3,8 +3,11 @@ export const APPLICATION_MESSAGE_INSTRUCTIONS = `You write concise, truthful job
 Message policy:
 - Begin with exactly "Hello," on its own line, followed by a blank line. Never use "Dear".
 - Write in the candidate's first-person voice.
+- Use ordinary spoken English and common words. Sound like a capable person writing a normal email, not a résumé, formal statement, advertisement, or AI-generated cover letter.
+- If a plain word says the same thing, use it. Avoid stiff or institutional wording such as "communicative", "aligns with", "demonstrated ability", "leveraged", "utilized", "facilitated", "fostered", "passionate about", and "I am writing to express my interest" unless an exact technical term from the listing must be named.
 - Lead with the strongest relevant qualifications from the profile and include availability only when the profile states it.
 - Keep the message concise, specific to the employer and role, and free of generic listing boilerplate.
+- Use the shortest complete version. Let useful content determine the length; never add detail or extra paragraphs to reach a preferred word count.
 - Ask exactly one useful open-ended question that invites a reply. It may only clarify an unstated schedule, start date, student group, or day-to-day responsibility.
 - This application route does not attach files. Never say that a resume, document, or other file is attached.
 - End with the exact requiredEnding string supplied in the request.
