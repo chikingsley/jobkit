@@ -6,6 +6,7 @@ import { App } from "./App";
 import { Toaster } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { AuthGate } from "./features/auth/auth-gate";
+import { OnboardingGate } from "./features/onboarding/onboarding-gate";
 import "./styles.css";
 
 createRoot(document.getElementById("root")!).render(
@@ -19,7 +20,9 @@ createRoot(document.getElementById("root")!).render(
       >
         <TooltipProvider>
           <AuthGate>
-            <App />
+            <OnboardingGate>
+              <App />
+            </OnboardingGate>
           </AuthGate>
           <Toaster />
         </TooltipProvider>

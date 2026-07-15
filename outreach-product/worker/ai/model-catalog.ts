@@ -4,18 +4,22 @@ import type { LanguageModel } from "ai";
 import type { AppEnv } from "../env";
 
 export type AiModelProvider = "cerebras" | "mistral";
+export type AiPurpose =
+  | "application_message"
+  | "job_fact_extraction"
+  | "profile_extraction";
 
 export interface AiModelSelection {
   modelId: string;
   provider: AiModelProvider;
 }
 
-interface ApplicationMessageModelDefinition extends AiModelSelection {
+export interface AiModelDefinition extends AiModelSelection {
   label: string;
   reasoning: boolean;
 }
 
-export const APPLICATION_MESSAGE_MODELS = [
+export const AI_MODELS = [
   {
     label: "Gemma 4 31B",
     modelId: "gemma-4-31b",
@@ -52,35 +56,45 @@ export const APPLICATION_MESSAGE_MODELS = [
     provider: "mistral",
     reasoning: false,
   },
-] as const satisfies readonly ApplicationMessageModelDefinition[];
+] as const satisfies readonly AiModelDefinition[];
 
-export const DEFAULT_APPLICATION_MESSAGE_MODEL = {
-  modelId: "gemma-4-31b",
-  provider: "cerebras",
-} as const satisfies AiModelSelection;
+export const DEFAULT_AI_MODELS = {
+  application_message: {
+    modelId: "gemma-4-31b",
+    provider: "cerebras",
+  },
+  job_fact_extraction: {
+    modelId: "zai-glm-4.7",
+    provider: "cerebras",
+  },
+  profile_extraction: {
+    modelId: "gpt-oss-120b",
+    provider: "cerebras",
+  },
+} as const satisfies Record<AiPurpose, AiModelSelection>;
 
-export function requireApplicationMessageModel(selection: {
+export function requireAiModel(selection: {
   modelId: string;
   provider: string;
-}): ApplicationMessageModelDefinition {
-  const model = APPLICATION_MESSAGE_MODELS.find(
+}): AiModelDefinition {
+  const model = AI_MODELS.find(
     (candidate) =>
       candidate.provider === selection.provider &&
       candidate.modelId === selection.modelId
   );
   if (!model) {
     throw new Error(
-      `Unsupported application-message model: ${selection.provider}/${selection.modelId}`
+      `Unsupported AI model: ${selection.provider}/${selection.modelId}`
     );
   }
   return model;
 }
 
-export function createApplicationMessageModel(
+export function createAiModel(
   env: AppEnv,
   selection: AiModelSelection
 ): LanguageModel {
-  const model = requireApplicationMessageModel(selection);
+  const model = requireAiModel(selection);
   if (model.provider === "cerebras") {
     return createCerebras({ apiKey: env.CEREBRAS_API_KEY })(model.modelId);
   }

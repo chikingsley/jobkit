@@ -3,10 +3,7 @@ import { z } from "zod";
 import type { Profile } from "../../src/features/profile/schema";
 import type { AppEnv } from "../env";
 import type { JobImport } from "../schemas";
-import {
-  type AiModelSelection,
-  createApplicationMessageModel,
-} from "./model-catalog";
+import { type AiModelSelection, createAiModel } from "./model-catalog";
 
 const DraftOutputSchema = z
   .object({
@@ -85,7 +82,7 @@ async function runModel(
   selection: AiModelSelection,
   input: Record<string, unknown> & { requiredEnding: string }
 ): Promise<GeneratedApplicationMessage> {
-  const model = createApplicationMessageModel(env, selection);
+  const model = createAiModel(env, selection);
   try {
     const result = await generateText({
       instructions,

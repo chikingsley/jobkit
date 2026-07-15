@@ -1,6 +1,7 @@
 import {
   type AiModelSelection,
-  requireApplicationMessageModel,
+  type AiPurpose,
+  requireAiModel,
 } from "../ai/model-catalog";
 
 interface AiModelSettingRow {
@@ -8,22 +9,24 @@ interface AiModelSettingRow {
   model_provider: string;
 }
 
-const APPLICATION_MESSAGE_PURPOSE = "application_message";
-
-export async function readApplicationMessageModel(
-  db: D1Database
+export async function readAiModel(
+  db: D1Database,
+  purpose: AiPurpose
 ): Promise<AiModelSelection> {
   const row = await db
     .prepare(
       "SELECT model_provider,model_id FROM ai_model_settings WHERE purpose=?"
     )
-    .bind(APPLICATION_MESSAGE_PURPOSE)
+    .bind(purpose)
     .first<AiModelSettingRow>();
   if (!row) {
-    throw new Error("Application-message model setting is missing");
+    throw new Error(`AI model setting is missing for ${purpose}`);
   }
-  return requireApplicationMessageModel({
+  return requireAiModel({
     modelId: row.model_id,
     provider: row.model_provider,
   });
 }
+
+export const readApplicationMessageModel = (db: D1Database) =>
+  readAiModel(db, "application_message");

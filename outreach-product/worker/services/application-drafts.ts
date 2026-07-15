@@ -4,11 +4,15 @@ import {
   reviseApplicationMessage,
 } from "../ai/application-messages";
 import type { AppEnv } from "../env";
-import { readApplicationMessageModel } from "../repositories/ai-model-settings";
+import {
+  readAiModel,
+  readApplicationMessageModel,
+} from "../repositories/ai-model-settings";
 import { recordJobEvent } from "../repositories/job-events";
 import { upsertJob, upsertUserJob } from "../repositories/jobs";
 import { readProfile } from "../repositories/user-settings";
 import { type JobImport, JobImportSchema } from "../schemas";
+import { ensureJobMatchFacts } from "./job-analysis";
 
 export class DraftProfileRequiredError extends Error {}
 
@@ -66,8 +70,9 @@ export async function importJobsWithDrafts(
   userId: string,
   jobs: JobImport[]
 ): Promise<void> {
-  const [model, profile] = await Promise.all([
+  const [model, factsModel, profile] = await Promise.all([
     readApplicationMessageModel(env.DB),
+    readAiModel(env.DB, "job_fact_extraction"),
     savedProfile(env.DB, userId),
   ]);
   for (const job of jobs) {
@@ -86,9 +91,13 @@ export async function importJobsWithDrafts(
       .bind(userJobId)
       .first();
     if (existing) {
+      await ensureJobMatchFacts(env, factsModel, job);
       continue;
     }
-    const draft = await generateApplicationMessage(env, model, job, profile);
+    const [draft] = await Promise.all([
+      generateApplicationMessage(env, model, job, profile),
+      ensureJobMatchFacts(env, factsModel, job),
+    ]);
     await env.DB.prepare(
       "INSERT INTO application_drafts (id,user_job_id,version,message,change_summary,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?)"
     )

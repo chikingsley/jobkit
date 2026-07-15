@@ -24,6 +24,7 @@ export interface Compensation {
 
 export interface Job {
   applyUrl: string;
+  board: string;
   company: string;
   compensation: Compensation;
   country: string;
@@ -31,6 +32,7 @@ export interface Job {
   draft: JobDraft | null;
   id: string;
   location: string;
+  matchFacts: JobMatchFacts | null;
   sourceUrl: string;
   status: string;
   title: string;
@@ -40,3 +42,5 @@ export interface FxData {
   rates: Record<string, number>;
   updatedAt: string | null;
 }
+
+import type { JobMatchFacts } from "@/features/matching/schema";

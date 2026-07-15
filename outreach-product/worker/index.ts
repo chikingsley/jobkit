@@ -1,16 +1,20 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
 import { ApplicationMessageGenerationError } from "./ai/application-messages";
+import { JobFactExtractionError } from "./ai/job-fact-extraction";
+import { ProfileExtractionError } from "./ai/profile-extraction";
+import type { AuthUser, JobKitApp } from "./app-types";
 import { createAuth } from "./auth";
 import type { AppEnv } from "./env";
-import { compensationFromRow } from "./repositories/jobs";
-import { claimLegacyData } from "./repositories/legacy-data";
+import { OnboardingIncompleteError } from "./repositories/onboarding";
 import {
   readPreferences,
   readProfile,
   writePreferences,
   writeProfile,
 } from "./repositories/user-settings";
+import { registerJobRoutes } from "./routes/jobs";
+import { registerOnboardingRoutes } from "./routes/onboarding";
 import { ImportSchema, ReviseSchema, SubmitSchema } from "./schemas";
 import {
   DraftProfileRequiredError,
@@ -18,20 +22,16 @@ import {
   regenerateDrafts,
   reviseJobDraft,
 } from "./services/application-drafts";
+import { DocumentConversionError } from "./services/document-text";
 import { approveAndSubmitApplication } from "./services/job-submission";
 import {
   fetchExchangeRates,
   searchLocations,
   searchUniversities,
 } from "./services/lookups";
+import { ResumeUploadError } from "./services/profile-imports";
 
-interface AuthUser {
-  email: string;
-  id: string;
-  name: string;
-}
-
-const app = new OpenAPIHono<{
+const app: JobKitApp = new OpenAPIHono<{
   Bindings: AppEnv;
   Variables: { user: AuthUser };
 }>();
@@ -59,7 +59,22 @@ app.onError((error, c) => {
   if (error instanceof ApplicationMessageGenerationError) {
     return c.json({ message: error.message, ok: false }, 502);
   }
+  if (error instanceof JobFactExtractionError) {
+    return c.json({ message: error.message, ok: false }, 502);
+  }
+  if (error instanceof ResumeUploadError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
+  if (error instanceof DocumentConversionError) {
+    return c.json({ message: error.message, ok: false }, 422);
+  }
+  if (error instanceof ProfileExtractionError) {
+    return c.json({ message: error.message, ok: false }, 502);
+  }
   if (error instanceof DraftProfileRequiredError) {
+    return c.json({ message: error.message, ok: false }, 409);
+  }
+  if (error instanceof OnboardingIncompleteError) {
     return c.json({ message: error.message, ok: false }, 409);
   }
   return c.json({ message: error.message, ok: false }, 500);
@@ -83,9 +98,11 @@ app.use("/api/*", async (c, next) => {
     id: session.user.id,
     name: session.user.name,
   });
-  await claimLegacyData(c.env.DB, session.user.id);
   await next();
 });
+
+registerOnboardingRoutes(app);
+registerJobRoutes(app);
 
 app.get("/api/fx", async (c) => c.json(await fetchExchangeRates()));
 
@@ -138,29 +155,6 @@ app.openapi(
     return c.json({ message: `Imported ${jobs.length} jobs`, ok: true });
   }
 );
-
-app.get("/api/jobs", async (c) => {
-  const rows = await c.env.DB.prepare(
-    `SELECT j.*,uj.status,uj.priority,
-              d.id draft_id,d.version,d.message,d.change_summary,d.status draft_status
-       FROM user_jobs uj
-       JOIN jobs j ON j.id=uj.job_id
-       LEFT JOIN application_drafts d ON d.id=(
-         SELECT id FROM application_drafts
-         WHERE user_job_id=uj.id ORDER BY version DESC LIMIT 1
-       )
-       WHERE uj.user_id=?
-       ORDER BY uj.priority DESC,
-         CASE uj.status
-           WHEN 'new' THEN 0 WHEN 'review' THEN 1 WHEN 'approved' THEN 2
-           WHEN 'applied' THEN 4 ELSE 3
-         END,
-         uj.updated_at DESC`
-  )
-    .bind(c.get("user").id)
-    .all();
-  return c.json({ jobs: rows.results.map(toReviewJob) });
-});
 
 app.get("/api/profile", async (c) => {
   const result = await readProfile(c.env.DB, c.get("user").id);
@@ -378,31 +372,6 @@ app.doc("/openapi.json", {
   info: { title: "JobKit Outreach API", version: "0.1.0" },
   openapi: "3.1.0",
 });
-
-function toReviewJob(row: Record<string, unknown>) {
-  return {
-    applyUrl: String(row.apply_url),
-    company: String(row.company),
-    compensation: compensationFromRow(row),
-    country: String(row.country),
-    description: String(row.description),
-    draft: row.draft_id
-      ? {
-          changeSummary: String(row.change_summary),
-          id: String(row.draft_id),
-          message: String(row.message),
-          status: String(row.draft_status),
-          version: Number(row.version),
-        }
-      : null,
-    id: String(row.id),
-    location: String(row.location),
-    priority: Number(row.priority),
-    sourceUrl: String(row.source_url),
-    status: String(row.status),
-    title: String(row.title),
-  };
-}
 
 export default app;
 
