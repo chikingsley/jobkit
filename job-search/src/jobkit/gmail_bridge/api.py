@@ -79,12 +79,20 @@ class JobKitClient(AbstractContextManager["JobKitClient"]):
             json={"draftId": draft_id, "routeId": route_id},
         )
 
-    def list_email_attempts(self, status: str) -> list[JsonObject]:
+    def list_email_attempts(
+        self,
+        status: str,
+        *,
+        send_requested: bool = False,
+    ) -> list[JsonObject]:
         """List email attempts in one supported state."""
-        if status not in EMAIL_ATTEMPT_STATUSES:
+        if status not in (*EMAIL_ATTEMPT_STATUSES, "all", "attention"):
             msg = f"unsupported email-attempt status: {status}"
             raise ValueError(msg)
-        payload = self._request_json("GET", "/api/email-attempts", params={"status": status})
+        params = {"status": status}
+        if send_requested:
+            params["sendRequested"] = "true"
+        payload = self._request_json("GET", "/api/email-attempts", params=params)
         attempts = payload.get("attempts")
         if not isinstance(attempts, list):
             msg = "JobKit email-attempt list response did not contain an attempts array"

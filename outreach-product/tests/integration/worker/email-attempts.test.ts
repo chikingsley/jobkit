@@ -143,6 +143,25 @@ describe("email application attempts", () => {
         })
       ).status
     ).toBe(200);
+
+    const sendRequest = await request(
+      `/api/jobs/${encodeURIComponent(fixture.jobId)}/email-send-requests`,
+      cookie,
+      { draftId: fixture.draftId, routeId: fixture.routeId }
+    );
+    expect(sendRequest.status).toBe(200);
+    expect(await sendRequest.json()).toMatchObject({
+      attempt: { attemptId, status: "drafted" },
+      ok: true,
+    });
+    const requested = await exports.default.fetch(
+      "https://outreach.test/api/email-attempts?status=attention&sendRequested=true",
+      { headers: { cookie } }
+    );
+    expect(await requested.json()).toMatchObject({
+      attempts: [{ attemptId, sendRequestedAt: expect.any(String) }],
+    });
+
     expect(
       (
         await request(`/api/email-attempts/${attemptId}/sending`, cookie, {

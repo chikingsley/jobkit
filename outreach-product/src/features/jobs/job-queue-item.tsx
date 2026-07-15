@@ -7,6 +7,20 @@ import type { FxData, Job } from "@/features/jobs/types";
 import { cn } from "@/lib/utils";
 import type { JobMatch } from "@/profile-types";
 
+function currentEmailStatus(job: Job) {
+  const attempt = job.emailAttempt;
+  if (!attempt) {
+    return;
+  }
+  if (
+    attempt.sendRequestedAt &&
+    ["approved", "claimed", "drafted", "sending"].includes(attempt.status)
+  ) {
+    return "sending";
+  }
+  return attempt.status;
+}
+
 export function JobQueueItem({
   active,
   fx,
@@ -21,6 +35,7 @@ export function JobQueueItem({
   onSelect: () => void;
 }) {
   const salary = compensationDisplay(job.compensation, fx);
+  const emailStatus = currentEmailStatus(job);
   return (
     <button
       className={cn(
@@ -37,6 +52,18 @@ export function JobQueueItem({
             {job.status === "new" ? null : (
               <Badge variant="outline">{humanize(job.status)}</Badge>
             )}
+            {emailStatus ? (
+              <Badge variant="secondary">Email {humanize(emailStatus)}</Badge>
+            ) : null}
+            {job.opportunityScope === "multi_position" ? (
+              <Badge variant="outline">Multiple positions</Badge>
+            ) : null}
+            {job.marketSegments.some(
+              (segment) =>
+                segment === "training_center" || segment === "language_center"
+            ) ? (
+              <Badge variant="destructive">Center placements</Badge>
+            ) : null}
           </div>
           <h3 className="mt-2 line-clamp-2 font-semibold text-sm leading-snug">
             {job.title}

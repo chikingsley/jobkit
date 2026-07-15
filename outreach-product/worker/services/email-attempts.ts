@@ -41,6 +41,7 @@ interface AttemptRow {
   job_id: string;
   recipient: string;
   route_id: string;
+  send_requested_at: string | null;
   status: EmailAttemptStatus;
   subject: string;
   title: string;
@@ -65,6 +66,7 @@ export interface EmailAttemptView {
   jobId: string;
   recipient: string;
   routeId: string;
+  sendRequestedAt: string | null;
   status: EmailAttemptStatus;
   subject: string;
   title: string;
@@ -190,7 +192,8 @@ export async function createApprovedEmailAttempt(
 export async function listEmailAttempts(
   db: D1Database,
   userId: string,
-  statuses: EmailAttemptStatus[]
+  statuses: EmailAttemptStatus[],
+  sendRequested = false
 ): Promise<EmailAttemptView[]> {
   if (statuses.length === 0) {
     return [];
@@ -203,11 +206,54 @@ export async function listEmailAttempts(
          JOIN user_jobs uj ON uj.id=a.user_job_id
          JOIN jobs j ON j.id=uj.job_id
         WHERE uj.user_id=? AND a.status IN (${placeholders})
+          AND (?=0 OR a.send_requested_at IS NOT NULL)
         ORDER BY a.updated_at DESC,a.created_at DESC`
     )
-    .bind(userId, ...statuses)
+    .bind(userId, ...statuses, sendRequested ? 1 : 0)
     .all<AttemptRow>();
   return rows.results.map(toAttemptView);
+}
+
+export async function requestEmailSend(
+  env: AppEnv,
+  userId: string,
+  jobId: string,
+  draftId: string,
+  routeId: string
+): Promise<EmailAttemptView> {
+  const attempt = await createApprovedEmailAttempt(
+    env,
+    userId,
+    jobId,
+    draftId,
+    routeId
+  );
+  if (attempt.status === "sent") {
+    return attempt;
+  }
+  if (!(attempt.status === "approved" || attempt.status === "drafted")) {
+    throw new EmailAttemptError(
+      `Email send cannot be requested from ${attempt.status}`,
+      409
+    );
+  }
+  const timestamp = new Date().toISOString();
+  const result = await env.DB.prepare(
+    `UPDATE application_attempts
+        SET send_requested_at=?,updated_at=?
+      WHERE id=? AND status IN ('approved','drafted')
+        AND user_job_id IN (SELECT id FROM user_jobs WHERE user_id=?)`
+  )
+    .bind(timestamp, timestamp, attempt.attemptId, userId)
+    .run();
+  if ((result.meta.changes ?? 0) !== 1) {
+    throw new EmailAttemptError("Email send request changed concurrently", 409);
+  }
+  const updated = await readOwnedAttempt(env.DB, userId, attempt.attemptId);
+  if (!updated) {
+    throw new Error("Requested email attempt could not be read back");
+  }
+  return toAttemptView(updated);
 }
 
 export async function claimEmailAttempt(
@@ -564,6 +610,7 @@ function toAttemptView(row: AttemptRow): EmailAttemptView {
     jobId: row.job_id,
     recipient: row.recipient,
     routeId: row.route_id,
+    sendRequestedAt: row.send_requested_at,
     status: row.status,
     subject: row.subject,
     title: row.title,

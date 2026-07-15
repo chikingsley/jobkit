@@ -18,13 +18,34 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { curatedJobs, eligibilityNotes } from "@/curated-jobs";
 import { ApplicationAction } from "@/features/jobs/application-action";
+import { ApplicationDelivery } from "@/features/jobs/application-delivery";
 import { compensationDisplay } from "@/features/jobs/compensation";
 import { formatDescription, questionsFor } from "@/features/jobs/content";
 import { humanize } from "@/features/jobs/format";
+import { JobMarketContext } from "@/features/jobs/market-context";
 import { MatchPanel } from "@/features/jobs/match";
 import type { FxData, Job } from "@/features/jobs/types";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
 import type { JobMatch } from "@/profile-types";
+
+const boardLabels: Record<string, string> = {
+  "eslcafe-modern": "ESL Cafe",
+  seriousteachers: "Serious Teachers",
+};
+
+function deliveryStatus(job: Job) {
+  const attempt = job.emailAttempt;
+  if (
+    attempt?.sendRequestedAt &&
+    ["approved", "claimed", "drafted", "sending"].includes(attempt.status)
+  ) {
+    return "sending";
+  }
+  if (attempt) {
+    return attempt.status;
+  }
+  return job.draft ? job.draft.status : "not generated";
+}
 
 export function JobDetail({
   busy,
@@ -87,9 +108,13 @@ export function JobDetail({
       <div className="flex flex-wrap gap-2 py-4">
         <Badge variant="secondary">{salary.primary}</Badge>
         {salary.usd ? <Badge variant="outline">{salary.usd}</Badge> : null}
-        <Badge variant="outline">Serious Teachers</Badge>
+        <Badge variant="outline">
+          {boardLabels[job.board] ?? humanize(job.board)}
+        </Badge>
         <Badge variant="outline">Draft v{job.draft?.version}</Badge>
       </div>
+
+      <JobMarketContext job={job} />
 
       {match ? (
         <MatchPanel
@@ -209,11 +234,12 @@ export function JobDetail({
                 job.draft?.status === "approved" ? "default" : "secondary"
               }
             >
-              {humanize(job.draft?.status || "not generated")}
+              {humanize(deliveryStatus(job))}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
+          <ApplicationDelivery job={job} />
           <Textarea
             aria-label="Tailored application message"
             className="min-h-72 resize-y bg-background leading-7"
@@ -237,7 +263,11 @@ export function JobDetail({
             />
             <Button
               className="self-end"
-              disabled={!instruction || Boolean(busy)}
+              disabled={
+                !instruction ||
+                Boolean(busy) ||
+                deliveryStatus(job) === "sending"
+              }
               onClick={() =>
                 void onAction(`/api/jobs/${job.id}/revise`, { instruction })
               }

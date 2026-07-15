@@ -9,6 +9,7 @@ import {
   recordGmailDraft,
   recordGmailSent,
   recordUncertainEmailAttempt,
+  requestEmailSend,
   reserveGmailSend,
 } from "../services/email-attempts";
 
@@ -78,12 +79,31 @@ export function registerEmailAttemptRoutes(app: JobKitApp) {
     return c.json({ attempt, ok: true });
   });
 
+  app.post("/api/jobs/:jobId/email-send-requests", async (c) => {
+    const { draftId, routeId } = AttemptSelectionSchema.parse(
+      await c.req.json()
+    );
+    const attempt = await requestEmailSend(
+      c.env,
+      c.get("user").id,
+      c.req.param("jobId"),
+      draftId,
+      routeId
+    );
+    return c.json({
+      attempt,
+      message: `Sending requested for ${attempt.recipient}`,
+      ok: true,
+    });
+  });
+
   app.get("/api/email-attempts", async (c) => {
     const statuses = requestedStatuses(c.req.query("status"));
     const attempts = await listEmailAttempts(
       c.env.DB,
       c.get("user").id,
-      statuses
+      statuses,
+      c.req.query("sendRequested") === "true"
     );
     return c.json({ attempts, ok: true });
   });

@@ -1,6 +1,24 @@
 import { z } from "zod";
 import type { Compensation } from "../src/features/jobs/types";
 
+export const MarketSegmentSchema = z.enum([
+  "international_school",
+  "kindergarten",
+  "language_center",
+  "online",
+  "private_school",
+  "public_school",
+  "school",
+  "training_center",
+  "university",
+]);
+
+export const OpportunityScopeSchema = z.enum([
+  "direct",
+  "multi_position",
+  "unknown",
+]);
+
 export const JobImportSchema = z.object({
   applyEmail: z.union([z.literal(""), z.email()]).default(""),
   applyUrl: z.string().url(),
@@ -11,6 +29,8 @@ export const JobImportSchema = z.object({
   employerId: z.string().default(""),
   id: z.string().min(1),
   location: z.string().default(""),
+  marketSegments: z.array(MarketSegmentSchema).max(8).default([]),
+  opportunityScope: OpportunityScopeSchema.default("unknown"),
   priority: z.number().int().default(0),
   salary: z.string().default(""),
   sourceUrl: z.string().default(""),
@@ -41,14 +61,31 @@ export interface ReviewJob {
   country: string;
   description: string;
   draft: null | {
+    attachments: Array<{
+      category: string;
+      filename: string;
+      sizeBytes: number;
+    }>;
     id: string;
     version: number;
     message: string;
     changeSummary: string;
     status: string;
   };
+  emailAttempt: null | {
+    attemptId: string;
+    draftId: string;
+    recipient: string;
+    routeId: string;
+    sendRequestedAt: string | null;
+    status: string;
+    subject: string;
+    updatedAt: string;
+  };
   id: string;
   location: string;
+  marketSegments: z.infer<typeof MarketSegmentSchema>[];
+  opportunityScope: z.infer<typeof OpportunityScopeSchema>;
   priority: number;
   sourceUrl: string;
   status: string;

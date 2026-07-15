@@ -15,6 +15,30 @@ export function registerJobRoutes(app: JobKitApp) {
                 d.id draft_id,d.version,d.message,d.change_summary,d.status draft_status,
                 COALESCE((
                   SELECT json_group_array(json_object(
+                    'category',da.category,
+                    'filename',da.filename,
+                    'sizeBytes',da.size_bytes
+                  ))
+                  FROM application_draft_attachments da
+                  WHERE da.draft_id=d.id
+                ),'[]') draft_attachments_json,
+                (
+                  SELECT json_object(
+                    'attemptId',a.id,
+                    'draftId',a.draft_id,
+                    'recipient',a.recipient,
+                    'routeId',a.route_id,
+                    'sendRequestedAt',a.send_requested_at,
+                    'status',a.status,
+                    'subject',a.subject,
+                    'updatedAt',a.updated_at
+                  )
+                  FROM application_attempts a
+                  WHERE a.user_job_id=uj.id AND a.draft_id=d.id
+                  ORDER BY a.created_at DESC LIMIT 1
+                ) email_attempt_json,
+                COALESCE((
+                  SELECT json_group_array(json_object(
                     'id',ar.id,
                     'kind',ar.kind,
                     'destination',ar.destination,
@@ -88,6 +112,9 @@ function toReviewJob(row: Record<string, unknown>) {
     description: String(row.description),
     draft: row.draft_id
       ? {
+          attachments: JSON.parse(
+            String(row.draft_attachments_json)
+          ) as unknown,
           changeSummary: String(row.change_summary),
           id: String(row.draft_id),
           message: String(row.message),
@@ -95,9 +122,14 @@ function toReviewJob(row: Record<string, unknown>) {
           version: Number(row.version),
         }
       : null,
+    emailAttempt: row.email_attempt_json
+      ? (JSON.parse(String(row.email_attempt_json)) as unknown)
+      : null,
     id: String(row.id),
     location: String(row.location),
+    marketSegments: JSON.parse(String(row.market_segments_json)) as unknown,
     matchFacts: matchFactsFromRow(row),
+    opportunityScope: String(row.opportunity_scope),
     priority: Number(row.priority),
     sourceUrl: String(row.source_url),
     status: String(row.status),

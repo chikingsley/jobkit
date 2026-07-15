@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
 from jobkit.gmail_bridge.api import EMAIL_ATTEMPT_STATUSES, JobKitClient
+from jobkit.gmail_bridge.executor import process_requested_sends, watch_requested_sends
 from jobkit.gmail_bridge.gmail import GmailClient
 from jobkit.gmail_bridge.workflow import send_drafted_attempt, stage_approved_attempt
 
@@ -42,14 +43,17 @@ def run(argv: Sequence[str] | None = None) -> int:
         with JobKitClient(args.url) as api:
             api.sign_in(email, password)
             result = _dispatch(args, api)
-        print(json.dumps(result, indent=2, sort_keys=True))
+        if result is not None:
+            print(json.dumps(result, indent=2, sort_keys=True))
+    except KeyboardInterrupt:
+        return 0
     except (RuntimeError, ValueError, OSError) as exc:
         print(f"jobkit-gmail: {exc}", file=sys.stderr)
         return 1
     return 0
 
 
-def _dispatch(args: argparse.Namespace, api: JobKitClient) -> object:
+def _dispatch(args: argparse.Namespace, api: JobKitClient) -> object | None:
     if args.command == "queue":
         return api.create_email_attempt(args.job_id, args.draft_id, args.route_id)
     if args.command == "list":
@@ -65,6 +69,19 @@ def _dispatch(args: argparse.Namespace, api: JobKitClient) -> object:
             ],
         }
     gmail = GmailClient(args.gws_profile)
+    if args.command == "watch":
+        if args.once:
+            return {"results": process_requested_sends(api, gmail)}
+        watch_requested_sends(
+            api,
+            gmail,
+            poll_seconds=args.poll_seconds,
+            on_result=lambda result: print(
+                json.dumps(result, sort_keys=True),
+                flush=True,
+            ),
+        )
+        return None
     if args.command == "draft":
         return stage_approved_attempt(api, gmail, args.attempt_id)
     return send_drafted_attempt(api, gmail, args.attempt_id)
@@ -115,6 +132,22 @@ def _parser() -> argparse.ArgumentParser:
         help="explicitly send one existing, API-recorded Gmail draft and verify SENT",
     )
     send.add_argument("attempt_id")
+
+    watch = subparsers.add_parser(
+        "watch",
+        help="watch for explicit send requests from the JobKit UI",
+    )
+    watch.add_argument(
+        "--once",
+        action="store_true",
+        help="process the current requested sends and exit",
+    )
+    watch.add_argument(
+        "--poll-seconds",
+        default=2.0,
+        type=float,
+        help="seconds between checks (default: 2)",
+    )
     return parser
 
 

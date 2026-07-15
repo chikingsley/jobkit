@@ -53,6 +53,9 @@ uv run --locked jobkit-gmail draft ATTEMPT_ID
 
 # Explicitly send that already-recorded Gmail draft, verify its SENT label, and record its IDs.
 uv run --locked jobkit-gmail send ATTEMPT_ID
+
+# Run the executor that handles only explicit Send clicks from the JobKit UI.
+uv run --locked jobkit-gmail watch
 ```
 
 Before invoking Gmail send, the bridge atomically moves the attempt from `drafted` to `sending`.

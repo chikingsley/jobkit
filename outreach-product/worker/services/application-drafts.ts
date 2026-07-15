@@ -258,6 +258,8 @@ function toJobImport(row: Record<string, unknown>): JobImport {
     employerId: row.employer_id,
     id: row.id,
     location: row.location,
+    marketSegments: JSON.parse(String(row.market_segments_json)),
+    opportunityScope: row.opportunity_scope,
     priority: row.priority,
     salary: row.salary,
     sourceUrl: row.source_url,

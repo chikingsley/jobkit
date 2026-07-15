@@ -92,20 +92,27 @@ export function App() {
     (view: WorkspaceView) => navigate(workspacePaths[view]),
     [navigate]
   );
-  const loadJobs = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      const response = await apiRequest("/api/jobs");
-      const data = (await response.json()) as { jobs: Job[] };
-      setJobs(data.jobs);
-      if (!useWorkspaceStore.getState().selectedJobId) {
-        const [firstJob] = data.jobs;
-        setSelectedId(firstJob ? firstJob.id : "");
+  const loadJobs = useCallback(
+    async (options: { quiet?: boolean } = {}) => {
+      if (!options.quiet) {
+        setRefreshing(true);
       }
-    } finally {
-      setRefreshing(false);
-    }
-  }, [setSelectedId]);
+      try {
+        const response = await apiRequest("/api/jobs");
+        const data = (await response.json()) as { jobs: Job[] };
+        setJobs(data.jobs);
+        if (!useWorkspaceStore.getState().selectedJobId) {
+          const [firstJob] = data.jobs;
+          setSelectedId(firstJob ? firstJob.id : "");
+        }
+      } finally {
+        if (!options.quiet) {
+          setRefreshing(false);
+        }
+      }
+    },
+    [setSelectedId]
+  );
 
   const loadDocuments = useCallback(async () => {
     const response = await apiRequest("/api/documents");
@@ -116,6 +123,24 @@ export function App() {
   useEffect(() => {
     void loadJobs();
   }, [loadJobs]);
+
+  const hasPendingEmailSend = jobs.some(
+    (job) =>
+      job.emailAttempt?.sendRequestedAt &&
+      ["approved", "claimed", "drafted", "sending"].includes(
+        job.emailAttempt.status
+      )
+  );
+
+  useEffect(() => {
+    if (!hasPendingEmailSend) {
+      return;
+    }
+    const timer = window.setInterval(() => {
+      void loadJobs({ quiet: true }).catch(() => undefined);
+    }, 2000);
+    return () => window.clearInterval(timer);
+  }, [hasPendingEmailSend, loadJobs]);
 
   useEffect(() => {
     void apiRequest("/api/fx")
@@ -195,10 +220,10 @@ export function App() {
         message?: string;
       };
       setInstruction("");
-      await loadJobs();
+      await loadJobs({ quiet: true });
       toast.success(result.message ?? "Workspace updated");
     } catch (error) {
-      await loadJobs().catch(() => undefined);
+      await loadJobs({ quiet: true }).catch(() => undefined);
       toast.error(error instanceof Error ? error.message : "Request failed");
     } finally {
       setBusy("");

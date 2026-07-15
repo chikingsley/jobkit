@@ -43,6 +43,18 @@ export function evaluateJob(
   claims: QualificationClaims = {}
 ): JobMatch {
   const criteria: MatchCriterion[] = [];
+  const centerSegments = new Set(["language_center", "training_center"]);
+  if (
+    job.marketSegments.length > 0 &&
+    job.marketSegments.every((segment) => centerSegments.has(segment))
+  ) {
+    criteria.push(
+      criterion(
+        "Training and language center-only listings are excluded",
+        "conflict"
+      )
+    );
+  }
   if (preferences.countries.excluded.includes(job.country)) {
     criteria.push(
       criterion(`${job.country} is excluded in preferences`, "conflict")
