@@ -1,1 +1,1 @@
-export const JOB_MATCH_FACTS_SCHEMA_VERSION = 1;
+export const JOB_MATCH_FACTS_SCHEMA_VERSION = 2;

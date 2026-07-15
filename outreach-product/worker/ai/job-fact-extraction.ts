@@ -33,6 +33,7 @@ const ProviderJobMatchFactsSchema = z
     requirements: z.array(
       z
         .object({
+          alternativeGroup: z.string().nullable(),
           evidence: z.string(),
           importance: RequirementImportanceSchema,
           kind: JobRequirementKindSchema,
@@ -60,13 +61,19 @@ Rules:
 - For credentials, put the credential names or acronyms stated by the employer in values.
 - For language requirements, put the language in values and set minimumLanguageLevel only when stated.
 - For work authorization or residency, put the stated country or location in values.
+- Use citizenship for an explicit citizenship, nationality, passport-country, or native-speaker-country requirement. Residency means the candidate must currently live in a stated place; do not confuse the two.
+- Use document for a required diploma, transcript, background check, passport, photo, or certificate file. If the document has a recency or issue-date condition, use other so it remains a human verification item.
 - For experience, put the explicit work domain in values and set minimumYears only when stated.
 - Use other for a requirement that cannot be safely compared to the candidate profile.
+- Employment type is not candidate availability. Do not emit full-time, part-time, or contract work as an availability requirement.
+- When any one of several requirements is sufficient, emit every alternative separately with the same short semantic alternativeGroup. This includes X or Y, X and/or Y, and an unqualified-candidate training path offered as a fallback to a qualified-candidate path. For example, "experience and/or certification" must produce two requirements with exactly the same alternativeGroup. Never use a number as the group name. Leave alternativeGroup null only for requirements that must all be met.
 - Extract benefits, learner audiences, and employment types only when the listing states them.
 - For benefits, use provided only when the employer supplies or pays for it, allowance for an explicit cash allowance or reimbursement, and assistance for advice or logistical help only.
 - Housing-search help is assistance, not housing provided. Airport pickup is not airfare. Visa paperwork help is not visa sponsorship unless sponsorship is explicit.
+- Paid leave means paid vacation, paid holidays, or paid sick leave. Never emit a paidLeave benefit for completion, renewal, signing, or performance bonuses; bonuses are outside the allowed benefit categories and must be omitted.
 - Do not turn duties or employer marketing into candidate requirements.
-- Put ambiguity or contradictions in reviewNotes. Do not resolve them by guessing.`;
+- Do not omit an explicit requirement because it does not map neatly. Use other and preserve the exact quote for human verification.
+- Put genuine ambiguity or contradictions in reviewNotes. Do not resolve them by guessing. Do not add a review note merely because an optional schema field or an unstated detail is null.`;
 
 export interface GeneratedJobMatchFacts {
   facts: JobMatchFacts;
@@ -135,24 +142,148 @@ function validateEvidence(
 ) {
   const supported = <Value extends { evidence: string }>(value: Value) =>
     value.evidence.trim().length > 0 && source.includes(value.evidence.trim());
-  const removed =
+  const unsupported =
     output.audiences.filter((value) => !supported(value)).length +
     output.benefits.filter((value) => !supported(value)).length +
     output.employmentTypes.filter((value) => !supported(value)).length +
     output.requirements.filter((value) => !supported(value)).length;
-  const reviewNotes = output.reviewNotes.filter((note) => note.trim());
-  if (removed > 0) {
+  const reviewNotes = output.reviewNotes
+    .filter((note) => note.trim())
+    .map((note) => clip(note, 300));
+  if (unsupported > 0) {
     reviewNotes.push(
-      `${removed} unsupported ${removed === 1 ? "fact was" : "facts were"} excluded because the quoted evidence was not present in the listing.`
+      `${unsupported} unsupported ${unsupported === 1 ? "fact was" : "facts were"} excluded because the quoted evidence was not present in the listing.`
+    );
+  }
+  const supportedBenefits = output.benefits.filter(supported);
+  const benefits = supportedBenefits.filter(isValidBenefitClassification);
+  const invalidBenefits = supportedBenefits.length - benefits.length;
+  if (invalidBenefits > 0) {
+    reviewNotes.push(
+      `${invalidBenefits} ${invalidBenefits === 1 ? "benefit was" : "benefits were"} excluded because the quoted evidence did not support the selected benefit category.`
     );
   }
   return JobMatchFactsSchema.parse({
-    audiences: output.audiences.filter(supported),
-    benefits: output.benefits.filter(supported),
-    employmentTypes: output.employmentTypes.filter(supported),
-    requirements: output.requirements.filter(supported),
-    reviewNotes,
+    audiences: output.audiences
+      .filter(supported)
+      .slice(0, 10)
+      .map((fact) => ({ ...fact, evidence: clip(fact.evidence, 1200) })),
+    benefits: benefits.slice(0, 20).map((benefit) => ({
+      ...benefit,
+      evidence: clip(benefit.evidence, 1200),
+    })),
+    employmentTypes: output.employmentTypes
+      .filter(supported)
+      .slice(0, 10)
+      .map((fact) => ({ ...fact, evidence: clip(fact.evidence, 1200) })),
+    requirements: normalizeRequirements(
+      output.requirements.filter(supported).slice(0, 60)
+    ),
+    reviewNotes: reviewNotes.slice(0, 20),
   });
+}
+
+function isValidBenefitClassification(
+  benefit: z.infer<typeof JobBenefitFactSchema>
+) {
+  if (benefit.value !== "paidLeave") {
+    return true;
+  }
+  const evidence = benefit.evidence.normalize("NFKC").toLocaleLowerCase("en");
+  return [
+    "annual leave",
+    "paid holiday",
+    "paid leave",
+    "paid sick",
+    "paid vacation",
+  ].some((phrase) => evidence.includes(phrase));
+}
+
+type ProviderRequirement = z.infer<
+  typeof ProviderJobMatchFactsSchema
+>["requirements"][number];
+
+function normalizeRequirements(requirements: ProviderRequirement[]) {
+  const groupNames = new Map<string, string>();
+  for (const requirement of requirements) {
+    const group = requirement.alternativeGroup;
+    if (group && isGenericGroupName(group) && !groupNames.has(group)) {
+      groupNames.set(
+        group,
+        `Alternatives for ${requirement.label}`.slice(0, 80)
+      );
+    }
+  }
+  return requirements.map((requirement) =>
+    normalizeRequirementValues({
+      ...requirement,
+      alternativeGroup: requirement.alternativeGroup
+        ? (groupNames.get(requirement.alternativeGroup) ??
+          requirement.alternativeGroup)
+        : null,
+    })
+  );
+}
+
+function isGenericGroupName(value: string) {
+  const compact = value.trim().toLocaleLowerCase("en");
+  if (compact.length === 1 || [...compact].every(isDigit)) {
+    return true;
+  }
+  return ["alt", "alternative", "group"].some(
+    (prefix) =>
+      compact.startsWith(prefix) &&
+      [...compact.slice(prefix.length)].every(isDigit)
+  );
+}
+
+function isDigit(value: string) {
+  return value >= "0" && value <= "9";
+}
+
+function normalizeRequirementValues(requirement: ProviderRequirement) {
+  const genericDegreeNames = new Set([
+    "ba",
+    "bachelor",
+    "bachelor degree",
+    "bachelors degree",
+    "bs",
+  ]);
+  const values = requirement.values
+    .slice(0, 20)
+    .map((value) => clip(value, 160))
+    .filter(Boolean);
+  const alternativeGroup = requirement.alternativeGroup
+    ? clip(requirement.alternativeGroup, 80)
+    : "";
+  return {
+    ...requirement,
+    alternativeGroup: alternativeGroup || null,
+    evidence: clip(requirement.evidence, 1600),
+    label: clip(requirement.label, 240) || requirement.kind,
+    minimumYears:
+      requirement.minimumYears !== null &&
+      requirement.minimumYears >= 0 &&
+      requirement.minimumYears <= 80
+        ? requirement.minimumYears
+        : null,
+    values:
+      requirement.kind === "degree"
+        ? values.filter(
+            (value) =>
+              !genericDegreeNames.has(
+                value
+                  .normalize("NFKC")
+                  .toLocaleLowerCase("en")
+                  .replaceAll("'", "")
+              )
+          )
+        : values,
+  };
+}
+
+function clip(value: string, maximum: number) {
+  return value.trim().slice(0, maximum);
 }
 
 function jobSource(job: JobImport) {

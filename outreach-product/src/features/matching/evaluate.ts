@@ -6,6 +6,7 @@ import type {
   MatchState,
   Preferences,
   Profile,
+  StoredDocument,
 } from "@/profile-types";
 
 const degreeRanks = {
@@ -32,7 +33,8 @@ export function evaluateJob(
   job: Job,
   profile: Profile,
   preferences: Preferences,
-  monthlySalaryUsd?: number
+  monthlySalaryUsd?: number,
+  documents: StoredDocument[] = []
 ): JobMatch {
   const criteria: MatchCriterion[] = [];
   if (preferences.countries.excluded.includes(job.country)) {
@@ -45,9 +47,7 @@ export function evaluateJob(
 
   if (job.matchFacts) {
     criteria.push(
-      ...job.matchFacts.requirements.map((requirement) =>
-        evaluateRequirement(requirement, profile)
-      ),
+      ...evaluateRequirements(job.matchFacts.requirements, profile, documents),
       ...job.matchFacts.audiences.map((fact) =>
         preferenceCriterion(
           audienceLabel(fact.value),
@@ -62,7 +62,10 @@ export function evaluateJob(
           fact.evidence
         )
       ),
-      ...benefitCriteria(job, preferences)
+      ...benefitCriteria(job, preferences),
+      ...job.matchFacts.reviewNotes.map((note) =>
+        criterion(`Human review: ${note}`, "unknown")
+      )
     );
   } else {
     criteria.push(
@@ -87,9 +90,10 @@ export function evaluateJob(
 
 function evaluateRequirement(
   requirement: JobRequirement,
-  profile: Profile
+  profile: Profile,
+  documents: StoredDocument[]
 ): MatchCriterion {
-  const state = requirementState(requirement, profile);
+  const state = requirementState(requirement, profile, documents);
   return {
     evidence: requirement.evidence,
     importance: requirement.importance,
@@ -103,7 +107,8 @@ function evaluateRequirement(
 
 function requirementState(
   requirement: JobRequirement,
-  profile: Profile
+  profile: Profile,
+  documents: StoredDocument[]
 ): MatchState {
   if (requirement.kind === "degree") {
     return degreeRequirement(requirement, profile);
@@ -125,6 +130,14 @@ function requirementState(
       false
     );
   }
+  return profileEvidenceRequirement(requirement, profile, documents);
+}
+
+function profileEvidenceRequirement(
+  requirement: JobRequirement,
+  profile: Profile,
+  documents: StoredDocument[]
+): MatchState {
   if (requirement.kind === "workAuthorization") {
     const values = [
       profile.citizenship,
@@ -133,10 +146,25 @@ function requirementState(
         `${entry.country} ${entry.status}`,
       ]),
     ];
-    return hasConcept(values, requirement.values) ? "match" : "unknown";
+    return hasCountry(values, requirement.values) ? "match" : "unknown";
+  }
+  if (requirement.kind === "citizenship") {
+    if (!profile.citizenship) {
+      return "unknown";
+    }
+    return hasCountry([profile.citizenship], requirement.values)
+      ? "match"
+      : "conflict";
+  }
+  if (requirement.kind === "document") {
+    const available = documents.flatMap(documentEvidence);
+    return hasConcept(available, requirement.values) ? "match" : "unknown";
   }
   if (requirement.kind === "credential") {
-    return hasConcept(profile.credentials, requirement.values)
+    return hasConcept(
+      profile.credentials.flatMap(credentialEvidence),
+      requirement.values
+    )
       ? "match"
       : "unknown";
   }
@@ -149,6 +177,76 @@ function requirementState(
     return experienceRequirement(requirement, profile);
   }
   return "unknown";
+}
+
+function credentialEvidence(credential: string) {
+  const evidence = [credential];
+  const credentialTokens = tokens(credential);
+  if (
+    ["celta", "delta", "tefl", "tesol"].some((name) =>
+      credentialTokens.has(name)
+    )
+  ) {
+    evidence.push(
+      "English language teaching certificate",
+      "certificate in teaching English"
+    );
+  }
+  return evidence;
+}
+
+function documentEvidence(document: StoredDocument) {
+  const evidence = [
+    document.category,
+    document.filename,
+    `${document.category} ${document.filename}`,
+  ];
+  if (tokens(document.category).has("resume")) {
+    evidence.push("CV", "curriculum vitae");
+  }
+  return evidence;
+}
+
+function evaluateRequirements(
+  requirements: JobRequirement[],
+  profile: Profile,
+  documents: StoredDocument[]
+) {
+  const criteria: MatchCriterion[] = [];
+  const alternatives = new Map<string, JobRequirement[]>();
+  for (const requirement of requirements) {
+    if (!requirement.alternativeGroup) {
+      criteria.push(evaluateRequirement(requirement, profile, documents));
+      continue;
+    }
+    const group = alternatives.get(requirement.alternativeGroup) ?? [];
+    group.push(requirement);
+    alternatives.set(requirement.alternativeGroup, group);
+  }
+  for (const [groupName, group] of alternatives) {
+    const states = group.map((requirement) =>
+      requirementState(requirement, profile, documents)
+    );
+    let state: MatchState = "conflict";
+    if (states.includes("match")) {
+      state = "match";
+    } else if (states.includes("unknown")) {
+      state = "unknown";
+    }
+    const importance = group.some(
+      (requirement) => requirement.importance === "required"
+    )
+      ? "required"
+      : "preferred";
+    criteria.push({
+      evidence: group.map((requirement) => requirement.evidence).join(" | "),
+      importance,
+      label: `${groupName}: ${group.map((requirement) => requirement.label).join(" or ")}`,
+      state:
+        importance === "preferred" && state !== "match" ? "preference" : state,
+    });
+  }
+  return criteria;
 }
 
 function degreeRequirement(requirement: JobRequirement, profile: Profile) {
@@ -240,6 +338,26 @@ function hasConcept(candidates: string[], concepts: string[]) {
       )
     );
   });
+}
+
+function hasCountry(candidates: string[], countries: string[]) {
+  const candidateCountries = new Set(candidates.map(canonicalCountry));
+  return countries.some((country) =>
+    candidateCountries.has(canonicalCountry(country))
+  );
+}
+
+function canonicalCountry(value: string) {
+  const key = [...tokens(value)].join(" ");
+  const aliases: Record<string, string> = {
+    america: "united states",
+    britain: "united kingdom",
+    uk: "united kingdom",
+    "united states of america": "united states",
+    us: "united states",
+    usa: "united states",
+  };
+  return aliases[key] ?? key;
 }
 
 function tokens(value: string) {

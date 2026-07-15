@@ -23,8 +23,10 @@ export const JobEmploymentTypeSchema = z.enum([
 ]);
 export const JobRequirementKindSchema = z.enum([
   "availability",
+  "citizenship",
   "credential",
   "degree",
+  "document",
   "experience",
   "language",
   "residency",
@@ -61,6 +63,7 @@ export const JobBenefitFactSchema = z
 
 export const JobRequirementSchema = z
   .object({
+    alternativeGroup: z.string().min(1).max(80).nullable(),
     evidence: z.string().min(1).max(1600),
     importance: RequirementImportanceSchema,
     kind: JobRequirementKindSchema,

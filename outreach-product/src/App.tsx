@@ -145,12 +145,13 @@ export function App() {
                 job,
                 profile,
                 preferences,
-                monthlyCompensationUsd(job.compensation, fx)
+                monthlyCompensationUsd(job.compensation, fx),
+                documents
               ),
             ])
           : []
       ),
-    [fx, jobs, preferences, profile]
+    [documents, fx, jobs, preferences, profile]
   );
   const countries = [...new Set(jobs.map((job) => job.country))].sort();
   const visibleJobs = filterJobs(jobs, matches, {

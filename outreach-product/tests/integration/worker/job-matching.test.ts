@@ -24,6 +24,7 @@ describe("job matching facts", () => {
       employmentTypes: [],
       requirements: [
         {
+          alternativeGroup: null,
           evidence: "Bachelor's degree required",
           importance: "required",
           kind: "degree",
@@ -54,7 +55,7 @@ describe("job matching facts", () => {
       ).bind(
         jobId,
         JSON.stringify(facts),
-        1,
+        2,
         "cerebras",
         "zai-glm-4.7",
         "source-hash",
