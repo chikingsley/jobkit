@@ -2,10 +2,10 @@ import { generateText, Output } from "ai";
 import { z } from "zod";
 import type { Profile } from "../../src/features/profile/schema";
 import type { AppEnv } from "../env";
-import type { JobImport } from "../schemas";
+import type { ApplicationMessageRoute, JobImport } from "../schemas";
 import {
   APPLICATION_MESSAGE_INSTRUCTIONS,
-  APPLICATION_MESSAGE_REFERENCE_PATTERNS,
+  applicationMessagePolicyFor,
   validateApplicationMessage,
 } from "./application-message-policy";
 import { type AiModelSelection, createAiModel } from "./model-catalog";
@@ -42,11 +42,15 @@ export function generateApplicationMessage(
   styleGuidance: string[] = []
 ): Promise<GeneratedApplicationMessage> {
   const signature = signatureFor(profile);
+  const messageRoute = messageRouteFor(job);
+  const policy = applicationMessagePolicyFor(messageRoute);
   return runModel(env, model, {
     candidateProfile: messageProfile(profile),
     forbiddenInstitutionNames: institutionNames(profile),
     job,
-    referencePatterns: APPLICATION_MESSAGE_REFERENCE_PATTERNS,
+    messageRoute,
+    questionGuidance: policy.questionGuidance,
+    referencePatterns: policy.referencePatterns,
     request: "Write a new application message.",
     requiredEnding: `Best,\n${signature}`,
     styleGuidance,
@@ -63,12 +67,16 @@ export function reviseApplicationMessage(
   styleGuidance: string[] = []
 ): Promise<GeneratedApplicationMessage> {
   const signature = signatureFor(profile);
+  const messageRoute = messageRouteFor(job);
+  const policy = applicationMessagePolicyFor(messageRoute);
   return runModel(env, model, {
     candidateProfile: messageProfile(profile),
     currentMessage,
     forbiddenInstitutionNames: institutionNames(profile),
     job,
-    referencePatterns: APPLICATION_MESSAGE_REFERENCE_PATTERNS,
+    messageRoute,
+    questionGuidance: policy.questionGuidance,
+    referencePatterns: policy.referencePatterns,
     request:
       "Revise the current message according to revisionInstruction while preserving every rule.",
     requiredEnding: `Best,\n${signature}`,
@@ -82,6 +90,7 @@ async function runModel(
   selection: AiModelSelection,
   input: Record<string, unknown> & {
     forbiddenInstitutionNames: string[];
+    messageRoute: ApplicationMessageRoute;
     requiredEnding: string;
   }
 ): Promise<GeneratedApplicationMessage> {
@@ -117,6 +126,7 @@ async function runModel(
         const message = validateApplicationMessage(
           output.message,
           input.requiredEnding,
+          input.messageRoute,
           input.forbiddenInstitutionNames
         );
         return {
@@ -150,6 +160,12 @@ async function runModel(
       { cause: error }
     );
   }
+}
+
+function messageRouteFor(job: JobImport): ApplicationMessageRoute {
+  return job.opportunityScope === "multi_position"
+    ? "multi_position"
+    : job.messageRoute;
 }
 
 function institutionNames(profile: Profile) {

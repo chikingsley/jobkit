@@ -16,8 +16,8 @@ export async function upsertJob(
         compensation_currency,compensation_period,compensation_qualifier,
         compensation_source,compensation_confidence,compensation_notes_json,
         description,source_url,apply_url,employer_id,first_seen_at,updated_at
-        ,opportunity_scope,market_segments_json
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ,opportunity_scope,market_segments_json,message_route
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       ON CONFLICT(id) DO UPDATE SET
         title=excluded.title,
         company=excluded.company,
@@ -39,6 +39,7 @@ export async function upsertJob(
         employer_id=excluded.employer_id,
         opportunity_scope=excluded.opportunity_scope,
         market_segments_json=excluded.market_segments_json,
+        message_route=excluded.message_route,
         updated_at=excluded.updated_at`
     )
     .bind(
@@ -65,7 +66,10 @@ export async function upsertJob(
       timestamp,
       timestamp,
       job.opportunityScope,
-      JSON.stringify(job.marketSegments)
+      JSON.stringify(job.marketSegments),
+      job.opportunityScope === "multi_position"
+        ? "multi_position"
+        : job.messageRoute
     )
     .run();
 }

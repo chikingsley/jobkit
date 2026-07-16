@@ -1,7 +1,9 @@
 import {
+  Bot,
   BriefcaseBusiness,
   ChevronsUpDown,
   Files,
+  Globe2,
   LogOut,
   MessageSquareText,
   SlidersHorizontal,
@@ -37,6 +39,8 @@ import type { WorkspaceView } from "@/features/workspace/routes";
 
 const navigation = [
   { icon: BriefcaseBusiness, id: "jobs", label: "Jobs" },
+  { icon: Globe2, id: "countries", label: "Countries" },
+  { icon: Bot, id: "automation", label: "Automation" },
   { icon: UserRound, id: "profile", label: "Profile" },
   { icon: SlidersHorizontal, id: "preferences", label: "Preferences" },
   { icon: Files, id: "documents", label: "Documents" },
@@ -198,6 +202,12 @@ function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => go("countries")}>
+                <Globe2 /> Countries
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => go("automation")}>
+                <Bot /> Automation
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => go("profile")}>
                 <UserRound /> Profile
               </DropdownMenuItem>
@@ -224,6 +234,8 @@ function NavUser({
 
 export function WorkspaceHeader({ activeView }: { activeView: WorkspaceView }) {
   const title = {
+    automation: "Automation",
+    countries: "Countries",
     documents: "Documents",
     jobs: "Job review",
     messageStyle: "Writing style",

@@ -60,6 +60,7 @@ export interface Job {
   location: string;
   marketSegments: MarketSegment[];
   matchFacts: JobMatchFacts | null;
+  messageRoute: "advertised_position" | "multi_position" | "school_outreach";
   opportunityScope: "direct" | "multi_position" | "unknown";
   sourceUrl: string;
   status: string;

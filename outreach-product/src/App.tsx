@@ -46,6 +46,15 @@ import type { Preferences, Profile, StoredDocument } from "@/profile-types";
 const DocumentsView = lazy(async () => ({
   default: (await import("@/views/documents-view")).DocumentsView,
 }));
+const AutomationView = lazy(async () => ({
+  default: (await import("@/views/automation-view")).AutomationView,
+}));
+const CountriesView = lazy(async () => ({
+  default: (await import("@/views/countries-view")).CountriesView,
+}));
+const CountryView = lazy(async () => ({
+  default: (await import("@/views/country-view")).CountryView,
+}));
 const MessageStyleView = lazy(async () => ({
   default: (await import("@/views/message-style-view")).MessageStyleView,
 }));
@@ -278,6 +287,37 @@ export function App() {
       <SidebarInset className="h-svh min-h-0 min-w-0 overflow-hidden">
         <WorkspaceHeader activeView={activeView} />
         <Routes>
+          <Route
+            element={
+              <WorkspacePage>
+                <AutomationView request={apiRequest} />
+              </WorkspacePage>
+            }
+            path={workspacePaths.automation}
+          />
+          <Route
+            element={
+              <WorkspacePage>
+                {preferences ? (
+                  <CountriesView
+                    preferences={preferences}
+                    request={apiRequest}
+                  />
+                ) : (
+                  <ViewLoading />
+                )}
+              </WorkspacePage>
+            }
+            path={workspacePaths.countries}
+          />
+          <Route
+            element={
+              <WorkspacePage>
+                <CountryView request={apiRequest} />
+              </WorkspacePage>
+            }
+            path={`${workspacePaths.countries}/:countryCode`}
+          />
           <Route
             element={
               <JobsWorkspace

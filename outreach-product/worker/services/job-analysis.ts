@@ -90,6 +90,7 @@ function jobImportFromRow(row: Record<string, unknown>): JobImport {
     id: row.id,
     location: row.location,
     marketSegments: JSON.parse(String(row.market_segments_json)),
+    messageRoute: row.message_route,
     opportunityScope: row.opportunity_scope,
     priority: row.priority,
     salary: row.salary,

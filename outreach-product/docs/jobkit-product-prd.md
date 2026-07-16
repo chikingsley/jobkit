@@ -915,7 +915,9 @@ Product metrics later:
 ### Phase 3: School catalog and country sweeps
 
 - Add organizations, locations, contact points, evidence, and discovery-run state.
-- Convert the prior Tajikistan research into the first persisted sweep.
+- Import the recovered May 11 workbook from
+  `job-search/job-data/country-sweeps/tajikistan/2026-05-11/` as the first persisted sweep, keeping
+  dated vacancies separate from school-level outreach targets.
 - Run Georgia as the second market and use the coverage comparison to refine the workflow.
 - Add freshness scheduling and deduplication by canonical domain, organization, and location.
 

@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "coverageSummary": {
+      "type": "object",
+      "properties": {
+        "citiesChecked": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "gaps": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "needsAnotherPass": { "type": "boolean" },
+        "queriesChecked": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "resultCount": { "type": "integer", "minimum": 0 },
+        "sourcesChecked": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": [
+        "citiesChecked",
+        "gaps",
+        "needsAnotherPass",
+        "queriesChecked",
+        "resultCount",
+        "sourcesChecked"
+      ],
+      "additionalProperties": false
+    },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 1000 },
+      "maxItems": 50
+    },
+    "organizations": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "properties": {
+          "canonicalDomain": { "type": "string", "maxLength": 255 },
+          "city": { "type": "string", "maxLength": 160 },
+          "contactPoints": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "type": "object",
+              "properties": {
+                "evidenceUrl": { "type": "string" },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "email",
+                    "phone",
+                    "contact_form",
+                    "careers_page",
+                    "website"
+                  ]
+                },
+                "label": { "type": "string", "maxLength": 160 },
+                "status": {
+                  "type": "string",
+                  "enum": ["unverified", "active", "stale", "invalid"]
+                },
+                "value": { "type": "string", "minLength": 1, "maxLength": 1000 }
+              },
+              "required": ["evidenceUrl", "kind", "label", "status", "value"],
+              "additionalProperties": false
+            }
+          },
+          "evidenceUrl": { "type": "string" },
+          "lastVerifiedAt": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ]
+          },
+          "marketSegment": {
+            "type": "string",
+            "enum": [
+              "international_school",
+              "kindergarten",
+              "language_center",
+              "private_school",
+              "public_school",
+              "school",
+              "training_center",
+              "university"
+            ]
+          },
+          "name": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "outreachEligibility": {
+            "type": "string",
+            "enum": ["eligible", "review", "excluded"]
+          },
+          "region": { "type": "string", "maxLength": 160 },
+          "status": {
+            "type": "string",
+            "enum": ["unverified", "active", "stale", "closed", "invalid"]
+          },
+          "websiteUrl": { "type": "string" }
+        },
+        "required": [
+          "canonicalDomain",
+          "city",
+          "contactPoints",
+          "evidenceUrl",
+          "lastVerifiedAt",
+          "marketSegment",
+          "name",
+          "outreachEligibility",
+          "region",
+          "status",
+          "websiteUrl"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["coverageSummary", "notes", "organizations"],
+  "additionalProperties": false
+}

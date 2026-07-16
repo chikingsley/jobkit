@@ -19,6 +19,12 @@ export const OpportunityScopeSchema = z.enum([
   "unknown",
 ]);
 
+export const ApplicationMessageRouteSchema = z.enum([
+  "advertised_position",
+  "multi_position",
+  "school_outreach",
+]);
+
 export const JobImportSchema = z.object({
   applyEmail: z.union([z.literal(""), z.email()]).default(""),
   applyUrl: z.string().url(),
@@ -30,6 +36,7 @@ export const JobImportSchema = z.object({
   id: z.string().min(1),
   location: z.string().default(""),
   marketSegments: z.array(MarketSegmentSchema).max(8).default([]),
+  messageRoute: ApplicationMessageRouteSchema.default("advertised_position"),
   opportunityScope: OpportunityScopeSchema.default("unknown"),
   priority: z.number().int().default(0),
   salary: z.string().default(""),
@@ -46,6 +53,9 @@ export const ReviseSchema = z.object({
 export const SubmitSchema = z.object({ draftId: z.string().min(1) });
 
 export type JobImport = z.infer<typeof JobImportSchema>;
+export type ApplicationMessageRoute = z.infer<
+  typeof ApplicationMessageRouteSchema
+>;
 
 export interface ReviewJob {
   applicationRoutes: Array<{
@@ -85,6 +95,7 @@ export interface ReviewJob {
   id: string;
   location: string;
   marketSegments: z.infer<typeof MarketSegmentSchema>[];
+  messageRoute: z.infer<typeof ApplicationMessageRouteSchema>;
   opportunityScope: z.infer<typeof OpportunityScopeSchema>;
   priority: number;
   sourceUrl: string;

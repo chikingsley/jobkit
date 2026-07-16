@@ -6,18 +6,24 @@ import {
 
 interface AutomationPolicyRow {
   allowed_boards_json: string;
-  daily_application_limit: number;
+  board_form_daily_limit: number;
+  board_form_mode: string;
+  email_daily_limit: number;
+  email_mode: string;
+  excluded_market_segments_json: string;
   minimum_fit: string;
-  mode: string;
+  paused: number;
   require_known_compensation: number;
+  route_freshness_days: number;
   updated_at: string;
 }
 
 export async function readAutomationPolicy(db: D1Database, userId: string) {
   const row = await db
     .prepare(
-      `SELECT mode,allowed_boards_json,minimum_fit,daily_application_limit,
-              require_known_compensation,updated_at
+      `SELECT email_mode,email_daily_limit,board_form_mode,board_form_daily_limit,
+              allowed_boards_json,excluded_market_segments_json,minimum_fit,
+              require_known_compensation,route_freshness_days,paused,updated_at
        FROM user_automation_policies WHERE user_id=?`
     )
     .bind(userId)
@@ -27,10 +33,16 @@ export async function readAutomationPolicy(db: D1Database, userId: string) {
   }
   const value = AutomationPolicySchema.parse({
     allowedBoards: JSON.parse(row.allowed_boards_json),
-    dailyApplicationLimit: row.daily_application_limit,
+    boardForm: {
+      dailyLimit: row.board_form_daily_limit,
+      mode: row.board_form_mode,
+    },
+    email: { dailyLimit: row.email_daily_limit, mode: row.email_mode },
+    excludedMarketSegments: JSON.parse(row.excluded_market_segments_json),
     minimumFit: row.minimum_fit,
-    mode: row.mode,
+    paused: Boolean(row.paused),
     requireKnownCompensation: Boolean(row.require_known_compensation),
+    routeFreshnessDays: row.route_freshness_days,
   });
   return { updatedAt: row.updated_at, value };
 }
@@ -45,24 +57,36 @@ export async function writeAutomationPolicy(
   await db
     .prepare(
       `INSERT INTO user_automation_policies
-        (user_id,mode,allowed_boards_json,minimum_fit,daily_application_limit,
-         require_known_compensation,created_at,updated_at)
-       VALUES (?,?,?,?,?,?,?,?)
+        (user_id,email_mode,email_daily_limit,board_form_mode,
+         board_form_daily_limit,allowed_boards_json,
+         excluded_market_segments_json,minimum_fit,require_known_compensation,
+         route_freshness_days,paused,created_at,updated_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
        ON CONFLICT(user_id) DO UPDATE SET
-         mode=excluded.mode,
+         email_mode=excluded.email_mode,
+         email_daily_limit=excluded.email_daily_limit,
+         board_form_mode=excluded.board_form_mode,
+         board_form_daily_limit=excluded.board_form_daily_limit,
          allowed_boards_json=excluded.allowed_boards_json,
+         excluded_market_segments_json=excluded.excluded_market_segments_json,
          minimum_fit=excluded.minimum_fit,
-         daily_application_limit=excluded.daily_application_limit,
          require_known_compensation=excluded.require_known_compensation,
+         route_freshness_days=excluded.route_freshness_days,
+         paused=excluded.paused,
          updated_at=excluded.updated_at`
     )
     .bind(
       userId,
-      policy.mode,
+      policy.email.mode,
+      policy.email.dailyLimit,
+      policy.boardForm.mode,
+      policy.boardForm.dailyLimit,
       JSON.stringify(policy.allowedBoards),
+      JSON.stringify(policy.excludedMarketSegments),
       policy.minimumFit,
-      policy.dailyApplicationLimit,
       Number(policy.requireKnownCompensation),
+      policy.routeFreshnessDays,
+      Number(policy.paused),
       updatedAt,
       updatedAt
     )

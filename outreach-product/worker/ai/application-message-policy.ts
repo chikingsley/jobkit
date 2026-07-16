@@ -1,3 +1,5 @@
+import type { ApplicationMessageRoute } from "../schemas";
+
 export const APPLICATION_MESSAGE_INSTRUCTIONS = `You write concise, truthful job-application messages for the candidate.
 
 Message policy:
@@ -12,9 +14,8 @@ Message policy:
 - For a university role, prefer concrete higher-education evidence such as leading review lectures or tutoring students. Do not replace that evidence with a past institution name.
 - Keep the message concise, specific to the employer and role, and free of generic listing boilerplate.
 - Use the shortest complete version. Let useful content determine the length; never add detail or extra paragraphs to reach a preferred word count.
-- Ask exactly one useful question that first establishes whether the employer is still hiring or the position is still open. If useful, the same question may then ask for one missing detail about location, schedule, start date, student group, or day-to-day responsibilities.
+- Ask exactly one useful question using the supplied questionGuidance for the messageRoute. The route determines whether the candidate is responding to a known position, contacting a school generally, or asking about a multi-position listing.
 - Put that question in the final content paragraph immediately before the required ending. Do not place qualifications or other content after it.
-- For a listing covering many schools or positions, do not write as though one placement is already established. Ask whether they are currently hiring and, if so, which locations or student groups have openings.
 - Never mention attachments. Document-packet selection and delivery are handled separately from message generation.
 - End with the exact requiredEnding string supplied in the request.
 - Follow the supplied styleGuidance when it does not conflict with this policy. An empty styleGuidance array means no calibrated preference has been established.
@@ -31,19 +32,45 @@ Truthfulness rules:
 
 The summary must state specifically what was tailored in one short sentence.`;
 
-export const APPLICATION_MESSAGE_REFERENCE_PATTERNS = [
+const EXPERIENCE_REFERENCE_PATTERNS = [
   "General teaching evidence: I have experience teaching adults, children, and teenagers in the United States and Russia, both in person and online. My work has included speaking and grammar lessons, lesson planning, assessment, and adapting classes for different levels.",
   "University evidence: At the university level, I worked as a teaching assistant, led monthly review lectures for classes of more than 200 students, and tutored students one-on-one.",
-  "Direct-role question: Are you still hiring for this position?",
-  "Direct-role question with one missing detail: Are you still hiring for this position, and if so, what would the usual schedule and student groups look like?",
-  "Multiple-position question: Are you currently hiring, and if so, which locations and student groups have openings?",
 ] as const;
+
+const ROUTE_QUESTION_GUIDANCE: Record<ApplicationMessageRoute, string> = {
+  advertised_position:
+    "The position is already known. Ask whether the recipient would be open to speaking about the role. Do not ask whether the role is open or whether the employer is hiring.",
+  multi_position:
+    "The listing covers several possible placements. Ask which locations and student groups they are currently recruiting for.",
+  school_outreach:
+    "This is general school outreach. Ask whether the recipient would be open to a brief conversation about whether the candidate and school might be a good fit. Do not ask whether the school is hiring.",
+};
+
+const ROUTE_QUESTION_REFERENCE: Record<ApplicationMessageRoute, string> = {
+  advertised_position:
+    "Advertised-position question: Would you be open to speaking this week about the role?",
+  multi_position:
+    "Multiple-position question: Which locations and student groups are you currently recruiting for?",
+  school_outreach:
+    "School-outreach question: Would you be open to a quick conversation about whether we might be a good fit?",
+};
+
+export function applicationMessagePolicyFor(route: ApplicationMessageRoute) {
+  return {
+    questionGuidance: ROUTE_QUESTION_GUIDANCE[route],
+    referencePatterns: [
+      ...EXPERIENCE_REFERENCE_PATTERNS,
+      ROUTE_QUESTION_REFERENCE[route],
+    ],
+  };
+}
 
 const MAX_MESSAGE_WORDS = 220;
 
 export function validateApplicationMessage(
   rawMessage: string,
   requiredEnding: string,
+  route: ApplicationMessageRoute,
   forbiddenInstitutionNames: string[] = []
 ): string {
   const message = rawMessage.replaceAll("\r\n", "\n").trim();
@@ -67,7 +94,7 @@ export function validateApplicationMessage(
     .trimEnd();
   if (!contentBeforeEnding.endsWith("?")) {
     problems.push(
-      "the hiring question must be the final content before the ending"
+      "the route question must be the final content before the ending"
     );
   }
 
@@ -97,20 +124,7 @@ export function validateApplicationMessage(
       .split(/[^a-z]+/u)
       .filter(Boolean)
   );
-  const hiringWords = [
-    "applications",
-    "available",
-    "hire",
-    "hiring",
-    "open",
-    "opening",
-    "openings",
-    "recruiting",
-    "seeking",
-  ];
-  if (!hiringWords.some((word) => questionWords.has(word))) {
-    problems.push("the question must establish whether hiring is still open");
-  }
+  validateRouteQuestion(route, questionWords, problems);
 
   const normalizedMessage = comparisonWords(message).join(" ");
   const forbiddenName = forbiddenInstitutionNames.find((name) => {
@@ -141,6 +155,52 @@ export function validateApplicationMessage(
     );
   }
   return message;
+}
+
+function validateRouteQuestion(
+  route: ApplicationMessageRoute,
+  words: Set<string>,
+  problems: string[]
+) {
+  if (route === "multi_position") {
+    const asksWhich = words.has("which");
+    const asksPlacement = ["location", "locations", "group", "groups"].some(
+      (word) => words.has(word)
+    );
+    const asksRecruiting = ["recruiting", "hiring", "openings"].some((word) =>
+      words.has(word)
+    );
+    if (!(asksWhich && asksPlacement && asksRecruiting)) {
+      problems.push(
+        "the multi-position question must ask which placements are being recruited"
+      );
+    }
+    return;
+  }
+
+  const asksConversation = [
+    "conversation",
+    "discuss",
+    "speak",
+    "speaking",
+    "talk",
+  ].some((word) => words.has(word));
+  if (!asksConversation) {
+    problems.push("the question must invite a conversation");
+  }
+  if (route === "advertised_position" && !words.has("role")) {
+    problems.push("the advertised-position question must refer to the role");
+  }
+  if (route === "school_outreach") {
+    if (!(words.has("fit") && words.has("open"))) {
+      problems.push(
+        "the school-outreach question must ask whether they are open to discussing fit"
+      );
+    }
+    if (words.has("hire") || words.has("hiring")) {
+      problems.push("the school-outreach question must not ask about hiring");
+    }
+  }
 }
 
 const GENERIC_INSTITUTION_WORDS = new Set([

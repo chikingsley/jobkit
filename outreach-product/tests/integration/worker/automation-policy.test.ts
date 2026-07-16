@@ -13,7 +13,7 @@ const testEnv = env as TestEnv;
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("automation policy", () => {
-  it("starts disabled and persists explicit safety limits", async () => {
+  it("starts in review and persists channel-specific safety limits", async () => {
     const { cookie, userId } = await createAuthenticatedUser(
       "automation-policy@example.test"
     );
@@ -23,10 +23,13 @@ describe("automation policy", () => {
     );
     const policy = {
       allowedBoards: ["seriousteachers"],
-      dailyApplicationLimit: 2,
+      boardForm: { dailyLimit: 2, mode: "review" },
+      email: { dailyLimit: 4, mode: "auto" },
+      excludedMarketSegments: ["language_center", "training_center"],
       minimumFit: "strong",
-      mode: "review",
+      paused: false,
       requireKnownCompensation: true,
+      routeFreshnessDays: 14,
     } as const;
     const saved = await exports.default.fetch(
       "https://outreach.test/api/automation-policy",
@@ -46,10 +49,18 @@ describe("automation policy", () => {
     expect(await saved.json()).toMatchObject({ policy });
     expect(
       await testEnv.DB.prepare(
-        "SELECT mode,daily_application_limit FROM user_automation_policies WHERE user_id=?"
+        `SELECT email_mode,email_daily_limit,board_form_mode,
+                board_form_daily_limit,route_freshness_days
+           FROM user_automation_policies WHERE user_id=?`
       )
         .bind(userId)
         .first()
-    ).toEqual({ daily_application_limit: 2, mode: "review" });
+    ).toEqual({
+      board_form_daily_limit: 2,
+      board_form_mode: "review",
+      email_daily_limit: 4,
+      email_mode: "auto",
+      route_freshness_days: 14,
+    });
   });
 });

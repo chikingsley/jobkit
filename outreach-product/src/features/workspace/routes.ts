@@ -1,4 +1,6 @@
 export const workspacePaths = {
+  automation: "/automation",
+  countries: "/countries",
   documents: "/documents",
   jobs: "/",
   messageStyle: "/message-style",
@@ -17,5 +19,8 @@ const workspaceViewsByPath = new Map<string, WorkspaceView>(
 
 export function workspaceViewFromPathname(pathname: string): WorkspaceView {
   const normalizedPathname = pathname.replace(/\/+$/, "") || "/";
+  if (normalizedPathname.startsWith(`${workspacePaths.countries}/`)) {
+    return "countries";
+  }
   return workspaceViewsByPath.get(normalizedPathname) ?? "jobs";
 }

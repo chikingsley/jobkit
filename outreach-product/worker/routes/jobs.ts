@@ -129,6 +129,7 @@ function toReviewJob(row: Record<string, unknown>) {
     location: String(row.location),
     marketSegments: JSON.parse(String(row.market_segments_json)) as unknown,
     matchFacts: matchFactsFromRow(row),
+    messageRoute: String(row.message_route),
     opportunityScope: String(row.opportunity_scope),
     priority: Number(row.priority),
     sourceUrl: String(row.source_url),

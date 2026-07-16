@@ -13,6 +13,7 @@ import {
   writePreferences,
   writeProfile,
 } from "./repositories/user-settings";
+import { registerCountryRoutes } from "./routes/countries";
 import { registerDocumentRoutes } from "./routes/documents";
 import { registerEmailAttemptRoutes } from "./routes/email-attempts";
 import { registerJobRoutes } from "./routes/jobs";
@@ -25,6 +26,8 @@ import {
   regenerateDrafts,
   reviseJobDraft,
 } from "./services/application-drafts";
+import { CountryMarketError } from "./services/country-markets";
+import { authenticateCountrySweepRunner } from "./services/country-sweep-runner-auth";
 import { DocumentConversionError } from "./services/document-text";
 import { EmailAttemptError } from "./services/email-attempts";
 import { approveAndSubmitApplication } from "./services/job-submission";
@@ -81,6 +84,9 @@ app.onError((error, c) => {
   if (error instanceof OnboardingIncompleteError) {
     return c.json({ message: error.message, ok: false }, 409);
   }
+  if (error instanceof CountryMarketError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
   return c.json({ message: error.message, ok: false }, 500);
 });
 
@@ -91,6 +97,25 @@ app.on(["GET", "POST"], "/api/auth/*", (c) =>
 );
 
 app.use("/api/*", async (c, next) => {
+  const authorization = c.req.header("authorization") ?? "";
+  if (authorization.startsWith("Bearer ")) {
+    if (!c.req.path.startsWith("/api/country-sweep-tasks/")) {
+      return c.json(
+        { message: "Runner token is limited to sweep tasks", ok: false },
+        403
+      );
+    }
+    const user = await authenticateCountrySweepRunner(c.env.DB, authorization);
+    if (!user) {
+      return c.json(
+        { message: "Runner authentication failed", ok: false },
+        401
+      );
+    }
+    c.set("user", user);
+    await next();
+    return;
+  }
   const session = await createAuth(c.env, c.req.raw).api.getSession({
     headers: c.req.raw.headers,
   });
@@ -108,6 +133,7 @@ app.use("/api/*", async (c, next) => {
 registerOnboardingRoutes(app);
 registerJobRoutes(app);
 registerDocumentRoutes(app);
+registerCountryRoutes(app);
 registerEmailAttemptRoutes(app);
 registerUserSettingsRoutes(app);
 
