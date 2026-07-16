@@ -1,10 +1,16 @@
-# Ben Teaches English Overseas — Correspondence Archive
+# Ben Teaches English Overseas — Main Consultation Threads
 
-Paid ESL career consultation, **2019**. Mailbox: `chibuzor.ejimofor@gmail.com`; Ben: `ben@benteachesenglishoverseas.com` (site now defunct, so this is the surviving record). Bodies are cleaned (quoted text + signature boilerplate trimmed). Distilled, actionable advice lives in [`../../docs/job-search-playbook.md`](../../docs/job-search-playbook.md); attachments are in [`attachments/`](attachments/).
+Paid ESL career consultation, **2019**. This is a readable conversion of the two substantive advice
+threads, not the complete 23-message archive. Bodies are cleaned where practical, although some
+quoted-message markers remain. The raw files in [`emails/`](emails/) are authoritative.
+
+The complete Markdown index is in [`README.md`](README.md); the distilled interpretation is in
+[`../../docs/job-search-playbook.md`](../../docs/job-search-playbook.md).
 
 ## Thread: New Client Questionnaire + Contract review (Jun 2019)
 
-### 2019-06-03 — Chi (chibuzor.ejimofor@gmail.com)
+### 2019-06-03 — Chi (<chibuzor.ejimofor@gmail.com>)
+
 *Subject: New Client Questionnaire + Contract review*
 
 Ben,
@@ -19,9 +25,10 @@ Best regards,
 
 Chibuzor (Chi) Ejimofor
 M | +1 304 276 4410
-E  | Chibuzor.ejimofor@gmail.com
+E  | <Chibuzor.ejimofor@gmail.com>
 
-### 2019-06-04 — Ben (ben@benteachesenglishoverseas.com)
+### 2019-06-04 — Ben (<ben@benteachesenglishoverseas.com>)
+
 *Subject: Re: New Client Questionnaire + Contract review*
 
 Hi, Chi!
@@ -62,9 +69,10 @@ conversation with you.
 Ben
 
 On Tue, Jun 4, 2019 at 5:37 AM Chibuzor Ejimofor <
-chibuzor.ejimofor@gmail.com> wrote:
+<chibuzor.ejimofor@gmail.com>> wrote:
 
-### 2019-06-06 — Chi (chibuzor.ejimofor@gmail.com)
+### 2019-06-06 — Chi (<chibuzor.ejimofor@gmail.com>)
+
 *Subject: Re: New Client Questionnaire + Contract review*
 
 Ben,
@@ -83,20 +91,21 @@ Best,
 
 Chibuzor (Chi) Ejimofor
 M | +1 304 276 4410
-E  | Chibuzor.ejimofor@gmail.com <mailto:Chibuzor.ejimofor@gmail.com>
+E  | <Chibuzor.ejimofor@gmail.com> <mailto:Chibuzor.ejimofor@gmail.com>
 
 PS: It’s good that I used your service… it’s almost guaranteed I would have taken this offer if applying alone!
 
-### 2019-06-11 — Ben (ben@benteachesenglishoverseas.com)
+### 2019-06-11 — Ben (<ben@benteachesenglishoverseas.com>)
+
 *Subject: Re: New Client Questionnaire + Contract review*
 
-*Hi, Chibuzor! *
+*Hi, Chibuzor!*
 
-*It's great to hear from you. *
+*It's great to hear from you.*
 
 Thanks for the insights!
 
-*It's always my pleasure. *
+*It's always my pleasure.*
 
 [finance details] I actually lived out of my car for the past couple years
 so I was able to keep expenses mostly low. I’ve traveled a crazy amount
@@ -108,15 +117,15 @@ gas/car, 300 for loans, and 120 for phone.
 that you will take like a fish to water and make great money overseas. I've
 not lived in a car, but I've lived in some pretty rough conditions before
 and it makes you grateful for certain things... and much more appreciative
-of living minimally. I hate having tons of junk in my life. *
+of living minimally. I hate having tons of junk in my life.*
 
-*FINANCIAL GOALS: *
+*FINANCIAL GOALS:*
 
 *I've gone over your sheet. Depending upon how hard you want to work, if
 you're willing to go to a place like China and really work at developing
 your clientele and classes on top of the right contract, I think we could
 reduce all of these down to 1-2 years on the timeline. If anything I think
-these goals are too realistic and you can do better. *
+these goals are too realistic and you can do better.*
 
 I finished the book today and I really like the idea of working in oil or
 with the defense contractors for a year or two just to pay off all my debt
@@ -128,7 +137,7 @@ opportunity is good.
 
 *Great! Unfortunately oil is depressed right now and the contracts aren't
 out there right now, but I am confident that once we hit $80 a barrel on
-crude for a while again it will come back. *
+crude for a while again it will come back.*
 
 *As far as defense, there are still some great jobs available in Saudi
 Arabia and Afghanistan. The hard part is timing them. They are notoriously
@@ -137,7 +146,7 @@ from anyone for weeks or months and then suddenly they might want to
 interview you right away or even offer you a job straight away. It can be
 bizarre. I just had someone get a Saudi contract after waiting literally
 months and wondering if it would ever come through. This has happened to me
-a few times. *
+a few times.*
 
 That said, I plan on spreading my applications far and wide and choosing
 the best option as you suggested. I attached my resume which I have already
@@ -151,12 +160,13 @@ I’ll go ahead and reject this offer and apply for better options.
 previous offer. Please give me a couple days to go over this resume in
 detail and I will be back with a full critique and some suggestions. I can
 rush your resume once we have the frame work completed and we're ready for
-the design--that part should only take one business day. *
+the design--that part should only take one business day.*
 
 *In the interim period, please feel free to ask any and all questions you
-may have and bounce any ideas off me as well. I'm always here to help. *
+may have and bounce any ideas off me as well. I'm always here to help.*
 
-### 2019-06-13 — Ben (ben@benteachesenglishoverseas.com)
+### 2019-06-13 — Ben (<ben@benteachesenglishoverseas.com>)
+
 *Subject: Re: New Client Questionnaire + Contract review*
 
 Hi Chibuzor,
@@ -204,7 +214,7 @@ and education sections that shows what you bring to the table. Based on
 what I'm reading here, it might be something like:
 
 *TEFL-Certified Professional Educator with Bachelor's Degree and American
-Passport Available Immediately *
+Passport Available Immediately*
 
 ^^If I were looking for a qualified teacher and read this upon opening your
 resume, you'd absolutely have my attention. You show right off the bat that
@@ -288,9 +298,10 @@ I hope your week's gone great so far!
 Ben
 
 On Thu, Jun 6, 2019 at 7:53 PM Chibuzor Ejimofor <
-chibuzor.ejimofor@gmail.com> wrote:
+<chibuzor.ejimofor@gmail.com>> wrote:
 
-### 2019-06-13 — Chi (chibuzor.ejimofor@gmail.com)
+### 2019-06-13 — Chi (<chibuzor.ejimofor@gmail.com>)
+
 *Subject: Re: New Client Questionnaire + Contract review*
 
 Ben,
@@ -305,9 +316,10 @@ Best,
 
 Chibuzor (Chi) Ejimofor
 M | +1 304 276 4410
-E  | Chibuzor.ejimofor@gmail.com
+E  | <Chibuzor.ejimofor@gmail.com>
 
-### 2019-06-15 — Ben (ben@benteachesenglishoverseas.com)
+### 2019-06-15 — Ben (<ben@benteachesenglishoverseas.com>)
+
 *Subject: Re: New Client Questionnaire + Contract review*
 
 Hi Chibuzor,
@@ -324,11 +336,12 @@ I hope your weekend is going great!
 Ben
 
 On Fri, Jun 14, 2019 at 4:58 AM Chibuzor Ejimofor <
-chibuzor.ejimofor@gmail.com> wrote:
+<chibuzor.ejimofor@gmail.com>> wrote:
 
 ## Thread: Job Search Update + Feedback requested (Aug 2019)
 
-### 2019-08-26 — Chi (chibuzor.ejimofor@gmail.com)
+### 2019-08-26 — Chi (<chibuzor.ejimofor@gmail.com>)
+
 *Subject: Job Search Update + Feedback requested*
 
 Hello Ben,
@@ -345,7 +358,7 @@ Best,
 
 Chibuzor (Chi) Ejimofor
 M | +1 304 276 4410
-E  | Chibuzor.ejimofor@gmail.com
+E  | <Chibuzor.ejimofor@gmail.com>
 Skype | cheez20
 
 Hello,
@@ -360,10 +373,11 @@ Thanks,
 
 Chibuzor (Chi) Ejimofor
 M | +1 304 276 4410
-E  | Chibuzor.ejimofor@gmail.com <mailto:Chibuzor.ejimofor@gmail.com>
+E  | <Chibuzor.ejimofor@gmail.com> <mailto:Chibuzor.ejimofor@gmail.com>
 Skype | cheez20
 
-### 2019-08-28 — Ben (ben@benteachesenglishoverseas.com)
+### 2019-08-28 — Ben (<ben@benteachesenglishoverseas.com>)
+
 *Subject: Re: Job Search Update + Feedback requested*
 
 Hi Chi,
@@ -417,4 +431,4 @@ can pack all into a Saturday? You bet.
 Ben
 
 On Mon, Aug 26, 2019 at 12:00 PM Chibuzor Ejimofor <
-chibuzor.ejimofor@gmail.com> wrote:
+<chibuzor.ejimofor@gmail.com>> wrote:

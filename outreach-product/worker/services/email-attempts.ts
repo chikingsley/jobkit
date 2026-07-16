@@ -1,3 +1,4 @@
+import { applicationMessageOpeningProblem } from "../ai/application-message-policy";
 import type { AppEnv } from "../env";
 import { jobEventStatement } from "../repositories/job-events";
 import { buildGmailMessagePayload } from "./gmail-message";
@@ -18,6 +19,7 @@ interface AttemptSourceRow {
   from_email: string;
   job_status: string;
   location: string;
+  message: string;
   recipient: string;
   route_id: string;
   route_kind: string;
@@ -91,7 +93,7 @@ export async function createApprovedEmailAttempt(
 ): Promise<EmailAttemptView> {
   const source = await env.DB.prepare(
     `SELECT uj.id user_job_id,uj.status job_status,
-            d.id draft_id,d.status draft_status,
+            d.id draft_id,d.status draft_status,d.message,
             ar.id route_id,ar.kind route_kind,ar.destination recipient,
             ar.status route_status,j.title,j.location,j.country,u.email from_email
        FROM user_jobs uj
@@ -123,6 +125,10 @@ export async function createApprovedEmailAttempt(
   }
   if (!new Set(["draft", "approved"]).has(source.draft_status)) {
     throw new EmailAttemptError("The selected draft is not approvable", 409);
+  }
+  const messagePolicyProblem = applicationMessageOpeningProblem(source.message);
+  if (messagePolicyProblem) {
+    throw new EmailAttemptError(messagePolicyProblem, 422);
   }
 
   const timestamp = new Date().toISOString();

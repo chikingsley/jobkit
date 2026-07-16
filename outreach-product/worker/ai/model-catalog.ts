@@ -3,6 +3,11 @@ import { createMistral } from "@ai-sdk/mistral";
 import type { LanguageModel } from "ai";
 import type { AppEnv } from "../env";
 
+export type AiProviderEnv = Pick<
+  AppEnv,
+  "CEREBRAS_API_KEY" | "MISTRAL_API_KEY"
+>;
+
 export type AiModelProvider = "cerebras" | "mistral";
 export type AiPurpose =
   | "application_message"
@@ -73,6 +78,24 @@ export const DEFAULT_AI_MODELS = {
   },
 } as const satisfies Record<AiPurpose, AiModelSelection>;
 
+export const JOB_FACT_EXTRACTION_FALLBACK: AiModelSelection = {
+  modelId: "zai-glm-4.7",
+  provider: "cerebras",
+};
+
+const MISTRAL_JOB_FACT_EXTRACTION_FALLBACK: AiModelSelection = {
+  modelId: "mistral-large-latest",
+  provider: "mistral",
+};
+
+export function jobFactExtractionFallback(
+  selection: AiModelSelection
+): AiModelSelection {
+  return selection.provider === "mistral"
+    ? MISTRAL_JOB_FACT_EXTRACTION_FALLBACK
+    : JOB_FACT_EXTRACTION_FALLBACK;
+}
+
 export function requireAiModel(selection: {
   modelId: string;
   provider: string;
@@ -91,7 +114,7 @@ export function requireAiModel(selection: {
 }
 
 export function createAiModel(
-  env: AppEnv,
+  env: AiProviderEnv,
   selection: AiModelSelection
 ): LanguageModel {
   const model = requireAiModel(selection);

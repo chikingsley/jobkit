@@ -1,6 +1,6 @@
 # Chibuzor Ejimofor
 
-chibuzor.ejimofor@gmail.com | (304) 216-8700 | Scottsdale, AZ | https://github.com/chikingsley
+[chibuzor.ejimofor@gmail.com](mailto:chibuzor.ejimofor@gmail.com) | (304) 216-8700 | Scottsdale, AZ | [github.com/chikingsley](https://github.com/chikingsley)
 
 ## Education
 

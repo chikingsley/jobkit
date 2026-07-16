@@ -35,6 +35,11 @@ def main() -> None:
 def _add_refresh_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     parser = subparsers.add_parser("refresh", help="refresh boards into SQLite")
     parser.add_argument(
+        "--latest",
+        action="store_true",
+        help="fetch each board's newest listings without closing unseen inventory",
+    )
+    parser.add_argument(
         "boards", nargs="*", help=f"board names (default: all of {', '.join(BOARD_NAMES)})"
     )
 
@@ -54,13 +59,13 @@ def _run_refresh(args: argparse.Namespace) -> None:
         for name in names:
             policy = BOARD_POLICIES[name]
             print(f"refreshing {name}...", flush=True)
-            postings = policy.fetch()
+            postings = policy.fetch_latest() if args.latest else policy.fetch_full()
             result = db.refresh_postings(
                 conn,
                 postings,
                 boards=(name,),
-                mode="full" if policy.complete else "latest",
-                close_missing=policy.complete,
+                mode="latest" if args.latest else "full",
+                close_missing=not args.latest,
                 extractor=enrich.DEFAULT_EXTRACTOR,
             )
             _print_result("refresh", result)

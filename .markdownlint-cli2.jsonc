@@ -6,7 +6,11 @@
     // table pipe-spacing style consistency — cosmetic, our compact delimiters are intentional
     "MD060": false,
     // bold quiz-question labels (**1. ...**) are intentional, not headings
-    "MD036": false
+    "MD036": false,
+    // resume markdown uses <span class="date">/<span class="location"> hooks for the PDF CSS
+    "MD033": { "allowed_elements": ["span"] },
+    // the same institution can head entries in different resume sections (Education + Experience)
+    "MD024": { "siblings_only": true }
   },
   "ignores": [
     "node_modules",

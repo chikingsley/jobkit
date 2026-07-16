@@ -1,58 +1,168 @@
-# Job-Search Playbook (ESL / Teach-Abroad)
+# Job-Search Playbook (ESL / Teach Abroad)
 
-Distilled, durable advice that informs how jobkit builds resumes, picks boards, and writes outreach. The core of this is from a **2019 paid consultation with Ben (Ben Teaches English Overseas, `ben@benteachesenglishoverseas.com`)** — direct, no-sugarcoat ESL career coaching the user paid for. Source: Gmail threads in `chibuzor.ejimofor@gmail.com` (Jun–Aug 2019, "New Client Questionnaire + Contract review" and "Job Search Update + Feedback requested"). His site/domain is now defunct, so this is the surviving record. *(His framing, condensed; not legal/financial advice.)*
+This document separates four kinds of guidance that were previously blended together:
 
-## Resume (for ESL applications abroad)
+1. **Ben's 2019 advice** from the paid Ben Teaches English Overseas consultation.
+2. **Historical artifacts** that Ben delivered, such as the resume and cover-letter template.
+3. **Observed results** from Chibuzor's 113 recovered outreach threads.
+4. **Current JobKit policy**, which may deliberately differ from the 2019 material.
 
-Recruiters skim in ~8 seconds, so **five things must jump out immediately**, before any scrolling:
+The source index and coverage audit are in
+[`../job-data/ben-teaches-english-overseas/README.md`](../job-data/ben-teaches-english-overseas/README.md).
+Ben's advice was specific to a 2019 teach-abroad search, especially the China market. It is useful
+strategy, not timeless salary data or legal, financial, or immigration advice.
 
-1. Native-level speaker
+## Ben's 2019 advice
+
+### Resume
+
+Ben wanted five facts visible before a recruiter had to scroll:
+
+1. Native-level English
 2. Degree(s)
-3. Certificate(s) (TEFL/TESOL/CELTA)
-4. Skype / contact
+3. Teaching certificate(s)
+4. Skype or another usable contact route
 5. Availability
 
-Concrete rules:
+His concrete recommendations were:
 
-- Lead with a **bold summary line** between contact details and education that shows what you offer (not what you want). Example he wrote for this profile: *"TEFL-Certified Professional Educator with Bachelor's Degree and American Passport — Available Immediately."*
-- Signal you're an American native speaker: put **`USA`** after the state (people don't know US cities/states), put **`+1`** before the phone number, consider a mailing address.
-- **Drop the GPA and graduation dates** — don't highlight being a recent grad (don't deny it, just don't draw the eye to it).
-- **Cut short-duration jobs (3–6 months) and intern/tutoring roles.** These are ESL red flags: short stints read as *flight risk* (employers won't fund a visa for someone who may leave); intern/tutoring reads as padding/unverifiable. Exception: keep safety/training experience if applying to a Safety-English program (e.g. Saudi Aramco).
-- Frequent location changes also raise flags — be deliberate about what you show.
-- Keep formatting consistent (e.g. don't add punctuation to bullets in only one section).
+- Use a short, bold summary that says what the candidate offers, not what the candidate wants. His
+  example for Chibuzor was: *"TEFL-Certified Professional Educator with Bachelor's Degree and
+  American Passport Available Immediately."*
+- Make US nationality and contact details legible to an international reader: add `USA` after a
+  state, use the `+1` country code, and consider a mailing address.
+- Avoid emphasizing a recent graduation date or GPA when neither helps the application.
+- Consider removing very short jobs, numerous internships or tutoring roles, and frequent location
+  changes when they create a flight-risk or resume-padding impression.
+- Keep otherwise relevant safety or training experience when applying to a role where that domain
+  matters.
+- Expand experience training or instructing people, including non-native English speakers.
+- Remove unexplained software acronyms that do not help an ESL recruiter.
+- Keep formatting and punctuation consistent.
 
-## Compensation & contract math
+These were recommendations for that specific 2019 resume, not a rule to conceal useful verified
+teaching experience. Current JobKit documents should use the strongest accurate evidence for the
+role.
 
-- **Never work for less than ~200 RMB / $30 USD per hour in China.** It isn't necessary.
-- **Calculate true per-hour pay from the *entire* contract**, then compare apples-to-apples. Sticker salary is misleading: 16k RMB for 25 contact hours with no office hours is far better than 16k for a 50-hour on-site week. Unused on-site hours are income you can't earn elsewhere.
-- **Training centers**: highest sticker price, **lowest real per-hour** (they keep you on site). Best-value roles: **public & private K-12, universities and colleges.**
-- Aim for **≥2× a lowball offer** before accepting. (He told the user to "run away from" a 16k English-First-style contract.)
-- Strategy to hit financial goals fast: China + a low-hours/decent-pay base contract, then stack extra high-hourly private classes/clientele on top → goals in ~1–2 years.
+### Compensation and contract review
 
-## Where to look
+Ben's recurring rule was to calculate the true hourly value of the whole contract rather than
+compare headline salary alone. Contact hours, office hours, required on-site time, tax treatment,
+housing, benefits, and time available for other work can make equal salaries very different offers.
 
-- **seriousteachers.com** — recommended (jobkit adapter: `seriousteachers`).
-- Expat-specific job sections, e.g. **shenzhenparty.com** for Shenzhen.
-- **Headhunters on Skype** — tell them exactly what you want.
-- "Angelina's ESL Cafe."
-- **"Stay away from Dave's"** — ESL Cafe lists almost exclusively training centers. (jobkit keeps the modern eslcafe board adapter for coverage, but treat its training-center listings with this skepticism — and per-hour-math them.)
+For the 2019 China market, he advised:
 
-## Outreach email (the core tactic)
+- Do not accept less than roughly 200 RMB / USD 30 per hour without a compelling reason.
+- Training centers often have a high headline salary but weak hourly value because of required
+  on-site time.
+- Public and private K-12 schools, universities, and colleges could offer better value.
+- A high-quality international school was the strongest option but harder for a new teacher to
+  enter.
+- Another path was a low-hours, decent-pay base contract plus higher-hourly outside classes.
 
-- **Emails without a question are easy to ignore.** Always include **at least one open-ended question that requires a response** — e.g. *"Is your school still currently seeking an English teacher for the fall term?"* A reply confirms the address is live, the message landed, and your documents were received; it also gives you a thread to follow up on.
-- **Follow up frequently.**
-- Send from **`chibuzor.ejimofor@gmail.com`** (the account used for this whole job search).
+The contract Ben told Chibuzor to "run away from" was the earlier English First package: roughly
+9,000-10,000 RMB net and about 80 RMB per hour by Chibuzor's calculation. It was **not** the later
+16,000 RMB offer. Ben said 16,000 RMB was common but could be either poor or strong depending on the
+total weekly commitment.
 
-### Validated against the user's own 113 sent emails (2019–2025)
+Ben's contract-review form also asked the candidate to document:
 
-A mining of the actual sent outreach (see [`../job-data/outreach-sent/review.md`](../job-data/outreach-sent/review.md)) shows how little of Ben's advice was applied — and proves it works where it was:
+- what they like, dislike, and find concerning;
+- calculated net hourly pay;
+- included and missing benefits;
+- negotiations already attempted and desired changes;
+- whether the counterparty is the direct employer or an agency;
+- whether salary is quoted before or after tax;
+- their gut feeling about the position; and
+- verbal promises that are absent from the written contract, such as housing or an allowance.
 
-- **Open-ended question: applied in ~1 of 113 emails.** The dominant closer was a statement ("Let me know if you'll be free to speak…") — exactly the ignorable pattern Ben warned against. *This is the single most under-applied piece of paid advice; the `outreach` module now enforces it.*
-- **Follow-up was the biggest lever and under-used.** Followed up in only 15/113 threads, but those got a **67% reply rate vs 13%** without — roughly **5×**. → make follow-up a scheduled, first-class step.
-- **Concentrate by market.** Russia (75 emails, where volume was concentrated) drove most of the 6 offers / 7 interviews; scattered one-offs to far-flung countries with no follow-up got ~0 replies.
-- **Subject line: `Native English Teacher Available - {location}`** — the user's own proven 2019 format (the exact subject of the example email Ben reviewed: *"Native English Teacher Available - Moscow"*; Ben changed nothing about it). Not bare "English Teacher"; no school name.
-- **Fix the merge:** several sends had wrong names / mojibake ("Hi Simon," …) — validate fields so a recipient/school/country mismatch is impossible.
+### Sources and market search
 
-> See [job-boards.md](job-boards.md) for the scrapable boards and the pipeline that pulls them.
-> An outreach/email module (compose + send from the Chibuzor account, applying the question +
-> follow-up rule above) is the planned next piece.
+Ben recommended:
+
+- `seriousteachers.com`;
+- expat-specific job sections such as ShenzhenParty for Shenzhen;
+- telling headhunters on Skype exactly what the candidate wants; and
+- Angelina's ESL Cafe.
+
+He advised Chibuzor to stay away from Dave's ESL Cafe because he expected it to be dominated by
+training-center listings. JobKit may still ingest a source for coverage; source coverage is not an
+endorsement of every listing.
+
+### Initial outreach and follow-up
+
+Ben said emails without questions are easier to ignore. His practical example was:
+
+> Is your school still currently seeking an English teacher for the fall term?
+
+He called this an "open ended question," although grammatically it is a yes/no question. The useful
+principle is simpler: include a natural hiring-status question that gives the recipient a reason to
+reply and confirms that the address and route are live. Ben also said he followed up frequently; he
+did not specify an exact schedule in the surviving correspondence.
+
+Ben reviewed an email whose subject was `Native English Teacher Available - Moscow`, but he did not
+explicitly approve or prescribe that subject format. It is a historical Chibuzor pattern, not a
+Ben-validated universal rule.
+
+## Historical artifacts Ben delivered
+
+Ben's final delivery included a resume in PDF and DOCX form and an editable cover-letter template.
+The template's structure was:
+
+1. identify the role and how it was found;
+2. summarize degree, relevant expertise, and alignment;
+3. respond directly to the job description using relevant terms;
+4. optionally add a researched company-fit paragraph; and
+5. close with an interview request and planned follow-up.
+
+The delivered template uses `Dear Hiring Manager` and `Sincerely`. Those are historical wording,
+not current JobKit policy. See
+[`../job-data/ben-teaches-english-overseas/cover-letter-template.md`](../job-data/ben-teaches-english-overseas/cover-letter-template.md).
+
+## What Chibuzor's sent-email corpus shows
+
+The recovered corpus contains 113 distinct ESL outreach threads from 2019 through 2025. It is
+observational evidence, not a controlled experiment. The full review is in
+[`../job-data/outreach-sent/review.md`](../job-data/outreach-sent/review.md).
+
+- 23 of 113 threads received a reply.
+- Only 15 threads had a sent follow-up. Ten of those received a reply, versus 13 of the 98 threads
+  without a follow-up. That is a strong association, but market choice, recipient quality, and
+  thread context are confounders; it does not prove that follow-up alone caused the difference.
+- The question-bearing initial emails in the audit received no replies. They were sparse and
+  concentrated in weak one-off routes, so the corpus does not validate or disprove Ben's question
+  advice.
+- Most positive outcomes came from concentrated direct outreach in Russia rather than scattered
+  one-off markets.
+- Copy/paste and merge errors appeared in several messages. Deterministic recipient, school, role,
+  and location checks are therefore more important than stylistic novelty.
+
+The corpus supports making follow-up and merge validation first-class behavior. It does **not**
+prove a single subject line, exact follow-up interval, or causal response-rate multiplier.
+
+## Current JobKit policy
+
+For Chibuzor's own outreach, the writing path should be **template plus verified slots**, not a model
+freestyling a new letter for every listing and not runtime retrieval over all 113 emails.
+
+- Start with `Hello,` unless a real recipient name and an approved named greeting are available.
+- Never use `Dear` in Chibuzor's generated outreach.
+- Use a small template family for distinct routes: a listed job, cold outreach to a school, a
+  recruiter with multiple placements, and a university or specialist role when materially useful.
+- Fill only verified slots: role, school, location, relevant experience, credentials, availability,
+  attachments, and one useful hiring-status question.
+- Do not invent duration, learner counts, qualifications, authorization, relocation intent, or
+  document availability.
+- Use recognizable institutions when they add context. Universities and globally recognizable
+  organizations such as Wall Street English can be named. Describe obscure employers by function
+  or location unless their name is necessary to identify the experience.
+- Keep one question immediately before the sign-off.
+- Treat follow-up timing as an explicit product setting. It is not sourced from Ben unless the
+  surviving archive supplies a specific interval.
+- Use the account and signature selected for the user's profile; the historical Gmail address is
+  not a platform-wide rule.
+
+For Chibuzor, the language model's permitted job is narrow: select accurate evidence for defined
+slots or perform a bounded revision requested by the user. The canonical wording remains editable
+and versioned. The historical corpus is evaluation and provenance material, not a bag of prose for
+the model to remix.

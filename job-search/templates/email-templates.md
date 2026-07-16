@@ -2,7 +2,13 @@
 
 ## English Teaching Cold Outreach
 
-Source/provenance: this is the usable version of the English-teaching outreach pattern recovered in [`job-data/outreach-sent/corpus.md`](../job-data/outreach-sent/corpus.md), checked against [`job-data/outreach-sent/review.md`](../job-data/outreach-sent/review.md), and aligned with Ben's rule in [`docs/job-search-playbook.md`](../docs/job-search-playbook.md): always end with an open-ended question that requires a reply. The old reference email is [`Native English Teacher Available - Moscow.eml`](../job-data/ben-teaches-english-overseas/attachments/Native%20English%20Teacher%20Available%20-%20Moscow.eml).
+Source/provenance: this is a current JobKit template informed by the historical outreach in
+[`job-data/outreach-sent/corpus.md`](../job-data/outreach-sent/corpus.md), the observational audit in
+[`job-data/outreach-sent/review.md`](../job-data/outreach-sent/review.md), and Ben's 2019 advice in
+[`docs/job-search-playbook.md`](../docs/job-search-playbook.md). Ben recommended one question that
+invites a reply. The historical subject and body are preserved in
+[`Native English Teacher Available - Moscow.eml`](../job-data/ben-teaches-english-overseas/attachments/Native%20English%20Teacher%20Available%20-%20Moscow.eml),
+but Ben did not explicitly validate the subject as a universal format.
 
 ```text
 Subject: Native English Teacher Available - [Location]

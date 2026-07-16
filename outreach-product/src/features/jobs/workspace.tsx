@@ -1,5 +1,5 @@
 import { ChevronLeft, RefreshCw } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { JobDetail } from "@/features/jobs/job-detail";
 import { JobQueueItem } from "@/features/jobs/job-queue-item";
+import { type JobSort, sortJobs } from "@/features/jobs/sorting";
 import type { FxData, Job } from "@/features/jobs/types";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,17 @@ const fitFilterOptions = [
   { label: "Preference mismatch", value: "Preference mismatch" },
   { label: "Ineligible", value: "Ineligible" },
 ];
+
+const sortOptions = [
+  {
+    label: "Highest USD/hour",
+    value: "stated-hourly",
+  },
+  { label: "Highest monthly USD", value: "monthly-pay" },
+  { label: "Original queue order", value: "review-order" },
+];
+
+const INITIAL_VISIBLE_JOBS = 100;
 
 export function JobsWorkspace({
   busy,
@@ -80,6 +92,10 @@ export function JobsWorkspace({
   showExcluded: boolean;
 }) {
   const [showQueue, setShowQueue] = useState(true);
+  const [sort, setSort] = useState<JobSort>("stated-hourly");
+  const [visibleLimit, setVisibleLimit] = useState(INITIAL_VISIBLE_JOBS);
+  const sortedJobs = useMemo(() => sortJobs(jobs, fx, sort), [fx, jobs, sort]);
+  const queueJobs = sortedJobs.slice(0, visibleLimit);
   const countryOptions = [
     { label: "All countries", value: "all" },
     ...countries.map((country) => ({ label: country, value: country })),
@@ -96,7 +112,8 @@ export function JobsWorkspace({
           <div>
             <h2 className="font-semibold text-sm">Review queue</h2>
             <p className="text-muted-foreground text-xs">
-              {jobs.length} visible jobs
+              Showing {queueJobs.length.toLocaleString()} of{" "}
+              {jobs.length.toLocaleString()} jobs
             </p>
           </div>
           <Button
@@ -145,6 +162,35 @@ export function JobsWorkspace({
               </SelectGroup>
             </SelectContent>
           </Select>
+          <div className="col-span-2 grid gap-1.5">
+            <label className="font-medium text-xs" htmlFor="job-sort">
+              Sort jobs
+            </label>
+            <Select
+              items={sortOptions}
+              onValueChange={(value) => {
+                setSort(String(value) as JobSort);
+                setVisibleLimit(INITIAL_VISIBLE_JOBS);
+              }}
+              value={sort}
+            >
+              <SelectTrigger id="job-sort" size="sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {sortOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <p className="text-muted-foreground text-xs">
+              Highest to lowest. USD/hour uses only stated pay and stated hours.
+            </p>
+          </div>
           <div className="col-span-2 flex items-center gap-2 text-muted-foreground text-xs">
             <Checkbox
               aria-label="Show jobs with hard blockers"
@@ -156,7 +202,7 @@ export function JobsWorkspace({
         </div>
         <ScrollArea className="min-h-0 flex-1">
           <div className="p-2">
-            {jobs.map((job) => (
+            {queueJobs.map((job) => (
               <JobQueueItem
                 active={job.id === selected?.id}
                 fx={fx}
@@ -169,6 +215,17 @@ export function JobsWorkspace({
                 }}
               />
             ))}
+            {queueJobs.length < sortedJobs.length ? (
+              <Button
+                className="mt-2 w-full"
+                onClick={() =>
+                  setVisibleLimit((current) => current + INITIAL_VISIBLE_JOBS)
+                }
+                variant="outline"
+              >
+                Show 100 more
+              </Button>
+            ) : null}
           </div>
         </ScrollArea>
       </section>

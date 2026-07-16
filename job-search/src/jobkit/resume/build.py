@@ -26,8 +26,10 @@ CSS = ASSETS / "resume-pdf.css"
 
 # Short aliases -> resume stem (file name without .md).
 ALIASES = {
+    "biotech": "biotech-resume",
     "master": "master-resume",
     "pm": "project-management-resume",
+    "service": "service-resume",
     "teaching": "teaching-resume",
 }
 

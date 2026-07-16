@@ -14,6 +14,9 @@ job-search/job-data/*.sqlite-shm
 job-search/job-data/*.sqlite-wal
 job-search/job-data/exports/*.csv
 
+# Private historical source documents used only to rebuild current resumes
+job-search/resumes/recovered/
+
 # Copyrighted third-party course content — local reference only, never commit
 tefl-course/sources/teacherrecord-120hr-tefl/
 tefl-course/sources/las-vegas-teaching-archive/

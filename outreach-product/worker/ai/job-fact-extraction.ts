@@ -11,10 +11,19 @@ import {
   RequirementLanguageLevelSchema,
 } from "../../src/features/matching/schema";
 import { DegreeLevelSchema } from "../../src/features/profile/schema";
-import type { AppEnv } from "../env";
 import type { JobImport } from "../schemas";
-import type { AiModelSelection } from "./model-catalog";
-import { createAiModel } from "./model-catalog";
+import {
+  extractJobEconomics,
+  JOB_ECONOMICS_INSTRUCTIONS,
+  normalizeExtractedEconomics,
+  ProviderJobEconomicsSchema,
+} from "./job-economics-extraction";
+import {
+  type AiModelSelection,
+  type AiProviderEnv,
+  createAiModel,
+  jobFactExtractionFallback,
+} from "./model-catalog";
 
 const ProviderEvidenceFactSchema = <Schema extends z.ZodType>(value: Schema) =>
   z.object({ evidence: z.string(), value }).strict();
@@ -27,6 +36,7 @@ const ProviderJobMatchFactsSchema = z
     benefits: z.array(
       JobBenefitFactSchema.extend({ evidence: z.string() }).strict()
     ),
+    economics: ProviderJobEconomicsSchema,
     employmentTypes: z.array(
       ProviderEvidenceFactSchema(JobEmploymentTypeSchema)
     ),
@@ -69,11 +79,12 @@ Rules:
 - When any one of several requirements is sufficient, emit every alternative separately with the same short semantic alternativeGroup. This includes X or Y, X and/or Y, and an unqualified-candidate training path offered as a fallback to a qualified-candidate path. For example, "experience and/or certification" must produce two requirements with exactly the same alternativeGroup. Never use a number as the group name. Leave alternativeGroup null only for requirements that must all be met.
 - Extract benefits, learner audiences, and employment types only when the listing states them.
 - For benefits, use provided only when the employer supplies or pays for it, allowance for an explicit cash allowance or reimbursement, and assistance for advice or logistical help only.
+- Classify housing only when the evidence explicitly identifies housing, accommodation, an apartment, lodging, or rent. Generic living, meal, utilities, furniture, and transportation allowances are not housing.
 - Housing-search help is assistance, not housing provided. Airport pickup is not airfare. Visa paperwork help is not visa sponsorship unless sponsorship is explicit.
 - Paid leave means paid vacation, paid holidays, or paid sick leave. Never emit a paidLeave benefit for completion, renewal, signing, or performance bonuses; bonuses are outside the allowed benefit categories and must be omitted.
 - Do not turn duties or employer marketing into candidate requirements.
 - Do not omit an explicit requirement because it does not map neatly. Use other and preserve the exact quote for human verification.
-- Put genuine ambiguity or contradictions in reviewNotes. Do not resolve them by guessing. Do not add a review note merely because an optional schema field or an unstated detail is null.`;
+- Put genuine ambiguity or contradictions in reviewNotes. Do not resolve them by guessing. Do not add a review note merely because an optional schema field or an unstated detail is null.${JOB_ECONOMICS_INSTRUCTIONS}`;
 
 export interface GeneratedJobMatchFacts {
   facts: JobMatchFacts;
@@ -85,7 +96,7 @@ export interface GeneratedJobMatchFacts {
 export class JobFactExtractionError extends Error {}
 
 export async function extractJobMatchFacts(
-  env: AppEnv,
+  env: AiProviderEnv,
   selection: AiModelSelection,
   job: JobImport
 ): Promise<GeneratedJobMatchFacts> {
@@ -132,6 +143,106 @@ export async function extractJobMatchFacts(
   }
 }
 
+export async function extractJobMatchFactsWithFallback(
+  env: AiProviderEnv,
+  selection: AiModelSelection,
+  job: JobImport
+) {
+  const fallback = jobFactExtractionFallback(selection);
+  let primary: GeneratedJobMatchFacts;
+  try {
+    primary = await extractJobMatchFacts(env, selection, job);
+  } catch (error) {
+    if (
+      !(error instanceof JobFactExtractionError) ||
+      (selection.provider === fallback.provider &&
+        selection.modelId === fallback.modelId)
+    ) {
+      throw error;
+    }
+    return extractJobMatchFacts(env, fallback, job);
+  }
+  if (
+    !needsEconomicsReview(primary.facts.economics, job.salary) ||
+    (selection.provider === fallback.provider &&
+      selection.modelId === fallback.modelId)
+  ) {
+    return primary;
+  }
+  try {
+    const source = jobSource(job);
+    const reviewed = await extractJobEconomics(env, fallback, source);
+    if (
+      economicsCompleteness(reviewed.economics) <=
+      economicsCompleteness(primary.facts.economics)
+    ) {
+      return primary;
+    }
+    return {
+      ...primary,
+      facts: {
+        ...primary.facts,
+        economics: reviewed.economics,
+        reviewNotes: [
+          ...primary.facts.reviewNotes,
+          ...reviewed.reviewNotes,
+        ].slice(0, 20),
+      },
+      modelId: `${primary.modelId}+${reviewed.modelId}:economics`,
+    };
+  } catch (error) {
+    if (!(error instanceof Error)) {
+      console.error(String(error));
+    }
+    return primary;
+  }
+}
+
+function needsEconomicsReview(
+  economics: JobMatchFacts["economics"],
+  salaryField: string
+) {
+  const { compensation } = economics;
+  if (compensation.kind === "conflict") {
+    return true;
+  }
+  if (
+    compensation.kind === "negotiable" &&
+    [...salaryField].some(isAsciiDigit)
+  ) {
+    return true;
+  }
+  if (compensation.kind === "unstated") {
+    return salaryField.trim().length > 0;
+  }
+  return (
+    compensation.kind === "amount" &&
+    (compensation.currency === null || compensation.period === null)
+  );
+}
+
+function isAsciiDigit(value: string) {
+  return value >= "0" && value <= "9";
+}
+
+function economicsCompleteness(economics: JobMatchFacts["economics"]) {
+  const { compensation, workload } = economics;
+  let score = 0;
+  if (compensation.kind === "amount") {
+    score += 4;
+    score += Number(
+      compensation.amountMinimum !== null || compensation.amountMaximum !== null
+    );
+    score += Number(compensation.currency !== null);
+    score += Number(compensation.period !== null);
+  } else if (compensation.kind === "negotiable") {
+    score += 3;
+  } else if (compensation.kind === "conflict") {
+    score += 1;
+  }
+  return score + Number(workload !== null) / 2;
+}
+
 export function jobSourceHash(job: JobImport) {
   return hashSource(jobSource(job));
 }
@@ -172,6 +283,11 @@ function validateEvidence(
       ...benefit,
       evidence: clip(benefit.evidence, 1200),
     })),
+    economics: normalizeExtractedEconomics(
+      output.economics,
+      source,
+      reviewNotes
+    ),
     employmentTypes: output.employmentTypes
       .filter(supported)
       .slice(0, 10)
@@ -186,10 +302,20 @@ function validateEvidence(
 function isValidBenefitClassification(
   benefit: z.infer<typeof JobBenefitFactSchema>
 ) {
+  const evidence = benefit.evidence.normalize("NFKC").toLocaleLowerCase("en");
+  if (benefit.value === "housing") {
+    return [
+      "accommodation",
+      "apartment",
+      "housing",
+      "lodging",
+      "rent-free",
+      "rent free",
+    ].some((phrase) => evidence.includes(phrase));
+  }
   if (benefit.value !== "paidLeave") {
     return true;
   }
-  const evidence = benefit.evidence.normalize("NFKC").toLocaleLowerCase("en");
   return [
     "annual leave",
     "paid holiday",
@@ -287,7 +413,12 @@ function clip(value: string, maximum: number) {
 }
 
 function jobSource(job: JobImport) {
-  return [`Title: ${job.title}`, "Description:", job.description].join("\n");
+  return [
+    `Title: ${job.title}`,
+    `Salary field: ${job.salary || "Not supplied"}`,
+    "Description:",
+    job.description,
+  ].join("\n");
 }
 
 async function hashSource(source: string) {

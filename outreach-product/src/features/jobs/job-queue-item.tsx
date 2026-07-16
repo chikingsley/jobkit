@@ -1,6 +1,12 @@
 import { ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { compensationDisplay } from "@/features/jobs/compensation";
+import {
+  formatStatedHourlyUsd,
+  housingLabel,
+  listedHourlyValueUsd,
+  statedHourlyValueUsd,
+} from "@/features/jobs/economics";
 import { humanize } from "@/features/jobs/format";
 import { MatchBadge } from "@/features/jobs/match";
 import type { FxData, Job } from "@/features/jobs/types";
@@ -36,6 +42,14 @@ export function JobQueueItem({
 }) {
   const salary = compensationDisplay(job.compensation, fx);
   const emailStatus = currentEmailStatus(job);
+  const hourly =
+    (job.matchFacts
+      ? statedHourlyValueUsd(job.matchFacts.economics, fx)
+      : null) ?? listedHourlyValueUsd(job.compensation, fx);
+  const housing = housingLabel(
+    job.matchFacts?.benefits ?? [],
+    job.matchFacts?.economics
+  );
   return (
     <button
       className={cn(
@@ -77,6 +91,13 @@ export function JobQueueItem({
           <p className="mt-1 truncate font-medium text-xs">
             {salary.usd ?? salary.primary}
           </p>
+          {hourly || housing ? (
+            <p className="mt-1 truncate font-medium text-primary text-xs">
+              {[hourly ? formatStatedHourlyUsd(hourly) : null, housing]
+                .filter(Boolean)
+                .join(" ")}
+            </p>
+          ) : null}
         </div>
         <ChevronRight
           className={cn(

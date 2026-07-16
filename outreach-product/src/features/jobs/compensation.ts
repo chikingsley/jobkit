@@ -59,6 +59,9 @@ export function monthlyCompensationUsd(compensation: Compensation, fx: FxData) {
   if (compensation.period === "month") {
     return usd;
   }
+  if (compensation.period === "week") {
+    return (usd * 52) / 12;
+  }
   if (compensation.period === "year") {
     return usd / 12;
   }

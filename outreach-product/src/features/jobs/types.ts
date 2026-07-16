@@ -30,22 +30,6 @@ export interface ApplicationRoute {
   status: string;
 }
 
-export interface Compensation {
-  amountMax: number | null;
-  amountMin: number | null;
-  confidence: "exact" | "inferred" | "conflict" | "unknown";
-  currency: string | null;
-  display: string;
-  notes: string[];
-  period: "hour" | "month" | "year" | null;
-  qualifier: "exact" | "range" | "up-to" | "from" | null;
-  source:
-    | "listing-field"
-    | "listing-description"
-    | "curated-review"
-    | "unknown";
-}
-
 export interface Job {
   applicationRoutes: ApplicationRoute[];
   applyUrl: string;
@@ -78,9 +62,7 @@ export type MarketSegment =
   | "training_center"
   | "university";
 
-export interface FxData {
-  rates: Record<string, number>;
-  updatedAt: string | null;
-}
-
 import type { JobMatchFacts } from "@/features/matching/schema";
+import type { Compensation } from "./economics";
+
+export type { Compensation, FxData } from "./economics";

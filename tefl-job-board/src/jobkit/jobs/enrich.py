@@ -217,18 +217,6 @@ def _extract_contract(text: str) -> str:
     return re.sub(r"\s+", " ", match.group(0)).strip().lower() if match else ""
 
 
-def _parse_anesl_salary(value: str) -> tuple[str, str]:
-    """Parse ANESL's "From RMB: 15000 To RMB: 15000" into (phrase, currency)."""
-    currency = _find_currency(value)
-    nums = re.findall(r"\d[\d,]*", value)
-    if not nums:
-        return value.strip(), currency
-    phrase = f"{nums[0]}-{nums[1]}" if len(nums) >= 2 and nums[0] != nums[1] else nums[0]  # noqa: PLR2004
-    if currency:
-        phrase = f"{currency} {phrase}"
-    return phrase, currency
-
-
 @runtime_checkable
 class Extractor(Protocol):
     """Turns one `JobPosting` into a normalized dict keyed by `SCHEMA`.
@@ -294,15 +282,15 @@ class HeuristicExtractor:
 
     @staticmethod
     def _salary(fields: dict[str, str], haystack: str) -> tuple[str, str]:
-        structured = fields.get("Salary/M") or fields.get("Salary")
+        monthly = fields.get("Salary/M")
+        structured = monthly or fields.get("Salary")
         if structured:
             stripped = structured.strip()
             if stripped.lower() in {"negotiable", "competitive", "doe", "tbd"}:
                 return stripped, ""
-            phrase, currency = _parse_anesl_salary(stripped)
-            if currency or re.search(r"\d", phrase):
-                return phrase, currency
-            return stripped, ""
+            if monthly and "month" not in stripped.lower() and "/m" not in stripped.lower():
+                stripped = f"{stripped} / month"
+            return stripped, _find_currency(stripped)
         return _extract_salary(haystack)
 
     @staticmethod

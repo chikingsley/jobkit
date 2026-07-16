@@ -18,8 +18,8 @@ class BoardPolicy:
     """How a board should be refreshed for the durable inventory."""
 
     name: str
-    fetch: Callable[[], list[JobPosting]]
-    complete: bool
+    fetch_full: Callable[[], list[JobPosting]]
+    fetch_latest: Callable[[], list[JobPosting]]
 
 
 def _fetch_anesl() -> list[JobPosting]:
@@ -44,11 +44,15 @@ def _fetch_seriousteachers() -> list[JobPosting]:
 
 
 BOARD_POLICIES: dict[str, BoardPolicy] = {
-    "anesl": BoardPolicy("anesl", _fetch_anesl, complete=True),
-    "seriousteachers": BoardPolicy("seriousteachers", _fetch_seriousteachers, complete=True),
-    "eslcafe-modern": BoardPolicy("eslcafe-modern", _fetch_eslcafe_modern, complete=True),
-    "ajarn": BoardPolicy("ajarn", _fetch_ajarn, complete=True),
-    "tefl": BoardPolicy("tefl", _fetch_tefl, complete=True),
+    "anesl": BoardPolicy("anesl", _fetch_anesl, anesl.fetch_listings),
+    "seriousteachers": BoardPolicy(
+        "seriousteachers", _fetch_seriousteachers, seriousteachers.fetch_listings
+    ),
+    "eslcafe-modern": BoardPolicy(
+        "eslcafe-modern", _fetch_eslcafe_modern, eslcafe_modern.fetch_listings
+    ),
+    "ajarn": BoardPolicy("ajarn", _fetch_ajarn, ajarn.fetch_listings),
+    "tefl": BoardPolicy("tefl", _fetch_tefl, tefl.fetch_listings),
 }
 
 BOARD_NAMES: tuple[str, ...] = tuple(BOARD_POLICIES)

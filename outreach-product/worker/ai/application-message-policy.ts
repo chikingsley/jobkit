@@ -73,16 +73,9 @@ export function validateApplicationMessage(
   route: ApplicationMessageRoute,
   forbiddenInstitutionNames: string[] = []
 ): string {
-  const message = rawMessage.replaceAll("\r\n", "\n").trim();
+  const message = validateApplicationMessageOpening(rawMessage);
   const problems: string[] = [];
   const normalizedWords = message.toLowerCase().split(/[^a-z]+/u);
-
-  if (!message.startsWith("Hello,\n\n")) {
-    problems.push('message must begin with exactly "Hello," and a blank line');
-  }
-  if (normalizedWords.includes("dear")) {
-    problems.push('message must never contain "Dear"');
-  }
   if (normalizedWords.some((word) => word.startsWith("attach"))) {
     problems.push("message must not mention attachments");
   }
@@ -155,6 +148,35 @@ export function validateApplicationMessage(
     );
   }
   return message;
+}
+
+export function validateApplicationMessageOpening(rawMessage: string) {
+  const message = rawMessage.replaceAll("\r\n", "\n").trim();
+  const problem = applicationMessageOpeningProblem(message);
+  if (problem) {
+    throw new Error(problem);
+  }
+  return message;
+}
+
+export function applicationMessageOpeningProblem(rawMessage: string) {
+  const message = rawMessage.replaceAll("\r\n", "\n").trim();
+  const problems: string[] = [];
+  if (!message.startsWith("Hello,\n\n")) {
+    problems.push('message must begin with exactly "Hello," and a blank line');
+  }
+  if (
+    message
+      .toLowerCase()
+      .split(/[^a-z]+/u)
+      .includes("dear")
+  ) {
+    problems.push('message must never contain "Dear"');
+  }
+  if (problems.length > 0) {
+    return `Application message policy failed: ${problems.join("; ")}`;
+  }
+  return null;
 }
 
 function validateRouteQuestion(

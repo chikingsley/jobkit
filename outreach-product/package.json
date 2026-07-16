@@ -8,7 +8,9 @@
     "deploy": "bun run build && wrangler deploy",
     "deploy:dry-run": "bun run build && wrangler deploy --dry-run",
     "dev": "vite",
+    "economics:evaluate": "bun --env-file=.dev.vars scripts/evaluate-job-economics.ts",
     "fix": "ultracite fix",
+    "inventory:sync": "bun scripts/job-inventory/sync.ts",
     "seed:private": "uv run --no-project scripts/sync_private_board.py --api http://localhost:5173",
     "sweeps:run": "bun scripts/run-country-sweeps.ts",
     "test": "vitest --config tests/vitest.config.ts",
@@ -49,7 +51,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.3",
+    "@biomejs/biome": "^2.5.4",
     "@cloudflare/vitest-pool-workers": "^0.18.4",
     "@cloudflare/workers-types": "^5.20260714.1",
     "@tailwindcss/vite": "^4.3.2",
@@ -58,7 +60,7 @@
     "@types/react-dom": "^19.2.3",
     "tailwindcss": "^4.3.2",
     "typescript": "^7.0.2",
-    "ultracite": "^7.9.3",
+    "ultracite": "^7.9.4",
     "vitest": "^4.1.10",
     "wrangler": "^4.110.0"
   }

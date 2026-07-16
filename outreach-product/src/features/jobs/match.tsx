@@ -1,6 +1,7 @@
 import { CheckCircle2, CircleHelp, Minus, XCircle } from "lucide-react";
 import { useId } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -68,6 +69,7 @@ export function MatchPanel({
             </div>
             {item.claimKey ? (
               <QualificationAnswer
+                answer={item.claimAnswer ?? null}
                 busy={busyClaimKey === item.claimKey}
                 onChange={(answer) =>
                   onQualificationClaim({
@@ -77,7 +79,7 @@ export function MatchPanel({
                     label: item.label,
                   })
                 }
-                value={item.claimAnswer ?? null}
+                state={item.state}
               />
             ) : null}
           </div>
@@ -88,44 +90,83 @@ export function MatchPanel({
 }
 
 function QualificationAnswer({
+  answer,
   busy,
   onChange,
-  value,
+  state,
 }: {
+  answer: QualificationClaimAnswer | null;
   busy: boolean;
   onChange: (value: QualificationClaimAnswer | null) => Promise<void>;
-  value: QualificationClaimAnswer | null;
+  state: MatchState;
 }) {
   const groupId = useId();
+  const displayedAnswer = answer ?? displayedAnswerForState(state);
+  const answerSource = qualificationAnswerSource(answer, state);
   const options = [
     { label: "Yes", value: "yes" },
     { label: "No", value: "no" },
-    { label: "Not sure", value: "unknown" },
   ] as const;
   return (
-    <RadioGroup
-      aria-label="Do you meet this requirement?"
-      className="grid auto-cols-fr grid-flow-col gap-0 overflow-hidden rounded-md border border-input shadow-xs"
-      disabled={busy}
-      onValueChange={(next) => void onChange(next === "unknown" ? null : next)}
-      value={value ?? "unknown"}
-    >
-      {options.map((option) => (
-        <label
-          className="flex min-h-8 min-w-0 cursor-pointer items-center justify-center border-input border-l px-2 font-medium text-muted-foreground text-xs transition-colors first:border-l-0 hover:bg-muted hover:text-foreground has-focus-visible:z-10 has-data-checked:bg-primary has-data-checked:text-primary-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring has-data-checked:hover:bg-primary/90 has-data-checked:hover:text-primary-foreground"
-          htmlFor={`${groupId}-${option.value}`}
-          key={option.value}
-        >
-          <RadioGroupItem
-            className="absolute size-px overflow-hidden opacity-0"
-            id={`${groupId}-${option.value}`}
-            value={option.value}
-          />
-          {option.label}
-        </label>
-      ))}
-    </RadioGroup>
+    <div className="grid gap-1.5">
+      <RadioGroup
+        aria-label="Do you meet this requirement?"
+        className="grid auto-cols-fr grid-flow-col gap-0 overflow-hidden rounded-md border border-input shadow-xs"
+        disabled={busy}
+        onValueChange={(next) =>
+          void onChange(next as QualificationClaimAnswer)
+        }
+        value={displayedAnswer}
+      >
+        {options.map((option) => (
+          <label
+            className="flex min-h-8 min-w-0 cursor-pointer items-center justify-center border-input border-l px-2 font-medium text-muted-foreground text-xs transition-colors first:border-l-0 hover:bg-muted hover:text-foreground has-focus-visible:z-10 has-data-checked:bg-primary has-data-checked:text-primary-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring has-data-checked:hover:bg-primary/90 has-data-checked:hover:text-primary-foreground"
+            htmlFor={`${groupId}-${option.value}`}
+            key={option.value}
+          >
+            <RadioGroupItem
+              className="absolute size-px overflow-hidden opacity-0"
+              id={`${groupId}-${option.value}`}
+              value={option.value}
+            />
+            {option.label}
+          </label>
+        ))}
+      </RadioGroup>
+      <div className="flex min-h-6 items-center justify-between gap-2 text-muted-foreground text-xs">
+        <span>{answerSource}</span>
+        {answer ? (
+          <Button
+            className="h-auto px-1 py-0 text-xs"
+            disabled={busy}
+            onClick={() => void onChange(null)}
+            variant="link"
+          >
+            Clear answer
+          </Button>
+        ) : null}
+      </div>
+    </div>
   );
+}
+
+function displayedAnswerForState(state: MatchState) {
+  if (state === "match") {
+    return "yes";
+  }
+  return state === "conflict" ? "no" : "";
+}
+
+function qualificationAnswerSource(
+  answer: QualificationClaimAnswer | null,
+  state: MatchState
+) {
+  if (answer) {
+    return "Saved to your profile";
+  }
+  return state === "match"
+    ? "Confirmed by your profile"
+    : "Choose once to save this fact";
 }
 
 function CriterionIcon({ state }: { state: MatchState }) {

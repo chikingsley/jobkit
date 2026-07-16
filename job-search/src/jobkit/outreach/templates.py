@@ -97,16 +97,15 @@ def default_question(country: str = "") -> str:
     return DEFAULT_QUESTIONS[0]
 
 
-# The fixed role label leading every subject. Provenance: this is the user's OWN proven 2019
-# format — the example email Ben reviewed (attachments/"Native English Teacher Available -
-# Moscow.eml") used exactly "Native English Teacher Available - {location}", and Ben's feedback
-# changed nothing about it (his only composition advice: open-ended question + follow up). The
-# school name is deliberately NOT in the subject.
+# The fixed role label leading every subject. The 2019 reference email used
+# "Native English Teacher Available - {location}". Ben saw that email but did not explicitly
+# prescribe or validate the subject; this is a current product convention with historical
+# provenance, not a measured universal optimum.
 _SUBJECT_ROLE = "Native English Teacher"
 
 
 def subject_line(*, role: str = "", location: str = "") -> str:
-    """Build the subject `"Native English Teacher Available - {location}"` (the 2019 format).
+    """Build the subject `"Native English Teacher Available - {location}"` (a 2019 user pattern).
 
     `role` adapts the label when the posting is for a specific discipline (e.g. a chemistry
     position becomes "Native English-Speaking Chemistry Teacher"); a plain English-teaching role

@@ -177,12 +177,7 @@ function profileEvidenceRequirement(
     return hasCountry(values, requirement.values) ? "match" : "unknown";
   }
   if (requirement.kind === "citizenship") {
-    if (!profile.citizenship) {
-      return "unknown";
-    }
-    return hasCountry([profile.citizenship], requirement.values)
-      ? "match"
-      : "conflict";
+    return citizenshipRequirement(requirement, profile);
   }
   if (requirement.kind === "document") {
     const available = documents.flatMap(documentEvidence);
@@ -205,6 +200,34 @@ function profileEvidenceRequirement(
     return experienceRequirement(requirement, profile);
   }
   return "unknown";
+}
+
+function citizenshipRequirement(
+  requirement: JobRequirement,
+  profile: Profile
+): MatchState {
+  if (isNativeEnglishRequirement(requirement)) {
+    return profile.languages.some(
+      (entry) =>
+        entry.level === "native" && hasConcept([entry.language], ["English"])
+    )
+      ? "match"
+      : "unknown";
+  }
+  if (!profile.citizenship) {
+    return "unknown";
+  }
+  return hasCountry([profile.citizenship], requirement.values)
+    ? "match"
+    : "conflict";
+}
+
+function isNativeEnglishRequirement(requirement: JobRequirement) {
+  const evidence = [requirement.label, ...requirement.values]
+    .join(" ")
+    .normalize("NFKC")
+    .toLocaleLowerCase("en");
+  return evidence.includes("native") && evidence.includes("english");
 }
 
 function credentialEvidence(credential: string) {

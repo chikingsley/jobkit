@@ -1,6 +1,6 @@
 # Chibuzor Ejimofor
 
-chibuzor.ejimofor@gmail.com | (304) 216-8700 | Scottsdale, AZ
+[chibuzor.ejimofor@gmail.com](mailto:chibuzor.ejimofor@gmail.com) | (304) 216-8700 | Scottsdale, AZ
 
 ## Education and Certifications
 
@@ -33,9 +33,9 @@ chibuzor.ejimofor@gmail.com | (304) 216-8700 | Scottsdale, AZ
 
 ### **Uceda School** | <span class="location">Las Vegas, NV</span>
 
-*English Teacher* <span class="date">May 2022 to February 2024</span>
+*English Teacher* <span class="date">July 2022 to February 2023</span>
 
-- Taught English to approximately 100 adult learners across five weekly speaking and grammar classes.
+- Taught adult ESL classes using *Interchange* and *Let's Talk*, including integrated four-skills instruction and dedicated speaking and listening practice.
 - Planned coursework, lessons, and learning materials for students across multiple proficiency levels.
 - Administered weekly assessments, evaluated student progress, and prepared progress reports.
 - Facilitated speaking activities, grammar practice, and classroom discussions to build learner confidence and fluency.

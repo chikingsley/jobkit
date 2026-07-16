@@ -67,7 +67,7 @@ async function seedSubmission({
       `draft-${jobId}`,
       userJobId,
       1,
-      "A precise test application.",
+      "Hello,\n\nA precise test application.",
       draftStatus,
       timestamp,
       draftStatus === "approved" ? timestamp : null

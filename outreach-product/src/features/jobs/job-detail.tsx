@@ -21,6 +21,12 @@ import { ApplicationAction } from "@/features/jobs/application-action";
 import { ApplicationDelivery } from "@/features/jobs/application-delivery";
 import { compensationDisplay } from "@/features/jobs/compensation";
 import { formatDescription, questionsFor } from "@/features/jobs/content";
+import {
+  formatStatedHourlyUsd,
+  housingLabel,
+  listedHourlyValueUsd,
+  statedHourlyValueUsd,
+} from "@/features/jobs/economics";
 import { humanize } from "@/features/jobs/format";
 import { JobMarketContext } from "@/features/jobs/market-context";
 import { MatchPanel } from "@/features/jobs/match";
@@ -75,6 +81,14 @@ export function JobDetail({
 }) {
   const sections = curatedJobs[job.id] ?? [];
   const salary = compensationDisplay(job.compensation, fx);
+  const hourly =
+    (job.matchFacts
+      ? statedHourlyValueUsd(job.matchFacts.economics, fx)
+      : null) ?? listedHourlyValueUsd(job.compensation, fx);
+  const housing = housingLabel(
+    job.matchFacts?.benefits ?? [],
+    job.matchFacts?.economics
+  );
   const questions = questionsFor(job, sections);
   const eligibility = eligibilityNotes[job.id] ?? [];
   return (
@@ -108,6 +122,10 @@ export function JobDetail({
       <div className="flex flex-wrap gap-2 py-4">
         <Badge variant="secondary">{salary.primary}</Badge>
         {salary.usd ? <Badge variant="outline">{salary.usd}</Badge> : null}
+        {hourly ? (
+          <Badge variant="outline">{formatStatedHourlyUsd(hourly)}</Badge>
+        ) : null}
+        {housing ? <Badge variant="outline">{housing}</Badge> : null}
         <Badge variant="outline">
           {boardLabels[job.board] ?? humanize(job.board)}
         </Badge>

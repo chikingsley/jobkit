@@ -1,3 +1,4 @@
+import { validateApplicationMessageOpening } from "../ai/application-message-policy";
 import type { AppEnv } from "../env";
 
 const CRLF = "\r\n";
@@ -57,6 +58,7 @@ export async function buildGmailMessagePayload(
   if (!first) {
     throw new GmailMessagePayloadError("Application draft not found");
   }
+  const applicationMessage = validateApplicationMessageOpening(first.message);
   const attachmentRows = rows.results.filter((row) => row.object_key);
   const expectedCategories = JSON.parse(
     first.document_packet_manifest_json
@@ -106,7 +108,11 @@ export async function buildGmailMessagePayload(
       };
     })
   );
-  const rawMessage = buildMimeMessage(envelope, first.message, attachments);
+  const rawMessage = buildMimeMessage(
+    envelope,
+    applicationMessage,
+    attachments
+  );
   return {
     attachmentCount: attachments.length,
     filenames: attachments.map((attachment) => attachment.filename),

@@ -11,6 +11,7 @@ SQLite inventory at `../job-search/job-data/jobs.sqlite`:
 ```bash
 uv run jobs refresh             # update ../job-search/job-data/jobs.sqlite
 uv run jobs refresh tefl ajarn  # refresh selected boards
+uv run jobs refresh --latest seriousteachers anesl  # quick pass; preserve unseen rows
 uv run jobs stats
 uv run jobs countries
 ```

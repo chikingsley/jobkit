@@ -32,13 +32,13 @@ export async function readJobMatchFacts(
   };
 }
 
-export async function writeJobMatchFacts(
+export function jobMatchFactsStatement(
   db: D1Database,
   jobId: string,
   result: PersistedJobMatchFacts,
   schemaVersion: number
 ) {
-  await db
+  return db
     .prepare(
       `INSERT INTO job_match_facts
         (job_id,facts_json,schema_version,model_provider,model_id,source_hash,updated_at)
@@ -59,6 +59,5 @@ export async function writeJobMatchFacts(
       result.modelId,
       result.sourceHash,
       new Date().toISOString()
-    )
-    .run();
+    );
 }

@@ -1,6 +1,7 @@
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
+import { JOB_MATCH_FACTS_SCHEMA_VERSION } from "../../../src/features/matching/version";
 import { createAuthenticatedUser } from "./auth";
 
 interface TestEnv extends Env {
@@ -21,6 +22,25 @@ describe("job matching facts", () => {
     const facts = {
       audiences: [],
       benefits: [],
+      economics: {
+        compensation: {
+          amountMaximum: 30_000,
+          amountMinimum: 25_000,
+          currency: "CNY",
+          evidence: ["25,000-30,000 CNY per month"],
+          kind: "amount",
+          period: "month",
+          qualifier: "range",
+          taxBasis: "net",
+        },
+        workload: {
+          basis: "onsite",
+          evidence: ["Monday-Friday, 8:00-4:30"],
+          maximum: 42.5,
+          minimum: 42.5,
+          period: "week",
+        },
+      },
       employmentTypes: [],
       requirements: [
         {
@@ -55,7 +75,7 @@ describe("job matching facts", () => {
       ).bind(
         jobId,
         JSON.stringify(facts),
-        2,
+        JOB_MATCH_FACTS_SCHEMA_VERSION,
         "cerebras",
         "zai-glm-4.7",
         "source-hash",

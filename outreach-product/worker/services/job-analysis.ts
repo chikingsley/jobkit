@@ -1,6 +1,6 @@
 import { JOB_MATCH_FACTS_SCHEMA_VERSION } from "../../src/features/matching/version";
 import {
-  extractJobMatchFacts,
+  extractJobMatchFactsWithFallback,
   JobFactExtractionError,
   jobSourceHash,
 } from "../ai/job-fact-extraction";
@@ -8,8 +8,8 @@ import type { AiModelSelection } from "../ai/model-catalog";
 import type { AppEnv } from "../env";
 import { readAiModel } from "../repositories/ai-model-settings";
 import {
+  jobMatchFactsStatement,
   readJobMatchFacts,
-  writeJobMatchFacts,
 } from "../repositories/job-match-facts";
 import { type JobImport, JobImportSchema } from "../schemas";
 
@@ -25,13 +25,13 @@ export async function ensureJobMatchFacts(
   if (current?.sourceHash === sourceHash) {
     return false;
   }
-  const result = await extractJobMatchFacts(env, model, job);
-  await writeJobMatchFacts(
+  const result = await extractJobMatchFactsWithFallback(env, model, job);
+  await jobMatchFactsStatement(
     env.DB,
     job.id,
     result,
     JOB_MATCH_FACTS_SCHEMA_VERSION
-  );
+  ).run();
   return true;
 }
 

@@ -1,3 +1,4 @@
+import { applicationMessageOpeningProblem } from "../ai/application-message-policy";
 import type { AppEnv } from "../env";
 import { jobEventStatement } from "../repositories/job-events";
 import { submitApplication } from "../seriousteachers";
@@ -56,6 +57,13 @@ export async function approveAndSubmitApplication(
   ) {
     return {
       message: "Application is not ready to approve and send",
+      status: 409,
+    };
+  }
+  const messagePolicyProblem = applicationMessageOpeningProblem(row.message);
+  if (messagePolicyProblem) {
+    return {
+      message: messagePolicyProblem,
       status: 409,
     };
   }

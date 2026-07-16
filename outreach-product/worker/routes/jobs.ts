@@ -1,3 +1,8 @@
+import { compensationFromEconomics } from "../../src/features/jobs/economics";
+import {
+  type JobMatchFacts,
+  JobMatchFactsSchema,
+} from "../../src/features/matching/schema";
 import { JOB_MATCH_FACTS_SCHEMA_VERSION } from "../../src/features/matching/version";
 import type { JobKitApp } from "../app-types";
 import {
@@ -100,6 +105,7 @@ export function registerJobRoutes(app: JobKitApp) {
 }
 
 function toReviewJob(row: Record<string, unknown>) {
+  const matchFacts = matchFactsFromRow(row);
   return {
     applicationRoutes: JSON.parse(
       String(row.application_routes_json)
@@ -107,7 +113,9 @@ function toReviewJob(row: Record<string, unknown>) {
     applyUrl: String(row.apply_url),
     board: String(row.board),
     company: String(row.company),
-    compensation: compensationFromRow(row),
+    compensation: matchFacts
+      ? compensationFromEconomics(matchFacts.economics)
+      : compensationFromRow(row),
     country: String(row.country),
     description: String(row.description),
     draft: row.draft_id
@@ -128,7 +136,7 @@ function toReviewJob(row: Record<string, unknown>) {
     id: String(row.id),
     location: String(row.location),
     marketSegments: JSON.parse(String(row.market_segments_json)) as unknown,
-    matchFacts: matchFactsFromRow(row),
+    matchFacts,
     messageRoute: String(row.message_route),
     opportunityScope: String(row.opportunity_scope),
     priority: Number(row.priority),
@@ -138,12 +146,15 @@ function toReviewJob(row: Record<string, unknown>) {
   };
 }
 
-function matchFactsFromRow(row: Record<string, unknown>) {
+function matchFactsFromRow(row: Record<string, unknown>): JobMatchFacts | null {
   if (
     !row.facts_json ||
     Number(row.match_facts_schema_version) !== JOB_MATCH_FACTS_SCHEMA_VERSION
   ) {
     return null;
   }
-  return JSON.parse(String(row.facts_json)) as unknown;
+  const parsed = JobMatchFactsSchema.safeParse(
+    JSON.parse(String(row.facts_json)) as unknown
+  );
+  return parsed.success ? parsed.data : null;
 }
