@@ -1,6 +1,7 @@
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
+import { recordInboundMessage } from "../../../worker/services/messages";
 import { createAuthenticatedUser } from "./auth";
 
 interface TestEnv extends Env {
@@ -122,18 +123,15 @@ describe("inbound message sync", () => {
     );
     await seedSentAttempt(userId, "reply");
 
-    const recorded = await request("/api/messages/inbound", cookie, {
-      body: inboundPayload,
-      method: "POST",
-    });
-    expect(recorded.status).toBe(200);
-    expect(await recorded.json()).toMatchObject({ created: true, ok: true });
+    const recorded = await recordInboundMessage(env.DB, userId, inboundPayload);
+    expect(recorded).toEqual({ created: true });
 
-    const duplicate = await request("/api/messages/inbound", cookie, {
-      body: inboundPayload,
-      method: "POST",
-    });
-    expect(await duplicate.json()).toMatchObject({ created: false, ok: true });
+    const duplicate = await recordInboundMessage(
+      env.DB,
+      userId,
+      inboundPayload
+    );
+    expect(duplicate).toEqual({ created: false });
 
     const list = await request("/api/messages", cookie);
     const { threads } = (await list.json()) as {
@@ -180,14 +178,15 @@ describe("inbound message sync", () => {
   });
 
   it("rejects inbound messages for unknown threads", async () => {
-    const { cookie, userId } = await createAuthenticatedUser(
+    const { userId } = await createAuthenticatedUser(
       "messages-unknown@example.test"
     );
     await seedSentAttempt(userId, "unknown");
-    const response = await request("/api/messages/inbound", cookie, {
-      body: { ...inboundPayload, gmailThreadId: "thr-not-ours" },
-      method: "POST",
-    });
-    expect(response.status).toBe(404);
+    await expect(
+      recordInboundMessage(env.DB, userId, {
+        ...inboundPayload,
+        gmailThreadId: "thr-not-ours",
+      })
+    ).rejects.toMatchObject({ status: 404 });
   });
 });

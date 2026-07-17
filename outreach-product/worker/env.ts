@@ -1,1 +1,4 @@
-export type AppEnv = Env;
+export type AppEnv = Env & {
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+};

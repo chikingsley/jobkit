@@ -136,24 +136,6 @@ export function App() {
     void loadJobs();
   }, [loadJobs]);
 
-  const hasPendingEmailSend = jobs.some(
-    (job) =>
-      job.emailAttempt?.sendRequestedAt &&
-      ["approved", "claimed", "drafted", "sending"].includes(
-        job.emailAttempt.status
-      )
-  );
-
-  useEffect(() => {
-    if (!hasPendingEmailSend) {
-      return;
-    }
-    const timer = window.setInterval(() => {
-      void loadJobs({ quiet: true }).catch(() => undefined);
-    }, 2000);
-    return () => window.clearInterval(timer);
-  }, [hasPendingEmailSend, loadJobs]);
-
   useEffect(() => {
     void apiRequest("/api/fx")
       .then((response) => response.json())

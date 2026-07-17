@@ -269,10 +269,9 @@ Acceptance criteria:
 - The greeting is `Hello,`; `Dear` is not valid output.
 - Email subjects use the proven `Native English Teacher Available - {location}` shape unless a route-specific policy overrides it.
 - The selected application packet is visible before draft creation or sending.
-- Draft creation and sending are distinct executor actions.
+- One explicit Send action advances the internal draft, send, and verification states.
 - Gmail account/profile is explicit.
-- The personal Linux workflow may use the existing authenticated `gws-profile chibuzor` bridge.
-- The hosted multi-user product uses per-user Google OAuth; refresh tokens never enter frontend storage.
+- The hosted product uses per-user Google OAuth; refresh tokens never enter frontend storage.
 - Event history records exact recipient, subject, message version, attachment IDs, Gmail draft/message/thread IDs, and the executor result.
 - Re-running the same route and message does not create a duplicate draft or send.
 - Gmail sent/thread state is authoritative for whether email actually left the account and whether a reply arrived.
@@ -816,9 +815,8 @@ Gmail supports preview, draft, explicit send, and policy-controlled automatic se
 sending remain separate executor actions even when automation advances directly from one to the
 other.
 
-- The local personal bridge uses the existing encrypted `gws-profile chibuzor` OAuth credentials.
-- The hosted product uses per-user Google OAuth and Gmail API scopes appropriate to the enabled
-  actions.
+- The hosted product uses per-user Google OAuth and the Gmail compose/read scopes required for
+  verified sends and reply sync.
 - MIME messages include the exact selected document versions; text that claims attachments must be
   rejected if the MIME payload does not contain them.
 - Gmail is authoritative for sent state, thread membership, replies, bounces, and delivery-adjacent
@@ -869,7 +867,7 @@ Requirements:
 - Credential PDFs stay private.
 - R2 may later store selected documents, but only after access controls are designed.
 - Gmail OAuth tokens must not live in frontend storage.
-- Local `gws-profile` can remain a development bridge, but a productized version needs proper Google OAuth.
+- Gmail execution uses hosted per-user Google OAuth in every environment.
 
 ## 18. Success Metrics
 
@@ -908,8 +906,7 @@ Product metrics later:
 
 - Refresh each existing board and import only reconciled active rows into D1.
 - Add normalized application routes, including multiple emails or URLs when supported.
-- Connect Gmail through the current local bridge for personal dogfooding.
-- Add hosted per-user Google OAuth before exposing Gmail execution to other users.
+- Connect Gmail through hosted per-user Google OAuth for personal dogfooding and later users.
 - Reconcile drafts, sends, replies, bounces, interviews, offers, and rejections.
 
 ### Phase 3: School catalog and country sweeps

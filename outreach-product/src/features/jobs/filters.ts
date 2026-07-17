@@ -13,6 +13,9 @@ export function filterJobs(
   filters: JobFilters
 ) {
   return jobs.filter((job) => {
+    if (job.status === "applied") {
+      return false;
+    }
     const match = matches.get(job.id);
     if (!(filters.showExcluded || match?.label !== "Ineligible")) {
       return false;

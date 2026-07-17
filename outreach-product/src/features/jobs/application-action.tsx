@@ -62,11 +62,13 @@ function EmailApplicationAction({
   onAction: (path: string, body?: object) => Promise<void>;
   route: ApplicationRoute;
 }) {
-  const path = `/api/jobs/${job.id}/email-send-requests`;
+  const path = `/api/jobs/${job.id}/email-send`;
   const attempt = job.emailAttempt;
-  const pending = Boolean(
-    attempt?.sendRequestedAt && pendingEmailStatuses.has(attempt.status)
-  );
+  const pending =
+    busy === path ||
+    Boolean(
+      attempt?.sendRequestedAt && pendingEmailStatuses.has(attempt.status)
+    );
   const terminal =
     attempt?.status === "sent" || attempt?.status === "uncertain";
   const uncertain = attempt?.status === "uncertain";

@@ -1,9 +1,8 @@
 import type { AppEnv } from "../env";
 
-// Outbound-only for phase one. Inbound replies (synced by the local Gmail
-// bridge) will land keyed by gmail_thread_id and stitch into the same thread
-// with no UI change. Statuses represent attempts that produced a real outbound
-// message: sent, in-flight (sending), or send-attempted-but-unverified.
+// Hosted Gmail replies land keyed by gmail_thread_id and stitch into the same
+// thread. Statuses represent attempts that produced a real outbound message:
+// sent, in-flight (sending), or send-attempted-but-unverified.
 const THREAD_STATUSES = ["sent", "sending", "uncertain"] as const;
 const ATTEMPT_THREAD_PREFIX = "attempt:";
 

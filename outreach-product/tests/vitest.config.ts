@@ -11,7 +11,14 @@ export default defineConfig({
     cloudflareTest({
       miniflare: {
         bindings: {
+          APP_ORIGIN: "https://outreach.test",
           BETTER_AUTH_SECRET: "integration-test-secret-at-least-32-characters",
+          GOOGLE_CLIENT_ID: "test-google-client-id",
+          GOOGLE_CLIENT_SECRET: "test-google-client-secret",
+          GOOGLE_PUBSUB_AUDIENCE:
+            "https://outreach.test/api/webhooks/google/gmail",
+          GOOGLE_PUBSUB_SERVICE_ACCOUNT: "pubsub@example.test",
+          GOOGLE_PUBSUB_TOPIC: "projects/test-project/topics/jobkit-gmail",
           SERIOUSTEACHERS_EMAIL: "teacher@example.test",
           SERIOUSTEACHERS_PASSWORD: "test-password",
           TEST_MIGRATIONS: migrations,

@@ -16,6 +16,7 @@ import {
 import { registerCountryRoutes } from "./routes/countries";
 import { registerDocumentRoutes } from "./routes/documents";
 import { registerEmailAttemptRoutes } from "./routes/email-attempts";
+import { GMAIL_PUBSUB_WEBHOOK_PATH, registerGmailRoutes } from "./routes/gmail";
 import { registerJobMatchFactRoutes } from "./routes/job-match-facts";
 import { registerJobRoutes } from "./routes/jobs";
 import { registerMessageRoutes } from "./routes/messages";
@@ -33,6 +34,8 @@ import { CountryMarketError } from "./services/country-markets";
 import { authenticateCountrySweepRunner } from "./services/country-sweep-runner-auth";
 import { DocumentConversionError } from "./services/document-text";
 import { EmailAttemptError } from "./services/email-attempts";
+import { GmailIntegrationError } from "./services/gmail-errors";
+import { renewExpiringGmailWatches } from "./services/gmail-integration";
 import { approveAndSubmitApplication } from "./services/job-submission";
 import {
   fetchExchangeRates,
@@ -87,6 +90,9 @@ app.onError((error, c) => {
   if (error instanceof EmailAttemptError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
+  if (error instanceof GmailIntegrationError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
   if (error instanceof OnboardingIncompleteError) {
     return c.json({ message: error.message, ok: false }, 409);
   }
@@ -111,6 +117,10 @@ const RUNNER_TOKEN_PATHS = [
 const RUNNER_GENERATE_PATH = /^\/api\/jobs\/[^/]+\/generate$/u;
 
 app.use("/api/*", async (c, next) => {
+  if (c.req.path === GMAIL_PUBSUB_WEBHOOK_PATH) {
+    await next();
+    return;
+  }
   const authorization = c.req.header("authorization") ?? "";
   if (authorization.startsWith("Bearer ")) {
     const allowed =
@@ -157,6 +167,7 @@ registerJobMatchFactRoutes(app);
 registerDocumentRoutes(app);
 registerCountryRoutes(app);
 registerEmailAttemptRoutes(app);
+registerGmailRoutes(app);
 registerMessageRoutes(app);
 registerUserSettingsRoutes(app);
 
@@ -322,4 +333,13 @@ app.doc("/openapi.json", {
   openapi: "3.1.0",
 });
 
-export default app;
+export default {
+  fetch: app.fetch,
+  scheduled(
+    _controller: ScheduledController,
+    env: AppEnv,
+    ctx: ExecutionContext
+  ) {
+    ctx.waitUntil(renewExpiringGmailWatches(env));
+  },
+};

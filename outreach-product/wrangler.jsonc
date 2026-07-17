@@ -4,6 +4,9 @@
   "main": "worker/index.ts",
   "compatibility_date": "2026-07-11",
   "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "APP_ORIGIN": "https://outreach-product.peacockery.studio"
+  },
   "routes": [
     {
       "pattern": "outreach-product.peacockery.studio",
@@ -16,6 +19,9 @@
       "BETTER_AUTH_SECRET",
       "CEREBRAS_API_KEY",
       "MISTRAL_API_KEY",
+      "GOOGLE_PUBSUB_AUDIENCE",
+      "GOOGLE_PUBSUB_SERVICE_ACCOUNT",
+      "GOOGLE_PUBSUB_TOPIC",
       "SERIOUSTEACHERS_EMAIL",
       "SERIOUSTEACHERS_PASSWORD"
     ]
@@ -40,6 +46,9 @@
       "bucket_name": "jobkit-private-documents"
     }
   ],
+  "triggers": {
+    "crons": ["17 8 * * *"]
+  },
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1

@@ -1,4 +1,3 @@
-import { z } from "zod";
 import type { JobKitApp } from "../app-types";
 import {
   getMessageThread,
@@ -6,18 +5,7 @@ import {
   listMessageThreads,
   MessageThreadError,
   markThreadRead,
-  recordInboundMessage,
 } from "../services/messages";
-
-const InboundMessageSchema = z.object({
-  bodyText: z.string().min(1).max(100_000),
-  fromAddress: z.string().min(1).max(320),
-  gmailMessageId: z.string().min(1).max(200),
-  gmailThreadId: z.string().min(1).max(200),
-  sentAt: z.string().min(1).max(40),
-  subject: z.string().max(500).default(""),
-  toAddress: z.string().max(320).default(""),
-});
 
 export function registerMessageRoutes(app: JobKitApp) {
   app.get("/api/messages", async (c) => {
@@ -33,35 +21,6 @@ export function registerMessageRoutes(app: JobKitApp) {
         c.req.param("threadId")
       );
       return c.json({ ok: true, thread });
-    } catch (error) {
-      if (error instanceof MessageThreadError) {
-        return c.json({ message: error.message, ok: false }, error.status);
-      }
-      throw error;
-    }
-  });
-
-  // Written by the local Gmail bridge after it classifies a genuine inbound
-  // reply (bounces and auto-replies are filtered bridge-side).
-  app.post("/api/messages/inbound", async (c) => {
-    const body = InboundMessageSchema.safeParse(await c.req.json());
-    if (!body.success) {
-      return c.json(
-        {
-          issues: z.treeifyError(body.error),
-          message: "Invalid inbound message payload",
-          ok: false,
-        },
-        400
-      );
-    }
-    try {
-      const result = await recordInboundMessage(
-        c.env.DB,
-        c.get("user").id,
-        body.data
-      );
-      return c.json({ created: result.created, ok: true });
     } catch (error) {
       if (error instanceof MessageThreadError) {
         return c.json({ message: error.message, ok: false }, error.status);

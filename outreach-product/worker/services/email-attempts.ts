@@ -220,7 +220,7 @@ export async function listEmailAttempts(
   return rows.results.map(toAttemptView);
 }
 
-export async function requestEmailSend(
+export async function prepareEmailSend(
   env: AppEnv,
   userId: string,
   jobId: string,
@@ -265,7 +265,8 @@ export async function requestEmailSend(
 export async function claimEmailAttempt(
   env: AppEnv,
   userId: string,
-  attemptId: string
+  attemptId: string,
+  fromEmail?: string
 ) {
   const attempt = await readOwnedAttempt(env.DB, userId, attemptId);
   if (!attempt) {
@@ -296,7 +297,7 @@ export async function claimEmailAttempt(
       userId,
       attempt.draft_id,
       {
-        from: attempt.from_email,
+        from: fromEmail || attempt.from_email,
         subject: attempt.subject,
         to: attempt.recipient,
       }

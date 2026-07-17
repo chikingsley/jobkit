@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { GmailConnection } from "@/features/messages/gmail-connection";
 import { MessageThreadItem } from "@/features/messages/thread-item";
 import { MessageThread } from "@/features/messages/thread-view";
 import type {
@@ -24,12 +25,16 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
     data: threads,
     isLoading,
     mutate,
-  } = useSWR("/api/messages", async (path) => {
-    const payload = (await (await request(path)).json()) as {
-      threads: MessageThreadSummary[];
-    };
-    return payload.threads;
-  });
+  } = useSWR(
+    "/api/messages",
+    async (path) => {
+      const payload = (await (await request(path)).json()) as {
+        threads: MessageThreadSummary[];
+      };
+      return payload.threads;
+    },
+    { refreshInterval: 30_000 }
+  );
 
   const activeThreadId = selectedThreadId || threads?.[0]?.threadId || "";
 
@@ -84,6 +89,7 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
             <RefreshCwIcon className={cn(isLoading && "animate-spin")} />
           </Button>
         </div>
+        <GmailConnection request={request} />
         <ScrollArea className="min-h-0 flex-1">
           <div className="flex flex-col gap-1 p-2">
             {threads?.map((thread) => (
