@@ -44,7 +44,7 @@ English uses three main structures to express obligation, and they are not inter
 
 The modal *must* expresses strong obligation originating with the speaker, or logical necessity the speaker has reasoned out. When a teacher says to a student, "You must hand in your essay before noon," the obligation comes from the teacher's own authority. The same modal appears in logical deductions: if Wei has been in class since eight in the morning and it is now five in the afternoon, a teacher might say, "Wei must be exhausted." In that second sentence, *must* signals a conclusion the speaker has reached, not a rule imposed from outside.
 
-*Have to* expresses obligation that comes from an external source, such as a rule, a law, or a circumstance the speaker did not create. Priya might say, "I have to wear a uniform at my school," meaning the school's policy requires it, not that Priya herself has decided this. The distinction matters in the classroom because a teacher who says "You must read chapter three" is using personal authority, while a teacher who says "You have to read chapter three" implies the syllabus or examination board is the source of that requirement. Both sentences are grammatically correct; the choice between them changes who is responsible for the obligation.
+*Have to* expresses obligation that comes from an external source, such as a rule, a law, or a circumstance the speaker did not create. Priya might say, "I have to wear a uniform at my school," meaning the school's policy requires it, not that Priya herself has decided this. The distinction matters in the classroom because a teacher who says "You must read chapter three" is using personal authority, while a teacher who says "You have to read chapter three" implies the syllabus or examination board is the module of that requirement. Both sentences are grammatically correct; the choice between them changes who is responsible for the obligation.
 
 *Should* and *ought to* express a weaker degree of obligation, closer to advice or recommendation than strict necessity. A teacher might tell Carlos, "You should review your vocabulary notes before the test," meaning it would be beneficial, not that failure to do so carries a penalty. *Ought to* carries the same meaning and is slightly more formal, though it appears far less frequently in spoken English. Neither *should* nor *ought to* implies that the action is compelled by an external authority or by the speaker's direct power.
 
@@ -109,7 +109,7 @@ Because modals carry no inflection and resist reduction to a single rule, isolat
    *Answer: Will you come tomorrow?*
    *Anchor: "The question form is "Can you hear me?" not "Do you can hear me?""*
 
-**2. A student named Priya writes: 'I must stay late yesterday.' What is the correct form of this sentence?**
+**2. Priya writes: 'I must stay late yesterday.' What is the correct form of this sentence?**
 
    a. I must stayed late yesterday.
    b. I had to stay late yesterday.
@@ -134,12 +134,12 @@ Because modals carry no inflection and resist reduction to a single rule, isolat
    *Answer: 'Must not' signals prohibition, meaning the action is forbidden. 'Don't have to' signals the absence of obligation, meaning the action is optional or not required.*
    *Anchor: "Must not signals prohibition: the action is forbidden. Don't have to signals absence of obligation: the action is optional."*
 
-**5. A student named Wei writes 'I can to drive.' Identify the error and state the correct form.**
+**5. Wei writes 'I can to drive.' Identify the error and state the correct form.**
 
    *Answer: Wei has incorrectly inserted 'to' after the modal 'can.' Because 'can' is a core modal verb, it takes a bare infinitive directly. The correct sentence is 'I can drive.'*
    *Anchor: "can is a core modal and takes a bare infinitive, so the target sentence is "I can drive""*
 
-**6. During a writing task, a student named Carlos submits the sentence: 'He cans drive and he musts wear a seatbelt.' Describe the move you would make to address this error and justify your choice.**
+**6. During a writing task, Carlos submits the sentence: 'He cans drive and he musts wear a seatbelt.' Describe the move you would make to address this error and justify your choice.**
 
    *Answer: The teacher should write Carlos's sentence alongside a corrected version on the board and ask the class to identify the difference, then state the rule explicitly: modal verbs do not inflect for person or number, so the form stays identical across all subjects. A short substitution drill, where learners swap subjects while keeping the modal unchanged, reinforces the correction efficiently. This approach is justified because the error is formal rather than semantic, making a direct rule statement and immediate practice the most targeted response, rather than reteaching the entire modal paradigm.*
    *Anchor: "Modals do not inflect for person or number, so the form stays identical across all subjects. Drilling short substitution exercises"*

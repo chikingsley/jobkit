@@ -4,11 +4,11 @@
     "question": "According to the unit, what is the key design detail a teacher must attend to when using a student-performed skit as a vocabulary activity?",
     "options": [
       "The skit must include at least five target words written on a visible script",
-      "Target words must be spoken aloud in context without reading from a script during the final performance",
+      "Use target words aloud, in context, and without a final script",
       "Students should rehearse the skit at least three times before performing",
       "The teacher must assign each student a specific target word before rehearsal begins"
     ],
-    "answer": "Target words must be spoken aloud in context without reading from a script during the final performance",
+    "answer": "Use target words aloud, in context, and without a final script",
     "anchor": "scripts may be used during rehearsal, but the final performance requires the words to come from the students themselves"
   },
   {
@@ -17,10 +17,10 @@
     "options": [
       "As retrieval practice, because students must handle and evaluate each word",
       "As retrieval practice, because the words are sorted under time pressure",
-      "As recognition, because the words are in front of the student and the task is to sort them",
+      "Recognition, because students sort words already in view",
       "As re-presentation, because the teacher selects which bricks are shown"
     ],
-    "answer": "As recognition, because the words are in front of the student and the task is to sort them",
+    "answer": "Recognition, because students sort words already in view",
     "anchor": "Searching through visible bricks to find ones that match a category is recognition: the words are in front of the student, and the task is to sort them"
   },
   {

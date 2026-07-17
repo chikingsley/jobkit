@@ -1,26 +1,26 @@
 [
   {
     "type": "mc",
-    "question": "According to the unit, what is the primary reason a peer assessment worksheet should NOT be used as a final summative grade?",
+    "question": "Which assessment quality is weak when two trained teachers give very different scores to the same speaking performance while using the same rubric?",
     "options": [
-      "Peer worksheets take too long for students to complete during class time.",
-      "Peer worksheets may lack the consistency that summative assessment requires.",
-      "Peer worksheets are only appropriate for advanced proficiency levels.",
-      "Peer worksheets cannot include numeric scores of any kind."
+      "Validity, because the task no longer measures spoken performance",
+      "Reliability, because the result changes substantially across raters",
+      "Washback, because students have not seen the scores in advance",
+      "Authenticity, because more than one teacher observed the task"
     ],
-    "answer": "Peer worksheets may lack the consistency that summative assessment requires.",
-    "anchor": "A peer worksheet used as a final grade may lack the consistency that summative assessment requires"
+    "answer": "Reliability, because the result changes substantially across raters.",
+    "anchor": "Reliability is the consistency of an assessment result under comparable conditions."
   },
   {
     "type": "mc",
     "question": "Which of the following best explains why a teacher should consider class size when selecting an assessment task?",
     "options": [
       "Larger classes always require summative rather than formative assessment.",
-      "An assessment format designed for small groups will need adjustment when many more students are present.",
+      "Small-group formats need adjustment for larger classes",
       "Class size determines which level of Bloom's Taxonomy is appropriate for the lesson.",
       "Larger classes should only use traditional pen-and-paper assessment methods."
     ],
-    "answer": "An assessment format designed for small groups will need adjustment when many more students are present.",
+    "answer": "Small-group formats need adjustment for larger classes",
     "anchor": "An assessment format designed for two groups of eight to ten students will need adjustment when thirty-five students are present"
   },
   {
@@ -28,11 +28,11 @@
     "question": "A teacher whose lesson asked students to recall and define health vocabulary assigns a debate as the final assessment task. According to the unit, what is the core problem with this choice?",
     "options": [
       "Debates are not listed as a valid form of alternative assessment.",
-      "The debate places students at the Evaluate level, demanding cognitive work the lesson did not develop.",
+      "The debate requires unequipped Evaluate-level thinking.",
       "The debate produces a summative score rather than formative feedback.",
       "Debates are only appropriate when students have high intermediate proficiency."
     ],
-    "answer": "The debate places students at the Evaluate level, demanding cognitive work the lesson did not develop.",
+    "answer": "The debate requires unequipped Evaluate-level thinking.",
     "anchor": "Assigning a debate as the assessment task would place students at the Evaluate level, asking them to perform cognitive work they have not yet been guided through"
   },
   {

@@ -13,26 +13,26 @@
   },
   {
     "type": "mc",
-    "question": "The unit states that the post-task phase serves two simultaneous purposes. Which pair correctly identifies both?",
+    "question": "Which sequence correctly describes the task cycle in the Willis framework used by the unit?",
     "options": [
-      "Vocabulary consolidation and grammar correction",
-      "Communicative reporting to an audience and pedagogical debriefing for comprehension",
-      "Peer assessment and teacher-led error analysis",
-      "Reflection on inclusion criteria and revision of the rubric"
+      "Teacher explanation, controlled practice, and a final grammar test",
+      "Task, planning, and report",
+      "Entry event, project production, and public exhibition",
+      "Vocabulary preview, silent reading, and error correction"
     ],
-    "answer": "Communicative reporting to an audience and pedagogical debriefing for comprehension",
-    "anchor": "The post-task phase closes the lesson and serves two purposes simultaneously"
+    "answer": "Task, planning, and report",
+    "anchor": "The task cycle itself contains the task, planning, and report stages"
   },
   {
     "type": "mc",
     "question": "The unit argues that the disagreement between Bryfonski and McKay (2019) and Xuan, Cheung and Liu (2025) concerns magnitude but not direction. What does this mean for a teacher reading the evidence?",
     "options": [
       "Teachers should wait for a third meta-analysis before adopting TBLT in their classrooms",
-      "Teachers can be confident that task-based instruction benefits learners, while acknowledging the exact size of the benefit is still debated",
+      "TBLT benefits learners, but its exact effect size remains disputed",
       "Teachers should use the higher effect size because it reflects a larger sample of studies",
       "Teachers should disregard both figures because methodological disagreements invalidate all findings"
     ],
-    "answer": "Teachers can be confident that task-based instruction benefits learners, while acknowledging the exact size of the benefit is still debated",
+    "answer": "TBLT benefits learners, but its exact effect size remains disputed",
     "anchor": "the direction of the effect is settled, and the magnitude remains contested"
   },
   {

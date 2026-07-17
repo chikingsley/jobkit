@@ -29,10 +29,10 @@
     "options": [
       "The length of the vocabulary word chosen by the student",
       "The number of students working together on the poem",
-      "The teacher's decision about which option is appropriate for the class's level",
+      "The teacher's judgment of level appropriateness",
       "The topic set from which the vocabulary word is drawn"
     ],
-    "answer": "The teacher's decision about which option is appropriate for the class's level — The teacher decides which of those three options is appropriate for the class.",
+    "answer": "The teacher's judgment of level appropriateness",
     "anchor": "The teacher decides which of those three options is appropriate for the class"
   },
   {

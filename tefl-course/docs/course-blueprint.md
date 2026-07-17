@@ -126,7 +126,7 @@ Unit = ~1,800–3,000 words of reading + 2–3 inline comprehension checks + 6-q
 | # | Unit | Sources | Status |
 |---|---|---|---|
 | 12.1 | Individual learner differences | State Dept M11 🎬 | ✅ |
-| 12.2 | The learning-styles myth (and what to do instead) | Pashler et al. (2009), Willingham et al. (2015) ⭐ | 🟡 ⭐ |
+| 12.2 | The learning-styles myth (and what to do instead) | Pashler et al. (2008), Willingham et al. (2015) ⭐ | 🟡 ⭐ |
 | 12.3 | Learning strategies | State Dept M7 🎬 | ✅ |
 | 12.4 | Motivation | companion + original | 🟡 |
 

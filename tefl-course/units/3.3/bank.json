@@ -3,36 +3,36 @@
     "type": "mc",
     "question": "Which sentence correctly reports the command 'Don't open your books'?",
     "options": [
-      "A) She told them that they don't open their books.",
-      "B) She told them not to open their books.",
-      "C) She said them not to open their books.",
-      "D) She told them to not opening their books."
+      "She told them that they don't open their books.",
+      "She told them not to open their books.",
+      "She said them not to open their books.",
+      "She told them to not opening their books."
     ],
-    "answer": "B) She told them not to open their books.",
+    "answer": "She told them not to open their books.",
     "anchor": "\"Don't open your books\" becomes She told them not to open their books."
   },
   {
     "type": "mc",
     "question": "Yuki says to Daniel on Monday: 'I will call you tomorrow.' Carlos reports this to a third person on Wednesday. Which reported version is fully correct?",
     "options": [
-      "A) Yuki said she will call him tomorrow.",
-      "B) Yuki said she would call you the following day.",
-      "C) Yuki said she would call him the following day.",
-      "D) Yuki said she would call him tomorrow."
+      "Yuki said she will call him tomorrow.",
+      "Yuki said she would call you the following day.",
+      "Yuki said she would call him the following day.",
+      "Yuki said she would call him tomorrow."
     ],
-    "answer": "C) Yuki said she would call him the following day.",
+    "answer": "Yuki said she would call him the following day.",
     "anchor": "\"Tomorrow\" becomes \"the following day\" or \"the next day.\""
   },
   {
     "type": "mc",
     "question": "A student reports a doctor's advice as: 'The doctor advised that he rest for a week.' In which context is this form most appropriate, according to the unit?",
     "options": [
-      "A) Informal spoken conversation between friends.",
-      "B) A casual text message.",
-      "C) Formal written contexts.",
-      "D) Classroom spoken practice activities."
+      "Informal spoken conversation between friends.",
+      "A casual text message.",
+      "Formal written contexts.",
+      "Classroom spoken practice activities."
     ],
-    "answer": "C) Formal written contexts.",
+    "answer": "Formal written contexts.",
     "anchor": "the that-clause version appears more frequently in formal written contexts."
   },
   {

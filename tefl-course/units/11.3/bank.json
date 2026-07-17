@@ -4,11 +4,11 @@
     "question": "According to the unit, what is the primary cost of concentrating authority in the controller role during a teacher-centered lesson?",
     "options": [
       "Students become confused about lesson objectives without teacher direction.",
-      "Students have limited opportunities to produce language freely or make decisions about their own learning.",
+      "Students lose free production and decision-making opportunities.",
       "The teacher cannot monitor student performance while managing behavior.",
       "Transitions between activities become less smooth without student input."
     ],
-    "answer": "Students have limited opportunities to produce language freely or make decisions about their own learning.",
+    "answer": "Students lose free production and decision-making opportunities.",
     "anchor": "when the teacher directs every move, students have limited opportunities to produce language freely or make decisions about their own learning"
   },
   {
@@ -25,14 +25,14 @@
   },
   {
     "type": "mc",
-    "question": "The unit describes a student named Priya who consistently waits to hear a classmate's answer before producing her own during a game of Hot Potato. What does the unit say a monitoring teacher should do with this observation?",
+    "question": "The unit describes a student named Priya, who consistently waits to hear a classmate's answer before producing her own during a game of Hot Potato. What does the unit say a monitoring teacher should do with this observation?",
     "options": [
       "Interrupt the game immediately and redirect Priya to answer independently.",
-      "Note the observation without stopping the class, storing it to inform later decisions such as reteaching or re-pairing students.",
+      "Record it unobtrusively for later reteaching or regrouping.",
       "Switch to a written assessment so Priya cannot rely on classmates for answers.",
       "Assign Priya the role of discussion leader in the next activity to build her confidence."
     ],
-    "answer": "Note the observation without stopping the class, storing it to inform later decisions such as reteaching or re-pairing students.",
+    "answer": "Record it unobtrusively for later reteaching or regrouping.",
     "anchor": "A student like Priya who consistently waits to hear a classmate's answer before producing her own is signaling something the teacher needs to register, even if the game continues without interruption"
   },
   {

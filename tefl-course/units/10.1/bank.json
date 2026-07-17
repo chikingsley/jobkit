@@ -5,10 +5,10 @@
     "options": [
       "Which texts or materials are most engaging for this level?",
       "How long should each stage of the lesson last?",
-      "What will students be able to do with the content by the time the lesson ends?",
+      "What will students do with the content by lesson's end?",
       "Which activities have worked well with this class before?"
     ],
-    "answer": "What will students be able to do with the content by the time the lesson ends?",
+    "answer": "What will students do with the content by lesson's end?",
     "anchor": "the first question is what his students will be able to do with a text by the time the lesson ends"
   },
   {
@@ -29,10 +29,10 @@
     "options": [
       "It prevents the teacher from using communicative activities.",
       "It makes informal assessment impossible during the lesson.",
-      "The remaining lesson time has no anchor and activities risk becoming disconnected from any clear purpose.",
+      "Later activities lose their anchor and clear purpose.",
       "It forces the teacher to rely entirely on teacher-centered language."
     ],
-    "answer": "The remaining lesson time has no anchor and activities risk becoming disconnected from any clear purpose.",
+    "answer": "Later activities lose their anchor and clear purpose.",
     "anchor": "The remaining time has no anchor, and activities risk becoming disconnected from any clear purpose"
   },
   {

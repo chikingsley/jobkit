@@ -57,7 +57,7 @@ The future perfect continuous, formed with will have been and the present partic
 
 Aspect is a grammatical category that tells the listener or reader how a speaker is choosing to present an action in time, not merely when the action occurs. Tense locates an event on the timeline; aspect shapes the way that event is packaged and perceived. A teacher who understands this distinction can give learners a principled reason for choosing one form over another, rather than a list of rules to memorize.
 
-Simple aspect presents an action as a complete, bounded whole. The speaker treats the event as a single unit and makes no comment on its internal duration or its connection to any other moment in time. When a student named Fatima writes "She crossed the bridge," the crossing is presented as one finished thing, sealed off from what surrounds it.
+Simple aspect presents an action as a complete, bounded whole. The speaker treats the event as a single unit and makes no comment on its internal duration or its connection to any other moment in time. When Fatima writes "She crossed the bridge," the crossing is presented as one finished thing, sealed off from what surrounds it.
 
 Continuous aspect draws attention to the internal unfolding of an action. The event is presented as ongoing, in progress, or temporary at the relevant moment. If Fatima instead writes "She was crossing the bridge," the reader is placed inside the action while it is happening, and the sense of an open, unfinished process becomes part of the meaning.
 
@@ -82,7 +82,7 @@ The most common confusion at lower levels is between the present simple and the 
 
 The present perfect and past simple cause persistent difficulty at intermediate level. A student might produce "I have seen that film in 2019," combining a past time reference with a form that specifically excludes one. The target sentence is "I saw that film in 2019." The past simple locates the event at a finished point in time; the present perfect connects a past event to the present moment without specifying when it occurred. Once a speaker names a completed time, the connection to the present is severed, and the past simple becomes the only available choice.
 
-Omission of the past perfect in narratives is subtler and appears most often in writing. A student named Carlos might write "When the manager arrived, the team finished the report," leaving the sequence of events ambiguous. The intended meaning requires "When the manager arrived, the team had finished the report." The past perfect establishes that one past event was already complete before another past event began; without it, the two actions appear simultaneous or their order becomes unclear to the reader.
+Omission of the past perfect in narratives is subtler and appears most often in writing. Carlos might write "When the manager arrived, the team finished the report," leaving the sequence of events ambiguous. The intended meaning requires "When the manager arrived, the team had finished the report." The past perfect establishes that one past event was already complete before another past event began; without it, the two actions appear simultaneous or their order becomes unclear to the reader.
 
 Overuse of "will" for all future contexts is extremely common across many first-language backgrounds. A student might say "I will meet my cousin tomorrow, we arranged it last week" when the arrangement calls for the present continuous: "I am meeting my cousin tomorrow." Using "will" for a pre-arranged event strips away the sense of prior planning and replaces it with a decision or prediction made at the moment of speaking, which changes the nature of the event entirely.
 
@@ -100,7 +100,7 @@ Across all four of these error types, correction is most effective when explaine
    *Answer: Aspect*
    *Anchor: "Aspect is a grammatical category that tells the listener or reader how a speaker is choosing to present an action in time"*
 
-**2. A student named Wei writes 'I am living in Beijing for three years.' According to the unit, which form is required instead, and why?**
+**2. Wei writes 'I am living in Beijing for three years.' According to the unit, which form is required instead, and why?**
 
    a. Past simple, because the action is finished
    b. Present simple, because the situation is a general truth
@@ -120,7 +120,7 @@ Across all four of these error types, correction is most effective when explaine
    *Answer: The first emphasizes the finished result; the second foregrounds the activity and its duration.*
    *Anchor: "the present perfect in 'She has painted the kitchen' draws attention to the finished result"*
 
-**4. A student named Carlos writes: 'When the manager arrived, the team finished the report.' Identify the error and write the corrected sentence.**
+**4. Carlos writes: 'When the manager arrived, the team finished the report.' Identify the error and write the corrected sentence.**
 
    *Answer: Carlos has omitted the past perfect. The corrected sentence is: 'When the manager arrived, the team had finished the report.' The past perfect establishes that the report was already complete before the manager arrived.*
    *Anchor: "The past perfect establishes that one past event was already complete before another past event began"*
@@ -130,7 +130,7 @@ Across all four of these error types, correction is most effective when explaine
    *Answer: The present perfect connects a past event to the present without specifying when it occurred. Once a speaker names a completed time reference such as 'in 2019,' that connection to the present is severed, making the past simple the only available choice: 'I saw that film in 2019.'*
    *Anchor: "Once a speaker names a completed time, the connection to the present is severed"*
 
-**6. During a writing task, a student named Daniel submits the sentence: 'The band played in the garden when the stranger arrived.' You want to help Daniel understand why the past continuous is needed for the first clause. Describe the move you would make and justify it by explaining the aspectual meaning at stake.**
+**6. During a writing task, Daniel submits the sentence: 'The band played in the garden when the stranger arrived.' You want to help Daniel understand why the past continuous is needed for the first clause. Describe the move you would make and justify it by explaining the aspectual meaning at stake.**
 
    *Answer: The most effective move is to ask Daniel a meaning-focused question before naming the form: 'Which happened first, the playing or the arrival? Was the playing already underway when the stranger appeared?' Once Daniel confirms that the band was already playing, the teacher can explain that the past continuous carries exactly that relationship, an action in progress at the moment another event occurred, while the past simple makes the two actions sound sequential. This approach is justified by the unit's principle that correction is most effective when explained in terms of meaning rather than rule, giving the learner a tool to reason from independently rather than a form to memorize.*
    *Anchor: "the playing was already underway before the arrival, and that the past continuous carries that relationship clearly"*

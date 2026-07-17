@@ -11,6 +11,8 @@ constructed response):
    unit (1 point each); B) review, 2 questions re-asked verbatim from EARLIER modules' unit
    quizzes — re-testing identical items is deliberate spaced retrieval (Karpicke & Roediger, 2008;
    Kim & Webb, 2022), the design the course itself teaches; C) one scenario question (5 points).
+   Correct options are moved deterministically across A-D during assembly so generated bank bias
+   cannot create an answer-position pattern; the student paper and key use the same placement.
 3. FINAL EXAM. The reserved 4th bank question from every unit (~1 per unit across all modules),
    plus 3 cross-module scenario questions (10 points each). Pass mark 70%, stated on the paper.
 
@@ -66,6 +68,9 @@ _BANK_BRIEF = (
     "Write exactly 4 NEW quiz questions for the course unit below: 3 multiple-choice (4 options, "
     "one correct) and 1 short-answer. The unit already has a quiz (shown below) — your questions "
     "must test DIFFERENT points or angles from those, not rephrase them. For EVERY question "
+    "write parallel answer choices of comparable length; the correct choice must not be "
+    "identifiable because it is more detailed or substantially longer than the distractors. "
+    "Do not put A-D labels inside option text. For EVERY question "
     "include an 'anchor': a verbatim quote of at most 15 words from the unit text containing the "
     "answer. For multiple-choice, the answer must begin with the EXACT text of the correct "
     'option. Return ONLY {"questions": [{"type": "mc"|"short", "question": "...", "options": '
@@ -77,7 +82,8 @@ _SCENARIO_BRIEF = (
     "specific classroom situation (use only the course cast: learners Carlos, Daniel, Wei, "
     "Fatima, Yuki, Priya; teachers Ms. Reyes, Mr. Osei) that requires applying ideas from the "
     "module summarized below, then ask the trainee what they would do and why. Provide a model "
-    "answer grounded in the module content. Return ONLY "
+    "answer grounded in the module content. End the model answer with explicit full-credit "
+    "criteria naming the required diagnosis, action, evidence, or justification. Return ONLY "
     '{"question": "...", "answer": "...", "anchor": "<verbatim quote of <=15 words from the '
     'material that the answer rests on>"}.'
 )
@@ -197,6 +203,23 @@ def _review_pool(before_module: int) -> list[tuple[str, dict[str, object]]]:
     return pool
 
 
+def _review_identity(q: dict[str, object]) -> str:
+    """Return a stable identity used to avoid repeating a review stem across tests."""
+    return re.sub(r"\s+", " ", str(q.get("question", "")).strip().lower())
+
+
+def _sample_reviews(
+    module: int,
+    rng: random.Random,
+    excluded: set[str] | None = None,
+) -> list[tuple[str, dict[str, object]]]:
+    """Sample review questions, preferring stems not already used by earlier module tests."""
+    pool = _review_pool(module)
+    available = [item for item in pool if _review_identity(item[1]) not in (excluded or set())]
+    candidates = available if len(available) >= REVIEW_PER_TEST else pool
+    return rng.sample(candidates, k=min(REVIEW_PER_TEST, len(candidates))) if candidates else []
+
+
 def _scenario(client: SuperwhisperClient, label: str, material: str) -> dict[str, object]:
     """Generate one validated scenario question against `material`."""
     prompt = f"{_SCENARIO_BRIEF}\n\n== MODULE: {label} ==\n{material}"
@@ -226,6 +249,32 @@ def _key_text(q: dict[str, object]) -> str:
     return answer
 
 
+_GENERATED_OPTION_LABEL_RE = re.compile(r"^[A-Da-d][.)]\s+")
+
+
+def _place_correct_option(q: dict[str, object], target: int) -> dict[str, object]:
+    """Return an MC item with its correct option moved to zero-based `target`.
+
+    LLM-authored banks sometimes include their own A-D labels inside option text. Strip those
+    labels before reordering so the renderer remains the sole source of visible option letters.
+    """
+    raw_options = q.get("options")
+    if not isinstance(raw_options, list) or len(raw_options) != 4:  # noqa: PLR2004
+        return q
+    options = [_GENERATED_OPTION_LABEL_RE.sub("", str(option).strip()) for option in raw_options]
+    answer = str(q.get("answer", "")).strip().lower()
+    correct: int | None = None
+    for index, option in enumerate(options):
+        lowered = option.lower()
+        if lowered == answer or lowered in answer or answer in lowered:
+            correct = index
+            break
+    if correct is None:
+        return {**q, "options": options}
+    options[target], options[correct] = options[correct], options[target]
+    return {**q, "options": options}
+
+
 def _render_mc(i: int, q: dict[str, object], *, include_key: bool) -> str:
     """Render one test question as markdown; the answer/anchor key only when `include_key`."""
     lines = [f"**{i}. {q.get('question', '')}**", ""]
@@ -245,14 +294,45 @@ def _render_mc(i: int, q: dict[str, object], *, include_key: bool) -> str:
     return "\n".join(lines)
 
 
-def assemble_module_test(module: int, rng: random.Random, *, include_key: bool) -> str:
+def _scenario_rubric(points: int) -> str:
+    """Return explicit analytic band guidance for a constructed-response scenario."""
+    if points == 5:  # noqa: PLR2004
+        bands = [
+            "**5:** Complete, accurate diagnosis and feasible action, justified with the "
+            "module's relevant principle(s) and applied to the named context.",
+            "**3-4:** Sound core response with one missing, underdeveloped, or weakly justified "
+            "element.",
+            "**1-2:** Partial recognition of the issue, but the action is vague, incomplete, or "
+            "poorly connected to module content.",
+            "**0:** Blank, irrelevant, or incompatible with the module's central principle.",
+        ]
+    else:
+        bands = [
+            "**10:** Complete synthesis of every requested component; actions are feasible, "
+            "accurate, context-sensitive, and explicitly justified from course principles.",
+            "**7-9:** Strong response with a minor omission or an underdeveloped connection "
+            "between action, evidence, and context.",
+            "**4-6:** Partly correct response that addresses several requested components but "
+            "contains a material gap, weak justification, or limited synthesis.",
+            "**1-3:** Minimal relevant knowledge with an impractical or largely unsupported plan.",
+            "**0:** Blank, irrelevant, or fundamentally incompatible with course principles.",
+        ]
+    return "\n".join(["### Scoring guidance", "", *bands])
+
+
+def assemble_module_test(
+    module: int,
+    rng: random.Random,
+    *,
+    include_key: bool,
+    reviews: list[tuple[str, dict[str, object]]] | None = None,
+) -> str:
     """Assemble one module test from cached banks + spaced-review pool."""
     units = _units_of(module)
     title = MODULE_TITLES.get(module, f"Module {module}")
     n_module_qs = 3 * len(units)
-    pool = _review_pool(module)
-    reviews = rng.sample(pool, k=min(REVIEW_PER_TEST, len(pool))) if pool else []
-    total_points = n_module_qs + len(reviews) + 5
+    selected_reviews = _sample_reviews(module, rng) if reviews is None else reviews
+    total_points = n_module_qs + len(selected_reviews) + 5
 
     out = [
         f"# Module {module} Test — {title}",
@@ -262,7 +342,7 @@ def assemble_module_test(module: int, rng: random.Random, *, include_key: bool) 
         + (
             " Section B re-asks questions from earlier modules: retrieving material again "
             "after a delay is part of how this course makes it stick."
-            if reviews
+            if selected_reviews
             else ""
         ),
         "",
@@ -270,23 +350,33 @@ def assemble_module_test(module: int, rng: random.Random, *, include_key: bool) 
         "",
     ]
     i = 0
+    mc_index = 0
     for unit in units:
         bank = json.loads((build.UNITS_DIR / unit.uid / "bank.json").read_text(encoding="utf-8"))
         for q in bank[:3]:
             i += 1
-            out.append(_render_mc(i, q, include_key=include_key))
-    if reviews:
-        out += [f"## Section B — Review ({len(reviews)} points, 1 each)", ""]
-        for uid, q in reviews:
+            placed = _place_correct_option(q, (module - 1 + mc_index) % 4)
+            mc_index += 1
+            out.append(_render_mc(i, placed, include_key=include_key))
+    if selected_reviews:
+        out += [f"## Section B — Review ({len(selected_reviews)} points, 1 each)", ""]
+        for uid, q in selected_reviews:
             i += 1
-            out.append(_render_mc(i, {**q, "anchor": f"unit {uid} quiz"}, include_key=include_key))
+            review = {**q, "anchor": f"unit {uid} quiz"}
+            if isinstance(review.get("options"), list):
+                review = _place_correct_option(review, (module - 1 + mc_index) % 4)
+                mc_index += 1
+            out.append(_render_mc(i, review, include_key=include_key))
     scen = json.loads((ASSESSMENTS_DIR / f"_scenario-M{module}.json").read_text(encoding="utf-8"))
+    scenario_text = _render_mc(i + 1, scen, include_key=include_key)
+    if include_key:
+        scenario_text += "\n" + _scenario_rubric(5)
     out += [
         "## Section C — Scenario (5 points)",
         "",
-        _render_mc(i + 1, scen, include_key=include_key),
+        scenario_text,
     ]
-    return "\n".join(out) + "\n"
+    return "\n".join(out).rstrip() + "\n"
 
 
 def assemble_final(*, include_key: bool) -> str:
@@ -314,8 +404,11 @@ def assemble_final(*, include_key: bool) -> str:
         scen = json.loads(
             (ASSESSMENTS_DIR / f"_scenario-final-{j}.json").read_text(encoding="utf-8")
         )
-        out.append(_render_mc(len(uids) + j, scen, include_key=include_key))
-    return "\n".join(out) + "\n"
+        scenario_text = _render_mc(len(uids) + j, scen, include_key=include_key)
+        if include_key:
+            scenario_text += "\n" + _scenario_rubric(10)
+        out.append(scenario_text)
+    return "\n".join(out).rstrip() + "\n"
 
 
 def cmd_bank(uids: list[str]) -> None:
@@ -390,12 +483,18 @@ def cmd_assemble() -> None:
     """Write all module tests and the final exam."""
     ASSESSMENTS_DIR.mkdir(exist_ok=True)
     _preflight()
+    used_review_stems: set[str] = set()
     for module in sorted(MODULE_TITLES):
+        review_rng = random.Random(20260609 + module)  # noqa: S311 - reproducible, not crypto.
+        reviews = _sample_reviews(module, review_rng, used_review_stems)
+        used_review_stems.update(_review_identity(item) for _uid, item in reviews)
         for suffix, key in (("", False), ("-key", True)):
-            # Same seed for both versions so the sampled review questions match.
             rng = random.Random(20260609 + module)  # noqa: S311 - reproducible, not crypto.
             path = ASSESSMENTS_DIR / f"module-{module:02d}-test{suffix}.md"
-            path.write_text(assemble_module_test(module, rng, include_key=key), encoding="utf-8")
+            path.write_text(
+                assemble_module_test(module, rng, include_key=key, reviews=reviews),
+                encoding="utf-8",
+            )
         build._log(f"wrote module-{module:02d}-test(.md/-key.md)")  # noqa: SLF001
     for suffix, key in (("", False), ("-key", True)):
         path = ASSESSMENTS_DIR / f"final-exam{suffix}.md"

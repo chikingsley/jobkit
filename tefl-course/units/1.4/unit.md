@@ -116,7 +116,7 @@ Trainee teachers should also keep in mind that proficiency is not a fixed proper
    *Answer: Recasting*
    *Anchor: "Recasts, where the teacher repeats the learner's utterance in correct form without interrupting the flow"*
 
-**4. A student named Yuki says 'I have gone yesterday.' What does the unit identify as the grammatical confusion this error represents?**
+**4. Yuki says 'I have gone yesterday.' What does the unit identify as the grammatical confusion this error represents?**
 
    *Answer: Yuki is confusing the present perfect with the simple past, a very common error at the pre-intermediate stage.*
    *Anchor: "confusing the present perfect with the simple past, a very common error at this stage"*

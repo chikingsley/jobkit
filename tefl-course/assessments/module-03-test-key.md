@@ -7,81 +7,81 @@ Covers units 3.1 to 3.6. 25 points total; pass mark 70%. Section B re-asks quest
 **1. Which sentence correctly uses 'be able to' to fill a grammatical gap that 'can' cannot cover?**
 
    a. She can attend the meeting next week.
-   b. She will be able to attend the meeting.
-   c. She could to attend the meeting next week.
+   b. She could to attend the meeting next week.
+   c. She will be able to attend the meeting.
    d. She may can attend the meeting.
 
-   *Answer: b. She will be able to attend the meeting.*
+   *Answer: c. She will be able to attend the meeting.*
    *Anchor: ""She will be able to attend the meeting" supplies the future that can cannot."*
 
 **2. What distinguishes 'must' from 'have to' when expressing obligation?**
 
    a. 'Must' refers only to past obligations, while 'have to' refers to present ones.
-   b. 'Must' expresses obligation originating with the speaker, while 'have to' expresses obligation from an external source.
+   b. 'Must' requires do-support in questions, while 'have to' does not.
    c. 'Must' is informal and 'have to' is formal.
-   d. 'Must' requires do-support in questions, while 'have to' does not.
+   d. Speaker-imposed 'must' versus externally imposed 'have to'.
 
-   *Answer: b. 'Must' expresses obligation originating with the speaker, while 'have to' expresses obligation from an external source.*
+   *Answer: d. Speaker-imposed 'must' versus externally imposed 'have to'.*
    *Anchor: "must expresses strong obligation originating with the speaker... Have to expresses obligation that comes from an external source"*
 
 **3. In the sentence 'Students may use dictionaries during the test,' what meaning does 'may' carry?**
 
-   a. Epistemic possibility — it is possible that students will use dictionaries.
-   b. Formal permission — students are allowed to use dictionaries.
+   a. Formal permission — students are allowed to use dictionaries.
+   b. Epistemic possibility — it is possible that students will use dictionaries.
    c. Polite request — students are asking to use dictionaries.
    d. Tentative prediction — students might use dictionaries.
 
-   *Answer: b. Formal permission — students are allowed to use dictionaries.*
+   *Answer: a. Formal permission — students are allowed to use dictionaries.*
    *Anchor: ""Students may use dictionaries during the test" is a permission statement, not a possibility claim."*
 
 **4. Which subordinating conjunction is described as introducing 'the only condition under which the result will not hold'?**
 
    a. as long as
-   b. provided that
-   c. unless
+   b. unless
+   c. provided that
    d. on condition that
 
-   *Answer: c. unless*
+   *Answer: b. unless*
    *Anchor: "'Unless' means 'if not' and introduces the only condition under which the result will not hold"*
 
 **5. What is the primary reason the unit recommends introducing conditionals through meaning before form?**
 
    a. It allows teachers to skip drilling exercises entirely
-   b. It saves learners considerable confusion
-   c. It ensures learners memorise the numbered labels first
+   b. It ensures learners memorize the numbered labels first
+   c. It saves learners considerable confusion
    d. It prevents learners from encountering mixed conditionals too early
 
-   *Answer: b. It saves learners considerable confusion*
+   *Answer: c. It saves learners considerable confusion*
    *Anchor: "Introducing conditionals through meaning before form saves learners considerable confusion"*
 
 **6. In the sentence 'If she has already left, we will need to call her,' what aspect is used in the condition clause and why?**
 
    a. Past simple, to signal an unreal condition
-   b. Present perfect, to signal a completed action whose result is relevant now
+   b. Present continuous, to frame the condition as an ongoing state
    c. Past perfect, to signal a counterfactual past event
-   d. Present continuous, to frame the condition as an ongoing state
+   d. Present perfect, for a completed action relevant now
 
-   *Answer: b. Present perfect, to signal a completed action whose result is relevant now*
+   *Answer: d. Present perfect, for a completed action relevant now*
    *Anchor: "'If she has already left, we will need to call her' uses the present perfect in the condition clause to signal a completed action whose result is relevant now"*
 
 **7. Which sentence correctly reports the command 'Don't open your books'?**
 
-   a. She told them that they don't open their books.
-   b. She told them not to open their books.
+   a. She told them not to open their books.
+   b. She told them that they don't open their books.
    c. She said them not to open their books.
    d. She told them to not opening their books.
 
-   *Answer: b. She told them not to open their books.*
+   *Answer: a. She told them not to open their books.*
    *Anchor: ""Don't open your books" becomes She told them not to open their books."*
 
-**8. Yuki says to Ben on Monday: 'I will call you tomorrow.' Carlos reports this to a third person on Wednesday. Which reported version is fully correct?**
+**8. Yuki says to Daniel on Monday: 'I will call you tomorrow.' Carlos reports this to a third person on Wednesday. Which reported version is fully correct?**
 
    a. Yuki said she will call him tomorrow.
-   b. Yuki said she would call you the following day.
-   c. Yuki said she would call him the following day.
+   b. Yuki said she would call him the following day.
+   c. Yuki said she would call you the following day.
    d. Yuki said she would call him tomorrow.
 
-   *Answer: c. Yuki said she would call him the following day.*
+   *Answer: b. Yuki said she would call him the following day.*
    *Anchor: ""Tomorrow" becomes "the following day" or "the next day.""*
 
 **9. A student reports a doctor's advice as: 'The doctor advised that he rest for a week.' In which context is this form most appropriate, according to the unit?**
@@ -96,92 +96,92 @@ Covers units 3.1 to 3.6. 25 points total; pass mark 70%. Section B re-asks quest
 
 **10. According to the unit, what distinguishes 'She walked into the room' from 'I ran into my old teacher at the market'?**
 
-   a. In the first sentence, 'into' introduces a location phrase; in the second, it has bonded with 'run' to create a new meaning.
+   a. In both sentences, 'into' functions as a preposition pointing toward a location.
    b. Both sentences use 'into' as a particle that changes the meaning of the base verb.
    c. The first sentence contains a phrasal verb, while the second uses an ordinary verb-plus-preposition combination.
-   d. In both sentences, 'into' functions as a preposition pointing toward a location.
+   d. 'Into' marks location in the first but changes 'run' in the second
 
-   *Answer: a. In the first sentence, 'into' introduces a location phrase; in the second, it has bonded with 'run' to create a new meaning.*
+   *Answer: d. 'Into' marks location in the first but changes 'run' in the second*
    *Anchor: "It has bonded with 'run' to create a new meaning: to meet someone by chance."*
 
 **11. Which statement about the relationship between transitivity and separability is explicitly supported by the unit?**
 
-   a. All transitive phrasal verbs are separable.
+   a. Only transitive phrasal verbs have separability.
    b. All separable phrasal verbs are intransitive.
-   c. The separable-intransitive cell of the two-by-two grid is empty because separability requires an object to move.
+   c. All transitive phrasal verbs are separable.
    d. Inseparable phrasal verbs are always intransitive.
 
-   *Answer: c. The separable-intransitive cell of the two-by-two grid is empty because separability requires an object to move.*
-   *Anchor: "The separable-intransitive cell is empty, because separability requires an object to move, and intransitive verbs have none."*
+   *Answer: a. Only transitive phrasal verbs have separability.*
+   *Anchor: "separability is a distinction among transitive phrasal verbs only, because there must be an object to move"*
 
 **12. What specific purpose does the unit assign to the particle-swap activity using the base verb 'give'?**
 
-   a. To help learners memorise the correct spelling of particles through repeated writing practice.
-   b. To train learners to treat particles as meaningful units so that unfamiliar combinations become less opaque.
+   a. To help learners memorize the correct spelling of particles through repeated writing practice.
+   b. To make particles meaningful and new combinations easier to interpret
    c. To demonstrate that all particles attached to 'give' share a single core meaning.
    d. To show learners that phrasal verbs with 'give' are always inseparable.
 
-   *Answer: b. To train learners to treat particles as meaningful units so that unfamiliar combinations become less opaque.*
+   *Answer: b. To make particles meaningful and new combinations easier to interpret*
    *Anchor: "learners begin to treat particles as meaningful units rather than fixed attachments, and unfamiliar combinations become less opaque"*
 
 **13. Which preposition best completes the sentence 'The power went out ___ the concert'?**
 
-   a. during
+   a. since
    b. for
-   c. since
+   c. during
    d. until
 
-   *Answer: a. during*
+   *Answer: c. during*
    *Anchor: ""During" indicates that something happens within the boundaries of a named period, with the period itself as the focus"*
 
-**14. A student writes 'they hiked across the forest' when describing movement through the trees. What does the unit identify as the source of this error?**
+**14. A student writes 'they hiked across the forest' when describing movement through the trees. What does the unit identify as the module of this error?**
 
    a. The student confused 'across' with 'along,' which describes following a length.
-   b. The student treated the forest as a flat surface rather than a space with interior depth.
+   b. The student confused 'across' with 'past,' which marks movement beyond a reference point.
    c. The student applied a movement preposition where a place preposition was needed.
-   d. The student confused 'across' with 'past,' which marks movement beyond a reference point.
+   d. The student treated the forest as a flat surface rather than a space with interior depth.
 
-   *Answer: b. The student treated the forest as a flat surface rather than a space with interior depth.*
-   *Anchor: "a student named Wei who writes 'they hiked across the forest' has treated the forest as a flat surface rather than a space with interior depth"*
+   *Answer: d. The student treated the forest as a flat surface rather than a space with interior depth.*
+   *Anchor: "Wei, who writes 'they hiked across the forest,' has treated the forest as a flat surface rather than a space with interior depth"*
 
 **15. According to the unit, why is English described as having a 'closed lexical class' of prepositions?**
 
-   a. Prepositions can only be learned through repeated exposure, not rules.
-   b. The set of prepositions is fixed and new ones are almost never added to the language.
+   a. English prepositions form a nearly closed word class
+   b. Prepositions can only be learned through repeated exposure, not rules.
    c. Each preposition carries only one fixed meaning that never changes.
    d. Prepositions cannot be combined with adjectives or verbs.
 
-   *Answer: b. The set of prepositions is fixed and new ones are almost never added to the language.*
+   *Answer: a. English prepositions form a nearly closed word class*
    *Anchor: "English prepositions form a closed lexical class, meaning the set of members is fixed and new prepositions are almost never added"*
 
 **16. According to the unit, what is the primary reason a learner cannot deduce the meaning of 'Guess what!' by analyzing its verb and object separately?**
 
    a. The phrase is always spoken with a rising intonation that changes its grammatical category.
-   b. The phrase functions as a frame that prepares the listener before news arrives, not as a genuine imperative asking the listener to guess.
+   b. It frames upcoming news rather than literally demanding a guess.
    c. The word 'guess' is an irregular verb whose base form signals a fixed expression.
    d. The phrase is borrowed from informal speech and therefore falls outside standard grammatical rules.
 
-   *Answer: b. The phrase functions as a frame that prepares the listener before news arrives, not as a genuine imperative asking the listener to guess.*
+   *Answer: b. It frames upcoming news rather than literally demanding a guess.*
    *Anchor: "it is a frame that prepares the listener before the news arrives"*
 
 **17. The unit argues that presenting a situational dialog in full before introducing any terminology mirrors a real-life process. What is that process?**
 
    a. Memorizing fixed expressions before encountering them in conversation.
    b. Using grammatical rules to predict the meaning of unfamiliar phrases.
-   c. Relying on the situation to provide the frame that makes individual expressions interpretable.
+   c. Using situational context to interpret individual expressions
    d. Listening to audio recordings repeatedly until pronunciation becomes automatic.
 
-   *Answer: c. Relying on the situation to provide the frame that makes individual expressions interpretable.*
+   *Answer: c. Using situational context to interpret individual expressions*
    *Anchor: "the situation provides the frame that makes individual expressions interpretable"*
 
 **18. The unit explains that 'They'd like' and 'they want' are both grammatically correct and both express desire, yet the Language Note distinguishes them. On what basis does the note make this distinction?**
 
    a. 'They'd like' is a conditional form and therefore more grammatically complex than 'they want'.
    b. 'They want' is restricted to informal registers, while 'They'd like' is used only in writing.
-   c. 'They'd like' is a little softer and a little less positive than 'they want', placing them differently on a scale of directness.
-   d. The contraction in 'They'd like' signals past tense, making it less immediate than 'they want'.
+   c. The contraction in 'They'd like' signals past tense, making it less immediate than 'they want'.
+   d. 'They'd like' is softer and less direct than 'they want'.
 
-   *Answer: c. 'They'd like' is a little softer and a little less positive than 'they want', placing them differently on a scale of directness.*
+   *Answer: d. 'They'd like' is softer and less direct than 'they want'.*
    *Anchor: "'They'd like' as 'a little softer, a little less positive, than they want'"*
 
 ## Section B — Review (2 points, 1 each)
@@ -191,14 +191,26 @@ Covers units 3.1 to 3.6. 25 points total; pass mark 70%. Section B re-asks quest
    *Answer: The 'i' represents the learner's current level of competence and '1' represents the next increment of challenge. The unit suggests teachers treat it as a useful orienting idea rather than settled science, given Gregg's (1984) critique that the hypothesis cannot be empirically tested.*
    *Anchor: "unit 1.2 quiz"*
 
-**20. The unit argues that concept-checking questions are preferable to asking 'Do you understand?' Explain why, using the unit's reasoning.**
+**20. What grammatical function does the auxiliary verb 'have' perform when combined with a past participle?**
 
-   *Answer: Asking 'Do you understand?' typically produces nodding that may mean nothing, whereas a concept-checking question requires an answer that reveals whether the concept has actually landed, without placing any individual student in the position of admitting confusion publicly.*
-   *Anchor: "unit 1.5 quiz"*
+   a. It forms the perfect aspect.
+   b. It forms the progressive aspect.
+   c. It forms the passive voice.
+   d. It supports question formation.
+
+   *Answer: a. It forms the perfect aspect.*
+   *Anchor: "unit 2.1 quiz"*
 
 ## Section C — Scenario (5 points)
 
 **21. Mr. Osei is conducting a reported speech lesson. He asks the class to report what Carlos said earlier that morning. Carlos had said, 'I can explain my answer.' Yuki writes on the board: 'Carlos said he could explain his answer.' Daniel, however, writes: 'Carlos says he could explain his answer.' Mr. Osei notices that Daniel's sentence contains an error but is unsure how to explain it clearly to the class. What would you advise Mr. Osei to say to Daniel, and why?**
 
-   *Answer: Mr. Osei should point out that Daniel's error lies in mixing a present-tense reporting verb ('says') with a backshifted modal ('could'). According to the module, tense backshift is only triggered when the reporting verb is in the past tense. When the reporting verb is in the present tense, the verb in the reported clause stays in its original form. So Daniel's sentence should read either 'Carlos says he can explain his answer' (present reporting verb, no backshift) or 'Carlos said he could explain his answer' (past reporting verb, backshift applied), matching Yuki's correct version. Mr. Osei could write both corrected options on the board alongside Daniel's original and ask the class to identify what changed in each, making the rule visible through direct comparison. He should emphasise that the tense of the reporting verb is the trigger: 'says' requires 'can'; 'said' requires 'could.' This prevents the common overgeneralisation of applying backshift regardless of context.*
+   *Answer: Mr. Osei should point out that Daniel's error lies in mixing a present-tense reporting verb ('says') with a backshifted modal ('could'). According to the module, tense backshift is only triggered when the reporting verb is in the past tense. When the reporting verb is in the present tense, the verb in the reported clause stays in its original form. So Daniel's sentence should read either 'Carlos says he can explain his answer' (present reporting verb, no backshift) or 'Carlos said he could explain his answer' (past reporting verb, backshift applied), matching Yuki's correct version. Mr. Osei could write both corrected options on the board alongside Daniel's original and ask the class to identify what changed in each, making the rule visible through direct comparison. He should emphasize that the tense of the reporting verb is the trigger: 'says' requires 'can'; 'said' requires 'could.' This prevents the common overgeneralisation of applying backshift regardless of context.*
    *Anchor: "Backshift is only required when the reporting verb is in the past tense."*
+
+### Scoring guidance
+
+**5:** Complete, accurate diagnosis and feasible action, justified with the module's relevant principle(s) and applied to the named context.
+**3-4:** Sound core response with one missing, underdeveloped, or weakly justified element.
+**1-2:** Partial recognition of the issue, but the action is vague, incomplete, or poorly connected to module content.
+**0:** Blank, irrelevant, or incompatible with the module's central principle.

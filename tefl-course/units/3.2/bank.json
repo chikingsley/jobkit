@@ -17,7 +17,7 @@
     "options": [
       "It allows teachers to skip drilling exercises entirely",
       "It saves learners considerable confusion",
-      "It ensures learners memorise the numbered labels first",
+      "It ensures learners memorize the numbered labels first",
       "It prevents learners from encountering mixed conditionals too early"
     ],
     "answer": "It saves learners considerable confusion",
@@ -28,11 +28,11 @@
     "question": "In the sentence 'If she has already left, we will need to call her,' what aspect is used in the condition clause and why?",
     "options": [
       "Past simple, to signal an unreal condition",
-      "Present perfect, to signal a completed action whose result is relevant now",
+      "Present perfect, for a completed action relevant now",
       "Past perfect, to signal a counterfactual past event",
       "Present continuous, to frame the condition as an ongoing state"
     ],
-    "answer": "Present perfect, to signal a completed action whose result is relevant now",
+    "answer": "Present perfect, for a completed action relevant now",
     "anchor": "'If she has already left, we will need to call her' uses the present perfect in the condition clause to signal a completed action whose result is relevant now"
   },
   {

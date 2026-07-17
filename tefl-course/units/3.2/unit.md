@@ -119,7 +119,7 @@ Drilling isolated sentences gives learners practice with the form, but it does n
    *Answer: The condition is certain to occur*
    *Anchor: "'When he calls, I will tell him the news' treats the call as certain to happen"*
 
-**4. A student named Carlos writes: 'If I would have more time, I would study harder.' Identify the error and write the corrected if-clause.**
+**4. Carlos writes: 'If I would have more time, I would study harder.' Identify the error and write the corrected if-clause.**
 
    *Answer: The error is using 'would' inside the if-clause. The corrected if-clause is: 'If I had more time'.*
    *Anchor: "In standard English, 'would' does not appear in the if-clause of most conditional types"*
@@ -129,7 +129,7 @@ Drilling isolated sentences gives learners practice with the form, but it does n
    *Answer: The second conditional sentence imagines an alternative present or future situation, suggesting the option may still exist. The third conditional sentence refers to a closed past event that cannot be changed, expressing retrospective reflection on a missed opportunity.*
    *Anchor: "The second conditional imagines an alternative present; the third conditional looks back at an alternative past"*
 
-**6. During a writing lesson, a student named Yuki submits the sentence: 'Were I to miss the deadline, the teacher would be disappointed.' Yuki asks whether this is a grammatical error because there is no 'if'. Describe the move you would make and justify it.**
+**6. During a writing lesson, Yuki submits the sentence: 'Were I to miss the deadline, the teacher would be disappointed.' Yuki asks whether this is a grammatical error because there is no 'if'. Describe the move you would make and justify it.**
 
    *Answer: The teacher should confirm that Yuki's sentence is correct and explain that it is an inverted conditional, a formal structure formed by omitting 'if' and moving the auxiliary to the front of the clause. The teacher could write the standard equivalent, 'If I were to miss the deadline, the teacher would be disappointed,' beside Yuki's version on the board, making the equivalence visible. This move is justified because inverted conditionals are a feature of register rather than a separate grammatical category, and treating them as errors would leave students unable to read or produce formal prose accurately.*
    *Anchor: "Inverted conditionals appear in formal writing and edited prose, and a teacher encountering them for the first time may mistake them for errors"*

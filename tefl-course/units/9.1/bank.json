@@ -17,10 +17,10 @@
     "options": [
       "Uses a warm tone to encourage the student to keep trying",
       "Is delivered immediately after every correct student response",
-      "Names the specific thing the student did correctly rather than offering a general approval word",
+      "It names the specific success, not general approval",
       "Is reserved for written work so the student can refer back to it"
     ],
-    "answer": "Names the specific thing the student did correctly rather than offering a general approval word",
+    "answer": "It names the specific success, not general approval",
     "anchor": "Praise is most useful when it names the specific thing the student did correctly rather than offering a general approval word."
   },
   {
@@ -30,9 +30,9 @@
       "The teacher's personal preference and habitual correction style",
       "The student's first language background and proficiency level",
       "The channel through which the feedback is delivered",
-      "The task at hand, specifically whether communication or accuracy is the primary goal"
+      "Whether the task prioritizes communication or accuracy"
     ],
-    "answer": "The task at hand, specifically whether communication or accuracy is the primary goal",
+    "answer": "Whether the task prioritizes communication or accuracy",
     "anchor": "Neither technique is universally superior in every classroom moment, and a teacher's choice should reflect the task at hand."
   },
   {

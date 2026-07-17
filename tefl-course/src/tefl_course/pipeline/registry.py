@@ -18,7 +18,7 @@ CF_FACTS = """\
 - Lyster & Saito (2010), Studies in Second Language Acquisition 32(2), 265-302. Meta-analysis of
   15 classroom studies (827 learners): oral corrective feedback has significant, durable effects;
   prompts (pushing the student to self-correct) beat recasts (teacher restates the correct form);
-  longer treatments produce larger effects.
+  treatment-length findings were non-monotonic and should not be reduced to "longer is better."
 - Li (2010), Language Learning 60(2), 309-365. Meta-analysis of 33 studies; corroborates that
   corrective feedback helps acquisition. Do NOT state a numeric effect size."""
 
@@ -29,11 +29,13 @@ GRAMMAR_FACTS = """\
 - Spada & Tomita (2010), Language Learning 60(2), 263-308. 41 studies: explicit instruction shows
   larger effects than implicit for BOTH simple and complex grammar.
 - Goo, Granena, Yilmaz & Novella (2015), in Rebuschat (Ed.), Implicit and Explicit Learning of
-  Languages, Benjamins, 443-482. 34 studies: replicates explicit > implicit.
-- Kang, Sok & Han (2019), Language Teaching Research 23(4), 428-453. 35 years of form-focused
-  instruction: only a minor explicit/implicit difference; outcome-measure type, learner
-  proficiency, setting, and intensity moderate the effects. Teach the caveat: the explicit
-  advantage partly reflects tests that favor explicit knowledge."""
+  Languages, Benjamins, 443-482. Later synthesis of 34 studies: 11 overlap Norris & Ortega and
+  23 are newly included; the overall result again favors explicit instruction.
+- Kang, Sok & Han (2019), Language Teaching Research 23(4), 428-453. Meta-analysis of 54 studies
+  and 5,051 learners: overall g = 1.06 with only a minor explicit/implicit difference;
+  instructional mode, learner proficiency, setting, and treatment intensity moderate effects.
+  Do not attribute a communicative-measure narrowing claim or a testing-artifact explanation to
+  this study."""
 
 
 @dataclass(frozen=True)
@@ -134,7 +136,7 @@ EXTENSIVE_READING_FACTS = (
     "caveat without a precise claim beyond that figure."
 )
 LEARNING_STYLES_FACTS = (
-    "- Pashler, McDaniel, Rohrer & Bjork (2009), Psychological Science in the Public Interest "
+    "- Pashler, McDaniel, Rohrer & Bjork (2008), Psychological Science in the Public Interest "
     "9(3), 105-119. Found no adequate evidence that matching instruction to a learner's diagnosed "
     "'style' improves learning; the meshing hypothesis fails properly designed tests.\n"
     "- Willingham, Hughes & Dobolyi (2015), Teaching of Psychology 42(3), 266-271. Reinforces "
@@ -184,7 +186,7 @@ _REF_HAMADA = (
     "11, 617."
 )
 _REF_PASHLER = (
-    "Pashler, H., McDaniel, M., Rohrer, D., & Bjork, R. (2009). Learning styles: Concepts and "
+    "Pashler, H., McDaniel, M., Rohrer, D., & Bjork, R. (2008). Learning styles: Concepts and "
     "evidence. *Psychological Science in the Public Interest*, 9(3), 105-119."
 )
 _REF_WILLINGHAM = (
@@ -755,7 +757,7 @@ _WAVE23: list[Unit] = [
         **_r(
             "learning styles visual auditory kinesthetic preferences myth variety multisensory "
             "individual differences matching instruction evidence",
-            "Tackle the learning-styles myth head on. Use Pashler et al. (2009) and Willingham "
+            "Tackle the learning-styles myth head on. Use Pashler et al. (2008) and Willingham "
             "et al. (2015): matching instruction to a diagnosed 'style' lacks evidence. The "
             "evidence-supported response is VARIETY of activity formats, which serves everyone. "
             "Respectful of why the idea is popular, clear that it is debunked. This unit is the "

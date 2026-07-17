@@ -17,7 +17,7 @@ S: "He looks tired. Maybe angry."
 
 In those few seconds, Carlos listened to the teacher's question, read the image for visual information, spoke his response, and drew on vocabulary and pronunciation as sub-skills. No single skill operated alone.
 
-The source's rationale for building lessons around integrated skills rests on two related claims. Using language skills together can lead to better language retention, because learners encounter and process language through multiple channels rather than one. A teacher who integrates skills can also make lessons more interesting and motivating, creating a more active learning environment. These are not incidental benefits; they are the stated reasons why approaches from Total Physical Response to task-based and content-based learning all depend on skill integration to function as intended.
+The module's rationale for building lessons around integrated skills rests on two related claims. Using language skills together can lead to better language retention, because learners encounter and process language through multiple channels rather than one. A teacher who integrates skills can also make lessons more interesting and motivating, creating a more active learning environment. These are not incidental benefits; they are the stated reasons why approaches from Total Physical Response to task-based and content-based learning all depend on skill integration to function as intended.
 
 ## A Closer Look at the Integrated Lesson: The Free-Write Activity
 
@@ -25,7 +25,7 @@ The free-write activity from Video Segment 1 shows what skill integration looks 
 
 The two students in the video made very different choices. One wrote a factual paragraph about bears, drawing on what he already knew about the subject. The other wrote a short piece of fiction about modern-day pirates, a sinking ship, and a crew in which, as the answer key records, "everyone died." Both students met the minimum requirement of half a page, but the teacher did not impose a fixed time limit, giving each student the room to finish at his own pace. Writing, in this activity, is the spine of the lesson; everything else grows from the text each student produces.
 
-Once the writing is complete, the student reads it aloud to the teacher and the other student. The activity shifts at that point from a productive writing task to a speaking task, and the listener's role becomes active rather than passive. The non-reading student completes a worksheet about the content of the reading. The source calls this technique "active listening," a practice in which the listener has a structured purpose: recording what is heard rather than waiting without direction. Other active-listening options include keeping a list of unfamiliar vocabulary or writing one or two questions to ask the reader after the reading is finished.
+Once the writing is complete, the student reads it aloud to the teacher and the other student. The activity shifts at that point from a productive writing task to a speaking task, and the listener's role becomes active rather than passive. The non-reading student completes a worksheet about the content of the reading. The module calls this technique "active listening," a practice in which the listener has a structured purpose: recording what is heard rather than waiting without direction. Other active-listening options include keeping a list of unfamiliar vocabulary or writing one or two questions to ask the reader after the reading is finished.
 
 T: "Tell me about your picture."
 S: "It's a bear. I wrote about what bears eat and where they live."
@@ -107,7 +107,7 @@ Throughout all four steps, keep returning to the question of theme. The iEARN cl
    *Answer: Using language skills together can lead to better language retention and more motivating lessons.*
    *Anchor: "Using language skills together can lead to better language retention, because learners encounter and process language through multiple channels"*
 
-**2. In the free-write activity from Video Segment 1, what technique does the source use to describe the role given to the student who is listening while a peer reads aloud?**
+**2. In the free-write activity from Video Segment 1, what technique does the module use to describe the role given to the student who is listening while a peer reads aloud?**
 
    a. Collaborative writing
    b. Active listening
@@ -115,7 +115,7 @@ Throughout all four steps, keep returning to the question of theme. The iEARN cl
    d. Jigsaw reading
 
    *Answer: Active listening*
-   *Anchor: "The source calls this technique 'active listening,' a practice in which the listener has a structured purpose"*
+   *Anchor: "The module calls this technique 'active listening,' a practice in which the listener has a structured purpose"*
 
 **3. What does the unit identify as the 'spine' skill in the free-write activity?**
 

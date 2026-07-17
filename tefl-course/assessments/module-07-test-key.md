@@ -8,30 +8,30 @@ Covers units 7.1 to 7.4. 19 points total; pass mark 70%. Section B re-asks quest
 
    a. To test whether students can guess the meaning of idioms from context
    b. To make the listening task easy by removing all challenge from the audio
-   c. To remove obstacles that have nothing to do with listening ability so students can recognize phrases rather than stop to decode them
+   c. To remove non-listening obstacles before students process the audio
    d. To introduce the grammar structures students will need for the post-listening writing task
 
-   *Answer: c. To remove obstacles that have nothing to do with listening ability so students can recognize phrases rather than stop to decode them*
+   *Answer: c. To remove non-listening obstacles before students process the audio*
    *Anchor: "Pre-teaching of this kind is not about making the task easy; it is about removing obstacles that have nothing to do with listening ability"*
 
 **2. When audio-playing technology is unavailable, which two alternatives does the unit recommend for keeping listening at the center of the lesson?**
 
    a. Showing a video clip and assigning a reading passage on the same topic
-   b. Dictation tasks and inviting a guest speaker into the classroom
+   b. Playing audio on a personal device and using subtitles as a visual support
    c. Having students read a transcript aloud and then discuss it in pairs
-   d. Playing audio on a personal device and using subtitles as a visual support
+   d. Dictation tasks and inviting a guest speaker into the classroom
 
-   *Answer: b. Dictation tasks and inviting a guest speaker into the classroom*
+   *Answer: d. Dictation tasks and inviting a guest speaker into the classroom*
    *Anchor: "Dictation tasks, in which the teacher reads aloud and students transcribe… Inviting a guest speaker into the classroom"*
 
 **3. The unit warns that extending the warm-up discussion or replaying the audio an extra time can have a specific negative consequence. What is that consequence?**
 
-   a. Students lose interest in the topic before the gist-listening task begins
+   a. It prevents reaching the post-listening task
    b. The teacher loses credibility if the lesson plan is not followed exactly
-   c. The post-listening task is prevented from being reached, leaving the listening work unfinished
+   c. Students lose interest in the topic before the gist-listening task begins
    d. Students become over-prepared and find the detail-listening task too easy
 
-   *Answer: c. The post-listening task is prevented from being reached, leaving the listening work unfinished*
+   *Answer: a. It prevents reaching the post-listening task*
    *Anchor: "A lesson that ends before students have produced anything leaves the listening work unfinished, however well the earlier stages went"*
 
 **4. According to the unit, what distinguishes a receptive skill from a productive skill?**
@@ -47,71 +47,71 @@ Covers units 7.1 to 7.4. 19 points total; pass mark 70%. Section B re-asks quest
 **5. What does the unit say happens when a reader has strong decoding skills but no background knowledge of a topic?**
 
    a. Top-down processing compensates fully for the lack of background knowledge.
-   b. Bottom-up accuracy alone may not be enough to produce genuine comprehension.
-   c. The reader can still construct meaning by focusing on spelling patterns.
+   b. The reader can still construct meaning by focusing on spelling patterns.
+   c. Bottom-up accuracy alone may not be enough to produce genuine comprehension.
    d. Rote memorization of vocabulary items fills the gap left by missing prior knowledge.
 
-   *Answer: b. Bottom-up accuracy alone may not be enough to produce genuine comprehension.*
+   *Answer: c. Bottom-up accuracy alone may not be enough to produce genuine comprehension.*
    *Anchor: "when a reader has strong decoding skills but no background knowledge of a topic, bottom-up accuracy alone may not be enough to produce genuine comprehension"*
 
 **6. What principle does the unit identify as governing the choice of texts for a reading lesson?**
 
    a. Texts should be chosen because they are readily available and easy to photocopy.
-   b. Texts should be chosen because they carry genuine communicative purpose.
+   b. Texts should be chosen primarily for their grammatical complexity and range.
    c. Texts should be chosen to match a single narrow proficiency band in the class.
-   d. Texts should be chosen primarily for their grammatical complexity and range.
+   d. Texts should be chosen because they carry genuine communicative purpose.
 
-   *Answer: b. Texts should be chosen because they carry genuine communicative purpose.*
+   *Answer: d. Texts should be chosen because they carry genuine communicative purpose.*
    *Anchor: "texts should be chosen because they carry genuine communicative purpose, not merely because they happen to be on hand"*
 
-**7. How many studies did Jeon and Day (2016) synthesise in their meta-analysis, and why does this number matter?**
+**7. How many studies did Jeon and Day (2016) synthesize in their meta-analysis, and why does this number matter?**
 
-   a. 34 studies, because a smaller sample produces more precise effect sizes
-   b. 49 studies, because a broader sample reduces the chance that results reflect an unusual cluster from a narrow range of contexts
+   a. 49 studies, reducing dependence on an unusual cluster of contexts
+   b. 34 studies, because a smaller sample produces more precise effect sizes
    c. 49 studies, because more studies always produce larger effect sizes
    d. 34 studies, because matching Nakanishi's sample size allows direct comparison
 
-   *Answer: b. 49 studies, because a broader sample reduces the chance that results reflect an unusual cluster from a narrow range of contexts*
+   *Answer: a. 49 studies, reducing dependence on an unusual cluster of contexts*
    *Anchor: "the broader sample reduces the chance that the overall effect reflects an unusual cluster of results from a narrow range of contexts"*
 
 **8. What is the primary reason the unit recommends starting with a single reading station rather than setting up several at once?**
 
    a. Multiple stations require more books than most schools can afford
-   b. One well-resourced, well-organized corner that students understand and value is more effective than three stations that feel provisional
+   b. One established, well-resourced station works better than several provisional ones.
    c. Students become confused when too many reading options are available simultaneously
    d. School administrators are unlikely to approve more than one station at a time
 
-   *Answer: b. One well-resourced, well-organized corner that students understand and value is more effective than three stations that feel provisional*
+   *Answer: b. One established, well-resourced station works better than several provisional ones.*
    *Anchor: "One well-resourced, well-organized corner that students understand and value is more effective than three stations that feel provisional"*
 
 **9. How does the unit distinguish extensive reading from intensive reading?**
 
    a. Extensive reading uses graded readers while intensive reading uses authentic texts
    b. Extensive reading focuses on grammar and vocabulary while intensive reading focuses on enjoyment
-   c. Extensive reading involves moving through whole books at a comfortable pace, while intensive reading involves a teacher guiding students slowly through a short, often difficult passage line by line
+   c. Extensive reading covers books comfortably; intensive reading examines short passages closely.
    d. Extensive reading is done at home while intensive reading takes place in the classroom
 
-   *Answer: c. Extensive reading involves moving through whole books at a comfortable pace, while intensive reading involves a teacher guiding students slowly through a short, often difficult passage line by line*
+   *Answer: c. Extensive reading covers books comfortably; intensive reading examines short passages closely.*
    *Anchor: "a learner doing extensive reading moves through whole books or articles at a comfortable pace; a learner doing intensive reading works slowly through a paragraph under close direction"*
 
 **10. According to the unit, why does rewriting an authentic text to lower its difficulty undermine its value?**
 
    a. It makes the text too short to support a full lesson activity
-   b. It removes the idiomatic phrasing that reflects real language use in culturally appropriate contexts
+   b. It increases the cultural load by introducing unfamiliar simplified vocabulary
    c. It prevents teachers from using the material across multiple proficiency levels
-   d. It increases the cultural load by introducing unfamiliar simplified vocabulary
+   d. It removes culturally appropriate idiomatic language
 
-   *Answer: b. It removes the idiomatic phrasing that reflects real language use in culturally appropriate contexts*
+   *Answer: d. It removes culturally appropriate idiomatic language*
    *Anchor: "A simplified advertisement no longer reflects real use of language in culturally appropriate contexts"*
 
 **11. The unit describes the tourist album project about the Sinai Peninsula as an example of authentic materials supporting which specific outcome beyond the classroom?**
 
-   a. Students submitted their work to an international language competition
-   b. The finished album was added to the school library, giving the project an audience beyond the classroom
+   a. The library received the album, creating an audience beyond the class
+   b. Students submitted their work to an international language competition
    c. Older students presented the album to a local tourism board
    d. The album was published on the internet for other language learners
 
-   *Answer: b. The finished album was added to the school library, giving the project an audience beyond the classroom*
+   *Answer: a. The library received the album, creating an audience beyond the class*
    *Anchor: "The finished album was added to the school library, giving the project an audience beyond the classroom"*
 
 **12. Which of the following best explains why a student who follows local football will tolerate more linguistic difficulty in a match report than in an article about an unfamiliar sport?**
@@ -126,15 +126,25 @@ Covers units 7.1 to 7.4. 19 points total; pass mark 70%. Section B re-asks quest
 
 ## Section B — Review (2 points, 1 each)
 
-**13. Explain why function words must be included in sufficient quantity in a Word Bricks collection, using the unit's reasoning.**
+**13. Which of the following consonants has no voiced or voiceless counterpart on the phonemic chart?**
 
-   *Answer: Without enough function words, students can hold content bricks but cannot build grammatically complete sentences; for example, a student with 'cat,' 'drink,' and 'water' but no brick for 'the' or 'can' is unable to produce even a simple sentence.*
-   *Anchor: "unit 5.3 quiz"*
+   a. /s/
+   b. /ʃ/
+   c. /h/
+   d. /f/
 
-**14. Explain the difference in meaning between these two sentences: 'If I applied for that job, I would earn more money' and 'If I had applied for that job, I would have earned more money.'**
+   *Answer: c. /h/*
+   *Anchor: "unit 6.2 quiz"*
 
-   *Answer: The second conditional sentence imagines an alternative present or future situation, suggesting the option may still exist. The third conditional sentence refers to a closed past event that cannot be changed, expressing retrospective reflection on a missed opportunity.*
-   *Anchor: "unit 3.2 quiz"*
+**14. According to the unit, why does an intransitive phrasal verb such as 'grow up' stand outside the separable/inseparable contrast?**
+
+   a. Because 'grow up' becomes separable whenever the object is a pronoun.
+   b. Because the contrast applies only to phrasal verbs with two particles.
+   c. Because 'grow up' can take a direct object in informal speech.
+   d. Because intransitive phrasal verbs have no object, so there is nothing to separate.
+
+   *Answer: d. Because intransitive phrasal verbs have no object, so there is nothing to separate.*
+   *Anchor: "unit 3.4 quiz"*
 
 ## Section C — Scenario (5 points)
 
@@ -142,3 +152,10 @@ Covers units 7.1 to 7.4. 19 points total; pass mark 70%. Section B re-asks quest
 
    *Answer: Mr. Osei should not abandon the listening focus simply because the audio equipment has failed. The module makes clear that when audio-playing technology is unavailable, the teacher still has workable options that keep listening at the center of the activity. Two are directly applicable here. First, Mr. Osei can conduct a dictation task: he reads aloud from the script or a summary of the radio interview while Carlos, Daniel, Wei, Fatima, Yuki, and Priya transcribe what they hear. This gives students controlled practice connecting sounds to written words — a sub-skill the module identifies as one of the specific gains audio materials make possible — without requiring any equipment. Second, if a colleague is available, Mr. Osei could invite that person into the classroom as a guest speaker to discuss workplace safety. This exposes students to a voice, pace, and accent different from Mr. Osei's own, which the module describes as itself a form of listening challenge. Either option preserves the lesson's receptive-skill focus. Mr. Osei should also consider retaining any pre-listening work he had planned — such as activating prior knowledge about workplace safety through pictures or questions — because that stage reduces the distance between what learners already know and what the spoken input will demand of them, regardless of whether the source is a recording or a live voice. The justification for all of these decisions rests on the module's principle that listening develops through deliberate, structured practice, and that the teacher's role is to control the input and give students repeated opportunities to process spoken language with a clear purpose — goals that dictation and a guest speaker both serve.*
    *Anchor: "Neither option requires equipment, and both keep listening at the center of the activity."*
+
+### Scoring guidance
+
+**5:** Complete, accurate diagnosis and feasible action, justified with the module's relevant principle(s) and applied to the named context.
+**3-4:** Sound core response with one missing, underdeveloped, or weakly justified element.
+**1-2:** Partial recognition of the issue, but the action is vague, incomplete, or poorly connected to module content.
+**0:** Blank, irrelevant, or incompatible with the module's central principle.

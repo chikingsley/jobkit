@@ -13,7 +13,7 @@
   },
   {
     "type": "mc",
-    "question": "A student writes 'they hiked across the forest' when describing movement through the trees. What does the unit identify as the source of this error?",
+    "question": "A student writes 'they hiked across the forest' when describing movement through the trees. What does the unit identify as the module of this error?",
     "options": [
       "The student confused 'across' with 'along,' which describes following a length.",
       "The student treated the forest as a flat surface rather than a space with interior depth.",
@@ -21,18 +21,18 @@
       "The student confused 'across' with 'past,' which marks movement beyond a reference point."
     ],
     "answer": "The student treated the forest as a flat surface rather than a space with interior depth.",
-    "anchor": "a student named Wei who writes 'they hiked across the forest' has treated the forest as a flat surface rather than a space with interior depth"
+    "anchor": "Wei, who writes 'they hiked across the forest,' has treated the forest as a flat surface rather than a space with interior depth"
   },
   {
     "type": "mc",
     "question": "According to the unit, why is English described as having a 'closed lexical class' of prepositions?",
     "options": [
       "Prepositions can only be learned through repeated exposure, not rules.",
-      "The set of prepositions is fixed and new ones are almost never added to the language.",
+      "English prepositions form a nearly closed word class",
       "Each preposition carries only one fixed meaning that never changes.",
       "Prepositions cannot be combined with adjectives or verbs."
     ],
-    "answer": "The set of prepositions is fixed and new ones are almost never added to the language.",
+    "answer": "English prepositions form a nearly closed word class",
     "anchor": "English prepositions form a closed lexical class, meaning the set of members is fixed and new prepositions are almost never added"
   },
   {

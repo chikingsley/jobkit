@@ -4,7 +4,7 @@
 
 Reported speech, also called indirect speech, is the grammatical system a speaker or writer uses to convey what someone else said without reproducing their exact words. Direct speech preserves the original utterance inside quotation marks, keeping the speaker's own words intact. Reported speech integrates that utterance into a new sentence, removing the quotation marks and adjusting the language to fit the new context.
 
-The contrast between the two forms is easiest to see through paired examples. A student named Carlos says, "I am tired." In direct speech, a teacher might write: Carlos said, "I am tired." In reported speech, the same information becomes: Carlos said he was tired. The quotation marks disappear, the pronoun shifts, and the verb changes form. A second example makes the pattern clearer: Priya tells her partner, "I finished the exercise." Reported, this becomes: Priya said she had finished the exercise. The meaning is preserved, but the sentence is now woven into the surrounding text rather than standing apart from it.
+The contrast between the two forms is easiest to see through paired examples. Carlos says, "I am tired." In direct speech, a teacher might write: Carlos said, "I am tired." In reported speech, the same information becomes: Carlos said he was tired. The quotation marks disappear, the pronoun shifts, and the verb changes form. A second example makes the pattern clearer: Priya tells her partner, "I finished the exercise." Reported, this becomes: Priya said she had finished the exercise. The meaning is preserved, but the sentence is now woven into the surrounding text rather than standing apart from it.
 
 A third example shows how reported speech handles questions. The teacher asks, "Do you understand the instructions?" A classroom observer writing up notes would record: The teacher asked whether the students understood the instructions. The yes/no question becomes a subordinate clause, and the question mark is gone. These transformations follow consistent grammatical rules, which the later sections of this unit address in detail.
 
@@ -27,7 +27,7 @@ S: Present tense.
 T: So do we need to shift the verb back?
 S: No. It should be "have to."
 
-The second difficulty involves knowing when backshift is optional even with a past reporting verb. When the reported information remains true or current at the moment of speaking, a speaker may keep the original tense rather than shifting it back. If a student named Carlos says, "My friend told me he lives in Madrid," and his friend still lives there now, the present tense "lives" is perfectly acceptable alongside the backshifted "lived." Both forms are grammatically correct; the choice depends on whether the speaker wants to emphasize the ongoing truth of the statement.
+The second difficulty involves knowing when backshift is optional even with a past reporting verb. When the reported information remains true or current at the moment of speaking, a speaker may keep the original tense rather than shifting it back. If Carlos says, "My friend told me he lives in Madrid," and his friend still lives there now, the present tense "lives" is perfectly acceptable alongside the backshifted "lived." Both forms are grammatically correct; the choice depends on whether the speaker wants to emphasize the ongoing truth of the statement.
 
 This optionality can confuse learners who have been taught backshift as an absolute rule. The clearest way to handle it in class is to distinguish between information that was true only at the time of speaking and information that remains true now. A reported fact about a permanent situation, such as a person's nationality or a scientific principle, rarely needs backshift even when the reporting verb is past. A reported statement about a temporary or completed situation, such as someone's mood or a past action, benefits from consistent backshift to keep the time reference clear.
 
@@ -37,7 +37,7 @@ When speech moves from one person to another, and from one moment to a later one
 
 Pronoun shifts depend on who originally spoke and who is now doing the reporting. Suppose Yuki says to Daniel, "I will call you tomorrow." If a third person, say Carlos, reports this to someone else, the sentence becomes "Yuki said she would call him the following day." The first-person pronoun "I" becomes "she" because Carlos is referring to Yuki, and the second-person "you" becomes "him" because Daniel is now the person being referred to. The possessive adjectives follow the same logic: if Yuki had said "I left my bag at your place," Carlos would report "Yuki said she had left her bag at his place."
 
-The combinations multiply when the reporter is one of the original participants. If Daniel himself reports Yuki's words to a third person, the sentence is identical: "She said she would call me the following day." Here "you" shifts to "me" because Daniel is now the one speaking. A learner named Fatima once produced the sentence "Yuki said I will call you tomorrow" in a written exercise, keeping both original pronouns intact. The sentence is confusing because a reader cannot tell whether Fatima is quoting Yuki or making a statement about herself.
+The combinations multiply when the reporter is one of the original participants. If Daniel himself reports Yuki's words to a third person, the sentence is identical: "She said she would call me the following day." Here "you" shifts to "me" because Daniel is now the one speaking. Fatima once produced the sentence "Yuki said I will call you tomorrow" in a written exercise, keeping both original pronouns intact. The sentence is confusing because a reader cannot tell whether Fatima is quoting Yuki or making a statement about herself.
 
 Time and place adverbials shift because the moment of reporting is different from the moment of speaking. The standard correspondences are as follows. "Now" becomes "then." "Today" becomes "that day." "Yesterday" becomes "the day before." "Tomorrow" becomes "the following day" or "the next day." "Here" becomes "there." The demonstratives "this" and "these" become "that" and "those." The construction "ago" is replaced by "before" or "previously," so "two weeks ago" becomes "two weeks before."
 
@@ -107,7 +107,7 @@ This unit has covered the main transformations that occur when direct speech bec
    *Answer: She said she was tired.*
    *Anchor: ""I am tired," she said becomes She said she was tired."*
 
-**2. A student named Fatima writes: 'My teacher says that we had to submit the essay by Friday.' Why is this sentence incorrect?**
+**2. Fatima writes: 'My teacher says that we had to submit the essay by Friday.' Why is this sentence incorrect?**
 
    a. The reporting verb should be 'told,' not 'says.'
    b. The reporting verb is in the present tense, so no backshift is needed.
@@ -137,7 +137,7 @@ This unit has covered the main transformations that occur when direct speech bec
    *Answer: 'Say' takes a that-clause and never takes a personal object directly before the clause (e.g., 'She said that she was tired'). 'Tell' always requires a personal object placed directly before the clause (e.g., 'She told me that she was tired').*
    *Anchor: ""Tell," by contrast, always requires a personal object: "She told me that she was tired" is correct."*
 
-**6. During a written exercise, a student named Carlos produces this sentence: 'The teacher asked where was the homework.' You notice two errors in the reported question. Describe the classroom move you would make to help Carlos identify and correct both errors, and justify your choice.**
+**6. During a written exercise, Carlos produces this sentence: 'The teacher asked where was the homework.' You notice two errors in the reported question. Describe the classroom move you would make to help Carlos identify and correct both errors, and justify your choice.**
 
    *Answer: A productive move is to ask Carlos to read the reported clause aloud in isolation and decide whether it sounds like a question or a statement. When he reads 'where was the homework,' it sounds like a question, signaling that the word order is inverted. The teacher can then prompt him to place the subject before the verb, giving 'where the homework was,' and separately draw attention to the auxiliary 'was,' asking whether a direct question auxiliary is needed in a reported clause. This guided questioning approach, rather than direct correction, requires Carlos to apply the two rules himself: subject-verb order is not inverted in reported questions, and auxiliary inversion is dropped. The corrected sentence is 'The teacher asked where the homework was.' Justification: having the learner apply a self-check test builds independent monitoring skill, which is more durable than being told the answer.*
    *Anchor: "If it sounds like a question, the word order is almost certainly wrong."*

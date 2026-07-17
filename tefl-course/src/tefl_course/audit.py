@@ -3,8 +3,9 @@
 The original gate (dslop + AI-style detector + quiz format) checks style, not truth.
 This module adds the checks that would have caught the 2026-07-17 review findings
 mechanically: cast consistency (role / age / nationality / pronouns / artifacts),
-verbatim quiz anchors, references hygiene, British spellings, answer-letter balance
-in the assessment keys, punctuation artifacts, and style-tic counters.
+verbatim quiz anchors, references hygiene, British spellings, answer-letter and
+keyed-option-length balance in the assessment keys, scenario rubrics, punctuation
+artifacts, and style-tic counters.
 
 Severities: ERROR blocks (exit 1); WARN is advisory (exit 0 unless --strict).
 Allowlist: docs/audit-allowlist.txt, lines of ``<path-suffix>|<check>|<substring>``;
@@ -20,6 +21,7 @@ import re
 import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Literal, TypedDict
 
 from tefl_course.paths import PROJECT_ROOT
 
@@ -27,7 +29,16 @@ from tefl_course.paths import PROJECT_ROOT
 # Cast definition (docs/cast.md)
 # ---------------------------------------------------------------------------
 
-LEARNERS: dict[str, dict[str, object]] = {
+
+class LearnerProfile(TypedDict):
+    """Identity constraints for one recurring learner in the course cast."""
+
+    gender: Literal["f", "m"]
+    age: Literal["adult", "teen", "young-adult"]
+    identity: set[str]
+
+
+LEARNERS: dict[str, LearnerProfile] = {
     "Carlos": {"gender": "m", "age": "adult", "identity": {"mexico", "mexican", "spanish"}},
     "Daniel": {"gender": "m", "age": "adult", "identity": {"brazil", "brazilian", "portuguese"}},
     "Wei": {"gender": "m", "age": "adult", "identity": {"china", "chinese", "mandarin"}},
@@ -39,28 +50,82 @@ TEACHERS: dict[str, str] = {"Reyes": "f", "Osei": "m"}
 LEARNER_ALT = "|".join(LEARNERS)
 
 # Identity markers that belong to nobody in the cast (or to a different member).
-ALL_IDENTITY_TERMS: set[str] = set().union(*(m["identity"] for m in LEARNERS.values())) | {
-    "russian", "cantonese", "polish", "korean", "turkish", "thai", "vietnamese",
-    "shanghai", "tokyo", "seoul", "kowalska",
+ALL_IDENTITY_TERMS = {term for profile in LEARNERS.values() for term in profile["identity"]} | {
+    "russian",
+    "cantonese",
+    "polish",
+    "korean",
+    "turkish",
+    "thai",
+    "vietnamese",
+    "shanghai",
+    "tokyo",
+    "seoul",
+    "kowalska",
 }
 
 # Names from pre-remap drafts that must not appear (cast.md: use only cast names).
 BANNED_NAMES = [
-    "Ben", "Helen", "Amina", "Amira", "Amara", "Hana", "Selin", "Mateus", "Keiko",
-    "Farida", "Paulo", "Yusuf", "Tomás", "Kowalska", "Ajarn Noi", "Wei-won",
-    "Daniel-ho", "Priya-Carlos", "São Wei",
+    "Ben",
+    "Helen",
+    "Amina",
+    "Amira",
+    "Amara",
+    "Hana",
+    "Selin",
+    "Mateus",
+    "Keiko",
+    "Farida",
+    "Paulo",
+    "Yusuf",
+    "Tomás",
+    "Kowalska",
+    "Ajarn Noi",
+    "Wei-won",
+    "Daniel-ho",
+    "Priya-Carlos",
+    "São Wei",
 ]
 
 ROLE_WORDS = r"(?:teacher|trainee teacher|trainee|instructor|tutor)"
 NAME_LINKS = r"(?:named|called|like|such as)"
 
 BRITISH_STEMS = [
-    "organis", "recognis", "emphasis", "standardis", "internalis", "contextualis",
-    "personalis", "categoris", "finalis", "penalis", "generalis", "characteris",
-    "dramatis", "anonymis", "conceptualis", "apologis", "fossilis", "individualis",
-    "nominalis", "specialis", "summaris", "prioritis", "memoris", "minimis",
-    "maximis", "capitalis", "normalis", "formalis", "familiaris", "visualis",
-    "synthesis", "vocalis", "verbalis", "italicis", "hypothesis",
+    "organis",
+    "recognis",
+    "emphasis",
+    "standardis",
+    "internalis",
+    "contextualis",
+    "personalis",
+    "categoris",
+    "finalis",
+    "penalis",
+    "generalis",
+    "characteris",
+    "dramatis",
+    "anonymis",
+    "conceptualis",
+    "apologis",
+    "fossilis",
+    "individualis",
+    "nominalis",
+    "specialis",
+    "summaris",
+    "prioritis",
+    "memoris",
+    "minimis",
+    "maximis",
+    "capitalis",
+    "normalis",
+    "formalis",
+    "familiaris",
+    "visualis",
+    "synthesis",
+    "vocalis",
+    "verbalis",
+    "italicis",
+    "hypothesis",
 ]
 _BRITISH_STEM_RE = re.compile(
     r"\b(?:" + "|".join(BRITISH_STEMS) + r")(?:e|ed|es|ing|ation|ations)\b",
@@ -87,6 +152,9 @@ _CITATION_RE = re.compile(
 )
 _FILENAME_LEAK_RE = re.compile(r"\b\w+_508\b|shaping_frm_observ|\w+\.pdf\b", re.IGNORECASE)
 _ANSWER_LETTER_RE = re.compile(r"^\s*\*Answer:\s*([a-d])[.)]", re.MULTILINE)
+_ASSESSMENT_OPTION_RE = re.compile(r"^\s{3}([a-d])\.\s+(.+)$", re.MULTILINE)
+_ASSESSMENT_ANSWER_RE = re.compile(r"^\s{3}\*Answer:\s*([a-d])\.", re.MULTILINE)
+_QUESTION_SPLIT_RE = re.compile(r"(?=^\*\*\d+\.)", re.MULTILINE)
 
 QUIZ_HEADER = "## Check your understanding"
 REFS_HEADER = "## References"
@@ -166,28 +234,63 @@ def check_cast(text: str, path: str) -> list[Issue]:
     for match in re.finditer(
         rf"\b{ROLE_WORDS}s?[,]?\s+{NAME_LINKS}\s+({LEARNER_ALT})\b", text, re.IGNORECASE
     ):
-        issues.append(Issue(path, _line_no(text, match.start()), "cast-role", "error",
-                            f"learner {match.group(1)} used as a teacher: {match.group(0)!r}"))
+        issues.append(
+            Issue(
+                path,
+                _line_no(text, match.start()),
+                "cast-role",
+                "error",
+                f"learner {match.group(1)} used as a teacher: {match.group(0)!r}",
+            )
+        )
     for match in re.finditer(rf"\b(?:Mr|Ms|Mrs)\.\s+({LEARNER_ALT})\b", text):
-        issues.append(Issue(path, _line_no(text, match.start()), "cast-role", "error",
-                            f"learner {match.group(1)} with a teacher honorific"))
+        issues.append(
+            Issue(
+                path,
+                _line_no(text, match.start()),
+                "cast-role",
+                "error",
+                f"learner {match.group(1)} with a teacher honorific",
+            )
+        )
     for match in re.finditer(
         rf"\b(?:A|The|One)\s+{ROLE_WORDS},\s+({LEARNER_ALT})\b", text, re.IGNORECASE
     ):
-        issues.append(Issue(path, _line_no(text, match.start()), "cast-role", "error",
-                            f"learner {match.group(1)} appositive as teacher: {match.group(0)!r}"))
+        issues.append(
+            Issue(
+                path,
+                _line_no(text, match.start()),
+                "cast-role",
+                "error",
+                f"learner {match.group(1)} appositive as teacher: {match.group(0)!r}",
+            )
+        )
     for match in re.finditer(
         r"\b(?:student|learner)s?,?\s+(?:named|called|like|such as)?\s*"
         r"(?:call (?:him|her)\s+)?(Mr\. Osei|Ms\. Reyes)\b",
         text,
     ):
-        issues.append(Issue(path, _line_no(text, match.start()), "cast-role", "error",
-                            f"cast teacher {match.group(1)} used as a learner"))
+        issues.append(
+            Issue(
+                path,
+                _line_no(text, match.start()),
+                "cast-role",
+                "error",
+                f"cast teacher {match.group(1)} used as a learner",
+            )
+        )
 
     for name in BANNED_NAMES:
         for match in re.finditer(rf"\b{re.escape(name)}\b", text):
-            issues.append(Issue(path, _line_no(text, match.start()), "cast-outsider", "error",
-                                f"pre-remap / out-of-cast name {name!r}"))
+            issues.append(
+                Issue(
+                    path,
+                    _line_no(text, match.start()),
+                    "cast-outsider",
+                    "error",
+                    f"pre-remap / out-of-cast name {name!r}",
+                )
+            )
     cast_ok = set(LEARNERS) | {"Reyes", "Osei", "Mr", "Ms", "Mrs"}
     for match in re.finditer(
         r"\b(?:student|learner|teacher|child|trainee|colleague)s?\s+"
@@ -195,19 +298,40 @@ def check_cast(text: str, path: str) -> list[Issue]:
         text,
     ):
         if match.group(1) not in cast_ok:
-            issues.append(Issue(path, _line_no(text, match.start()), "cast-outsider", "error",
-                                f"named example outside the cast: {match.group(1)!r}"))
+            issues.append(
+                Issue(
+                    path,
+                    _line_no(text, match.start()),
+                    "cast-outsider",
+                    "error",
+                    f"named example outside the cast: {match.group(1)!r}",
+                )
+            )
 
     for match in re.finditer(rf"\b({LEARNER_ALT})-[A-Za-zà-ÿ]+\b", text):
-        issues.append(Issue(path, _line_no(text, match.start()), "cast-artifact", "error",
-                            f"fused/malformed cast name: {match.group(0)!r}"))
+        issues.append(
+            Issue(
+                path,
+                _line_no(text, match.start()),
+                "cast-artifact",
+                "error",
+                f"fused/malformed cast name: {match.group(0)!r}",
+            )
+        )
     for match in re.finditer(rf"\b({LEARNER_ALT})\b[^.\n]{{0,20}}\band\s+\1\b", text):
-        issues.append(Issue(path, _line_no(text, match.start()), "cast-artifact", "error",
-                            f"duplicate name in coordination: {match.group(0)!r}"))
+        issues.append(
+            Issue(
+                path,
+                _line_no(text, match.start()),
+                "cast-artifact",
+                "error",
+                f"duplicate name in coordination: {match.group(0)!r}",
+            )
+        )
 
     child_cue = re.compile(
-        r"\b(?:child|children|boy|girl|(?:five|six|seven|eight|nine|ten|eleven|twelve|"
-        r"[3-9]|1[0-2])[- ]year[- ]old|first-grader|kindergart)\w*\b",
+        r"\b(?:children?|boys?|girls?|(?:five|six|seven|eight|nine|ten|eleven|twelve|"
+        r"[3-9]|1[0-2])[- ]year[- ]olds?|first-graders?|kindergart(?:en|ners?))\b",
         re.IGNORECASE,
     )
     adult_cue = re.compile(
@@ -221,16 +345,37 @@ def check_cast(text: str, path: str) -> list[Issue]:
                 continue
             line = _line_no(text, offset)
             if spec["age"] in ("adult", "young-adult") and child_cue.search(sentence):
-                issues.append(Issue(path, line, "cast-age", "error",
-                                    f"{name} ({spec['age']}) in a child context: {sentence[:90]!r}"))
+                issues.append(
+                    Issue(
+                        path,
+                        line,
+                        "cast-age",
+                        "error",
+                        f"{name} ({spec['age']}) in a child context: {sentence[:90]!r}",
+                    )
+                )
             if spec["age"] == "teen":
                 if child_cue.search(sentence):
-                    issues.append(Issue(path, line, "cast-age", "error",
-                                        f"Yuki (teenager) in a young-child context: {sentence[:90]!r}"))
+                    issues.append(
+                        Issue(
+                            path,
+                            line,
+                            "cast-age",
+                            "error",
+                            f"Yuki (teenager) in a young-child context: {sentence[:90]!r}",
+                        )
+                    )
                 elif adult_cue.search(sentence):
-                    issues.append(Issue(path, line, "cast-age", "warn",
-                                        f"Yuki (teenager) in an adult context: {sentence[:90]!r}"))
-            wrong_terms = ALL_IDENTITY_TERMS - spec["identity"]  # type: ignore[operator]
+                    issues.append(
+                        Issue(
+                            path,
+                            line,
+                            "cast-age",
+                            "warn",
+                            f"Yuki (teenager) in an adult context: {sentence[:90]!r}",
+                        )
+                    )
+            wrong_terms = ALL_IDENTITY_TERMS - spec["identity"]
             other_names = [n for n in LEARNERS if n != name]
             for term in wrong_terms:
                 term_match = re.search(rf"\b{term}\b", sentence, re.IGNORECASE)
@@ -245,35 +390,67 @@ def check_cast(text: str, path: str) -> list[Issue]:
                     sentence,
                     re.IGNORECASE,
                 )
-                issues.append(Issue(path, _line_no(text, offset), "cast-identity",
-                                    "error" if strong else "warn",
-                                    f"{name} near wrong identity term {term!r}: {sentence[:90]!r}"))
+                issues.append(
+                    Issue(
+                        path,
+                        _line_no(text, offset),
+                        "cast-identity",
+                        "error" if strong else "warn",
+                        f"{name} near wrong identity term {term!r}: {sentence[:90]!r}",
+                    )
+                )
 
         for name, spec in LEARNERS.items():
-            if not re.search(rf"\b{name}\b", sentence):
+            name_match = re.search(rf"\b{name}\b", sentence)
+            if name_match is None:
                 continue
-            wrong = (r"\b(?:she|her|hers|herself)\b" if spec["gender"] == "m"
-                     else r"\b(?:he|him|his|himself)\b")
+            wrong = (
+                r"\b(?:she|her|hers|herself)\b"
+                if spec["gender"] == "m"
+                else r"\b(?:he|him|his|himself)\b"
+            )
             opposite = [n for n, s in LEARNERS.items() if s["gender"] != spec["gender"]]
             opposite += ["Reyes" if spec["gender"] == "m" else "Osei"]
             if any(re.search(rf"\b{o}\b", sentence) for o in opposite):
                 continue
-            after = sentence[re.search(rf"\b{name}\b", sentence).end():]
-            if re.search(wrong, after, re.IGNORECASE):
-                issues.append(Issue(path, _line_no(text, offset), "cast-pronoun", "warn",
-                                    f"{name} followed by wrong-gender pronoun: {sentence[:90]!r}"))
+            # Only treat the first nearby personal pronoun as a plausible coreference. Later
+            # pronouns commonly refer to another person from the preceding sentence or to the
+            # object of reported speech ("Yuki said she would call him").
+            after = sentence[name_match.end() : name_match.end() + 60]
+            first_pronoun = re.search(
+                r"\b(?:she|her|hers|herself|he|him|his|himself)\b", after, re.IGNORECASE
+            )
+            if first_pronoun and re.fullmatch(wrong, first_pronoun.group(0), re.IGNORECASE):
+                issues.append(
+                    Issue(
+                        path,
+                        _line_no(text, offset),
+                        "cast-pronoun",
+                        "warn",
+                        f"{name} followed by wrong-gender pronoun: {sentence[:90]!r}",
+                    )
+                )
         for honorific, gender in (("Mr\\. Osei", "m"), ("Ms\\. Reyes", "f")):
-            if not re.search(honorific, sentence):
+            honorific_match = re.search(honorific, sentence)
+            if honorific_match is None:
                 continue
-            wrong = (r"\b(?:she|her|hers|herself)\b" if gender == "m"
-                     else r"\b(?:he|him|his|himself)\b")
+            wrong = (
+                r"\b(?:she|her|hers|herself)\b" if gender == "m" else r"\b(?:he|him|his|himself)\b"
+            )
             opposite = [n for n, s in LEARNERS.items() if s["gender"] != gender]
             if any(re.search(rf"\b{o}\b", sentence) for o in opposite):
                 continue
-            after = sentence[re.search(honorific, sentence).end():]
+            after = sentence[honorific_match.end() :]
             if re.search(wrong, after, re.IGNORECASE):
-                issues.append(Issue(path, _line_no(text, offset), "cast-pronoun", "error",
-                                    f"{honorific} followed by wrong-gender pronoun: {sentence[:90]!r}"))
+                issues.append(
+                    Issue(
+                        path,
+                        _line_no(text, offset),
+                        "cast-pronoun",
+                        "error",
+                        f"{honorific} followed by wrong-gender pronoun: {sentence[:90]!r}",
+                    )
+                )
     return issues
 
 
@@ -291,8 +468,9 @@ def _anchor_parts(quote: str) -> list[str]:
     normalized = _normalize(quote)
     if re.fullmatch(r"unit \d+\.\d+ quiz", normalized):
         return []
-    parts = [p.strip().rstrip(".?!,;:").strip()
-             for p in re.split(r"\s*(?:\.\.\.|…)\s*", normalized)]
+    parts = [
+        p.strip().rstrip(".?!,;:").strip() for p in re.split(r"\s*(?:\.\.\.|…)\s*", normalized)
+    ]
     return [p for p in parts if p]
 
 
@@ -310,8 +488,15 @@ def check_anchors(text: str, path: str) -> list[Issue]:
             continue
         parts = _anchor_parts(match.group("quote"))
         if parts and not all(part in norm_body for part in parts):
-            issues.append(Issue(path, i + 1, "anchor-verbatim", "error",
-                                f"anchor not found verbatim in body: {match.group('quote')[:80]!r}"))
+            issues.append(
+                Issue(
+                    path,
+                    i + 1,
+                    "anchor-verbatim",
+                    "error",
+                    f"anchor not found verbatim in body: {match.group('quote')[:80]!r}",
+                )
+            )
     return issues
 
 
@@ -319,13 +504,17 @@ def check_references(text: str, path: str) -> list[Issue]:
     """References must exist, be non-empty, and cover in-text (Author, year) citations."""
     issues: list[Issue] = []
     if REFS_HEADER not in text:
-        issues.append(Issue(path, len(text.splitlines()), "references", "error",
-                            "no ## References section"))
+        issues.append(
+            Issue(path, len(text.splitlines()), "references", "error", "no ## References section")
+        )
         return issues
     body, _, refs = text.partition(REFS_HEADER)
     if not refs.strip():
-        issues.append(Issue(path, len(text.splitlines()), "references", "error",
-                            "References section is empty"))
+        issues.append(
+            Issue(
+                path, len(text.splitlines()), "references", "error", "References section is empty"
+            )
+        )
     prose = body.partition(QUIZ_HEADER)[0]
     seen: set[str] = set()
     for match in _CITATION_RE.finditer(prose):
@@ -334,11 +523,25 @@ def check_references(text: str, path: str) -> list[Issue]:
             continue
         seen.add(surname)
         if surname.lower() not in refs.lower():
-            issues.append(Issue(path, _line_no(prose, match.start()), "references", "error",
-                                f"in-text citation {surname} ({year}) missing from References"))
+            issues.append(
+                Issue(
+                    path,
+                    _line_no(prose, match.start()),
+                    "references",
+                    "error",
+                    f"in-text citation {surname} ({year}) missing from References",
+                )
+            )
     for match in _FILENAME_LEAK_RE.finditer(prose):
-        issues.append(Issue(path, _line_no(prose, match.start()), "filename-leak", "error",
-                            f"internal filename in prose: {match.group(0)!r}"))
+        issues.append(
+            Issue(
+                path,
+                _line_no(prose, match.start()),
+                "filename-leak",
+                "error",
+                f"internal filename in prose: {match.group(0)!r}",
+            )
+        )
     return issues
 
 
@@ -352,8 +555,15 @@ def check_spelling(text: str, path: str) -> list[Issue]:
                 # bare nouns / ambiguous plural ("analyses" as noun) are acceptable
                 if word.lower() != "metres":
                     continue
-            issues.append(Issue(path, _line_no(text, match.start()), "spelling", "error",
-                                f"British spelling: {word!r}"))
+            issues.append(
+                Issue(
+                    path,
+                    _line_no(text, match.start()),
+                    "spelling",
+                    "error",
+                    f"British spelling: {word!r}",
+                )
+            )
     return issues
 
 
@@ -361,12 +571,26 @@ def check_punctuation(text: str, path: str) -> list[Issue]:
     """Editing-artifact punctuation."""
     issues: list[Issue] = []
     for match in re.finditer(r"[\w\"'’] ,", text):
-        issues.append(Issue(path, _line_no(text, match.start()), "punctuation", "error",
-                            f"space before comma: {match.group(0)!r}"))
+        issues.append(
+            Issue(
+                path,
+                _line_no(text, match.start()),
+                "punctuation",
+                "error",
+                f"space before comma: {match.group(0)!r}",
+            )
+        )
     # Genuinely empty/broken quotes ('that " " carries', '" ?"'), not "a," "b" lists.
     for match in re.finditer(r"(?<=[a-zA-Z] )[\"“] [\"”](?= )|[\"“] \?[\"”]|“\s*”", text):
-        issues.append(Issue(path, _line_no(text, match.start()), "punctuation", "error",
-                            f"empty or broken quotation: {match.group(0)!r}"))
+        issues.append(
+            Issue(
+                path,
+                _line_no(text, match.start()),
+                "punctuation",
+                "error",
+                f"empty or broken quotation: {match.group(0)!r}",
+            )
+        )
     return issues
 
 
@@ -376,26 +600,46 @@ def check_style(text: str, path: str) -> list[Issue]:
     body = text.partition(QUIZ_HEADER)[0]
     named = len(re.findall(r"\b(?:student|teacher|learner|child|trainee)s? named\b", body))
     if named > 4:
-        issues.append(Issue(path, 1, "style-named", "warn",
-                            f'"... named X" scaffold used {named}x (cast.md says a few per unit)'))
+        issues.append(
+            Issue(
+                path,
+                1,
+                "style-named",
+                "warn",
+                f'"... named X" scaffold used {named}x (cast.md says a few per unit)',
+            )
+        )
     source_talk = len(re.findall(r"\b[Tt]he source\b", body))
     if source_talk > 3:
-        issues.append(Issue(path, 1, "style-source-talk", "warn",
-                            f'"the source ..." pipeline framing appears {source_talk}x'))
+        issues.append(
+            Issue(
+                path,
+                1,
+                "style-source-talk",
+                "warn",
+                f'"the source ..." pipeline framing appears {source_talk}x',
+            )
+        )
     consider = len(re.findall(r"(?:^|\. )Consider\b", body))
     if consider > 2:
-        issues.append(Issue(path, 1, "style-consider", "warn",
-                            f'"Consider ..." opener used {consider}x'))
+        issues.append(
+            Issue(path, 1, "style-consider", "warn", f'"Consider ..." opener used {consider}x')
+        )
     frags = []
     for line in body.splitlines():
         if re.match(r"\s*(?:[TS]\d?\s*[:\[]|#)", line):
             continue
         frags += re.findall(r"(?<=\. )([A-Z][a-z]+(?: [a-z]+)?\.)(?= [A-Z])", line)
-    frags = [f for f in frags if f.rstrip(".").lower() not in
-             {"reyes", "osei", "no", "yes"} and len(f.split()) <= 2]
+    frags = [
+        f
+        for f in frags
+        if f.rstrip(".").lower() not in {"reyes", "osei", "mr", "mrs", "ms", "no", "yes"}
+        and len(f.split()) <= 2
+    ]
     if len(frags) > 1:
-        issues.append(Issue(path, 1, "style-fragment", "warn",
-                            f"staccato fragments: {', '.join(frags[:6])}"))
+        issues.append(
+            Issue(path, 1, "style-fragment", "warn", f"staccato fragments: {', '.join(frags[:6])}")
+        )
     return issues
 
 
@@ -418,9 +662,15 @@ def check_bank_anchors(unit_md: Path) -> list[Issue]:
             continue
         parts = _anchor_parts(anchor)
         if parts and not all(part in norm_body for part in parts):
-            issues.append(Issue(rel, 1, "bank-anchor", "error",
-                                f"bank entry {i + 1} anchor not verbatim in unit body: "
-                                f"{anchor[:80]!r}"))
+            issues.append(
+                Issue(
+                    rel,
+                    1,
+                    "bank-anchor",
+                    "error",
+                    f"bank entry {i + 1} anchor not verbatim in unit body: {anchor[:80]!r}",
+                )
+            )
     return issues
 
 
@@ -438,16 +688,24 @@ def check_assessment_anchors(paths: list[Path]) -> list[Issue]:
     corpus = "\n".join(corpus_parts)
     issues: list[Issue] = []
     for path in paths:
-        rel = str(path.relative_to(PROJECT_ROOT)) if path.is_relative_to(PROJECT_ROOT) else str(path)
+        rel = (
+            str(path.relative_to(PROJECT_ROOT)) if path.is_relative_to(PROJECT_ROOT) else str(path)
+        )
         for i, line in enumerate(path.read_text(encoding="utf-8").splitlines()):
             match = _ANCHOR_RE.match(line)
             if not match:
                 continue
             parts = _anchor_parts(match.group("quote"))
             if parts and not all(part in corpus for part in parts):
-                issues.append(Issue(rel, i + 1, "assessment-anchor", "error",
-                                    f"anchor not found in any unit body: "
-                                    f"{match.group('quote')[:80]!r}"))
+                issues.append(
+                    Issue(
+                        rel,
+                        i + 1,
+                        "assessment-anchor",
+                        "error",
+                        f"anchor not found in any unit body: {match.group('quote')[:80]!r}",
+                    )
+                )
     return issues
 
 
@@ -469,11 +727,66 @@ def check_answer_balance(paths: list[Path]) -> list[Issue]:
     for letter, n in counts.items():
         share = n / total
         if share > 0.40 or share < 0.10:
-            issues.append(Issue("assessments/", 1, "answer-balance", "error",
-                                f"keyed answer {letter!r} is {share:.0%} of {total} MCQs "
-                                f"(target 10%-40% per letter); full: "
-                                + ", ".join(f"{k}={v}" for k, v in counts.items())))
+            issues.append(
+                Issue(
+                    "assessments/",
+                    1,
+                    "answer-balance",
+                    "error",
+                    f"keyed answer {letter!r} is {share:.0%} of {total} MCQs "
+                    f"(target 10%-40% per letter); full: "
+                    + ", ".join(f"{k}={v}" for k, v in counts.items()),
+                )
+            )
             break
+    return issues
+
+
+def check_option_length_bias(paths: list[Path]) -> list[Issue]:
+    """Reject a course-wide pattern in which the keyed option is usually the longest."""
+    total = 0
+    keyed_longest = 0
+    for path in paths:
+        for block in _QUESTION_SPLIT_RE.split(path.read_text(encoding="utf-8")):
+            options = dict(_ASSESSMENT_OPTION_RE.findall(block))
+            answer = _ASSESSMENT_ANSWER_RE.search(block)
+            if len(options) != 4 or answer is None:
+                continue
+            key = answer.group(1)
+            total += 1
+            keyed_longest += len(options[key]) > max(
+                len(option) for label, option in options.items() if label != key
+            )
+    if total and keyed_longest / total > 0.40:
+        return [
+            Issue(
+                "assessments/",
+                1,
+                "option-length-bias",
+                "error",
+                f"keyed option is strictly longest in {keyed_longest}/{total} MCQs "
+                f"({keyed_longest / total:.0%}; maximum 40%)",
+            )
+        ]
+    return []
+
+
+def check_scenario_rubrics(paths: list[Path]) -> list[Issue]:
+    """Every scenario in a grading key needs explicit score-band guidance."""
+    issues: list[Issue] = []
+    for path in paths:
+        expected = 3 if path.name == "final-exam-key.md" else 1
+        actual = path.read_text(encoding="utf-8").count("### Scoring guidance")
+        if actual != expected:
+            issues.append(
+                Issue(
+                    str(path.relative_to(PROJECT_ROOT)),
+                    1,
+                    "scenario-rubric",
+                    "error",
+                    f"expected {expected} scoring-guidance block(s), found {actual}",
+                )
+            )
     return issues
 
 
@@ -481,8 +794,14 @@ def check_answer_balance(paths: list[Path]) -> list[Issue]:
 # Driver
 # ---------------------------------------------------------------------------
 
-UNIT_CHECKS = (check_cast, check_anchors, check_references, check_spelling,
-               check_punctuation, check_style)
+UNIT_CHECKS = (
+    check_cast,
+    check_anchors,
+    check_references,
+    check_spelling,
+    check_punctuation,
+    check_style,
+)
 ASSESSMENT_CHECKS = (check_cast, check_spelling, check_punctuation)
 
 
@@ -514,7 +833,9 @@ def default_targets() -> list[Path]:
 
 def main(argv: list[str] | None = None) -> None:
     """CLI entry point."""
-    parser = argparse.ArgumentParser(description="Audit TEFL course content for truth-level defects.")
+    parser = argparse.ArgumentParser(
+        description="Audit TEFL course content for truth-level defects."
+    )
     parser.add_argument("paths", nargs="*", help="files to audit (default: all content)")
     parser.add_argument("--json", action="store_true", help="emit JSON")
     parser.add_argument("--strict", action="store_true", help="warnings also fail")
@@ -525,9 +846,14 @@ def main(argv: list[str] | None = None) -> None:
     issues: list[Issue] = []
     for path in targets:
         issues.extend(audit_file(path))
-    key_files = [p for p in targets if (p.name.startswith("module-") and "key" in p.name)
-                 or p.name == "final-exam-key.md"]
+    key_files = [
+        p
+        for p in targets
+        if (p.name.startswith("module-") and "key" in p.name) or p.name == "final-exam-key.md"
+    ]
     issues.extend(check_answer_balance(key_files))
+    issues.extend(check_option_length_bias(key_files))
+    issues.extend(check_scenario_rubrics(key_files))
     assessment_files = [p for p in targets if "assessments" in str(p) and p.suffix == ".md"]
     issues.extend(check_assessment_anchors(assessment_files))
     for path in targets:
@@ -548,7 +874,8 @@ def main(argv: list[str] | None = None) -> None:
         print(f"\naudit: {errors} error(s), {warns} warning(s) across {len(targets)} file(s)")
 
     has_fail = any(i.severity == "error" for i in issues) or (
-        args.strict and any(i.severity == "warn" for i in issues))
+        args.strict and any(i.severity == "warn" for i in issues)
+    )
     sys.exit(1 if has_fail else 0)
 
 

@@ -3,12 +3,12 @@
     "type": "mc",
     "question": "According to the unit, what distinguishes a critical thinking question from a comprehension check in terms of motivation?",
     "options": [
-      "A comprehension check requires students to recall facts, while a critical thinking question invites students to predict, evaluate, or offer opinions, drawing on their own interpretive capacity.",
+      "Recall facts versus predict, evaluate, or offer an interpretation",
       "A comprehension check is always given in written form, while a critical thinking question is always delivered orally.",
       "A critical thinking question is used only at the start of a lesson to activate prior knowledge, while a comprehension check is used only at the end.",
       "A comprehension check encourages personal storytelling, while a critical thinking question focuses on factual accuracy."
     ],
-    "answer": "A comprehension check requires students to recall facts, while a critical thinking question invites students to predict, evaluate, or offer opinions, drawing on their own interpretive capacity. — Critical thinking questions ask students to think on a higher and deeper level, inviting them to predict, evaluate, or offer opinions, whereas comprehension checks focus on factual recall.",
+    "answer": "Recall facts versus predict, evaluate, or offer an interpretation",
     "anchor": "critical thinking questions 'ask the students to think on a higher and deeper level' and often invite students to predict, evaluate, or offer opinions"
   },
   {
@@ -28,11 +28,11 @@
     "question": "The unit describes a teacher circulating during group activities rather than waiting at the front of the room. What motivational function does this practice primarily serve, according to the unit?",
     "options": [
       "It allows the teacher to assign formal grades to each group before the lesson ends.",
-      "It enables the teacher to redirect, confirm, or prompt while work is happening, making moments of competence visible to the learner who produced them.",
+      "It makes competence visible through in-task redirection, confirmation, or prompting.",
       "It discourages students from choosing partners, ensuring more balanced group compositions.",
       "It replaces the need for any written feedback at the end of the lesson."
     ],
-    "answer": "It enables the teacher to redirect, confirm, or prompt while work is happening, making moments of competence visible to the learner who produced them. — The teacher circulating is present while work is happening, available to redirect, confirm, or prompt, and makes small successes visible to learners while they are still fresh.",
+    "answer": "It makes competence visible through in-task redirection, confirmation, or prompting.",
     "anchor": "she is present in the room while the work is happening, available to redirect, confirm, or prompt"
   },
   {

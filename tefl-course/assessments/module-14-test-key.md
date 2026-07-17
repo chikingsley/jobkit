@@ -18,30 +18,30 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
 
    a. Lecturer and primary source of all language input during station time.
    b. Passive observer who records student errors for later whole-class correction.
-   c. Master planner, guide, and timekeeper who moves through the room and attends to individual students.
+   c. A mobile planner, guide, and timekeeper for individual support
    d. Designated clean-up monitor who manages transitions while students self-direct all learning.
 
-   *Answer: c. Master planner, guide, and timekeeper who moves through the room and attends to individual students.*
-   *Anchor: "The teacher's role within this structure is what the source calls that of master planner, guide, and timekeeper"*
+   *Answer: c. A mobile planner, guide, and timekeeper for individual support*
+   *Anchor: "The teacher's role within this structure is what the module calls that of master planner, guide, and timekeeper"*
 
 **3. According to the unit, what is the main cognitive benefit of establishing predictable classroom routines for young learners?**
 
    a. Routines eliminate the need for the teacher to give directions during transitions.
-   b. Routines reduce the cognitive load of figuring out what comes next, leaving more mental space for language.
+   b. Routines replace the need for varied activities because children find repetition of procedures motivating.
    c. Routines ensure that all students progress at the same rate regardless of individual development.
-   d. Routines replace the need for varied activities because children find repetition of procedures motivating.
+   d. Routines reduce the cognitive load of figuring out what comes next, leaving more mental space for language.
 
-   *Answer: b. Routines reduce the cognitive load of figuring out what comes next, leaving more mental space for language.*
+   *Answer: d. Routines reduce the cognitive load of figuring out what comes next, leaving more mental space for language.*
    *Anchor: "a classroom where sequences are known in advance reduces the cognitive load of figuring out what comes next, leaving more mental space for language"*
 
 **4. According to the unit, why might a Business English learner like Yuki still struggle professionally despite controlling complex grammar and a wide vocabulary?**
 
-   a. She lacks the instrumental motivation that drives focused study.
+   a. She lacks profession-specific conventions and formulaic language.
    b. She has not yet reached an intermediate level of general English.
-   c. She is unfamiliar with the specific conventions and formulaic language that professional communication relies on.
+   c. She lacks the instrumental motivation that drives focused study.
    d. She avoids written tasks because her reading skills are underdeveloped.
 
-   *Answer: c. She is unfamiliar with the specific conventions and formulaic language that professional communication relies on.*
+   *Answer: a. She lacks profession-specific conventions and formulaic language.*
    *Anchor: "the specific conventions and formulaic language that professional communication relies on, not in any broader deficiency of grammar"*
 
 **5. What risk does the unit identify in a warm working relationship between teacher and learner in one-to-one teaching?**
@@ -57,98 +57,100 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
 **6. How does the unit suggest a teacher should handle a lesson that is unexpectedly cut short due to a workplace interruption?**
 
    a. Reschedule the full lesson and avoid covering any new material in the shortened time.
-   b. Know at any point which single language point is most worth returning to if time is suddenly reduced.
-   c. Ask the learner to complete the remaining activities independently as homework.
-   d. Apologise and end the session early to respect the learner's professional commitments.
+   b. Ask the learner to complete the remaining activities independently as homework.
+   c. Know at any point which single language point is most worth returning to if time is suddenly reduced.
+   d. Apologize and end the session early to respect the learner's professional commitments.
 
-   *Answer: b. Know at any point which single language point is most worth returning to if time is suddenly reduced.*
+   *Answer: c. Know at any point which single language point is most worth returning to if time is suddenly reduced.*
    *Anchor: "knowing, at any point in a lesson, which single language point is most worth returning to if time is suddenly reduced"*
 
 **7. According to the unit, what happens when students take on roles other than their own in the television talk show simulation?**
 
    a. Students are able to avoid speaking spontaneously because their roles are fully scripted in advance
-   b. Students are encouraged to present information in new ways and to think from perspectives they would not ordinarily occupy
+   b. Students become less motivated because they cannot draw on their personal experience
    c. Students focus exclusively on factual recall because the talk show format requires accurate reporting
-   d. Students become less motivated because they cannot draw on their personal experience
+   d. They present information in new forms and unfamiliar perspectives
 
-   *Answer: b. Students are encouraged to present information in new ways and to think from perspectives they would not ordinarily occupy*
+   *Answer: d. They present information in new forms and unfamiliar perspectives*
    *Anchor: "taking on roles other than their own encouraged students to present information in new ways and to think from perspectives they would not ordinarily occupy"*
 
 **8. The unit argues that a language classroom is a natural setting for developing critical and creative thinking. Which reason does it give for this claim?**
 
-   a. Language classrooms are the only setting where students encounter real-world content such as mass media
+   a. Teaching techniques for critical thinking apply as well to language studies as they do to any content area
    b. Grammar and vocabulary instruction automatically produces higher-order thinking without any additional tasks
-   c. Teaching techniques for critical thinking apply as well to language studies as they do to any content area
+   c. Language classrooms are the only setting where students encounter real-world content such as mass media
    d. Language teachers have more training in thinking skills than teachers of science or social studies
 
-   *Answer: c. Teaching techniques for critical thinking apply as well to language studies as they do to any content area*
+   *Answer: a. Teaching techniques for critical thinking apply as well to language studies as they do to any content area*
    *Anchor: "Teaching techniques for critical thinking apply as well to language studies as they do to any content area"*
 
 **9. The unit's practical action plan recommends that a teacher begin by identifying a single existing lesson rather than designing an entirely new unit. What reason does the unit give for this recommendation?**
 
    a. New units require administrative approval, which takes longer than most teachers can afford
-   b. One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing
+   b. A familiar lesson provides a more honest test of one enriched activity
    c. Students perform better on thinking tasks when the topic is one they have already studied in previous years
    d. Redesigning a lesson from the ground up eliminates the factual groundwork that open tasks require
 
-   *Answer: b. One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing*
+   *Answer: b. A familiar lesson provides a more honest test of one enriched activity*
    *Anchor: "One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing"*
 
 **10. According to the unit, what distinguishes the four reflective teaching questions from evaluative questions?**
 
    a. They require the teacher to rate herself on a numerical scale before and after each lesson
-   b. They ask what happened and what might be done differently, not whether the teacher was good or bad
-   c. They are designed to be shared with an administrator at the end of each term
+   b. They are designed to be shared with an administrator at the end of each term
+   c. They ask what happened and what might be done differently, not whether the teacher was good or bad
    d. They focus exclusively on student behavior rather than on instructional decisions
 
-   *Answer: b. They ask what happened and what might be done differently, not whether the teacher was good or bad*
+   *Answer: c. They ask what happened and what might be done differently, not whether the teacher was good or bad*
    *Anchor: "They do not ask whether the teacher was good or bad; they ask what happened and what might be done differently"*
 
 **11. The unit names several sources from which good teachers continue to learn throughout their careers. Which of the following is listed among those sources?**
 
    a. Annual standardized test results submitted by the school district
-   b. Academic information in their field
+   b. Mandatory certification renewal courses
    c. Observations conducted exclusively by external evaluators
-   d. Mandatory certification renewal courses
+   d. Academic information in their field
 
-   *Answer: b. Academic information in their field*
+   *Answer: d. Academic information in their field*
    *Anchor: "from peers and colleagues, from mentors and supervisors, and from academic information in their field"*
 
 **12. What does the unit identify as the indispensable step that makes a video or audio recording of a lesson genuinely useful for reflection?**
 
-   a. Sharing the recording with a mentor before watching it alone
+   a. Conducting a follow-up analysis after watching or listening to the recording
    b. Transcribing the recording word for word into the teacher diary
-   c. Conducting a follow-up analysis after watching or listening to the recording
+   c. Sharing the recording with a mentor before watching it alone
    d. Obtaining written consent from students before the lesson begins
 
-   *Answer: c. Conducting a follow-up analysis after watching or listening to the recording*
+   *Answer: a. Conducting a follow-up analysis after watching or listening to the recording*
    *Anchor: "The follow-up analysis is the indispensable step; a recording left unwatched is a file and nothing more"*
 
 ## Section B — Review (2 points, 1 each)
 
-**13. In the Sentence Boundaries game, what does the teacher do when a team submits a sentence that meets the word-count requirement but contains a grammatical error?**
+**13. What four questions make up the Lesson Evaluation section of the lesson plan template, and what shared purpose do they serve?**
 
-   a. Writes the corrected version on the board for the team to copy
-   b. Awards half a point and asks the team to revise before the next round
-   c. Returns the sentence to the team without supplying the correction
-   d. Moves the team to an easier pattern so they can regain confidence
+   *Answer: The four questions are: what students actually learned and how the teacher knows; which parts were most and least successful and why; whether the lesson finished on time and if not why; and what changes the teacher will make and why. Together they form a structured habit of reflection rather than a vague general impression of how things went.*
+   *Anchor: "unit 10.2 quiz"*
 
-   *Answer: The teacher records no point and returns the sentence to the team, keeping the cognitive work of identifying and correcting the error with the students.*
-   *Anchor: "unit 8.3 quiz"*
+**14. The unit states that when only one student answers a checking question, what is the teacher's main limitation?**
 
-**14. According to the unit, what is the primary purpose of a comprehension-checking question such as 'How long do you have to answer the questions?'**
+   a. The lesson pace slows down for the rest of the class
+   b. The teacher knows only what that one student knows
+   c. The activity becomes too easy for stronger learners
+   d. The teacher loses the opportunity to use the board
 
-   a. To give students extra practice producing spoken language
-   b. To fill time between activities during a transition
-   c. To collect evidence that students have processed an instruction
-   d. To assess whether students have memorized new vocabulary
-
-   *Answer: c. To collect evidence that students have processed an instruction*
+   *Answer: b. The teacher knows only what that one student knows*
    *Anchor: "unit 1.3 quiz"*
 
 ## Section C — Scenario (5 points)
 
-**15. Ms. Reyes is teaching a mixed-age primary class of six- and seven-year-olds that includes Carlos, Daniel, Wei, Fatima, Yuki, and Priya. She has planned a single 35-minute activity: learners sit quietly, study a printed grammar table showing present-tense verb endings, and then complete a written gap-fill exercise. Five minutes in, Daniel is whispering to Wei, Priya is drawing on her worksheet, and Fatima has put her head on the desk. Only Yuki and Carlos are still attempting the exercise, and both are visibly struggling. Ms. Reyes is frustrated and cannot understand why the lesson is failing. As a TEFL trainee observing this class, what would you tell Ms. Reyes she should change, and why?**
+**15. Ms. Reyes is teaching a mixed-age primary class of six- and seven-year-olds. She has planned a single 35-minute activity: learners sit quietly, study a printed grammar table showing present-tense verb endings, and then complete a written gap-fill exercise. Five minutes in, two learners are whispering, another is drawing, and another has put their head on the desk. Only two children are still attempting the exercise, and both are visibly struggling. As a TEFL trainee observing this class, what would you tell Ms. Reyes she should change, and why?**
 
-   *Answer: Ms. Reyes's lesson is failing on three interconnected levels, each of which the module addresses directly. First, she is treating six- and seven-year-olds as though they were adult learners capable of processing abstract grammatical rules from a table. The module is explicit that children cannot reliably do this because it 'places demands on cognitive structures that are not yet in place.' Asking Daniel, Priya, Fatima, and the others to study a grammar table and apply it consciously is developmentally inappropriate for this age group. Second, the lesson is structured as one extended, undifferentiated task lasting 35 minutes. The module states that younger learners have shorter attention spans and that a well-planned lesson for this age group consists of 'a sequence of shorter activities, each with a distinct focus, rather than building one extended task that runs for most of the class period.' The fidgeting, drawing, and disengagement Ms. Reyes is seeing are predictable consequences of ignoring this principle. Third, the lesson suppresses rather than channels the social, active, and creative tendencies that are central to young learner language acquisition. Daniel whispering to Wei is not misbehavior; it is the social impulse that drives genuine communicative need. A lesson that treats it as a problem to be silenced is working against the learners' nature. What Ms. Reyes should do instead: replace the grammar table with rich, comprehensible oral input delivered in a meaningful context—for example, a short song, a chant, or a teacher-narrated story using past-tense verbs repeatedly and naturally, so that learners like Priya begin to sense the pattern without being taught it explicitly. She should then break the remaining time into two or three shorter activities with distinct formats—perhaps a movement activity such as 'Head, Shoulders, Knees, and Toes' adapted to the target language, followed by a brief pair-speaking task—so that attention is refreshed across the lesson. Reading and writing tasks, if included at all, should be brief, supported by what children can already say aloud, and introduced only after the oral foundation is established. This restructuring aligns the lesson with the learners' actual developmental profile rather than imposing an adult learning model on children.*
+   *Answer: Ms. Reyes should replace the abstract grammar table and single 35-minute written task with a short sequence built around rich, comprehensible oral input, movement or song, and brief pair speaking. Formal rule application places demands on cognitive structures that six- and seven-year-olds are still developing; one extended task also ignores their shorter attention spans. The new sequence should channel children's social and physical energy, repeat the target language across varied formats, and introduce any reading or writing only briefly after learners can understand and use the language orally. A full-credit response should identify all three design problems—abstract rule explanation, excessive task length, and suppression of social or physical learning—and connect each proposed change to young learners' developmental profile.*
    *Anchor: "places demands on cognitive structures that are not yet in place"*
+
+### Scoring guidance
+
+**5:** Complete, accurate diagnosis and feasible action, justified with the module's relevant principle(s) and applied to the named context.
+**3-4:** Sound core response with one missing, underdeveloped, or weakly justified element.
+**1-2:** Partial recognition of the issue, but the action is vague, incomplete, or poorly connected to module content.
+**0:** Blank, irrelevant, or incompatible with the module's central principle.
