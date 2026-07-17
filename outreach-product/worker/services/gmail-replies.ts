@@ -1,4 +1,5 @@
 import { parse } from "node-html-parser";
+import { z } from "zod";
 import type { AppEnv } from "../env";
 import {
   GmailApiError,
@@ -18,6 +19,11 @@ interface GmailWatchRow {
   history_id: string;
   user_id: string;
 }
+
+const GmailPushDataSchema = z.object({
+  emailAddress: z.string().trim().min(1),
+  historyId: z.string().regex(/^\d+$/u),
+});
 
 export async function processGmailPush(
   env: AppEnv,
@@ -108,20 +114,12 @@ export async function reconcileRecentReplies(
 
 export function decodeGmailPushData(data: string) {
   try {
-    const parsed = JSON.parse(decodeBase64(data)) as {
-      emailAddress?: unknown;
-      historyId?: unknown;
-    };
-    const historyId = normalizeHistoryId(parsed.historyId);
-    if (
-      typeof parsed.emailAddress !== "string" ||
-      !(parsed.emailAddress && historyId)
-    ) {
-      throw new Error("missing emailAddress or historyId");
-    }
+    const parsed = GmailPushDataSchema.parse(
+      JSON.parse(decodeBase64(data), preserveNumericHistoryId)
+    );
     return {
       emailAddress: parsed.emailAddress.toLowerCase(),
-      historyId,
+      historyId: parsed.historyId,
     };
   } catch (error) {
     throw new GmailIntegrationError(
@@ -131,14 +129,21 @@ export function decodeGmailPushData(data: string) {
   }
 }
 
-function normalizeHistoryId(value: unknown) {
-  if (typeof value === "string") {
-    return value;
+function preserveNumericHistoryId(
+  key: string,
+  value: unknown,
+  context?: { source: string }
+) {
+  if (key === "historyId" && typeof value === "number") {
+    // Gmail documents historyId as a JSON string, but live push delivery has
+    // also emitted an integer. Preserve the source token so an int64 is never
+    // rounded through JavaScript Number before it becomes our canonical string.
+    if (!context) {
+      throw new Error("JSON source context is unavailable");
+    }
+    return context.source;
   }
-  if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) {
-    return String(value);
-  }
-  return "";
+  return value;
 }
 
 export async function markWatchError(
@@ -387,16 +392,12 @@ function latestHistoryId(left: string, right: string) {
 }
 
 function compareHistoryIds(left: string, right: string) {
-  try {
-    const leftId = BigInt(left);
-    const rightId = BigInt(right);
-    if (leftId === rightId) {
-      return 0;
-    }
-    return leftId > rightId ? 1 : -1;
-  } catch {
-    return left.localeCompare(right);
+  const leftId = BigInt(left);
+  const rightId = BigInt(right);
+  if (leftId === rightId) {
+    return 0;
   }
+  return leftId > rightId ? 1 : -1;
 }
 
 function requiredTopicName(env: AppEnv) {
