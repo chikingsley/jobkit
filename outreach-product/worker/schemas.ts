@@ -30,6 +30,7 @@ export const JobImportSchema = z.object({
   applyUrl: z.string().url(),
   board: z.string().default("seriousteachers"),
   company: z.string().default(""),
+  contactName: z.string().default(""),
   country: z.string().default(""),
   description: z.string().default(""),
   employerId: z.string().default(""),

@@ -16,6 +16,7 @@ export interface InventoryJob {
   board: string;
   company: string;
   compensation: InventoryCompensation;
+  contactName: string;
   country: string;
   description: string;
   id: string;
@@ -86,6 +87,7 @@ const numberPattern =
   /\d+(?:[ ,]\d{3})*(?:\.\d+)?\s*(?:k|thousand|million|m)?/giu;
 const COUNTRY_FOOTNOTE_PATTERN = /\*+$/u;
 const CURRENCY_CODE_PATTERN = /^[A-Z]{3}$/u;
+const JOINED_HONORIFIC_PATTERN = /^(Dr|Mr|Mrs|Ms|Prof)\.(?=\p{L})/u;
 const FROM_AMOUNT_PATTERN =
   /\b(?:from|starting(?: at| from)?|at least|minimum|min\.?)\b/u;
 const HOURLY_PERIOD_PATTERN =
@@ -141,6 +143,7 @@ function toInventoryJob(row: SourceJobRow): InventoryJob {
     board: row.board,
     company: row.company || fields.company || "",
     compensation: parseCompensation(salary, row.currency, countryFor(row)),
+    contactName: contactNameFor(fields),
     country: countryFor(row),
     description: description.slice(0, 12_000),
     id:
@@ -154,6 +157,18 @@ function toInventoryJob(row: SourceJobRow): InventoryJob {
     sourceUrl: row.url,
     title: row.title,
   };
+}
+
+function contactNameFor(fields: Record<string, string | undefined>) {
+  const name =
+    fields["Contact Person"]?.trim() ||
+    fields["Contact Name"]?.trim() ||
+    fields.Contact?.trim() ||
+    "";
+  return name.replace(
+    JOINED_HONORIFIC_PATTERN,
+    (_match, honorific: string) => `${honorific}. `
+  );
 }
 
 function sourceFields(rawJson: string): Record<string, string | undefined> {

@@ -5,7 +5,7 @@ import {
   ProfileImportProposalSchema,
 } from "../../src/features/onboarding/schema";
 import type { AppEnv } from "../env";
-import type { AiModelSelection } from "./model-catalog";
+import type { AiModelProvider, AiModelSelection } from "./model-catalog";
 import { createAiModel } from "./model-catalog";
 
 const confidence = z.enum(["high", "medium", "low"]);
@@ -123,7 +123,7 @@ const CHUNK_OVERLAP_CHARACTERS = 800;
 export interface GeneratedProfileProposal {
   modelId: string;
   proposal: ProfileImportProposal;
-  provider: "cerebras" | "mistral";
+  provider: AiModelProvider;
 }
 
 export class ProfileExtractionError extends Error {}

@@ -434,6 +434,7 @@ function toJobImport(row: Record<string, unknown>): JobImport {
     applyUrl: row.apply_url,
     board: row.board,
     company: row.company,
+    contactName: row.contact_name,
     country: row.country,
     description: row.description,
     employerId: row.employer_id,

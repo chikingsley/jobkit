@@ -7,10 +7,10 @@ const WHITESPACE_PATTERN = /\s+/u;
 export const APPLICATION_MESSAGE_INSTRUCTIONS = `You write concise, truthful job-application messages for the candidate.
 
 Message policy:
-- Begin with exactly "Hello," on its own line, followed by a blank line. Never use "Dear".
+- Begin with the exact requiredOpening on its own line, followed by a blank line. A named requiredOpening comes only from a structured job contact. Never invent or alter a recipient name. Never use "Dear".
 - Write in the candidate's first-person voice.
 - Use ordinary spoken English and common words. Sound like a capable person writing a normal email, not a résumé, formal statement, advertisement, or AI-generated cover letter.
-- approvedTemplate is the candidate's blessed message shape for this route, audience, and length. Keep its structure, order, and sentence character. Fill the bracketed slots from the job, adapt evidence details only where the profile supports something closer to this listing, and drop any line marked optional when nothing true supports it. Never restructure the template or add paragraphs it does not have.
+- approvedTemplate is the candidate's blessed message shape for this route, audience, and length. Keep its structure, order, and sentence character. Replace its generic opening with requiredOpening, fill the bracketed slots from the job, adapt evidence details only where the profile supports something closer to this listing, and drop any line marked optional when nothing true supports it. Never restructure the template or add paragraphs it does not have.
 - provenExamples are real emails the candidate sent that earned replies, interviews, or offers; use them to keep the voice honest. Never copy sentences or facts from them; the profile is the only source of facts.
 - Make the message unmistakably about this job: name the role or learner group from the listing where the template has a slot for it, and pair evidence with the workplace name when the profile provides one.
 - Never use "communicative" to describe teaching, lessons, or classes. State the plain meaning instead, such as conversation or speaking practice.
@@ -100,10 +100,14 @@ const MAX_MESSAGE_WORDS = 220;
 
 export function validateApplicationMessage(
   rawMessage: string,
+  requiredOpening: string,
   requiredEnding: string,
   route: ApplicationMessageRoute
 ): string {
-  const message = validateApplicationMessageOpening(rawMessage);
+  const message = validateApplicationMessageOpening(
+    rawMessage,
+    requiredOpening
+  );
   const problems: string[] = [];
   const normalizedWords = message
     .toLowerCase()
@@ -168,20 +172,28 @@ export function validateApplicationMessage(
   return message;
 }
 
-export function validateApplicationMessageOpening(rawMessage: string) {
+export function validateApplicationMessageOpening(
+  rawMessage: string,
+  requiredOpening = "Hello,"
+) {
   const message = rawMessage.replaceAll("\r\n", "\n").trim();
-  const problem = applicationMessageOpeningProblem(message);
+  const problem = applicationMessageOpeningProblem(message, requiredOpening);
   if (problem) {
     throw new Error(problem);
   }
   return message;
 }
 
-export function applicationMessageOpeningProblem(rawMessage: string) {
+export function applicationMessageOpeningProblem(
+  rawMessage: string,
+  requiredOpening = "Hello,"
+) {
   const message = rawMessage.replaceAll("\r\n", "\n").trim();
   const problems: string[] = [];
-  if (!message.startsWith("Hello,\n\n")) {
-    problems.push('message must begin with exactly "Hello," and a blank line');
+  if (!message.startsWith(`${requiredOpening}\n\n`)) {
+    problems.push(
+      `message must begin with exactly ${JSON.stringify(requiredOpening)} and a blank line`
+    );
   }
   if (
     message.toLowerCase().split(NON_ALPHABETIC_WORD_PATTERN).includes("dear")

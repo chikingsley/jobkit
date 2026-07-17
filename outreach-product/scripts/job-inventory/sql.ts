@@ -14,14 +14,14 @@ function jobStatements(job: InventoryJob, userId: string, timestamp: string) {
   const { compensation } = job;
   const statements = [
     `INSERT INTO jobs (
-      id,board,title,company,country,location,salary,description,source_url,
+      id,board,title,company,contact_name,country,location,salary,description,source_url,
       apply_url,employer_id,first_seen_at,updated_at,compensation_display,
       compensation_amount_min,compensation_amount_max,compensation_currency,
       compensation_period,compensation_qualifier,compensation_source,
       compensation_confidence,compensation_notes_json,opportunity_scope,
       market_segments_json,message_route
     ) VALUES (
-      ${sql(job.id)},${sql(job.board)},${sql(job.title)},${sql(job.company)},
+      ${sql(job.id)},${sql(job.board)},${sql(job.title)},${sql(job.company)},${sql(job.contactName)},
       ${sql(job.country)},${sql(job.location)},${sql(job.salary)},
       ${sql(job.description)},${sql(job.sourceUrl)},${sql(job.applyUrl)},'',
       ${sql(job.lastSeenAt)},${sql(timestamp)},${sql(compensation.display)},
@@ -33,6 +33,7 @@ function jobStatements(job: InventoryJob, userId: string, timestamp: string) {
       ${sql(JSON.stringify(job.marketSegments))},'advertised_position'
     ) ON CONFLICT(id) DO UPDATE SET
       board=excluded.board,title=excluded.title,company=excluded.company,
+      contact_name=excluded.contact_name,
       country=excluded.country,location=excluded.location,salary=excluded.salary,
       description=excluded.description,source_url=excluded.source_url,
       apply_url=excluded.apply_url,updated_at=excluded.updated_at,

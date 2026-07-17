@@ -9,13 +9,14 @@ export async function upsertJob(
   await db
     .prepare(
       `INSERT INTO jobs (
-        id,board,title,company,country,location,salary,description,
+        id,board,title,company,contact_name,country,location,salary,description,
         source_url,apply_url,employer_id,first_seen_at,updated_at
         ,opportunity_scope,market_segments_json,message_route
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       ON CONFLICT(id) DO UPDATE SET
         title=excluded.title,
         company=excluded.company,
+        contact_name=excluded.contact_name,
         country=excluded.country,
         location=excluded.location,
         salary=excluded.salary,
@@ -33,6 +34,7 @@ export async function upsertJob(
       job.board,
       job.title,
       job.company,
+      job.contactName,
       job.country,
       job.location,
       job.salary,
