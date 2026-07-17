@@ -99,21 +99,21 @@ Covers units 13.1 to 13.3. 16 points total; pass mark 70%. Section B re-asks que
 **10. What does substituting 'when' for 'if' in a first conditional sentence signal to the listener?**
 
    a. The condition is unreal
-   b. The condition is hypothetical
-   c. The condition is certain to occur
+   b. The condition is certain to occur
+   c. The condition is hypothetical
    d. The result is in the past
 
-   *Answer: c. The condition is certain to occur*
+   *Answer: b. The condition is certain to occur*
    *Anchor: "unit 3.2 quiz"*
 
 **11. According to Karpicke and Roediger (2008), approximately what percentage of word pairs did participants in the repeated-retrieval condition recall correctly after one week?**
 
    a. 33%
-   b. 80%
-   c. 50%
+   b. 50%
+   c. 80%
    d. 95%
 
-   *Answer: b. 80%*
+   *Answer: c. 80%*
    *Anchor: "unit 5.1 quiz"*
 
 ## Section C — Scenario (5 points)
@@ -123,3 +123,4 @@ Covers units 13.1 to 13.3. 16 points total; pass mark 70%. Section B re-asks que
    *Answer: Mr. Osei should replace the grammar quiz with a two-component assessment that matches his learning goals. First, he should use a performance-based task — for example, having each student (Carlos, Daniel, Wei, Fatima, Yuki, or Priya) lead a small-group discussion while he listens and completes a teacher rubric. The rubric score becomes the summative record: a defensible final grade reflecting each student's communicative achievement. This aligns directly with what was taught because the assessment task and the learning goal point toward the same outcome — spoken discussion skill — rather than written knowledge of grammar labels. A grammar quiz, by contrast, would test knowledge about discourse markers, not the ability to deploy them under real communicative pressure; a student like Carlos might use them fluently in speech yet blank on a written definition, so the quiz would misrepresent his actual ability. Second, Mr. Osei should have classmates complete peer assessment worksheets during the same discussion. These forms are explicitly not a formal grade; they give the discussion leader structured feedback from the group's perspective — for instance, whether Fatima included everyone or whether Wei's contributions were clear — information the student can use to improve before or alongside the summative judgment. To ensure fairness and clarity, Mr. Osei should show students both the teacher rubric and the peer worksheet in advance, so they know precisely how they will be evaluated and can articulate each criterion in their own words. This transparency satisfies the clarity requirement for a well-designed assessment task. Together, the two components serve entirely different purposes while sitting side by side in the same lesson: one produces a final record, the other produces actionable feedback.*
    *Anchor: "the assessment task and the learning goal point toward the same outcome"*
    *Rubric (5 points): rejects the grammar quiz as misaligned with the spoken-discussion goal (1); designs a performance-based summative component that targets that goal (2); adds a formative component giving feedback before the final grade (1); explains how each component aligns with what was taught (1).*
+

@@ -90,10 +90,11 @@ Covers units 7.1 to 7.4. 19 points total; pass mark 70%. Section B re-asks quest
 
 ## Section B — Review (2 points, 1 each)
 
-**13. What is the schwa, and in what type of syllable does it appear exclusively?**
+**13. Explain why function words must be included in sufficient quantity in a Word Bricks collection, using the unit's reasoning.**
 
 **14. Explain the difference in meaning between these two sentences: 'If I applied for that job, I would earn more money' and 'If I had applied for that job, I would have earned more money.'**
 
 ## Section C — Scenario (5 points)
 
 **15. Mr. Osei is teaching an intermediate adult class. He has planned a listening lesson using a recorded radio interview about workplace safety. When he arrives, he discovers the classroom's audio equipment is broken and cannot be repaired before the lesson begins. His students — Carlos, Daniel, Wei, Fatima, Yuki, and Priya — are already seated and waiting. Mr. Osei still wants listening to remain the central skill of the lesson. What should he do, and why?**
+

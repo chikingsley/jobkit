@@ -116,10 +116,11 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
 **17. Which of the following sentences correctly demonstrates the absence of do-support with a modal verb?**
 
    a. Do you will come tomorrow?
-   b. Does she can stay late?
-   c. Did he must leave early?
-   d. Will you come tomorrow?
+   b. Will you come tomorrow?
+   c. Does she can stay late?
+   d. Did he must leave early?
 
 ## Section C — Scenario (5 points)
 
 **18. Mr. Osei is running a speaking lesson with a mixed-confidence class. He has set up a free discussion task in which Carlos, Daniel, Wei, Fatima, Yuki, and Priya debate whether social media does more harm than good. Two minutes into the discussion, Fatima makes a clear subject-verb agreement error ('Everyone are saying the same thing') while making a strong, well-reasoned point. Mr. Osei notices the error. What should he do at this moment, and why?**
+

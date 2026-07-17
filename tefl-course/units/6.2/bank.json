@@ -3,8 +3,8 @@
     "type": "mc",
     "question": "According to the unit, what is the primary reason a learner who mispronounces a vowel in a word may benefit from the teacher pointing silently to the chart rather than repeating the word aloud?",
     "options": [
-      "Repeating the word aloud reinforces incorrect muscle memory in the learner.",
       "Speaking the word again repeats the input that has already failed to land.",
+      "Repeating the word aloud reinforces incorrect muscle memory in the learner.",
       "Silent pointing activates a different part of the brain than auditory input.",
       "The chart displays stress patterns that spoken models cannot convey."
     ],
@@ -15,8 +15,8 @@
     "type": "mc",
     "question": "Which of the following best explains why the unit recommends that teachers introduce phonemic symbols in small clusters linked to vocabulary already being studied, rather than presenting the full chart in one lesson?",
     "options": [
-      "Learners find it easier to memorize symbols when they are grouped by place of articulation.",
       "Each symbol arrives with a concrete word attached to it, allowing familiarity to build gradually.",
+      "Learners find it easier to memorize symbols when they are grouped by place of articulation.",
       "The full chart contains too many diphthongs for learners to process in a single session.",
       "Introducing all 44 symbols at once violates the one symbol, one sound principle."
     ],
@@ -28,9 +28,9 @@
     "question": "The unit states that most learners' dictionaries print a full phonemic transcription alongside every headword. What practical benefit does this give a learner who can read those transcriptions?",
     "options": [
       "It allows the learner to identify which accent a word belongs to before pronouncing it.",
-      "It enables the learner to look up any unfamiliar word and know immediately how to say it.",
       "It helps the learner distinguish between British and American vowel inventories.",
-      "It removes the need for the learner to study the phonemic chart independently."
+      "It removes the need for the learner to study the phonemic chart independently.",
+      "It enables the learner to look up any unfamiliar word and know immediately how to say it."
     ],
     "answer": "It enables the learner to look up any unfamiliar word and know immediately how to say it.",
     "anchor": "can look up any unfamiliar word and know immediately how to say it"

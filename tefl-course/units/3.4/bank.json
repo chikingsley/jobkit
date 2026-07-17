@@ -3,9 +3,9 @@
     "type": "mc",
     "question": "According to the unit, what distinguishes 'She walked into the room' from 'I ran into my old teacher at the market'?",
     "options": [
-      "In the first sentence, 'into' introduces a location phrase; in the second, it has bonded with 'run' to create a new meaning.",
       "Both sentences use 'into' as a particle that changes the meaning of the base verb.",
       "The first sentence contains a phrasal verb, while the second uses an ordinary verb-plus-preposition combination.",
+      "In the first sentence, 'into' introduces a location phrase; in the second, it has bonded with 'run' to create a new meaning.",
       "In both sentences, 'into' functions as a preposition pointing toward a location."
     ],
     "answer": "In the first sentence, 'into' introduces a location phrase; in the second, it has bonded with 'run' to create a new meaning.",
@@ -16,8 +16,8 @@
     "question": "Which statement about the relationship between transitivity and separability is explicitly supported by the unit?",
     "options": [
       "All transitive phrasal verbs are separable.",
-      "All separable phrasal verbs are intransitive.",
       "Separability is a distinction among transitive phrasal verbs only; intransitive phrasal verbs stand outside the separable/inseparable contrast.",
+      "All separable phrasal verbs are intransitive.",
       "Inseparable phrasal verbs are always intransitive."
     ],
     "answer": "Separability is a distinction among transitive phrasal verbs only; intransitive phrasal verbs stand outside the separable/inseparable contrast.",
@@ -27,10 +27,10 @@
     "type": "mc",
     "question": "What specific purpose does the unit assign to the particle-swap activity using the base verb 'give'?",
     "options": [
-      "To help learners memorise the correct spelling of particles through repeated writing practice.",
-      "To train learners to treat particles as meaningful units so that unfamiliar combinations become less opaque.",
+      "To help learners memorize the correct spelling of particles through repeated writing practice.",
       "To demonstrate that all particles attached to 'give' share a single core meaning.",
-      "To show learners that phrasal verbs with 'give' are always inseparable."
+      "To show learners that phrasal verbs with 'give' are always inseparable.",
+      "To train learners to treat particles as meaningful units so that unfamiliar combinations become less opaque."
     ],
     "answer": "To train learners to treat particles as meaningful units so that unfamiliar combinations become less opaque.",
     "anchor": "learners begin to treat particles as meaningful units rather than fixed attachments, and unfamiliar combinations become less opaque"

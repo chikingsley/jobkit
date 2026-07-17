@@ -5,8 +5,8 @@
     "options": [
       "Which texts or materials are most engaging for this level?",
       "How long should each stage of the lesson last?",
-      "What will students be able to do with the content by the time the lesson ends?",
-      "Which activities have worked well with this class before?"
+      "Which activities have worked well with this class before?",
+      "What will students be able to do with the content by the time the lesson ends?"
     ],
     "answer": "What will students be able to do with the content by the time the lesson ends?",
     "anchor": "the first question is what his students will be able to do with a text by the time the lesson ends"
@@ -16,8 +16,8 @@
     "question": "The unit argues that learners benefit from knowing the lesson aim in advance. Which of the following best explains why?",
     "options": [
       "It allows learners to prepare the correct materials before class begins.",
-      "It enables learners to monitor their own progress and recognize when they have succeeded.",
       "It ensures learners complete every planned activity within the allotted time.",
+      "It enables learners to monitor their own progress and recognize when they have succeeded.",
       "It helps learners memorize the target vocabulary more efficiently."
     ],
     "answer": "It enables learners to monitor their own progress and recognize when they have succeeded.",
@@ -29,8 +29,8 @@
     "options": [
       "It prevents the teacher from using communicative activities.",
       "It makes informal assessment impossible during the lesson.",
-      "The remaining lesson time has no anchor and activities risk becoming disconnected from any clear purpose.",
-      "It forces the teacher to rely entirely on teacher-centered language."
+      "It forces the teacher to rely entirely on teacher-centered language.",
+      "The remaining lesson time has no anchor and activities risk becoming disconnected from any clear purpose."
     ],
     "answer": "The remaining lesson time has no anchor and activities risk becoming disconnected from any clear purpose.",
     "anchor": "The remaining time has no anchor, and activities risk becoming disconnected from any clear purpose"

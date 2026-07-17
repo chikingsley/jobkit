@@ -4,8 +4,8 @@
     "question": "How many studies did Jeon and Day (2016) synthesize in their meta-analysis, and why does this number matter?",
     "options": [
       "34 studies, because a smaller sample produces more precise effect sizes",
-      "49 studies, because a broader sample reduces the chance that results reflect an unusual cluster from a narrow range of contexts",
       "49 studies, because more studies always produce larger effect sizes",
+      "49 studies, because a broader sample reduces the chance that results reflect an unusual cluster from a narrow range of contexts",
       "34 studies, because matching Nakanishi's sample size allows direct comparison"
     ],
     "answer": "49 studies, because a broader sample reduces the chance that results reflect an unusual cluster from a narrow range of contexts",
@@ -15,8 +15,8 @@
     "type": "mc",
     "question": "What is the primary reason the unit recommends starting with a single reading station rather than setting up several at once?",
     "options": [
-      "Multiple stations require more books than most schools can afford",
       "One well-resourced, well-organized corner that students understand and value is more effective than three stations that feel provisional",
+      "Multiple stations require more books than most schools can afford",
       "Students become confused when too many reading options are available simultaneously",
       "School administrators are unlikely to approve more than one station at a time"
     ],
@@ -27,9 +27,9 @@
     "type": "mc",
     "question": "How does the unit distinguish extensive reading from intensive reading?",
     "options": [
+      "Extensive reading involves moving through whole books at a comfortable pace, while intensive reading involves a teacher guiding students slowly through a short, often difficult passage line by line",
       "Extensive reading uses graded readers while intensive reading uses authentic texts",
       "Extensive reading focuses on grammar and vocabulary while intensive reading focuses on enjoyment",
-      "Extensive reading involves moving through whole books at a comfortable pace, while intensive reading involves a teacher guiding students slowly through a short, often difficult passage line by line",
       "Extensive reading is done at home while intensive reading takes place in the classroom"
     ],
     "answer": "Extensive reading involves moving through whole books at a comfortable pace, while intensive reading involves a teacher guiding students slowly through a short, often difficult passage line by line",

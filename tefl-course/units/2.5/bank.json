@@ -5,7 +5,7 @@
     "options": [
       "Interlanguage",
       "Transfer",
-      "Fossilisation",
+      "Fossilization",
       "Contrastive analysis"
     ],
     "answer": "Transfer",
@@ -17,8 +17,8 @@
     "options": [
       "Negative transfer",
       "Omission",
-      "Overcorrection",
-      "Hypercorrection avoidance"
+      "Hypercorrection avoidance",
+      "Overcorrection"
     ],
     "answer": "Overcorrection",
     "anchor": "Overcorrection produces a different pattern. Having learned that English requires articles, some learners begin inserting 'the' where zero article is required."

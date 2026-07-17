@@ -3,8 +3,8 @@
     "type": "mc",
     "question": "Which sentence correctly uses 'be able to' to fill a grammatical gap that 'can' cannot cover?",
     "options": [
-      "She can attend the meeting next week.",
       "She will be able to attend the meeting.",
+      "She can attend the meeting next week.",
       "She could to attend the meeting next week.",
       "She may can attend the meeting."
     ],
@@ -16,9 +16,9 @@
     "question": "What distinguishes 'must' from 'have to' when expressing obligation?",
     "options": [
       "'Must' refers only to past obligations, while 'have to' refers to present ones.",
-      "'Must' expresses obligation originating with the speaker, while 'have to' expresses obligation from an external source.",
       "'Must' is informal and 'have to' is formal.",
-      "'Must' requires do-support in questions, while 'have to' does not."
+      "'Must' requires do-support in questions, while 'have to' does not.",
+      "'Must' expresses obligation originating with the speaker, while 'have to' expresses obligation from an external source."
     ],
     "answer": "'Must' expresses obligation originating with the speaker, while 'have to' expresses obligation from an external source.",
     "anchor": "must expresses strong obligation originating with the speaker... Have to expresses obligation that comes from an external source"
@@ -27,8 +27,8 @@
     "type": "mc",
     "question": "In the sentence 'Students may use dictionaries during the test,' what meaning does 'may' carry?",
     "options": [
-      "Epistemic possibility — it is possible that students will use dictionaries.",
       "Formal permission — students are allowed to use dictionaries.",
+      "Epistemic possibility — it is possible that students will use dictionaries.",
       "Polite request — students are asking to use dictionaries.",
       "Tentative prediction — students might use dictionaries."
     ],

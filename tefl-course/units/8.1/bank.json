@@ -3,8 +3,8 @@
     "type": "mc",
     "question": "According to the unit, what motivational advantage do open-ended, student-centered activities have over activities with a single correct answer?",
     "options": [
-      "They allow the teacher to speak more and model accurate language for students.",
       "Students have a personal stake in the conversation because they are expressing what they genuinely think.",
+      "They allow the teacher to speak more and model accurate language for students.",
       "They eliminate the need for preparation time before the speaking task begins.",
       "They are easier to assess because every student produces the same type of output."
     ],
@@ -17,8 +17,8 @@
     "options": [
       "It requires students to paraphrase a sentence without repeating the original wording.",
       "It asks each student to select a word card and deliver an opinion to the whole class.",
-      "A student can contribute a single word and still participate meaningfully in building a complete sentence.",
-      "It uses a problem-solution format that encourages both critical and creative thinking."
+      "It uses a problem-solution format that encourages both critical and creative thinking.",
+      "A student can contribute a single word and still participate meaningfully in building a complete sentence."
     ],
     "answer": "A student can contribute a single word and still participate meaningfully in building a complete sentence.",
     "anchor": "A student named Yuki who hesitates to speak at length can contribute a single word and still participate meaningfully in the construction of something larger."
@@ -27,7 +27,7 @@
     "type": "mc",
     "question": "The unit identifies three features shared by both the problem-solution role-play and the TV Talk Show activity. Which of the following is one of those three features?",
     "options": [
-      "Students are given a grammatical structure to practise and must use it throughout the performance.",
+      "Students are given a grammatical structure to practice and must use it throughout the performance.",
       "The teacher supplies the characters and dialogue so that students can focus on accurate delivery.",
       "Students make creative decisions about characters or scenarios, meaning the language they produce is genuinely their own.",
       "The activity is conducted entirely in small groups with no whole-class performance phase."

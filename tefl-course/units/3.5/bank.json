@@ -3,10 +3,10 @@
     "type": "mc",
     "question": "Which preposition best completes the sentence 'The power went out ___ the concert'?",
     "options": [
-      "during",
       "for",
       "since",
-      "until"
+      "until",
+      "during"
     ],
     "answer": "during",
     "anchor": "\"During\" indicates that something happens within the boundaries of a named period, with the period itself as the focus"
@@ -28,8 +28,8 @@
     "question": "According to the unit, why is English described as having a 'closed lexical class' of prepositions?",
     "options": [
       "Prepositions can only be learned through repeated exposure, not rules.",
-      "The set of prepositions is fixed and new ones are almost never added to the language.",
       "Each preposition carries only one fixed meaning that never changes.",
+      "The set of prepositions is fixed and new ones are almost never added to the language.",
       "Prepositions cannot be combined with adjectives or verbs."
     ],
     "answer": "The set of prepositions is fixed and new ones are almost never added to the language.",

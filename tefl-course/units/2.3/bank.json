@@ -15,9 +15,9 @@
     "type": "mc",
     "question": "The unit uses the image of a horizontal line representing time to explain aspect. Which of the following correctly matches the two aspects to their visual representations?",
     "options": [
-      "A. Simple aspect = a segment of the line showing spread; continuous aspect = a single dot with no visible interior.",
-      "B. Simple aspect = a bridge between two points on the line; continuous aspect = a single dot.",
-      "C. Simple aspect = a single dot with no visible interior; continuous aspect = a segment showing the action spreading across it.",
+      "A. Simple aspect = a single dot with no visible interior; continuous aspect = a segment showing the action spreading across it.",
+      "B. Simple aspect = a segment of the line showing spread; continuous aspect = a single dot with no visible interior.",
+      "C. Simple aspect = a bridge between two points on the line; continuous aspect = a single dot.",
       "D. Simple aspect = a segment showing duration; continuous aspect = a bridge connecting two time points."
     ],
     "answer": "C. Simple aspect = a single dot with no visible interior; continuous aspect = a segment showing the action spreading across it.",
@@ -28,9 +28,9 @@
     "question": "The unit argues that a learner of English whose first language is Mandarin faces a particular challenge with the English tense-aspect system. What is that challenge, according to the unit?",
     "options": [
       "A. Mandarin marks both tense and aspect through verb inflection, so learners must unlearn inflectional habits.",
-      "B. Mandarin does not inflect verbs for tense and marks aspect with particles, so the learner needs explicit explanation of what the English system is doing.",
-      "C. Mandarin has more tenses than English, causing learners to over-differentiate time reference.",
-      "D. Mandarin uses modal auxiliaries for future time in the same way English does, creating false transfer errors."
+      "B. Mandarin has more tenses than English, causing learners to over-differentiate time reference.",
+      "C. Mandarin uses modal auxiliaries for future time in the same way English does, creating false transfer errors.",
+      "D. Mandarin does not inflect verbs for tense and marks aspect with particles, so the learner needs explicit explanation of what the English system is doing."
     ],
     "answer": "B. Mandarin does not inflect verbs for tense and marks aspect with particles, so the learner needs explicit explanation of what the English system is doing.",
     "anchor": "Mandarin, for instance, does not inflect verbs for tense; aspect is marked by particles rather than by changes to the verb stem."

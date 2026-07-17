@@ -16,9 +16,9 @@
     "question": "The unit describes a chain story activity as a more demanding retrieval event than standard pair review. What makes it more demanding, according to the unit?",
     "options": [
       "A. It requires students to write longer sentences than they would in a silent retrieval phase.",
-      "B. It forces students to use words productively rather than to recognize them passively.",
-      "C. It eliminates the need for teacher confirmation at the whole-class stage.",
-      "D. It compresses several spaced review sessions into a single activity block."
+      "B. It eliminates the need for teacher confirmation at the whole-class stage.",
+      "C. It compresses several spaced review sessions into a single activity block.",
+      "D. It forces students to use words productively rather than to recognize them passively."
     ],
     "answer": "It forces students to use words productively rather than to recognize them passively.",
     "anchor": "requires students to use words productively rather than to recognize them passively, a more demanding retrieval event"
@@ -29,8 +29,8 @@
     "options": [
       "A. After the word has appeared in at least three consecutive lessons regardless of student accuracy.",
       "B. Once the word has been introduced in a formal test and the majority of students scored correctly.",
-      "C. When a word has survived several retrieval attempts across progressively longer gaps without error.",
-      "D. As soon as the word has been reviewed twice, because two spaced encounters are sufficient for consolidation."
+      "C. As soon as the word has been reviewed twice, because two spaced encounters are sufficient for consolidation.",
+      "D. When a word has survived several retrieval attempts across progressively longer gaps without error."
     ],
     "answer": "When a word has survived several retrieval attempts across progressively longer gaps without error.",
     "anchor": "when a word has survived several retrieval attempts across progressively longer gaps without error, the teacher can reasonably reduce how often it appears"

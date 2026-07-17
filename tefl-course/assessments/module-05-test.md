@@ -102,3 +102,4 @@ Covers units 5.1 to 5.4. 19 points total; pass mark 70%. Section B re-asks quest
 ## Section C — Scenario (5 points)
 
 **15. Mr. Osei introduces 20 new vocabulary items to his class on Monday. He spends 35 minutes drilling the words with the whole group, displaying each word alongside its translation on the board while learners read through the list repeatedly. He plans to move on to a new topic on Tuesday and not return to these words until the end-of-term test. Carlos and Wei both feel confident after the session because the words feel familiar. Yuki, however, quietly tells Mr. Osei she is worried she will forget everything by next week. Is Yuki's concern justified? What would you advise Mr. Osei to change about his approach, and why?**
+

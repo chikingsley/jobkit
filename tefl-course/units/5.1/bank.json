@@ -15,9 +15,9 @@
     "type": "mc",
     "question": "The unit describes searching through visible Word Bricks to find ones that match a category. How does the unit classify this activity, and why?",
     "options": [
+      "As recognition, because the words are in front of the student and the task is to sort them",
       "As retrieval practice, because students must handle and evaluate each word",
       "As retrieval practice, because the words are sorted under time pressure",
-      "As recognition, because the words are in front of the student and the task is to sort them",
       "As re-presentation, because the teacher selects which bricks are shown"
     ],
     "answer": "As recognition, because the words are in front of the student and the task is to sort them",
@@ -28,8 +28,8 @@
     "question": "According to the unit's three-question planning framework, what ratio problem does a teacher create by spending twenty minutes presenting vocabulary and only five minutes on practice?",
     "options": [
       "The teacher leaves too little time for students to copy definitions accurately",
-      "The teacher has the ratio backwards, since retrieval events should occupy the bulk of lesson time",
       "The teacher provides too many retrieval events before students have enough exposure",
+      "The teacher has the ratio backwards, since retrieval events should occupy the bulk of lesson time",
       "The teacher compresses the study phase so much that learners cannot attempt retrieval later"
     ],
     "answer": "The teacher has the ratio backwards, since retrieval events should occupy the bulk of lesson time",

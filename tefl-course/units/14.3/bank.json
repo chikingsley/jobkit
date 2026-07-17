@@ -3,8 +3,8 @@
     "type": "mc",
     "question": "According to the unit, what happens when students take on roles other than their own in the television talk show simulation?",
     "options": [
-      "Students are able to avoid speaking spontaneously because their roles are fully scripted in advance",
       "Students are encouraged to present information in new ways and to think from perspectives they would not ordinarily occupy",
+      "Students are able to avoid speaking spontaneously because their roles are fully scripted in advance",
       "Students focus exclusively on factual recall because the talk show format requires accurate reporting",
       "Students become less motivated because they cannot draw on their personal experience"
     ],
@@ -28,9 +28,9 @@
     "question": "The unit's practical action plan recommends that a teacher begin by identifying a single existing lesson rather than designing an entirely new unit. What reason does the unit give for this recommendation?",
     "options": [
       "New units require administrative approval, which takes longer than most teachers can afford",
-      "One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing",
       "Students perform better on thinking tasks when the topic is one they have already studied in previous years",
-      "Redesigning a lesson from the ground up eliminates the factual groundwork that open tasks require"
+      "Redesigning a lesson from the ground up eliminates the factual groundwork that open tasks require",
+      "One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing"
     ],
     "answer": "One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing",
     "anchor": "One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing"

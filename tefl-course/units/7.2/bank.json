@@ -16,8 +16,8 @@
     "question": "What does the unit say happens when a reader has strong decoding skills but no background knowledge of a topic?",
     "options": [
       "Top-down processing compensates fully for the lack of background knowledge.",
-      "Bottom-up accuracy alone may not be enough to produce genuine comprehension.",
       "The reader can still construct meaning by focusing on spelling patterns.",
+      "Bottom-up accuracy alone may not be enough to produce genuine comprehension.",
       "Rote memorization of vocabulary items fills the gap left by missing prior knowledge."
     ],
     "answer": "Bottom-up accuracy alone may not be enough to produce genuine comprehension.",
@@ -28,9 +28,9 @@
     "question": "What principle does the unit identify as governing the choice of texts for a reading lesson?",
     "options": [
       "Texts should be chosen because they are readily available and easy to photocopy.",
-      "Texts should be chosen because they carry genuine communicative purpose.",
       "Texts should be chosen to match a single narrow proficiency band in the class.",
-      "Texts should be chosen primarily for their grammatical complexity and range."
+      "Texts should be chosen primarily for their grammatical complexity and range.",
+      "Texts should be chosen because they carry genuine communicative purpose."
     ],
     "answer": "Texts should be chosen because they carry genuine communicative purpose.",
     "anchor": "texts should be chosen because they carry genuine communicative purpose, not merely because they happen to be on hand"

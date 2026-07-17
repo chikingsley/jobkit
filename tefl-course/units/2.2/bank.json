@@ -16,9 +16,9 @@
     "question": "In the sentence 'The list on the whiteboard confused Daniel,' what grammatical role does the prepositional phrase 'on the whiteboard' perform?",
     "options": [
       "It acts as the subject of the sentence.",
-      "It modifies the noun 'list'.",
       "It fills an adverbial role after the object.",
-      "It functions as a subject complement."
+      "It functions as a subject complement.",
+      "It modifies the noun 'list'."
     ],
     "answer": "It modifies the noun 'list'.",
     "anchor": "the prepositional phrase 'on the whiteboard' modifies the noun 'list'"
@@ -27,8 +27,8 @@
     "type": "mc",
     "question": "A student writes 'He seems tiredness.' What has the student misunderstood about the slot following a linking verb?",
     "options": [
-      "They have used an intransitive verb where a transitive one is required.",
       "They have treated the complement slot as though it requires a noun the way an object does.",
+      "They have used an intransitive verb where a transitive one is required.",
       "They have placed an adverbial between the verb and its object.",
       "They have confused a subordinate clause with a main clause."
     ],

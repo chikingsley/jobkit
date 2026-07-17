@@ -107,3 +107,4 @@ Covers units 12.1 to 12.4. 19 points total; pass mark 70%. Section B re-asks que
 ## Section C — Scenario (5 points)
 
 **15. Mr. Osei is planning a reading lesson for his mixed-level adult class. After observing his students for two weeks, he has noticed that Daniel always draws diagrams in his notebook, Yuki frequently asks to work alone, and Carlos often struggles to retain new vocabulary. A colleague suggests that Mr. Osei should diagnose each learner's dominant learning style — visual for Daniel, solitary for Yuki — and then design separate instructional tracks matched to those styles, so that Daniel receives only diagram-based tasks and Yuki always works independently. Mr. Osei is unsure whether to follow this advice. What would you recommend he do instead, and why?**
+

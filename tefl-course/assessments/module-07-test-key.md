@@ -126,10 +126,10 @@ Covers units 7.1 to 7.4. 19 points total; pass mark 70%. Section B re-asks quest
 
 ## Section B — Review (2 points, 1 each)
 
-**13. What is the schwa, and in what type of syllable does it appear exclusively?**
+**13. Explain why function words must be included in sufficient quantity in a Word Bricks collection, using the unit's reasoning.**
 
-   *Answer: The schwa, transcribed as /ə/, is the most frequent vowel sound in English and appears exclusively in unstressed syllables.*
-   *Anchor: "unit 6.2 quiz"*
+   *Answer: Without enough function words, students can hold content bricks but cannot build grammatically complete sentences; for example, a student with 'cat,' 'drink,' and 'water' but no brick for 'the' or 'can' is unable to produce even a simple sentence.*
+   *Anchor: "unit 5.3 quiz"*
 
 **14. Explain the difference in meaning between these two sentences: 'If I applied for that job, I would earn more money' and 'If I had applied for that job, I would have earned more money.'**
 
@@ -143,3 +143,4 @@ Covers units 7.1 to 7.4. 19 points total; pass mark 70%. Section B re-asks quest
    *Answer: Mr. Osei should not abandon the listening focus simply because the audio equipment has failed. The module makes clear that when audio-playing technology is unavailable, the teacher still has workable options that keep listening at the center of the activity. Two are directly applicable here. First, Mr. Osei can conduct a dictation task: he reads aloud from the script or a summary of the radio interview while Carlos, Daniel, Wei, Fatima, Yuki, and Priya transcribe what they hear. This gives students controlled practice connecting sounds to written words — a sub-skill the module identifies as one of the specific gains audio materials make possible — without requiring any equipment. Second, if a colleague is available, Mr. Osei could invite that person into the classroom as a guest speaker to discuss workplace safety. This exposes students to a voice, pace, and accent different from Mr. Osei's own, which the module describes as itself a form of listening challenge. Either option preserves the lesson's receptive-skill focus. Mr. Osei should also consider retaining any pre-listening work he had planned — such as activating prior knowledge about workplace safety through pictures or questions — because that stage reduces the distance between what learners already know and what the spoken input will demand of them, regardless of whether the source is a recording or a live voice. The justification for all of these decisions rests on the module's principle that listening develops through deliberate, structured practice, and that the teacher's role is to control the input and give students repeated opportunities to process spoken language with a clear purpose — goals that dictation and a guest speaker both serve.*
    *Anchor: "Neither option requires equipment, and both keep listening at the center of the activity."*
    *Rubric (5 points): keeps listening as the lesson focus rather than abandoning it (1); gives one workable technique for delivering listening input without the equipment, such as reading the text aloud (2); adds a second technique or task adaptation (1); reasoning grounded in the module (1).*
+

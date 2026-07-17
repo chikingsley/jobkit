@@ -4,8 +4,8 @@
     "question": "According to the unit, what is the primary cost of concentrating authority in the controller role during a teacher-centered lesson?",
     "options": [
       "Students become confused about lesson objectives without teacher direction.",
-      "Students have limited opportunities to produce language freely or make decisions about their own learning.",
       "The teacher cannot monitor student performance while managing behavior.",
+      "Students have limited opportunities to produce language freely or make decisions about their own learning.",
       "Transitions between activities become less smooth without student input."
     ],
     "answer": "Students have limited opportunities to produce language freely or make decisions about their own learning.",
@@ -16,9 +16,9 @@
     "question": "The unit describes tools such as the Discussion Leader Self-Assessment Worksheet and the Peer Assessment Worksheet. In which teacher role does distributing these tools place the teacher?",
     "options": [
       "Controller, because the teacher decides which students receive which worksheets.",
+      "Resource, because the tools provide structured support so students can operate with genuine independence.",
       "Monitor, because the worksheets allow the teacher to observe student performance unobtrusively.",
-      "Prompter, because the worksheets help students retrieve answers they could not produce alone.",
-      "Resource, because the tools provide structured support so students can operate with genuine independence."
+      "Prompter, because the worksheets help students retrieve answers they could not produce alone."
     ],
     "answer": "Resource, because the tools provide structured support so students can operate with genuine independence.",
     "anchor": "The teacher who distributes these tools is acting as a resource: providing the support in advance so that students can operate with genuine independence"

@@ -139,3 +139,4 @@ Covers units 3.1 to 3.6. 25 points total; pass mark 70%. Section B re-asks quest
 ## Section C — Scenario (5 points)
 
 **21. Mr. Osei is conducting a reported speech lesson. He asks the class to report what Carlos said earlier that morning. Carlos had said, 'I can explain my answer.' Yuki writes on the board: 'Carlos said he could explain his answer.' Daniel, however, writes: 'Carlos says he could explain his answer.' Mr. Osei notices that Daniel's sentence contains an error but is unsure how to explain it clearly to the class. What would you advise Mr. Osei to say to Daniel, and why?**
+

@@ -99,11 +99,12 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
 
 **14. According to the unit, what is the primary purpose of a comprehension-checking question such as 'How long do you have to answer the questions?'**
 
-   a. To collect evidence that students have processed an instruction
-   b. To give students extra practice producing spoken language
-   c. To fill time between activities during a transition
+   a. To give students extra practice producing spoken language
+   b. To fill time between activities during a transition
+   c. To collect evidence that students have processed an instruction
    d. To assess whether students have memorized new vocabulary
 
 ## Section C — Scenario (5 points)
 
 **15. Ms. Reyes is teaching a primary class of six- and seven-year-olds. She has planned a single 35-minute activity: learners sit quietly, study a printed grammar table showing present-tense verb endings, and then complete a written gap-fill exercise. Five minutes in, one boy is whispering to his neighbor, a girl by the window is drawing on her worksheet, and another child has put her head on the desk. Only two children at the front are still attempting the exercise, and both are visibly struggling. Ms. Reyes is frustrated and cannot understand why the lesson is failing. As a TEFL trainee observing this class, what would you tell Ms. Reyes she should change, and why?**
+

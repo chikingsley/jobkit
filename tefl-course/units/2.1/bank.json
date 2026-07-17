@@ -5,8 +5,8 @@
     "options": [
       "a dusty road",
       "three nervous students",
-      "the students seemed nervous",
-      "a careful driver"
+      "a careful driver",
+      "the students seemed nervous"
     ],
     "answer": "the students seemed nervous",
     "anchor": "In predicative position, the adjective follows a linking verb and describes the subject, as in the students seemed nervous"
@@ -16,8 +16,8 @@
     "question": "What is the grammatical role of 'in front of' in the sentence 'The car parked in front of the gate'?",
     "options": [
       "Three separate words with independent grammatical roles",
-      "A subordinating conjunction introducing a dependent clause",
       "A complex preposition functioning as a single unit",
+      "A subordinating conjunction introducing a dependent clause",
       "A coordinating conjunction joining two noun phrases"
     ],
     "answer": "A complex preposition functioning as a single unit",
@@ -27,12 +27,12 @@
     "type": "mc",
     "question": "Why does metalanguage matter when a teacher reads a course syllabus entry such as 'modal verbs of deduction'?",
     "options": [
+      "It enables the teacher to map syllabus labels onto actual language forms and their grammatical behavior.",
       "It allows the teacher to correct student pronunciation errors immediately.",
-      "It enables the teacher to map syllabus labels onto actual language forms and their grammatical behaviour.",
       "It ensures the teacher can write the target forms on the board without consulting a reference.",
       "It replaces the need for a grammar reference when planning lessons."
     ],
-    "answer": "It enables the teacher to map syllabus labels onto actual language forms and their grammatical behaviour.",
+    "answer": "It enables the teacher to map syllabus labels onto actual language forms and their grammatical behavior.",
     "anchor": "Entries such as 'present perfect for recent events' or 'comparative adjectives' assume the reader can map those labels onto actual language"
   },
   {

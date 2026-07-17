@@ -115,8 +115,8 @@ Covers units 11.1 to 11.5. 22 points total; pass mark 70%. Section B re-asks que
 
    a. Present perfect and future perfect constructions
    b. Simple present and present progressive constructions
-   c. Conditional and subjunctive constructions
-   d. Simple past and past progressive constructions
+   c. Simple past and past progressive constructions
+   d. Conditional and subjunctive constructions
 
 **17. The unit describes a 'self-check' a teacher should apply after drafting a lesson aim. What is that check?**
 
@@ -128,3 +128,4 @@ Covers units 11.1 to 11.5. 22 points total; pass mark 70%. Section B re-asks que
 ## Section C — Scenario (5 points)
 
 **18. Mr. Osei is teaching a mixed-level class of 58 students. Midway through a group writing task, he notices that Carlos and Daniel have finished early and are chatting off-topic, while Wei and Fatima are still struggling with the first paragraph and have not asked for help. Priya is staring at the wall. Mr. Osei is currently crouching beside another group on the far side of the room. What should Mr. Osei do, and why?**
+

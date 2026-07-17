@@ -72,17 +72,18 @@ Covers units 13.1 to 13.3. 16 points total; pass mark 70%. Section B re-asks que
 **10. What does substituting 'when' for 'if' in a first conditional sentence signal to the listener?**
 
    a. The condition is unreal
-   b. The condition is hypothetical
-   c. The condition is certain to occur
+   b. The condition is certain to occur
+   c. The condition is hypothetical
    d. The result is in the past
 
 **11. According to Karpicke and Roediger (2008), approximately what percentage of word pairs did participants in the repeated-retrieval condition recall correctly after one week?**
 
    a. 33%
-   b. 80%
-   c. 50%
+   b. 50%
+   c. 80%
    d. 95%
 
 ## Section C — Scenario (5 points)
 
 **12. Mr. Osei has spent three weeks running speaking activities with his intermediate class. His students — Carlos, Daniel, Wei, Fatima, Yuki, and Priya — have been practicing leading small-group discussions, giving opinions, and including quieter classmates. At the end of the unit, Mr. Osei wants to find out how well each student can actually perform these skills. He also wants to give students feedback they can act on before he records a final grade. He drafts a written grammar quiz on discourse markers as his end-of-unit assessment because it is quick to mark. A colleague, Ms. Reyes, suggests he reconsider. What should Mr. Osei do instead, and why? Design a brief assessment plan (two components) that addresses both his summative and his formative purposes, and explain how each component aligns with what was taught.**
+

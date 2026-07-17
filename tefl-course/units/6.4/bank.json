@@ -15,8 +15,8 @@
     "type": "mc",
     "question": "Why does the unit recommend that teachers circulate during group or pair work rather than relying solely on whole-class activities to identify pronunciation issues?",
     "options": [
-      "Because whole-class activities are too short to reveal any pronunciation patterns",
       "Because group work produces natural, unguarded speech that whole-class activities rarely provide",
+      "Because whole-class activities are too short to reveal any pronunciation patterns",
       "Because circulating allows the teacher to model sounds to each student individually",
       "Because students only mispronounce words when they are unaware of being observed"
     ],
@@ -29,8 +29,8 @@
     "options": [
       "It encourages students to self-correct every minor sound deviation before speaking",
       "It positions the teacher as a judge who evaluates how each student sounds",
-      "It makes students more willing to speak, take risks, and produce longer stretches of language",
-      "It reduces the need for any pronunciation instruction during the lesson"
+      "It reduces the need for any pronunciation instruction during the lesson",
+      "It makes students more willing to speak, take risks, and produce longer stretches of language"
     ],
     "answer": "It makes students more willing to speak, take risks, and produce longer stretches of language — When a student knows his accent will not be treated as a deficiency, he is more willing to speak, to take risks, and to produce longer stretches of language.",
     "anchor": "he is more willing to speak, to take risks, and to produce longer stretches of language"

@@ -123,3 +123,4 @@ Covers units 2.1 to 2.5. 22 points total; pass mark 70%. Section B re-asks quest
 ## Section C — Scenario (5 points)
 
 **18. Mr. Osei is reviewing a writing task with his intermediate class. He notices that Wei has written 'I am living in Beijing for three years' and Yuki has written 'She yesterday the book read.' Mr. Osei wants to give each student precise, targeted feedback rather than simply saying their sentences 'sound wrong.' What should Mr. Osei say to Wei and to Yuki, and why should he approach each error differently?**
+

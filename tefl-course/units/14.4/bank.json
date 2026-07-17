@@ -3,8 +3,8 @@
     "type": "mc",
     "question": "According to the unit, what distinguishes the four reflective teaching questions from evaluative questions?",
     "options": [
-      "They require the teacher to rate herself on a numerical scale before and after each lesson",
       "They ask what happened and what might be done differently, not whether the teacher was good or bad",
+      "They require the teacher to rate herself on a numerical scale before and after each lesson",
       "They are designed to be shared with an administrator at the end of each term",
       "They focus exclusively on student behavior rather than on instructional decisions"
     ],
@@ -29,8 +29,8 @@
     "options": [
       "Sharing the recording with a mentor before watching it alone",
       "Transcribing the recording word for word into the teacher diary",
-      "Conducting a follow-up analysis after watching or listening to the recording",
-      "Obtaining written consent from students before the lesson begins"
+      "Obtaining written consent from students before the lesson begins",
+      "Conducting a follow-up analysis after watching or listening to the recording"
     ],
     "answer": "Conducting a follow-up analysis after watching or listening to the recording — The follow-up analysis is the indispensable step; a recording left unwatched is a file and nothing more.",
     "anchor": "The follow-up analysis is the indispensable step; a recording left unwatched is a file and nothing more"

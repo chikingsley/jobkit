@@ -16,8 +16,8 @@
     "question": "The unit argues that a teacher who relies exclusively on knowledge-based test items will consistently do which of the following?",
     "options": [
       "Overestimate students whose metalinguistic awareness exceeds their spoken production",
-      "Underestimate students whose communicative ability outpaces their metalinguistic awareness",
       "Produce positive washback by rewarding accurate grammar recognition",
+      "Underestimate students whose communicative ability outpaces their metalinguistic awareness",
       "Align assessment with communicative learning goals more efficiently"
     ],
     "answer": "Underestimate students whose communicative ability outpaces their metalinguistic awareness",
@@ -29,8 +29,8 @@
     "options": [
       "Draft the items first, then write the learning goals to match them",
       "Write the marking guide first, then identify the learning goals",
-      "Write the learning goals in plain language first, then write the marking guide before administering the test",
-      "Match item types to goals first, then share the assessment criteria with students"
+      "Match item types to goals first, then share the assessment criteria with students",
+      "Write the learning goals in plain language first, then write the marking guide before administering the test"
     ],
     "answer": "Write the learning goals in plain language first, then write the marking guide before administering the test",
     "anchor": "The first step is to write out the lesson's learning goals in plain language before touching a single test item"

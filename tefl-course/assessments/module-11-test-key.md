@@ -160,10 +160,10 @@ Covers units 11.1 to 11.5. 22 points total; pass mark 70%. Section B re-asks que
 
    a. Present perfect and future perfect constructions
    b. Simple present and present progressive constructions
-   c. Conditional and subjunctive constructions
-   d. Simple past and past progressive constructions
+   c. Simple past and past progressive constructions
+   d. Conditional and subjunctive constructions
 
-   *Answer: d. Simple past and past progressive constructions*
+   *Answer: c. Simple past and past progressive constructions*
    *Anchor: "unit 4.2 quiz"*
 
 **17. The unit describes a 'self-check' a teacher should apply after drafting a lesson aim. What is that check?**
@@ -183,3 +183,4 @@ Covers units 11.1 to 11.5. 22 points total; pass mark 70%. Section B re-asks que
    *Answer: Mr. Osei is facing two simultaneous management problems that both have preventive, planning-based solutions rooted in the module content. First, Carlos and Daniel's off-task behavior is a direct consequence of finishing early with nothing to do. The module states that idle minutes are precisely when low-level disruption begins, and that designing lessons with enough material to sustain attention removes the gap in which disruption takes root. Mr. Osei should have prepared an extension task—such as a peer-editing checklist or a follow-up writing prompt—so that early finishers move purposefully to a next stage without waiting. In the moment, he can redirect Carlos and Daniel by assigning them a concrete role: for example, using the kind of positive, public language the module illustrates ('I like how X is sitting ready,' inserting the name of a student who is already settled) to signal expected behavior to the whole class while giving the two students a purposeful task, such as reviewing each other's drafts against a set of criteria. This also converts them into a resource rather than a disruption. Second, Wei and Fatima's silent struggle reflects the monitoring problem the module identifies in large classes: most learners complete tasks without receiving individual feedback, leaving errors uncorrected. Because Mr. Osei cannot reach every group, the module's solution is to shift responsibility onto learners through goal-setting and peer structures. If Wei and Fatima had been given a concrete, self-identified strategy for when they get stuck—such as consulting a vocabulary reference card or asking a designated group member before the teacher—they would not be stalled and invisible. Going forward, Mr. Osei should build such a routine from the start of term. In the immediate lesson, he can use a brief whole-class check ('Hold on, I want to hear one voice at a time—where is everyone up to?') to surface confusion without singling anyone out, then direct a stronger finisher like Carlos to act as a peer resource for his table group. Priya's disengagement is a third signal that the task design or pacing does not fit the room, and Mr. Osei should note it as diagnostic information for replanning. Across all three cases, the module's core principle applies: reacting to problems after they occur is always more costly than building the conditions that make those problems unlikely.*
    *Anchor: "idle minutes that follow are precisely when low-level disruption begins"*
    *Rubric (5 points): addresses the fast finishers with a preventive extension task rather than only reacting to the off-task chat (2); addresses the struggling and silent students through monitoring and anticipated support (2); grounds both moves in preventive, planning-based management (1).*
+

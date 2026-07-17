@@ -144,3 +144,4 @@ Covers units 10.1 to 10.6. 25 points total; pass mark 70%. Section B re-asks que
 ## Section C — Scenario (5 points)
 
 **21. Mr. Osei is observing a lesson taught by a trainee teacher. Before the lesson, the trainee submitted this written aim: 'Students will do a flashcard activity and then complete a mind map about personality adjectives.' During the lesson, Mr. Osei watches Carlos, Daniel, Wei, Fatima, Yuki, and Priya complete both tasks without difficulty. At the end of the session, Mr. Osei asks the trainee, 'How do you know whether your students learned anything today?' The trainee is unable to answer. If you were the trainee, how would you have written the aim differently, and why does the distinction matter for assessing whether the lesson succeeded?**
+

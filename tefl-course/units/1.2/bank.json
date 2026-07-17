@@ -4,9 +4,9 @@
     "question": "According to the unit, what fundamental advantage does a second language learner have that an infant acquiring a first language does not?",
     "options": [
       "A longer attention span for processing new vocabulary",
-      "A complete linguistic system already in place",
       "Prior exposure to Total Physical Response techniques",
-      "The ability to read dictionary definitions independently"
+      "The ability to read dictionary definitions independently",
+      "A complete linguistic system already in place"
     ],
     "answer": "A complete linguistic system already in place — A second language learner already has a complete linguistic system in place, which they draw on constantly to make inferences about new input.",
     "anchor": "A learner acquiring a second language arrives in the classroom with something an infant never has: a complete linguistic system already in place."
@@ -27,9 +27,9 @@
     "type": "mc",
     "question": "What does the unit identify as the primary risk of enforcing a strict English-only rule that forbids any use of the learner's first language?",
     "options": [
+      "It may produce learners who are reluctant to attempt speech at all",
       "It causes learners to rely too heavily on translation rather than inference",
       "It prevents teachers from using realia and physical actions effectively",
-      "It may produce learners who are reluctant to attempt speech at all",
       "It makes concept-checking questions impossible to conduct"
     ],
     "answer": "It may produce learners who are reluctant to attempt speech at all — A classroom culture that treats L1 as entirely forbidden may produce learners who are reluctant to attempt speech at all, because the resulting silence when they cannot retrieve a word can feel punishing.",

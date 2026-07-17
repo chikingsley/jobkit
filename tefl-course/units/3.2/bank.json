@@ -4,8 +4,8 @@
     "question": "Which subordinating conjunction is described as introducing 'the only condition under which the result will not hold'?",
     "options": [
       "as long as",
-      "provided that",
       "unless",
+      "provided that",
       "on condition that"
     ],
     "answer": "unless",
@@ -15,9 +15,9 @@
     "type": "mc",
     "question": "What is the primary reason the unit recommends introducing conditionals through meaning before form?",
     "options": [
-      "It allows teachers to skip drilling exercises entirely",
       "It saves learners considerable confusion",
-      "It ensures learners memorise the numbered labels first",
+      "It allows teachers to skip drilling exercises entirely",
+      "It ensures learners memorize the numbered labels first",
       "It prevents learners from encountering mixed conditionals too early"
     ],
     "answer": "It saves learners considerable confusion",
@@ -27,8 +27,8 @@
     "type": "mc",
     "question": "In the sentence 'If she has already left, we will need to call her,' what aspect is used in the condition clause and why?",
     "options": [
-      "Past simple, to signal an unreal condition",
       "Present perfect, to signal a completed action whose result is relevant now",
+      "Past simple, to signal an unreal condition",
       "Past perfect, to signal a counterfactual past event",
       "Present continuous, to frame the condition as an ongoing state"
     ],

@@ -3,8 +3,8 @@
     "type": "mc",
     "question": "According to the unit, which of the following is identified as a reason why alternative assessment can increase learner motivation?",
     "options": [
-      "It removes the need for any formal grading system",
       "Learners use the language for real purposes and can see their own progress clearly",
+      "It removes the need for any formal grading system",
       "It reduces the amount of work teachers must prepare outside class",
       "Learners compete with peers and receive ranked scores"
     ],
@@ -15,9 +15,9 @@
     "type": "mc",
     "question": "The unit describes two different physical storage arrangements for portfolios observed in classrooms. What was the storage method used specifically by older students?",
     "options": [
+      "Large binders stored on shelves that students collected on arrival",
       "Large plastic envelopes kept in bins on the floor",
       "Folders hung on a dedicated classroom display board",
-      "Large binders stored on shelves that students collected on arrival",
       "Cardboard boxes kept in a shared school storage room"
     ],
     "answer": "Large binders stored on shelves that students collected on arrival — Older students used large binders that sat on shelves in the classroom; students picked up their binders when they arrived.",
@@ -28,9 +28,9 @@
     "question": "In the unit's King Lear dramatization example, which of the following accurately lists language skills the unit says a student like Priya must use during the performance?",
     "options": [
       "Writing, editing, memorizing lines, and presenting to an examiner",
-      "Listening carefully, reading for comprehension, sustaining reading fluency, attending to pronunciation, and delivering lines with dramatic expression",
       "Speaking spontaneously, taking notes, summarizing, and debating",
-      "Reading silently, translating, writing a reflection, and answering comprehension questions"
+      "Reading silently, translating, writing a reflection, and answering comprehension questions",
+      "Listening carefully, reading for comprehension, sustaining reading fluency, attending to pronunciation, and delivering lines with dramatic expression"
     ],
     "answer": "Listening carefully, reading for comprehension, sustaining reading fluency, attending to pronunciation, and delivering lines with dramatic expression — A student named Priya must listen carefully, read for comprehension, sustain reading fluency, attend to pronunciation, and deliver her lines with dramatic expression.",
     "anchor": "listen carefully to hear the play read correctly, read for comprehension, sustain reading fluency, attend to pronunciation, and deliver her lines with dramatic expression."

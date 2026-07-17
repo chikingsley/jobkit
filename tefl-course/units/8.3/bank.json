@@ -4,9 +4,9 @@
     "question": "How does the unit say the Word Bricks activity adjusts to serve a mixed-level classroom without requiring the teacher to prepare entirely separate materials?",
     "options": [
       "The teacher assigns different colored bricks to beginning, intermediate, and advanced students",
-      "Adding one or two extra Wild Cards raises the ceiling for any group",
       "The teacher removes the suffix bricks for beginners and adds them back for advanced students",
-      "Beginning students use only one face of each brick while advanced students use both faces"
+      "Beginning students use only one face of each brick while advanced students use both faces",
+      "Adding one or two extra Wild Cards raises the ceiling for any group"
     ],
     "answer": "Adding one or two extra Wild Cards raises the ceiling for any group, because a student who knows the word she wants but cannot find it on any tile can write it on the Wild Card and continue building.",
     "anchor": "Adding one or two extra Wild Cards raises the ceiling for any group"
@@ -27,8 +27,8 @@
     "type": "mc",
     "question": "The unit identifies a mutually reinforcing quality in the station-based peer feedback activity. What does this mean?",
     "options": [
-      "Students who initial the checklist first are required to return to earlier stations and re-evaluate their own work",
       "When a student notices a missing element in a classmate's essay, she tends to return to her own essay and check the same element",
+      "Students who initial the checklist first are required to return to earlier stations and re-evaluate their own work",
       "The teacher's summative feedback reinforces the peer feedback students have already received at each station",
       "Working with several different peers ensures that each student's judgment is reinforced by multiple classmates"
     ],

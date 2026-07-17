@@ -138,12 +138,12 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
 
 **14. According to the unit, what is the primary purpose of a comprehension-checking question such as 'How long do you have to answer the questions?'**
 
-   a. To collect evidence that students have processed an instruction
-   b. To give students extra practice producing spoken language
-   c. To fill time between activities during a transition
+   a. To give students extra practice producing spoken language
+   b. To fill time between activities during a transition
+   c. To collect evidence that students have processed an instruction
    d. To assess whether students have memorized new vocabulary
 
-   *Answer: a. To collect evidence that students have processed an instruction*
+   *Answer: c. To collect evidence that students have processed an instruction*
    *Anchor: "unit 1.3 quiz"*
 
 ## Section C — Scenario (5 points)
@@ -153,3 +153,4 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
    *Answer: Ms. Reyes's lesson is failing on three interconnected levels, each of which the module addresses directly. First, she is treating six- and seven-year-olds as though they were adult learners capable of processing abstract grammatical rules from a table. The module is explicit that children cannot reliably do this because it 'places demands on cognitive structures that are not yet in place.' Asking six- and seven-year-olds to study a grammar table and apply it consciously is developmentally inappropriate for this age group. Second, the lesson is structured as one extended, undifferentiated task lasting 35 minutes. The module states that younger learners have shorter attention spans and that a well-planned lesson for this age group consists of 'a sequence of shorter activities, each with a distinct focus, rather than building one extended task that runs for most of the class period.' The fidgeting, drawing, and disengagement Ms. Reyes is seeing are predictable consequences of ignoring this principle. Third, the lesson suppresses rather than channels the social, active, and creative tendencies that are central to young learner language acquisition. The boy whispering to his neighbor is not misbehaving; he is showing the social impulse that drives genuine communicative need. A lesson that treats it as a problem to be silenced is working against the learners' nature. What Ms. Reyes should do instead: replace the grammar table with rich, comprehensible oral input delivered in a meaningful context—for example, a short song, a chant, or a teacher-narrated story using past-tense verbs repeatedly and naturally, so that the children begin to sense the pattern without being taught it explicitly. She should then break the remaining time into two or three shorter activities with distinct formats—perhaps a movement activity such as 'Head, Shoulders, Knees, and Toes' adapted to the target language, followed by a brief pair-speaking task—so that attention is refreshed across the lesson. Reading and writing tasks, if included at all, should be brief, supported by what children can already say aloud, and introduced only after the oral foundation is established. This restructuring aligns the lesson with the learners' actual developmental profile rather than imposing an adult learning model on children.*
    *Anchor: "places demands on cognitive structures that are not yet in place"*
    *Rubric (5 points): identifies that studying an abstract grammar table is inappropriate for six- and seven-year-olds (2); recommends active, concrete, and varied tasks broken into shorter segments (2); grounds the answer in young-learner principles from the module (1).*
+
