@@ -1,5 +1,11 @@
 # Course review notes — a high-level read (2026-06-09)
 
+> **SUPERSEDED (2026-07-17):** the aggregate issues flagged here, plus the defects the 06-09
+> cast remap introduced, were fully resolved in the 2026-07-17 repair pass. See
+> [review-2026-07-17.md](review-2026-07-17.md) for the current state and the new enforcement
+> gate. This file is kept as the historical first read.
+
+
 > **STATUS (2026-06-09): Tier 1 + Tier 2 polish applied.** American spelling normalized course-wide
 > (~500 fixes); the ~60 scattered names consolidated onto a deliberate 6-learner + 2-teacher cast
 > (see [cast.md](cast.md)), gender-aware and pronoun-checked, with unit 2.5's L1 examples
