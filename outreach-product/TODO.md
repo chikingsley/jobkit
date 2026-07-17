@@ -13,6 +13,10 @@
   IDs, Pub/Sub ingestion, and inbound thread rendering.
 - After the round trip is proven, review and send the first 10-20 real
   applications from the ranked queue.
+- Before onboarding public users, create the separate production Google OAuth
+  project and complete Google's verification/security requirements for the
+  restricted Gmail read scope. The current testing-project refresh token is
+  intentionally limited to the dogfood window.
 - Define the hosted inventory refresh and country-campaign runner deployment,
   then set the first automation policy and rate limits.
 - Archive or reorganize dated audits and superseded design notes after the live
