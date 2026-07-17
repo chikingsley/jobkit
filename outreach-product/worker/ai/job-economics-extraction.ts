@@ -206,15 +206,33 @@ function requireSupportedCurrency(
     .normalize("NFKC")
     .toLocaleLowerCase("en");
   const aliases: Record<string, string[]> = {
+    AED: ["aed", "dirham"],
+    ALL: ["all", "lek"],
     AZN: ["azn", "₼", "manat"],
-    CNY: ["cny", "rmb", "yuan", "¥"],
+    CNY: ["cny", "rmb", "yuan", "¥", "元"],
+    CZK: ["czk", "koruna", "kč"],
     EUR: ["eur", "euro", "€"],
     GBP: ["gbp", "pound", "£"],
-    JPY: ["jpy", "yen", "¥"],
+    GEL: ["gel", "lari", "₾"],
+    HKD: ["hkd", "hk$", "hong kong dollar"],
+    HUF: ["huf", "forint", "ft"],
+    IDR: ["idr", "rupiah", "rp"],
+    JPY: ["jpy", "yen", "¥", "円"],
     KRW: ["krw", "won", "₩"],
-    PLN: ["pln", "zł", "zl"],
+    KZT: ["kzt", "tenge", "₸"],
+    MXN: ["mxn", "mxp", "peso", "mx$"],
+    MYR: ["myr", "ringgit", "rm"],
+    OMR: ["omr", "rial", "riyal"],
+    PLN: ["pln", "zł", "zl", "zloty", "złoty"],
+    RON: ["ron", "leu", "lei"],
+    RUB: ["rub", "ruble", "rouble", "₽"],
+    SAR: ["sar", "riyal", "rial"],
+    SGD: ["sgd", "s$", "singapore dollar"],
     THB: ["thb", "baht", "฿"],
+    TRY: ["try", "lira", "₺", "tl"],
+    TWD: ["twd", "ntd", "nt$", "new taiwan dollar"],
     USD: ["usd", "dollar", "us$", "$"],
+    VND: ["vnd", "dong", "₫", "đ"],
   };
   const terms = aliases[currency] ?? [currency.toLocaleLowerCase("en")];
   if (terms.some((term) => evidence.includes(term))) {
@@ -547,9 +565,19 @@ function supportsWeeklyOnsiteHours(evidence: string) {
   ].some((term) => evidence.includes(term));
 }
 
+// Common non-ISO codes seen in listings, mapped to the ISO code the FX
+// rates table actually carries.
+const CURRENCY_CODE_ALIASES: Record<string, string> = {
+  MXP: "MXN",
+  NTD: "TWD",
+  RMB: "CNY",
+};
+
 function normalizeCurrency(value: string | null) {
   const normalized = value?.trim().toUpperCase() ?? null;
-  const currency = normalized === "RMB" ? "CNY" : normalized;
+  const currency = normalized
+    ? (CURRENCY_CODE_ALIASES[normalized] ?? normalized)
+    : null;
   const isCurrencyCode =
     currency?.length === 3 &&
     [...currency].every((character) => character >= "A" && character <= "Z");

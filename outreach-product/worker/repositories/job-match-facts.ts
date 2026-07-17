@@ -1,7 +1,7 @@
 interface PersistedJobMatchFacts {
   facts: unknown;
   modelId: string;
-  provider: "cerebras" | "mistral";
+  provider: string;
   sourceHash: string;
 }
 

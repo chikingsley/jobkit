@@ -16,7 +16,9 @@ import {
 import { registerCountryRoutes } from "./routes/countries";
 import { registerDocumentRoutes } from "./routes/documents";
 import { registerEmailAttemptRoutes } from "./routes/email-attempts";
+import { registerJobMatchFactRoutes } from "./routes/job-match-facts";
 import { registerJobRoutes } from "./routes/jobs";
+import { registerMessageRoutes } from "./routes/messages";
 import { registerOnboardingRoutes } from "./routes/onboarding";
 import { registerUserSettingsRoutes } from "./routes/user-settings";
 import { ImportSchema, ReviseSchema, SubmitSchema } from "./schemas";
@@ -96,12 +98,21 @@ app.on(["GET", "POST"], "/api/auth/*", (c) =>
   createAuth(c.env, c.req.raw).handler(c.req.raw)
 );
 
+const RUNNER_TOKEN_PATHS = [
+  "/api/country-sweep-tasks/",
+  "/api/job-match-facts",
+];
+
 app.use("/api/*", async (c, next) => {
   const authorization = c.req.header("authorization") ?? "";
   if (authorization.startsWith("Bearer ")) {
-    if (!c.req.path.startsWith("/api/country-sweep-tasks/")) {
+    if (!RUNNER_TOKEN_PATHS.some((path) => c.req.path.startsWith(path))) {
       return c.json(
-        { message: "Runner token is limited to sweep tasks", ok: false },
+        {
+          message:
+            "Runner token is limited to sweep tasks and match-facts recording",
+          ok: false,
+        },
         403
       );
     }
@@ -132,9 +143,11 @@ app.use("/api/*", async (c, next) => {
 
 registerOnboardingRoutes(app);
 registerJobRoutes(app);
+registerJobMatchFactRoutes(app);
 registerDocumentRoutes(app);
 registerCountryRoutes(app);
 registerEmailAttemptRoutes(app);
+registerMessageRoutes(app);
 registerUserSettingsRoutes(app);
 
 app.get("/api/fx", async (c) => c.json(await fetchExchangeRates()));
