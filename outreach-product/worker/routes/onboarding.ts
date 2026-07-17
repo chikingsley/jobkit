@@ -9,6 +9,8 @@ import {
 import { readPreferences, readProfile } from "../repositories/user-settings";
 import { importResume } from "../services/profile-imports";
 
+const WHITESPACE_PATTERN = /\s+/u;
+
 export function registerOnboardingRoutes(app: JobKitApp) {
   app.get("/api/onboarding", async (c) => {
     const user = c.get("user");
@@ -33,7 +35,8 @@ export function registerOnboardingRoutes(app: JobKitApp) {
               ...defaultProfile,
               email: user.email,
               fullName: user.name,
-              preferredName: user.name.split(/\s+/u)[0] ?? user.name,
+              preferredName:
+                user.name.split(WHITESPACE_PATTERN)[0] ?? user.name,
             })
           : profile.value,
       profileImport,

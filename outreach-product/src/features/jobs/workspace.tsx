@@ -62,6 +62,8 @@ export function JobsWorkspace({
   refreshing,
   selected,
   showExcluded,
+  sort,
+  onSort,
 }: {
   busy: string;
   busyClaimKey: string;
@@ -85,14 +87,15 @@ export function JobsWorkspace({
   onRefresh: () => Promise<void>;
   onSelect: (id: string) => void;
   onShowExcluded: (value: boolean) => void;
+  onSort: (value: JobSort) => void;
   preferences: Preferences | null;
   profile: Profile | null;
   refreshing: boolean;
   selected?: Job;
   showExcluded: boolean;
+  sort: JobSort;
 }) {
   const [showQueue, setShowQueue] = useState(true);
-  const [sort, setSort] = useState<JobSort>("stated-hourly");
   const [visibleLimit, setVisibleLimit] = useState(INITIAL_VISIBLE_JOBS);
   const sortedJobs = useMemo(() => sortJobs(jobs, fx, sort), [fx, jobs, sort]);
   const queueJobs = sortedJobs.slice(0, visibleLimit);
@@ -169,7 +172,7 @@ export function JobsWorkspace({
             <Select
               items={sortOptions}
               onValueChange={(value) => {
-                setSort(String(value) as JobSort);
+                onSort(String(value) as JobSort);
                 setVisibleLimit(INITIAL_VISIBLE_JOBS);
               }}
               value={sort}

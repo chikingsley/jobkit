@@ -1,10 +1,4 @@
-import {
-  AlertTriangle,
-  Check,
-  CircleHelp,
-  ExternalLink,
-  FileText,
-} from "lucide-react";
+import { Check, CircleHelp, ExternalLink, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { curatedJobs, eligibilityNotes } from "@/curated-jobs";
 import { ApplicationAction } from "@/features/jobs/application-action";
 import { ApplicationDelivery } from "@/features/jobs/application-delivery";
 import { compensationDisplay } from "@/features/jobs/compensation";
@@ -79,7 +72,6 @@ export function JobDetail({
     label: string;
   }) => Promise<void>;
 }) {
-  const sections = curatedJobs[job.id] ?? [];
   const salary = compensationDisplay(job.compensation, fx);
   const hourly =
     (job.matchFacts
@@ -89,8 +81,7 @@ export function JobDetail({
     job.matchFacts?.benefits ?? [],
     job.matchFacts?.economics
   );
-  const questions = questionsFor(job, sections);
-  const eligibility = eligibilityNotes[job.id] ?? [];
+  const questions = questionsFor(job);
   return (
     <div className="mx-auto w-full max-w-5xl p-4 sm:p-6 lg:p-8">
       <div className="flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-start sm:justify-between">
@@ -142,27 +133,6 @@ export function JobDetail({
         />
       ) : null}
 
-      {eligibility.length ? (
-        <Card className="mt-5 border-amber-500/25 bg-amber-500/[0.04] ring-amber-500/20">
-          <CardHeader className="pb-0">
-            <CardTitle className="flex items-center gap-2 text-amber-900 text-sm dark:text-amber-200">
-              <AlertTriangle className="size-4" />
-              Check before applying
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-foreground/80 text-sm">
-              {eligibility.map((note) => (
-                <li className="flex gap-2" key={note}>
-                  <span className="mt-2 size-1 shrink-0 rounded-full bg-amber-500" />
-                  {note}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      ) : null}
-
       {salary.warning ? (
         <p className="mt-5 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
           {salary.warning}
@@ -186,26 +156,6 @@ export function JobDetail({
           </CardContent>
         </Card>
       ) : null}
-
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        {sections.map((section) => (
-          <Card key={section.title}>
-            <CardHeader>
-              <CardTitle>{section.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2.5 text-foreground/80 text-sm leading-6">
-                {section.items.map((item) => (
-                  <li className="flex gap-2.5" key={item}>
-                    <Check className="mt-1.5 size-3.5 shrink-0 text-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
       <Card className="mt-4">
         <CardHeader>

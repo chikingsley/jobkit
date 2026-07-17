@@ -1,7 +1,7 @@
-# Repo Docs
+# Repository documentation
 
-This folder is only for repo-wide orientation. Workstream-specific docs live beside the work they
-describe:
+This folder contains repo-wide orientation. Current workstream documentation lives beside the code
+it describes:
 
 - [`../tefl-job-board/docs/`](../tefl-job-board/docs/) — job-board adapters, scraping notes, and
   ingestion architecture.
@@ -9,3 +9,8 @@ describe:
 - [`../outreach-product/docs/`](../outreach-product/docs/) — product PRD and outreach-product
   design notes.
 - [`../tefl-course/docs/`](../tefl-course/docs/) — TEFL course planning, sources, and pipeline docs.
+
+Historical audits live in [`archive/`](archive/). They are evidence from a point in time, not the
+current operating description. The active JobKit architecture and commands are documented in
+[`../outreach-product/README.md`](../outreach-product/README.md); the product direction is in the
+outreach-product PRD.

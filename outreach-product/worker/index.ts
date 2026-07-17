@@ -99,7 +99,7 @@ app.onError((error, c) => {
   if (error instanceof CountryMarketError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
-  return c.json({ message: error.message, ok: false }, 500);
+  return c.json({ message: "Internal server error", ok: false }, 500);
 });
 
 app.get("/api/health", (c) => c.json({ ok: true }));
@@ -108,13 +108,24 @@ app.on(["GET", "POST"], "/api/auth/*", (c) =>
   createAuth(c.env, c.req.raw).handler(c.req.raw)
 );
 
-const RUNNER_TOKEN_PATHS = [
-  "/api/country-sweep-tasks/",
-  "/api/job-match-facts",
-];
-// Draft generation (never approval or sending) is also runner-scoped so
-// campaign batches can stage drafts for human review.
+const RUNNER_TASK_RESULT_PATH =
+  /^\/api\/country-sweep-tasks\/[^/]+\/(complete|fail)$/u;
+const RUNNER_CLAIM_PATH = "/api/country-sweep-tasks/claim";
+const RUNNER_MATCH_FACTS_PATH = "/api/job-match-facts";
 const RUNNER_GENERATE_PATH = /^\/api\/jobs\/[^/]+\/generate$/u;
+
+function runnerRequestAllowed(method: string, path: string) {
+  if (method !== "POST") {
+    return false;
+  }
+  return (
+    path === RUNNER_CLAIM_PATH ||
+    path === RUNNER_MATCH_FACTS_PATH ||
+    RUNNER_TASK_RESULT_PATH.test(path) ||
+    // Draft generation, approval, and sending remain separate capabilities.
+    RUNNER_GENERATE_PATH.test(path)
+  );
+}
 
 app.use("/api/*", async (c, next) => {
   if (c.req.path === GMAIL_PUBSUB_WEBHOOK_PATH) {
@@ -123,14 +134,11 @@ app.use("/api/*", async (c, next) => {
   }
   const authorization = c.req.header("authorization") ?? "";
   if (authorization.startsWith("Bearer ")) {
-    const allowed =
-      RUNNER_TOKEN_PATHS.some((path) => c.req.path.startsWith(path)) ||
-      RUNNER_GENERATE_PATH.test(c.req.path);
-    if (!allowed) {
+    if (!runnerRequestAllowed(c.req.method, c.req.path)) {
       return c.json(
         {
           message:
-            "Runner token is limited to sweep tasks and match-facts recording",
+            "Runner token is limited to sweep tasks, match facts, and draft generation",
           ok: false,
         },
         403

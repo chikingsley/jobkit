@@ -78,6 +78,11 @@ describe("country markets and campaigns", () => {
     const tokenPayload = (await tokenResponse.json()) as {
       token: { token: string };
     };
+    const forbidden = await runnerRequest(
+      "/api/jobs/not-a-runner-operation/approve",
+      tokenPayload.token.token,
+      {}
+    );
     const claim = await runnerRequest(
       "/api/country-sweep-tasks/claim",
       tokenPayload.token.token,
@@ -123,6 +128,7 @@ describe("country markets and campaigns", () => {
 
     expect(queued.status).toBe(200);
     expect(tokenResponse.status).toBe(200);
+    expect(forbidden.status).toBe(403);
     expect(claim.status).toBe(200);
     expect(claimPayload.task).toMatchObject({ phase: "discovery" });
     expect(completed.status).toBe(200);

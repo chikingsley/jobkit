@@ -35,6 +35,7 @@ await main();
 
 async function main() {
   do {
+    // biome-ignore lint/performance/noAwaitInLoops: The next task claim depends on completing or failing the current leased task.
     const { task } = await api<TaskResponse>("/api/country-sweep-tasks/claim", {
       workerId,
     });

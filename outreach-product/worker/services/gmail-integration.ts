@@ -28,6 +28,8 @@ import {
 } from "./gmail-errors";
 import { markWatchError, reconcileRecentReplies } from "./gmail-replies";
 
+const SCOPE_SEPARATOR_PATTERN = /[\s,]+/u;
+
 interface GmailWatchRow {
   email_address: string;
   expiration_at: string;
@@ -216,15 +218,18 @@ export async function renewExpiringGmailWatches(env: AppEnv) {
   )
     .bind(threshold)
     .all<{ user_id: string }>();
-  let renewed = 0;
-  for (const row of rows.results) {
-    try {
-      await startOrRenewGmailWatch(env, row.user_id);
-      renewed += 1;
-    } catch (error) {
-      await markWatchError(env.DB, row.user_id, gmailErrorMessage(error));
-    }
-  }
+  const results = await Promise.all(
+    rows.results.map(async (row) => {
+      try {
+        await startOrRenewGmailWatch(env, row.user_id);
+        return true;
+      } catch (error) {
+        await markWatchError(env.DB, row.user_id, gmailErrorMessage(error));
+        return false;
+      }
+    })
+  );
+  const renewed = results.filter(Boolean).length;
   return { renewed, total: rows.results.length };
 }
 
@@ -338,5 +343,5 @@ function expirationIso(expiration: string) {
 }
 
 function splitScopes(scope: string) {
-  return scope.split(/[\s,]+/u).filter(Boolean);
+  return scope.split(SCOPE_SEPARATOR_PATTERN).filter(Boolean);
 }

@@ -1,5 +1,8 @@
 # JobKit System Audit — 2026-07-16
 
+> Archived point-in-time audit. Its counts and implementation findings were accurate for the stated
+> date and have since been acted on. Use `outreach-product/README.md` for the current system.
+
 Full-system audit of the outreach product and job-search pipeline after the 2026-07-16 inventory push (commits `21501a1`, `7c9f1d6`). Four parallel deep-dives: data paths, analysis pipeline, lifecycle logging/UX, and local agent infrastructure. Live D1 numbers verified read-only against production.
 
 ## Live production state

@@ -1,4 +1,8 @@
-# Outreach tracking & product design
+# Outreach tracking and product design
+
+Status: Design history. The local-CLI sections document the system JobKit grew from; the hosted
+Cloudflare sections describe the current direction. See [`../README.md`](../README.md) for current
+commands and implemented behavior.
 
 Notes on how follow-up tracking works, where the state should live (local now, Cloudflare later),
 and what this could become as a product. See [`job-search-playbook.md`](job-search-playbook.md)

@@ -3,6 +3,9 @@ import type { AppEnv } from "../env";
 
 const CRLF = "\r\n";
 const MAX_RAW_ATTACHMENT_BYTES = 18 * 1024 * 1024;
+const ASCII_HEADER_PATTERN = /^[\x20-\x7E]*$/u;
+const BASE64_PADDING_PATTERN = /[=]+$/u;
+const HEADER_NEWLINE_PATTERN = /[\r\n]/u;
 
 interface DraftAttachmentRow {
   category: string;
@@ -157,13 +160,13 @@ function buildMimeMessage(
 
 function encodedHeader(value: string): string {
   const safe = safeHeader(value);
-  return /^[\x20-\x7E]*$/u.test(safe)
+  return ASCII_HEADER_PATTERN.test(safe)
     ? safe
     : `=?UTF-8?B?${base64(new TextEncoder().encode(safe))}?=`;
 }
 
 function safeHeader(value: string): string {
-  if (/[\r\n]/u.test(value)) {
+  if (HEADER_NEWLINE_PATTERN.test(value)) {
     throw new GmailMessagePayloadError("Email headers cannot contain newlines");
   }
   return value.trim();
@@ -185,7 +188,7 @@ function base64Url(bytes: Uint8Array): string {
   return base64(bytes)
     .replaceAll("+", "-")
     .replaceAll("/", "_")
-    .replace(/[=]+$/u, "");
+    .replace(BASE64_PADDING_PATTERN, "");
 }
 
 function base64(bytes: Uint8Array): string {

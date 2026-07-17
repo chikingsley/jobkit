@@ -2,7 +2,7 @@ import { ThemeProvider } from "next-themes";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
-import { App } from "./App";
+import { App } from "./app";
 import { Toaster } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { AuthGate } from "./features/auth/auth-gate";
@@ -10,7 +10,12 @@ import { OnboardingGate } from "./features/onboarding/onboarding-gate";
 import "./styles.css";
 import "streamdown/styles.css";
 
-createRoot(document.getElementById("root")!).render(
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  throw new Error("JobKit root element was not found");
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
       <ThemeProvider

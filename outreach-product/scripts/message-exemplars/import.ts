@@ -27,6 +27,8 @@ const OUTCOME_GRADES: Record<string, number> = {
   rejected: 0,
   reply: 1,
 };
+const EXAMPLE_SUBJECT_LINE_PATTERN = /^Subject e\.g\.:\s*(.+)$/mu;
+const EXAMPLE_SUBJECT_PREFIX_PATTERN = /^Subject e\.g\.:.*\n+/u;
 
 interface Exemplar {
   body: string;
@@ -102,8 +104,8 @@ function collectFence(
         if (bodyLine.startsWith("```")) {
           const text = bodyLines.join("\n").trim();
           const subject =
-            /^Subject e\.g\.:\s*(.+)$/mu.exec(text)?.[1]?.trim() ?? "";
-          const body = text.replace(/^Subject e\.g\.:.*\n+/u, "").trim();
+            EXAMPLE_SUBJECT_LINE_PATTERN.exec(text)?.[1]?.trim() ?? "";
+          const body = text.replace(EXAMPLE_SUBJECT_PREFIX_PATTERN, "").trim();
           return body ? { body, subject } : null;
         }
         bodyLines.push(bodyLine);

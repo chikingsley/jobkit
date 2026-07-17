@@ -64,6 +64,7 @@ for (const row of rows) {
     salary: String(row.salary),
     title: String(row.title),
   };
+  // biome-ignore lint/performance/noAwaitInLoops: This one-time remote writeback is intentionally sequential to avoid bursting D1.
   const hash = await jobSourceHash(fields);
   if (hash !== row.source_hash) {
     skipped += 1;

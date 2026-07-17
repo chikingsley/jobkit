@@ -1,7 +1,7 @@
 # Jobkit Product PRD
 
-Status: V1 implementation in progress
-Last updated: 2026-07-14
+Status: Canonical product direction; implementation status is tracked in the application README
+Last updated: 2026-07-17
 Scope: ESL/teaching job discovery, qualification matching, outreach, and verified application execution
 
 ## 1. Summary
@@ -15,12 +15,17 @@ Both paths feed the same user-specific qualification matching, message generatio
 
 ## 2. Why This Exists
 
-Current jobkit is useful but still CLI-shaped:
+JobKit began as a collection of local tools. The hosted product now provides the core review and
+application loop:
 
 - Jobs live in `job-search/job-data/jobs.sqlite`.
 - Refresh is now stateful and upserts by `(board, job_id)`.
 - Country counts, board counts, salary visibility, and application channels are queryable.
-- Outreach is draft-first, but there is no UI for selecting jobs, reviewing emails, or managing application state.
+- The web UI supports job selection, qualification review, immutable drafts, Gmail sending,
+  SeriousTeachers submission, message threads, and reply state.
+
+The inventory figures below are the dated source snapshot used to design the product. They are not
+live production counts.
 
 The pain is not "we need another CSV." The pain is deciding what is worth applying to, keeping that state clean, and moving from a scraped posting to a reviewed application action without losing context.
 

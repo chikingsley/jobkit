@@ -25,6 +25,8 @@ import {
   failCountrySweepTask,
 } from "../services/country-sweep-tasks";
 
+const COUNTRY_CODE_PATTERN = /^[A-Z]{2}$/u;
+
 export function registerCountryRoutes(app: JobKitApp) {
   app.get("/api/country-sweep-runner-tokens", async (c) => {
     const tokens = await listCountrySweepRunnerTokens(
@@ -159,7 +161,7 @@ export function registerCountryRoutes(app: JobKitApp) {
 
 function normalizedCountryCode(value: string) {
   const countryCode = value.trim().toUpperCase();
-  if (!/^[A-Z]{2}$/u.test(countryCode)) {
+  if (!COUNTRY_CODE_PATTERN.test(countryCode)) {
     throw new CountryMarketError("Country code must contain two letters", 400);
   }
   return countryCode;

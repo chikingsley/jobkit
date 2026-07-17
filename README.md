@@ -1,38 +1,48 @@
-# jobkit
+# JobKit
 
-Private monorepo for Chibuzor Ejimofor's job-search work. The root is only an index; each active
-Python tool lives in its own folder with its own `uv` project and lockfile.
+Private monorepo for the JobKit teaching-job platform and its supporting personal tooling. Keep the
+repository private: it contains personal documents, application history, credentials templates, and
+job-search data.
 
-Keep this repository private. It contains personal documents, job-search records, and outreach
-history.
-
-## Layout
+## Workspaces
 
 ```text
-tefl-job-board/     TEFL/ESL board ingestion CLI (`uv run jobs ...`)
-job-search/         resumes, job documents, outreach drafts, templates, and archive
-outreach-product/   product planning notes for a possible hosted outreach/jobkit app
-tefl-course/        standalone TEFL course-generation project
-docs/               repo-wide orientation only
-CHANGELOG.md        cross-workspace history
+outreach-product/   Active Cloudflare-hosted JobKit web application and Worker
+job-search/         Personal resumes, documents, outreach history, and local source inventory
+tefl-job-board/     TEFL/ESL source-ingestion CLI
+tefl-course/        Standalone TEFL course-generation project
+docs/               Repo-wide orientation and archived audits
 ```
 
-## Common Commands
+The workspaces have separate dependency environments. Use Bun in `outreach-product` and the
+workspace's existing `uv` commands in each Python project.
+
+## Active application
 
 ```bash
-cd job-search
-uv run build-resume --list
-uv run build-resume --all
-uv run outreach sync
+cd outreach-product
+bun install
+bun run check
+bun run dev
+```
 
-cd ../tefl-job-board
+See [`outreach-product/README.md`](outreach-product/README.md) for the current hosted architecture,
+local setup, data flow, deployment commands, and secret requirements.
+
+## Supporting tools
+
+```bash
+cd tefl-job-board
 uv run jobs stats
 uv run jobs refresh tefl ajarn
 
+cd ../job-search
+uv run build-resume --list
+uv run build-resume --all
+
 cd ../tefl-course
 uv run tefl-course-check
-uv run tefl-course-assessments assemble
 ```
 
-The durable scraped-job database lives at `job-search/job-data/jobs.sqlite`. The job-board project
-writes to that file; the personal job-search workspace owns it.
+The local scraped-job source of truth is `job-search/job-data/jobs.sqlite`. The hosted application
+imports normalized inventory from that database into D1; per-user application state remains in D1.

@@ -14,6 +14,8 @@ import {
 } from "./application-message-policy";
 import { type AiModelSelection, createAiModel } from "./model-catalog";
 
+const WHITESPACE_PATTERN = /\s+/u;
+
 const DraftOutputSchema = z
   .object({
     message: z.string().min(100).max(5000),
@@ -122,6 +124,7 @@ async function runModel(
       generationAttempt += 1
     ) {
       try {
+        // biome-ignore lint/performance/noAwaitInLoops: Validation feedback from each failed generation is fed into the next attempt.
         const result = await generateText({
           instructions: APPLICATION_MESSAGE_INSTRUCTIONS,
           maxOutputTokens: 1200,
@@ -230,6 +233,7 @@ function exemplarPrompts(exemplars: MessageExemplar[] | undefined) {
 }
 
 function signatureFor(profile: Profile): string {
-  const surname = profile.fullName.trim().split(/\s+/).at(-1) ?? "";
+  const surname =
+    profile.fullName.trim().split(WHITESPACE_PATTERN).at(-1) ?? "";
   return `${profile.preferredName} ${surname}`.trim();
 }

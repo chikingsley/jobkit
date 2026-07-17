@@ -23,6 +23,9 @@ import {
   validateProviderJobMatchFacts,
 } from "../../worker/ai/job-fact-extraction";
 
+const QUOTA_ERROR_PATTERN = /quota|rate.?limit|429/iu;
+const TIMEOUT_ERROR_PATTERN = /timed out/iu;
+
 const { values: args } = parseArgs({
   options: {
     base: {
@@ -106,7 +109,7 @@ async function acquireRequestSlot() {
 }
 
 function isQuotaError(message: string) {
-  return /quota|rate.?limit|429/iu.test(message);
+  return QUOTA_ERROR_PATTERN.test(message);
 }
 
 const providerSchemaJson = JSON.stringify(
@@ -164,6 +167,7 @@ ${source}
   let feedback = "";
   const attempts = 2;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    // biome-ignore lint/performance/noAwaitInLoops: Each retry incorporates validation feedback from the previous response.
     const stdout = await runOpencode(
       [
         "run",
@@ -282,6 +286,7 @@ async function worker() {
   for (let job = queue.shift(); job; job = queue.shift()) {
     const startedAt = Date.now();
     try {
+      // biome-ignore lint/performance/noAwaitInLoops: Each worker processes one job at a time; the outer worker pool supplies bounded concurrency.
       const facts = await analyze(job);
       await api("/api/job-match-facts", {
         body: JSON.stringify({
@@ -302,7 +307,8 @@ async function worker() {
       const message = error instanceof Error ? error.message : String(error);
       const requeues = quotaRequeues.get(job.id) ?? 0;
       // A timed-out opencode call may succeed on retry.
-      const retryable = isQuotaError(message) || /timed out/iu.test(message);
+      const retryable =
+        isQuotaError(message) || TIMEOUT_ERROR_PATTERN.test(message);
       if (retryable && requeues < MAX_QUOTA_REQUEUES) {
         quotaRequeues.set(job.id, requeues + 1);
         queue.push(job);

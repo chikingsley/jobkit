@@ -1,6 +1,9 @@
 import { z } from "zod";
 import type { ApplicationMessageRoute } from "../schemas";
 
+const NON_ALPHABETIC_WORD_PATTERN = /[^a-z]+/u;
+const WHITESPACE_PATTERN = /\s+/u;
+
 export const APPLICATION_MESSAGE_INSTRUCTIONS = `You write concise, truthful job-application messages for the candidate.
 
 Message policy:
@@ -102,7 +105,9 @@ export function validateApplicationMessage(
 ): string {
   const message = validateApplicationMessageOpening(rawMessage);
   const problems: string[] = [];
-  const normalizedWords = message.toLowerCase().split(/[^a-z]+/u);
+  const normalizedWords = message
+    .toLowerCase()
+    .split(NON_ALPHABETIC_WORD_PATTERN);
   if (normalizedWords.some((word) => word.startsWith("attach"))) {
     problems.push("message must not mention attachments");
   }
@@ -144,14 +149,11 @@ export function validateApplicationMessage(
   );
   const question = message.slice(questionStart + 1, questionEnd + 1);
   const questionWords = new Set(
-    question
-      .toLowerCase()
-      .split(/[^a-z]+/u)
-      .filter(Boolean)
+    question.toLowerCase().split(NON_ALPHABETIC_WORD_PATTERN).filter(Boolean)
   );
   validateRouteQuestion(route, questionWords, problems);
 
-  const wordCount = message.split(/\s+/u).filter(Boolean).length;
+  const wordCount = message.split(WHITESPACE_PATTERN).filter(Boolean).length;
   if (wordCount > MAX_MESSAGE_WORDS) {
     problems.push(
       `message must be at most ${MAX_MESSAGE_WORDS} words; found ${wordCount}`
@@ -182,10 +184,7 @@ export function applicationMessageOpeningProblem(rawMessage: string) {
     problems.push('message must begin with exactly "Hello," and a blank line');
   }
   if (
-    message
-      .toLowerCase()
-      .split(/[^a-z]+/u)
-      .includes("dear")
+    message.toLowerCase().split(NON_ALPHABETIC_WORD_PATTERN).includes("dear")
   ) {
     problems.push('message must never contain "Dear"');
   }

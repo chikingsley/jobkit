@@ -42,9 +42,15 @@ export async function processGmailPush(
     .bind(input.emailAddress)
     .first<GmailWatchRow>();
   if (!watch) {
-    throw new GmailIntegrationError("Gmail notification mailbox is unknown", {
-      status: 400,
-    });
+    // The notification has already passed Google OIDC verification. Unknown
+    // mailboxes have no state to synchronize, so acknowledge them instead of
+    // making Pub/Sub retry an unprocessable event for the retention window.
+    return {
+      duplicate: false,
+      ignored: true,
+      messagesRecorded: 0,
+      ok: true as const,
+    };
   }
   if (compareHistoryIds(input.historyId, watch.history_id) <= 0) {
     await recordPubSubEvent(env.DB, input, 0);
@@ -106,16 +112,16 @@ export function decodeGmailPushData(data: string) {
       emailAddress?: unknown;
       historyId?: unknown;
     };
+    const historyId = normalizeHistoryId(parsed.historyId);
     if (
       typeof parsed.emailAddress !== "string" ||
-      typeof parsed.historyId !== "string" ||
-      !(parsed.emailAddress && parsed.historyId)
+      !(parsed.emailAddress && historyId)
     ) {
       throw new Error("missing emailAddress or historyId");
     }
     return {
       emailAddress: parsed.emailAddress.toLowerCase(),
-      historyId: parsed.historyId,
+      historyId,
     };
   } catch (error) {
     throw new GmailIntegrationError(
@@ -123,6 +129,16 @@ export function decodeGmailPushData(data: string) {
       { cause: error, status: 400 }
     );
   }
+}
+
+function normalizeHistoryId(value: unknown) {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) {
+    return String(value);
+  }
+  return "";
 }
 
 export async function markWatchError(
@@ -189,28 +205,35 @@ async function syncInboundMessages(
   if (trackedThreads.size === 0) {
     return 0;
   }
-  let recorded = 0;
-  for (const messageId of [...new Set(messageIds)]) {
-    const message = await getGmailMessage(accessToken, messageId, "full");
+  const messages = await Promise.all(
+    [...new Set(messageIds)].map((messageId) =>
+      getGmailMessage(accessToken, messageId, "full")
+    )
+  );
+  const inbound = messages.flatMap((message) => {
     if (!isTrackedInboxReply(message, trackedThreads)) {
-      continue;
+      return [];
     }
     const headers = messageHeaders(message);
     if (automatedMessage(headers, emailAddress)) {
-      continue;
+      return [];
     }
-    const result = await recordInboundMessage(env.DB, userId, {
-      bodyText: messageText(message),
-      fromAddress: headers.get("from") ?? "",
-      gmailMessageId: message.id,
-      gmailThreadId: message.threadId,
-      sentAt: messageSentAt(message),
-      subject: headers.get("subject") ?? "",
-      toAddress: headers.get("to") ?? "",
-    });
-    recorded += result.created ? 1 : 0;
-  }
-  return recorded;
+    return [
+      {
+        bodyText: messageText(message),
+        fromAddress: headers.get("from") ?? "",
+        gmailMessageId: message.id,
+        gmailThreadId: message.threadId,
+        sentAt: messageSentAt(message),
+        subject: headers.get("subject") ?? "",
+        toAddress: headers.get("to") ?? "",
+      },
+    ];
+  });
+  const results = await Promise.all(
+    inbound.map((message) => recordInboundMessage(env.DB, userId, message))
+  );
+  return results.filter((result) => result.created).length;
 }
 
 function isTrackedInboxReply(
@@ -233,6 +256,7 @@ async function collectHistoryMessageIds(
   let pageToken: string | undefined;
   let pageCount = 0;
   do {
+    // biome-ignore lint/performance/noAwaitInLoops: Gmail supplies the next page token only after the current history page is read.
     const page = await listGmailHistory(accessToken, startHistoryId, pageToken);
     for (const history of page.history ?? []) {
       for (const addition of history.messagesAdded ?? []) {

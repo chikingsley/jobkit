@@ -84,6 +84,18 @@ const currencyPatterns = [
 
 const numberPattern =
   /\d+(?:[ ,]\d{3})*(?:\.\d+)?\s*(?:k|thousand|million|m)?/giu;
+const COUNTRY_FOOTNOTE_PATTERN = /\*+$/u;
+const CURRENCY_CODE_PATTERN = /^[A-Z]{3}$/u;
+const FROM_AMOUNT_PATTERN =
+  /\b(?:from|starting(?: at| from)?|at least|minimum|min\.?)\b/u;
+const HOURLY_PERIOD_PATTERN =
+  /\b(?:per|an|each)\s+hour\b|\/\s*(?:hour|hr)\b|\bhourly\b/u;
+const MONTHLY_PERIOD_PATTERN =
+  /\b(?:per|a|each)\s+month\b|\/\s*(?:month|mo)\b|\bmonthly\b/u;
+const TAIWAN_DOLLAR_PATTERN = /(?:NT\$|\$\s*[\d,.]+\s*NT\b)/iu;
+const UP_TO_AMOUNT_PATTERN = /\b(?:up to|maximum|max\.?|not more than)\b/u;
+const YEARLY_PERIOD_PATTERN =
+  /\b(?:per|a|each)\s+year\b|\/\s*(?:year|yr)\b|\b(?:annual|annually|annum)\b/u;
 
 export function readSourceInventory(databasePath: string): SourceInventory {
   const database = new Database(databasePath, {
@@ -173,7 +185,7 @@ function countryFor(row: SourceJobRow) {
   if (row.board === "ajarn") {
     return "Thailand";
   }
-  return row.country.replace(/\*+$/u, "").trim();
+  return row.country.replace(COUNTRY_FOOTNOTE_PATTERN, "").trim();
 }
 
 function marketSegments(
@@ -247,15 +259,11 @@ function parseCompensation(
     qualifier = "range";
     amountMinimum = Math.min(...uniqueAmounts);
     amountMaximum = Math.max(...uniqueAmounts);
-  } else if (/\b(?:up to|maximum|max\.?|not more than)\b/u.test(lowerSource)) {
+  } else if (UP_TO_AMOUNT_PATTERN.test(lowerSource)) {
     qualifier = "up-to";
     amountMaximum = amountMinimum;
     amountMinimum = null;
-  } else if (
-    /\b(?:from|starting(?: at| from)?|at least|minimum|min\.?)\b/u.test(
-      lowerSource
-    )
-  ) {
+  } else if (FROM_AMOUNT_PATTERN.test(lowerSource)) {
     qualifier = "from";
   }
   return {
@@ -288,7 +296,7 @@ function emptyCompensation(display: string): InventoryCompensation {
 }
 
 function currencyFor(source: string, fallback: string, country: string) {
-  if (country === "Taiwan" && /(?:NT\$|\$\s*[\d,.]+\s*NT\b)/iu.test(source)) {
+  if (country === "Taiwan" && TAIWAN_DOLLAR_PATTERN.test(source)) {
     return "TWD";
   }
   if (source.includes("¥")) {
@@ -311,7 +319,7 @@ function currencyFor(source: string, fallback: string, country: string) {
   if (normalized === "RMB") {
     return country === "Japan" ? null : "CNY";
   }
-  return /^[A-Z]{3}$/u.test(normalized) ? normalized : null;
+  return CURRENCY_CODE_PATTERN.test(normalized) ? normalized : null;
 }
 
 function amountsFrom(source: string) {
@@ -340,23 +348,13 @@ function numericValue(value: string): number | null {
 
 function payPeriod(source: string): InventoryCompensation["period"] {
   const normalized = source.normalize("NFKC").toLocaleLowerCase("en");
-  if (
-    /\b(?:per|an|each)\s+hour\b|\/\s*(?:hour|hr)\b|\bhourly\b/u.test(normalized)
-  ) {
+  if (HOURLY_PERIOD_PATTERN.test(normalized)) {
     return "hour";
   }
-  if (
-    /\b(?:per|a|each)\s+month\b|\/\s*(?:month|mo)\b|\bmonthly\b/u.test(
-      normalized
-    )
-  ) {
+  if (MONTHLY_PERIOD_PATTERN.test(normalized)) {
     return "month";
   }
-  if (
-    /\b(?:per|a|each)\s+year\b|\/\s*(?:year|yr)\b|\b(?:annual|annually|annum)\b/u.test(
-      normalized
-    )
-  ) {
+  if (YEARLY_PERIOD_PATTERN.test(normalized)) {
     return "year";
   }
   return null;

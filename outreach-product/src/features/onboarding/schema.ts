@@ -6,6 +6,8 @@ import {
   WorkExperienceEntrySchema,
 } from "../profile/schema";
 
+const WHITESPACE_PATTERN = /\s+/u;
+
 export const ExtractionConfidenceSchema = z.enum(["high", "medium", "low"]);
 
 const supportedText = (maximum: number) =>
@@ -156,7 +158,7 @@ export function profileFromImport(
         : [{ language: language.language.trim(), level: language.level }]
     ),
     phone,
-    preferredName: fullName.split(/\s+/u)[0] ?? fullName,
+    preferredName: fullName.split(WHITESPACE_PATTERN)[0] ?? fullName,
     profileReviewNotes: uniqueValues(reviewNotes).slice(0, 20),
     workAuthorization: [],
     workExperience: proposal.workExperience.map((entry) => ({

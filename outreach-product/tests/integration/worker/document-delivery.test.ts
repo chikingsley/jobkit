@@ -25,34 +25,36 @@ describe("versioned document delivery", () => {
     );
     const timestamp = new Date().toISOString();
     const categories = ["resume", "degree", "tefl", "passport", "photo"];
-    for (const category of categories) {
-      const documentId = crypto.randomUUID();
-      const filename = `${category}.pdf`;
-      const objectKey = `users/${userId}/${documentId}/${filename}`;
-      const object = await testEnv.DOCUMENTS.put(
-        objectKey,
-        new TextEncoder().encode(`exact-${category}`),
-        { httpMetadata: { contentType: "application/pdf" } }
-      );
-      await testEnv.DB.prepare(
-        `INSERT INTO user_documents
-          (id,user_id,category,filename,object_key,content_type,size_bytes,
-           r2_version,etag,created_at)
-         VALUES (?,?,?,?,?,'application/pdf',?,?,?,?)`
-      )
-        .bind(
-          documentId,
-          userId,
-          category,
-          filename,
+    await Promise.all(
+      categories.map(async (category) => {
+        const documentId = crypto.randomUUID();
+        const filename = `${category}.pdf`;
+        const objectKey = `users/${userId}/${documentId}/${filename}`;
+        const object = await testEnv.DOCUMENTS.put(
           objectKey,
-          `exact-${category}`.length,
-          object?.version ?? "",
-          object?.etag ?? "",
-          timestamp
+          new TextEncoder().encode(`exact-${category}`),
+          { httpMetadata: { contentType: "application/pdf" } }
+        );
+        await testEnv.DB.prepare(
+          `INSERT INTO user_documents
+            (id,user_id,category,filename,object_key,content_type,size_bytes,
+             r2_version,etag,created_at)
+           VALUES (?,?,?,?,?,'application/pdf',?,?,?,?)`
         )
-        .run();
-    }
+          .bind(
+            documentId,
+            userId,
+            category,
+            filename,
+            objectKey,
+            `exact-${category}`.length,
+            object?.version ?? "",
+            object?.etag ?? "",
+            timestamp
+          )
+          .run();
+      })
+    );
 
     await ensureDocumentPackets(testEnv.DB, userId);
     const packets = await listDocumentPackets(testEnv.DB, userId);

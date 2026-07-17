@@ -1,10 +1,5 @@
 import type { Job } from "./types";
 
-interface JobSection {
-  items: string[];
-  title: string;
-}
-
 const DESCRIPTION_HEADING_PATTERN =
   /\s+(?=(?:Required Degrees|Fields of Expertise|Details|Minimum Requirements|Key Responsibilities|What We Offer|Your Role|Job Benefits|Salary and benefits)\s*:)/gi;
 const DESCRIPTION_BULLET_PATTERN = /\s+(?=[•■])/g;
@@ -22,12 +17,8 @@ export function formatDescription(value: string) {
     .trim();
 }
 
-export function questionsFor(job: Job, sections: JobSection[]) {
+export function questionsFor(job: Job) {
   const source = `${job.title} ${job.description}`.toLowerCase();
-  const organized = sections
-    .flatMap((section) => section.items)
-    .join(" ")
-    .toLowerCase();
   const questions: string[] = [];
   if (
     job.compensation.amountMin === null &&
@@ -41,7 +32,7 @@ export function questionsFor(job: Job, sections: JobSection[]) {
       "Which currency applies to the listed salary or salary range?"
     );
   }
-  if (!SCHEDULE_PATTERN.test(organized)) {
+  if (!SCHEDULE_PATTERN.test(source)) {
     questions.push(
       "What is the expected weekly teaching and working schedule?"
     );

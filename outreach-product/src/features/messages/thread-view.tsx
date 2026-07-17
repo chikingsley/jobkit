@@ -41,6 +41,9 @@ const STATUS_LABELS: Record<string, string> = {
   sent: "Sent",
   uncertain: "Delivery unconfirmed",
 };
+const EMAIL_DOMAIN_PATTERN = /@.*$/u;
+const NAME_SEPARATOR_PATTERN = /[._-]+/gu;
+const WHITESPACE_PATTERN = /\s+/u;
 
 export function MessageThread({ detail }: { detail: MessageThreadDetail }) {
   return (
@@ -190,10 +193,10 @@ function formatSentAt(value: string): string {
 
 function initialsOf(value: string): string {
   const cleaned = value
-    .replace(/@.*$/, "")
-    .replace(/[._-]+/g, " ")
+    .replace(EMAIL_DOMAIN_PATTERN, "")
+    .replace(NAME_SEPARATOR_PATTERN, " ")
     .trim();
-  const parts = cleaned.split(/\s+/).filter(Boolean);
+  const parts = cleaned.split(WHITESPACE_PATTERN).filter(Boolean);
   if (parts.length === 0) {
     return "?";
   }

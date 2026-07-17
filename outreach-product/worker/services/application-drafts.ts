@@ -109,6 +109,7 @@ export async function regenerateDrafts(
   for (const row of rows.results) {
     const job = toJobImport(row);
     const userJobId = String(row.user_job_id);
+    // biome-ignore lint/performance/noAwaitInLoops: Draft regeneration is deliberately sequential to bound model-provider load.
     const latest = await env.DB.prepare(
       "SELECT version FROM application_drafts WHERE user_job_id=? ORDER BY version DESC LIMIT 1"
     )
@@ -175,6 +176,7 @@ export async function importJobsWithDrafts(
   ]);
   for (const job of jobs) {
     const timestamp = new Date().toISOString();
+    // biome-ignore lint/performance/noAwaitInLoops: Imports are ordered so each job's route, user row, facts, and draft remain a coherent unit.
     await upsertJob(env.DB, job, timestamp);
     await upsertApplicationRoutes(env.DB, job, timestamp);
     const userJobId = await upsertUserJob(

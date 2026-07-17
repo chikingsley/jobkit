@@ -22,6 +22,7 @@ const ids = args.ids
 let generated = 0;
 for (const id of ids) {
   const startedAt = Date.now();
+  // biome-ignore lint/performance/noAwaitInLoops: Draft generation is deliberately serialized to avoid model-provider bursts.
   const response = await fetch(
     `${base}/api/jobs/${encodeURIComponent(id)}/generate`,
     { headers: { authorization: `Bearer ${runnerToken}` }, method: "POST" }

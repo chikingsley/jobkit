@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { QualificationClaimAnswerSchema } from "../../src/features/matching/claims";
+import { QualificationClaimAnswerSchema } from "../../src/features/matching/claims-schema";
 import {
   MessageStyleChoiceSchema,
   messageStyleComparisons,

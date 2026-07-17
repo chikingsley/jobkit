@@ -1,6 +1,8 @@
 import type { CountrySweepTaskOutput } from "../../src/features/countries/schema";
 import { CountryMarketError } from "./country-markets";
 
+const WWW_PREFIX_PATTERN = /^www\./u;
+
 interface ClaimedTaskRow {
   country_code: string;
   country_name: string;
@@ -545,7 +547,7 @@ function normalizeDomain(value: string) {
     const url = new URL(
       trimmed.includes("://") ? trimmed : `https://${trimmed}`
     );
-    return url.hostname.replace(/^www\./u, "");
+    return url.hostname.replace(WWW_PREFIX_PATTERN, "");
   } catch {
     return "";
   }

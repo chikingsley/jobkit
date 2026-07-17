@@ -21,12 +21,5 @@
       "vite/client"
     ]
   },
-  "include": [
-    "auth.config.ts",
-    "src",
-    "worker",
-    "vite.config.ts",
-    "vitest.config.ts",
-    "vitest.worker.config.ts"
-  ]
+  "include": ["auth.config.ts", "src", "tests", "worker", "vite.config.ts"]
 }

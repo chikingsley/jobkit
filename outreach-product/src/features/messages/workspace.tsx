@@ -10,15 +10,12 @@ import type {
   MessageThreadDetail,
   MessageThreadSummary,
 } from "@/features/messages/types";
-import { useWorkspaceStore } from "@/features/workspace/store";
+import { useWorkspaceQueryState } from "@/features/workspace/query-state";
 import type { ApiRequest } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export function MessagesWorkspace({ request }: { request: ApiRequest }) {
-  const selectedThreadId = useWorkspaceStore((state) => state.selectedThreadId);
-  const setSelectedThreadId = useWorkspaceStore(
-    (state) => state.setSelectedThreadId
-  );
+  const { selectedThreadId, setSelectedThreadId } = useWorkspaceQueryState();
   const [showThread, setShowThread] = useState(false);
 
   const {
@@ -37,6 +34,13 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
   );
 
   const activeThreadId = selectedThreadId || threads?.[0]?.threadId || "";
+
+  useEffect(() => {
+    const [firstThread] = threads ?? [];
+    if (!selectedThreadId && firstThread) {
+      setSelectedThreadId(firstThread.threadId);
+    }
+  }, [selectedThreadId, setSelectedThreadId, threads]);
 
   const { data: detail, isLoading: detailLoading } = useSWR(
     activeThreadId

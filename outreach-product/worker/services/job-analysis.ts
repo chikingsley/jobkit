@@ -69,6 +69,7 @@ export async function analyzeUserJobs(env: AppEnv, userId: string) {
   ]);
   let analyzed = 0;
   for (const row of rows.results) {
+    // biome-ignore lint/performance/noAwaitInLoops: Stop after four newly analyzed rows; later iterations depend on whether earlier rows already had facts.
     if (await ensureJobMatchFacts(env, model, jobImportFromRow(row))) {
       analyzed += 1;
       if (analyzed === MAX_ANALYSES_PER_REQUEST) {

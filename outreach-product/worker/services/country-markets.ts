@@ -1,11 +1,12 @@
 import { getCountries } from "libphonenumber-js";
+import { z } from "zod";
 import type { AutomationPolicy } from "../../src/features/automation/schema";
-import type {
-  CountryCampaignLaunch,
-  CountrySweepRequest,
+import {
+  CampaignExecutionModeSchema,
+  type CountryCampaignLaunch,
+  type CountrySweepRequest,
 } from "../../src/features/countries/schema";
 import type {
-  CountryCampaignSummary,
   CountryDetail,
   CountryMarketSummary,
   CountryOpportunitySummary,
@@ -22,28 +23,11 @@ interface CountryCountRow {
   latest_status?: string | null;
 }
 
-interface CampaignRow {
-  created_at: string;
-  execution_mode: CountryCampaignSummary["executionMode"];
-  id: string;
-  include_open_positions: number;
-  include_school_outreach: number;
-  status: string;
-  sweep_status: string | null;
-  target_count: number;
-}
-
 interface SweepRow {
   completed_at: string | null;
   id: string;
   requested_at: string;
   status: string;
-}
-
-interface SweepTaskCountRow {
-  count: number;
-  status: string;
-  sweep_id: string;
 }
 
 interface JobTargetRow {
@@ -61,28 +45,6 @@ interface OrganizationTargetRow {
   organization_id: string;
 }
 
-interface OpportunityRow {
-  board: string;
-  company: string;
-  id: string;
-  location: string;
-  source_url: string;
-  title: string;
-  user_status: string | null;
-}
-
-interface CountryOrganizationRow {
-  city: string;
-  contact_count: number;
-  id: string;
-  last_verified_at: string | null;
-  market_segment: string;
-  name: string;
-  outreach_eligibility: string;
-  status: string;
-  website_url: string;
-}
-
 const countryDisplayNames = new Intl.DisplayNames(["en"], { type: "region" });
 const countryNamesByCode = new Map(
   getCountries().map((code) => [code, countryDisplayNames.of(code) ?? code])
@@ -98,6 +60,11 @@ const COUNTRY_NAME_ALIASES = new Map([
   ["south korea", "KR"],
   ["taiwan", "TW"],
 ]);
+const D1_ROW_SCHEMA = z.record(z.string(), z.unknown());
+
+function nullableString(value: unknown): string | null {
+  return value === null || value === undefined ? null : String(value);
+}
 
 export class CountryMarketError extends Error {
   readonly status: 400 | 404 | 409;
@@ -315,23 +282,25 @@ export async function readCountryDetail(
 
   const taskCountsBySweep = new Map<string, Record<string, number>>();
   for (const rawRow of taskCounts.results) {
-    const row = rawRow as unknown as SweepTaskCountRow;
-    const counts = taskCountsBySweep.get(row.sweep_id) ?? {};
-    counts[row.status] = Number(row.count);
-    taskCountsBySweep.set(row.sweep_id, counts);
+    const row = D1_ROW_SCHEMA.parse(rawRow);
+    const sweepId = String(row.sweep_id);
+    const status = String(row.status);
+    const counts = taskCountsBySweep.get(sweepId) ?? {};
+    counts[status] = Number(row.count);
+    taskCountsBySweep.set(sweepId, counts);
   }
 
   return {
     campaigns: campaigns.results.map((rawRow) => {
-      const row = rawRow as unknown as CampaignRow;
+      const row = D1_ROW_SCHEMA.parse(rawRow);
       return {
-        createdAt: row.created_at,
-        executionMode: row.execution_mode,
-        id: row.id,
+        createdAt: String(row.created_at),
+        executionMode: CampaignExecutionModeSchema.parse(row.execution_mode),
+        id: String(row.id),
         includeOpenPositions: Boolean(row.include_open_positions),
         includeSchoolOutreach: Boolean(row.include_school_outreach),
-        status: row.status,
-        sweepStatus: row.sweep_status,
+        status: String(row.status),
+        sweepStatus: nullableString(row.sweep_status),
         targetCount: Number(row.target_count),
       };
     }),
@@ -339,7 +308,7 @@ export async function readCountryDetail(
     countryName,
     opportunities: opportunities.results.map(
       (rawRow): CountryOpportunitySummary => {
-        const row = rawRow as OpportunityRow;
+        const row = D1_ROW_SCHEMA.parse(rawRow);
         return {
           board: String(row.board),
           company: String(row.company),
@@ -347,20 +316,18 @@ export async function readCountryDetail(
           location: String(row.location),
           sourceUrl: String(row.source_url),
           title: String(row.title),
-          userStatus: row.user_status ? String(row.user_status) : null,
+          userStatus: nullableString(row.user_status),
         };
       }
     ),
     organizations: organizations.results.map(
       (rawRow): CountryOrganizationSummary => {
-        const row = rawRow as CountryOrganizationRow;
+        const row = D1_ROW_SCHEMA.parse(rawRow);
         return {
           city: String(row.city),
           contactCount: Number(row.contact_count),
           id: String(row.id),
-          lastVerifiedAt: row.last_verified_at
-            ? String(row.last_verified_at)
-            : null,
+          lastVerifiedAt: nullableString(row.last_verified_at),
           marketSegment: String(row.market_segment),
           name: String(row.name),
           outreachEligibility: String(row.outreach_eligibility),
@@ -370,13 +337,14 @@ export async function readCountryDetail(
       }
     ),
     sweeps: sweeps.results.map((rawRow): CountrySweepSummary => {
-      const row = rawRow as unknown as SweepRow;
+      const row = D1_ROW_SCHEMA.parse(rawRow);
+      const id = String(row.id);
       return {
-        completedAt: row.completed_at,
-        id: row.id,
-        requestedAt: row.requested_at,
-        status: row.status,
-        taskCounts: taskCountsBySweep.get(row.id) ?? {},
+        completedAt: nullableString(row.completed_at),
+        id,
+        requestedAt: String(row.requested_at),
+        status: String(row.status),
+        taskCounts: taskCountsBySweep.get(id) ?? {},
       };
     }),
   };

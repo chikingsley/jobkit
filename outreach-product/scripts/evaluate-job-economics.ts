@@ -55,6 +55,7 @@ try {
   const results: Record<string, unknown>[] = [];
   for (let index = 0; index < rows.length; index += options.concurrency) {
     const batch = rows.slice(index, index + options.concurrency);
+    // biome-ignore lint/performance/noAwaitInLoops: Waiting between bounded batches enforces the requested concurrency ceiling.
     const batchResults = await Promise.all(
       batch.map(async (row) => evaluateRow(row, providerEnv, options))
     );

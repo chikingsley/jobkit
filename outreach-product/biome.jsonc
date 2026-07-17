@@ -9,15 +9,8 @@
     "rules": {
       "complexity": { "noVoid": "off" },
       "performance": {
-        "noAwaitInLoops": "off",
-        "noJsxPropsBind": "off",
-        "useTopLevelRegex": "off"
-      },
-      "style": {
-        "noNonNullAssertion": "off",
-        "useFilenamingConvention": "off"
-      },
-      "suspicious": { "noAlert": "off" }
+        "noJsxPropsBind": "off"
+      }
     }
   },
   "overrides": [

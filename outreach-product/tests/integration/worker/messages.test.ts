@@ -143,12 +143,16 @@ describe("inbound message sync", () => {
       }[];
     };
     expect(threads).toHaveLength(1);
-    expect(threads[0]).toMatchObject({
+    const [summary] = threads;
+    if (!summary) {
+      throw new Error("Expected a message thread summary");
+    }
+    expect(summary).toMatchObject({
       messageCount: 2,
       threadId: gmailThreadId,
       unreadCount: 1,
     });
-    expect(threads[0].preview).toContain("Thanks for applying");
+    expect(summary.preview).toContain("Thanks for applying");
 
     const detail = await request(
       `/api/messages/threads/${gmailThreadId}`,
@@ -158,8 +162,12 @@ describe("inbound message sync", () => {
       thread: { messages: { direction: string; from: string }[] };
     };
     expect(thread.messages).toHaveLength(2);
-    expect(thread.messages[0].direction).toBe("outbound");
-    expect(thread.messages[1]).toMatchObject({
+    const [outbound, inbound] = thread.messages;
+    if (!(outbound && inbound)) {
+      throw new Error("Expected outbound and inbound thread messages");
+    }
+    expect(outbound.direction).toBe("outbound");
+    expect(inbound).toMatchObject({
       direction: "inbound",
       from: "Recruiter <school@example.test>",
     });
@@ -174,7 +182,11 @@ describe("inbound message sync", () => {
     const relistedThreads = (await relisted.json()) as {
       threads: { unreadCount: number }[];
     };
-    expect(relistedThreads.threads[0].unreadCount).toBe(0);
+    const [relistedSummary] = relistedThreads.threads;
+    if (!relistedSummary) {
+      throw new Error("Expected the relisted message thread summary");
+    }
+    expect(relistedSummary.unreadCount).toBe(0);
   });
 
   it("rejects inbound messages for unknown threads", async () => {

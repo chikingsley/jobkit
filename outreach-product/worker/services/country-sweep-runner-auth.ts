@@ -7,11 +7,13 @@ interface RunnerUserRow {
   token_id: string;
 }
 
+const BEARER_PREFIX_PATTERN = /^Bearer\s+/iu;
+
 export async function authenticateCountrySweepRunner(
   db: D1Database,
   authorization: string
 ): Promise<AuthUser | null> {
-  const token = authorization.replace(/^Bearer\s+/iu, "").trim();
+  const token = authorization.replace(BEARER_PREFIX_PATTERN, "").trim();
   if (!token.startsWith("jobkit_runner_") || token.length < 40) {
     return null;
   }

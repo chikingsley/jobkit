@@ -5,6 +5,7 @@ import type { AppEnv } from "../env";
 // sent, in-flight (sending), or send-attempted-but-unverified.
 const THREAD_STATUSES = ["sent", "sending", "uncertain"] as const;
 const ATTEMPT_THREAD_PREFIX = "attempt:";
+const LINE_BREAK_PATTERN = /\r?\n/u;
 
 export interface ThreadAttachmentView {
   category: string;
@@ -472,7 +473,7 @@ function toThreadMessage(
 function previewOf(message: string): string {
   const firstLine =
     message
-      .split(/\r?\n/)
+      .split(LINE_BREAK_PATTERN)
       .map((line) => line.trim())
       .find((line) => line.length > 0) ?? "";
   return firstLine.length > 160 ? `${firstLine.slice(0, 159)}…` : firstLine;
