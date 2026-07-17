@@ -6,8 +6,8 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
 
 **1. According to the unit, what motivational advantage do open-ended, student-centered activities have over activities with a single correct answer?**
 
-   a. They allow the teacher to speak more and model accurate language for students.
-   b. Students have a personal stake in the conversation because they are expressing what they genuinely think.
+   a. Students have a personal stake in the conversation because they are expressing what they genuinely think.
+   b. They allow the teacher to speak more and model accurate language for students.
    c. They eliminate the need for preparation time before the speaking task begins.
    d. They are easier to assess because every student produces the same type of output.
 
@@ -15,8 +15,8 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
 
    a. It requires students to paraphrase a sentence without repeating the original wording.
    b. It asks each student to select a word card and deliver an opinion to the whole class.
-   c. A student can contribute a single word and still participate meaningfully in building a complete sentence.
-   d. It uses a problem-solution format that encourages both critical and creative thinking.
+   c. It uses a problem-solution format that encourages both critical and creative thinking.
+   d. A student can contribute a single word and still participate meaningfully in building a complete sentence.
 
 **3. The unit identifies three features shared by both the problem-solution role-play and the TV Talk Show activity. Which of the following is one of those three features?**
 
@@ -34,9 +34,9 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
 
 **5. The unit describes the count-off method of grouping students. Which of the following is stated as an advantage of this technique?**
 
-   a. It allows the teacher to place stronger students with weaker ones deliberately.
-   b. It produces groups of exactly three, which the unit identifies as optimal for discussion tasks.
-   c. It takes less than a minute and reduces the social awkwardness of being chosen last or left out.
+   a. It takes less than a minute and reduces the social awkwardness of being chosen last or left out.
+   b. It allows the teacher to place stronger students with weaker ones deliberately.
+   c. It produces groups of exactly three, which the unit identifies as optimal for discussion tasks.
    d. It ensures that students who share the same first language are separated across teams.
 
 **6. How does the unit describe the closing of the writing task in Video Segment 2, particularly regarding how errors were handled?**
@@ -49,9 +49,9 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
 **7. How does the unit say the Word Bricks activity adjusts to serve a mixed-level classroom without requiring the teacher to prepare entirely separate materials?**
 
    a. The teacher assigns different colored bricks to beginning, intermediate, and advanced students
-   b. Adding one or two extra Wild Cards raises the ceiling for any group
-   c. The teacher removes the suffix bricks for beginners and adds them back for advanced students
-   d. Beginning students use only one face of each brick while advanced students use both faces
+   b. The teacher removes the suffix bricks for beginners and adds them back for advanced students
+   c. Beginning students use only one face of each brick while advanced students use both faces
+   d. Adding one or two extra Wild Cards raises the ceiling for any group
 
 **8. According to the unit, what is the role of explaining sentences in a paragraph, and how do they differ from evidence sentences?**
 
@@ -62,8 +62,8 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
 
 **9. The unit identifies a mutually reinforcing quality in the station-based peer feedback activity. What does this mean?**
 
-   a. Students who initial the checklist first are required to return to earlier stations and re-evaluate their own work
-   b. When a student notices a missing element in a classmate's essay, she tends to return to her own essay and check the same element
+   a. When a student notices a missing element in a classmate's essay, she tends to return to her own essay and check the same element
+   b. Students who initial the checklist first are required to return to earlier stations and re-evaluate their own work
    c. The teacher's summative feedback reinforces the peer feedback students have already received at each station
    d. Working with several different peers ensures that each student's judgment is reinforced by multiple classmates
 
@@ -77,8 +77,8 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
 **11. What is the specific purpose of using a different colored highlighter pen at each editing station?**
 
    a. To help students memorize the order of the ten checklist elements
-   b. To allow the teacher to grade each element separately using a color-coded rubric
-   c. To create a visible record showing which elements have been examined and where changes were made
+   b. To create a visible record showing which elements have been examined and where changes were made
+   c. To allow the teacher to grade each element separately using a color-coded rubric
    d. To signal to peers which sections of the essay still need revision
 
 **12. A teacher using the correction code described in the unit writes 'vt' in the margin beside a line of a student's draft, leaving the line itself untouched. According to the unit, what two jobs does that mark do at once?**
@@ -98,16 +98,16 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
 **14. In the 'Good Deeds' iEARN project, what was the purpose of dividing students into two groups to read different sources in jigsaw style?**
 
    a. To allow faster readers to finish early and help slower readers with comprehension.
-   b. To ensure that the subsequent discussion required genuine listening because no single student held the complete picture.
-   c. To reduce the number of library books needed by splitting the reading load equally.
+   b. To reduce the number of library books needed by splitting the reading load equally.
+   c. To ensure that the subsequent discussion required genuine listening because no single student held the complete picture.
    d. To give the teacher time to assess individual reading skills while the other group worked independently.
 
 **15. What practical advantage does the unit give for identifying the spine skill before a lesson begins, specifically when time runs short?**
 
    a. It allows the teacher to assign the remaining time to whichever skill students find most enjoyable.
    b. It ensures that grammar and vocabulary sub-skills are always covered before the lesson ends.
-   c. It helps the teacher shorten a supporting stage without abandoning the lesson's primary purpose.
-   d. It gives students advance notice of which skill will be graded so they can prepare accordingly.
+   c. It gives students advance notice of which skill will be graded so they can prepare accordingly.
+   d. It helps the teacher shorten a supporting stage without abandoning the lesson's primary purpose.
 
 ## Section B — Review (2 points, 1 each)
 
@@ -116,9 +116,9 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
 **17. Which of the following sentences correctly demonstrates the absence of do-support with a modal verb?**
 
    a. Do you will come tomorrow?
-   b. Will you come tomorrow?
-   c. Does she can stay late?
-   d. Did he must leave early?
+   b. Does she can stay late?
+   c. Did he must leave early?
+   d. Will you come tomorrow?
 
 ## Section C — Scenario (5 points)
 

@@ -7,41 +7,41 @@ Covers units 12.1 to 12.4. 19 points total; pass mark 70%. Section B re-asks que
 **1. According to the unit, what is the PRIMARY purpose of posting clear instructions and schedules throughout learning stations and self-access areas?**
 
    a. To reduce the amount of preparation time a teacher needs before each lesson
-   b. To allow a learner to manage her own learning time rather than waiting for the teacher to redirect her
-   c. To ensure that all students complete the same activities in the same order
-   d. To display student work so that peers can evaluate one another's progress
+   b. To ensure that all students complete the same activities in the same order
+   c. To display student work so that peers can evaluate one another's progress
+   d. To allow a learner to manage her own learning time rather than waiting for the teacher to redirect her
 
-   *Answer: b. To allow a learner to manage her own learning time rather than waiting for the teacher to redirect her*
+   *Answer: d. To allow a learner to manage her own learning time rather than waiting for the teacher to redirect her*
    *Anchor: "she is managing her own learning time rather than waiting for the teacher to redirect her"*
 
 **2. The unit describes an outdoor data-collection project in which younger children counted animals and insects in their neighborhoods. Which of the following best explains why the unit presents this as an effective motivational strategy?**
 
-   a. It removes the need for any language use by focusing entirely on mathematical skills
-   b. It restricts learning to a single intelligence type, making tasks easier to assess
-   c. Authenticity connects to motivation because learners can see the language belongs to real situations they have encountered
+   a. Authenticity connects to motivation because learners can see the language belongs to real situations they have encountered
+   b. It removes the need for any language use by focusing entirely on mathematical skills
+   c. It restricts learning to a single intelligence type, making tasks easier to assess
    d. It works only for learners with strong bodily-kinesthetic intelligence and should not be used with other groups
 
-   *Answer: c. Authenticity connects to motivation because learners can see the language belongs to real situations they have encountered*
+   *Answer: a. Authenticity connects to motivation because learners can see the language belongs to real situations they have encountered*
    *Anchor: "when learners can see that the language they are practicing belongs to real situations they have encountered"*
 
 **3. The unit identifies seven dimensions along which teachers can vary their practice. Which of the following is described as the THIRD dimension in that toolkit?**
 
    a. Offering a variety of tasks built around the same input
-   b. Selecting content according to the actual purposes learners have for using the language
-   c. Varying the medium through which input reaches learners, such as textbooks, audio, or internet resources
+   b. Varying the medium through which input reaches learners, such as textbooks, audio, or internet resources
+   c. Selecting content according to the actual purposes learners have for using the language
    d. Shifting some responsibility for learning to the students themselves
 
-   *Answer: c. Varying the medium through which input reaches learners, such as textbooks, audio, or internet resources*
+   *Answer: b. Varying the medium through which input reaches learners, such as textbooks, audio, or internet resources*
    *Anchor: "The medium through which input reaches learners is a third variable"*
 
 **4. Why does the unit argue that learning-styles theory carries a 'moral weight' that makes it difficult for teachers to abandon?**
 
-   a. Because it is endorsed by peer-reviewed neuroscience journals
-   b. Because sorting students into types feels like attending to them as individuals, reflecting a genuinely valuable instinct
+   a. Because sorting students into types feels like attending to them as individuals, reflecting a genuinely valuable instinct
+   b. Because it is endorsed by peer-reviewed neuroscience journals
    c. Because it reduces the workload of lesson planning by simplifying differentiation
    d. Because government training standards legally require teachers to identify student styles
 
-   *Answer: b. Because sorting students into types feels like attending to them as individuals, reflecting a genuinely valuable instinct*
+   *Answer: a. Because sorting students into types feels like attending to them as individuals, reflecting a genuinely valuable instinct*
    *Anchor: "Sorting students into types feels like paying attention to them as individuals"*
 
 **5. According to the unit, what is the key problem with how the source glossary defines 'visual learner' and 'kinesthetic learner'?**
@@ -57,41 +57,41 @@ Covers units 12.1 to 12.4. 19 points total; pass mark 70%. Section B re-asks que
 **6. The unit describes Willingham, Hughes, and Dobolyi (2015) as going 'a step further' than simply confirming the lack of evidence for learning styles. What additional position did they take?**
 
    a. They proposed a revised taxonomy of learning styles based on neuroimaging data
-   b. They argued that learning-styles theories should be presented to teachers as a popular but scientifically debunked idea rather than as a basis for planning
-   c. They recommended that style inventories be replaced with standardized aptitude tests
+   b. They recommended that style inventories be replaced with standardized aptitude tests
+   c. They argued that learning-styles theories should be presented to teachers as a popular but scientifically debunked idea rather than as a basis for planning
    d. They called for learning styles to be removed from all national curriculum frameworks
 
-   *Answer: b. They argued that learning-styles theories should be presented to teachers as a popular but scientifically debunked idea rather than as a basis for planning*
+   *Answer: c. They argued that learning-styles theories should be presented to teachers as a popular but scientifically debunked idea rather than as a basis for planning*
    *Anchor: "learning-styles theories should be presented to teachers and trainee teachers as a popular but scientifically debunked idea"*
 
 **7. According to Beckman, what is the recommended approach when introducing cognitive strategies to learners?**
 
    a. Teach each strategy in isolation so learners can master one before moving to the next.
-   b. Introduce strategies one at a time, then show students how to combine them for specific tasks.
-   c. Allow learners to discover which strategies work best without explicit teacher guidance.
+   b. Allow learners to discover which strategies work best without explicit teacher guidance.
+   c. Introduce strategies one at a time, then show students how to combine them for specific tasks.
    d. Focus exclusively on mnemonics because they are the most concrete and teachable strategy.
 
-   *Answer: b. Introduce strategies one at a time, then show students how to combine them for specific tasks.*
+   *Answer: c. Introduce strategies one at a time, then show students how to combine them for specific tasks.*
    *Anchor: "A teacher who introduces these strategies one at a time, then shows students how to combine them for specific tasks"*
 
 **8. Which step in Beckman's strategy instruction sequence is specifically aimed at moving a strategy toward automaticity?**
 
    a. Describing the strategy and explaining its purpose before the lesson begins.
-   b. Modeling the strategy openly by thinking aloud for students.
-   c. Repeated assisted practice during which the teacher monitors, provides cues, and gives feedback.
+   b. Repeated assisted practice during which the teacher monitors, provides cues, and gives feedback.
+   c. Modeling the strategy openly by thinking aloud for students.
    d. Encouraging students to transfer the strategy to a different subject area.
 
-   *Answer: c. Repeated assisted practice during which the teacher monitors, provides cues, and gives feedback.*
+   *Answer: b. Repeated assisted practice during which the teacher monitors, provides cues, and gives feedback.*
    *Anchor: "Repeated practice of this kind moves the strategy toward automaticity, so students apply it without having to stop"*
 
 **9. What does the unit identify as one concrete way the physical classroom environment can support ongoing strategy integration?**
 
    a. Arranging desks so that students always face a partner for peer tutoring.
-   b. Posting written reminders for learning strategies on walls and bulletin boards.
-   c. Reserving a separate lesson slot each week dedicated solely to strategy instruction.
-   d. Requiring students to submit weekly logs recording which strategies they attempted.
+   b. Reserving a separate lesson slot each week dedicated solely to strategy instruction.
+   c. Requiring students to submit weekly logs recording which strategies they attempted.
+   d. Posting written reminders for learning strategies on walls and bulletin boards.
 
-   *Answer: b. Posting written reminders for learning strategies on walls and bulletin boards.*
+   *Answer: d. Posting written reminders for learning strategies on walls and bulletin boards.*
    *Anchor: "Written reminders for learning strategies posted on walls and bulletin boards help students keep those strategies present"*
 
 **10. According to the unit, what distinguishes a critical thinking question from a comprehension check in terms of motivation?**
@@ -106,22 +106,22 @@ Covers units 12.1 to 12.4. 19 points total; pass mark 70%. Section B re-asks que
 
 **11. The unit argues that a task pitched at the wrong level of difficulty undermines motivation. What specific outcome does the unit say results when the gap between a student's current ability and the task's demands is too wide?**
 
-   a. The student asks the teacher for a simpler version of the task.
-   b. The student copies answers from a peer to avoid embarrassment.
-   c. Effort gives way to withdrawal.
+   a. Effort gives way to withdrawal.
+   b. The student asks the teacher for a simpler version of the task.
+   c. The student copies answers from a peer to avoid embarrassment.
    d. The student switches to a preferred learning style automatically.
 
-   *Answer: c. Effort gives way to withdrawal.*
+   *Answer: a. Effort gives way to withdrawal.*
    *Anchor: "If the gap between what Carlos can currently do and what the task demands is too wide, effort gives way to withdrawal"*
 
 **12. The unit describes a teacher circulating during group activities rather than waiting at the front of the room. What motivational function does this practice primarily serve, according to the unit?**
 
    a. It allows the teacher to assign formal grades to each group before the lesson ends.
-   b. It enables the teacher to redirect, confirm, or prompt while work is happening, making moments of competence visible to the learner who produced them.
-   c. It discourages students from choosing partners, ensuring more balanced group compositions.
+   b. It discourages students from choosing partners, ensuring more balanced group compositions.
+   c. It enables the teacher to redirect, confirm, or prompt while work is happening, making moments of competence visible to the learner who produced them.
    d. It replaces the need for any written feedback at the end of the lesson.
 
-   *Answer: b. It enables the teacher to redirect, confirm, or prompt while work is happening, making moments of competence visible to the learner who produced them.*
+   *Answer: c. It enables the teacher to redirect, confirm, or prompt while work is happening, making moments of competence visible to the learner who produced them.*
    *Anchor: "she is present in the room while the work is happening, available to redirect, confirm, or prompt"*
 
 ## Section B — Review (2 points, 1 each)

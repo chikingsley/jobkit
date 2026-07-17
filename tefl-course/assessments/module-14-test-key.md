@@ -7,31 +7,31 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
 **1. According to the unit, what distinguishes TPR-Storytelling (TPR-S) from standard TPR?**
 
    a. TPR-S replaces physical movement with written responses, while standard TPR keeps students active.
-   b. TPR-S asks students to take on spoken parts as well as physical movement, building toward oral production.
-   c. TPR-S uses the present tense exclusively, while standard TPR relies on the imperative form.
-   d. TPR-S is designed for older learners, while standard TPR is restricted to kindergarten students.
+   b. TPR-S uses the present tense exclusively, while standard TPR relies on the imperative form.
+   c. TPR-S is designed for older learners, while standard TPR is restricted to kindergarten students.
+   d. TPR-S asks students to take on spoken parts as well as physical movement, building toward oral production.
 
-   *Answer: b. TPR-S asks students to take on spoken parts as well as physical movement, building toward oral production.*
+   *Answer: d. TPR-S asks students to take on spoken parts as well as physical movement, building toward oral production.*
    *Anchor: "TPR-S asks them to take on spoken parts as well, building toward production through the same grounded, movement-linked approach"*
 
 **2. The unit identifies a specific role the teacher takes on during station-based learning. Which of the following best describes that role?**
 
-   a. Lecturer and primary source of all language input during station time.
-   b. Passive observer who records student errors for later whole-class correction.
-   c. Master planner, guide, and timekeeper who moves through the room and attends to individual students.
+   a. Master planner, guide, and timekeeper who moves through the room and attends to individual students.
+   b. Lecturer and primary source of all language input during station time.
+   c. Passive observer who records student errors for later whole-class correction.
    d. Designated clean-up monitor who manages transitions while students self-direct all learning.
 
-   *Answer: c. Master planner, guide, and timekeeper who moves through the room and attends to individual students.*
+   *Answer: a. Master planner, guide, and timekeeper who moves through the room and attends to individual students.*
    *Anchor: "The teacher's role within this structure is that of master planner, guide, and timekeeper"*
 
 **3. According to the unit, what is the main cognitive benefit of establishing predictable classroom routines for young learners?**
 
    a. Routines eliminate the need for the teacher to give directions during transitions.
-   b. Routines reduce the cognitive load of figuring out what comes next, leaving more mental space for language.
-   c. Routines ensure that all students progress at the same rate regardless of individual development.
+   b. Routines ensure that all students progress at the same rate regardless of individual development.
+   c. Routines reduce the cognitive load of figuring out what comes next, leaving more mental space for language.
    d. Routines replace the need for varied activities because children find repetition of procedures motivating.
 
-   *Answer: b. Routines reduce the cognitive load of figuring out what comes next, leaving more mental space for language.*
+   *Answer: c. Routines reduce the cognitive load of figuring out what comes next, leaving more mental space for language.*
    *Anchor: "a classroom where sequences are known in advance reduces the cognitive load of figuring out what comes next, leaving more mental space for language"*
 
 **4. According to the unit, why might a Business English learner like Priya still struggle professionally despite controlling complex grammar and a wide vocabulary?**
@@ -66,12 +66,12 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
 
 **7. According to the unit, what happens when students take on roles other than their own in the television talk show simulation?**
 
-   a. Students are able to avoid speaking spontaneously because their roles are fully scripted in advance
-   b. Students are encouraged to present information in new ways and to think from perspectives they would not ordinarily occupy
+   a. Students are encouraged to present information in new ways and to think from perspectives they would not ordinarily occupy
+   b. Students are able to avoid speaking spontaneously because their roles are fully scripted in advance
    c. Students focus exclusively on factual recall because the talk show format requires accurate reporting
    d. Students become less motivated because they cannot draw on their personal experience
 
-   *Answer: b. Students are encouraged to present information in new ways and to think from perspectives they would not ordinarily occupy*
+   *Answer: a. Students are encouraged to present information in new ways and to think from perspectives they would not ordinarily occupy*
    *Anchor: "taking on roles other than their own encouraged students to present information in new ways and to think from perspectives they would not ordinarily occupy"*
 
 **8. The unit argues that a language classroom is a natural setting for developing critical and creative thinking. Which reason does it give for this claim?**
@@ -87,21 +87,21 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
 **9. The unit's practical action plan recommends that a teacher begin by identifying a single existing lesson rather than designing an entirely new unit. What reason does the unit give for this recommendation?**
 
    a. New units require administrative approval, which takes longer than most teachers can afford
-   b. One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing
-   c. Students perform better on thinking tasks when the topic is one they have already studied in previous years
-   d. Redesigning a lesson from the ground up eliminates the factual groundwork that open tasks require
+   b. Students perform better on thinking tasks when the topic is one they have already studied in previous years
+   c. Redesigning a lesson from the ground up eliminates the factual groundwork that open tasks require
+   d. One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing
 
-   *Answer: b. One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing*
+   *Answer: d. One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing*
    *Anchor: "One enriched activity in a familiar lesson is a more honest experiment than an entirely new unit built around principles you are still testing"*
 
 **10. According to the unit, what distinguishes the four reflective teaching questions from evaluative questions?**
 
-   a. They require the teacher to rate herself on a numerical scale before and after each lesson
-   b. They ask what happened and what might be done differently, not whether the teacher was good or bad
+   a. They ask what happened and what might be done differently, not whether the teacher was good or bad
+   b. They require the teacher to rate herself on a numerical scale before and after each lesson
    c. They are designed to be shared with an administrator at the end of each term
    d. They focus exclusively on student behavior rather than on instructional decisions
 
-   *Answer: b. They ask what happened and what might be done differently, not whether the teacher was good or bad*
+   *Answer: a. They ask what happened and what might be done differently, not whether the teacher was good or bad*
    *Anchor: "They do not ask whether the teacher was good or bad; they ask what happened and what might be done differently"*
 
 **11. The unit names several sources from which good teachers continue to learn throughout their careers. Which of the following is listed among those sources?**
@@ -118,10 +118,10 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
 
    a. Sharing the recording with a mentor before watching it alone
    b. Transcribing the recording word for word into the teacher diary
-   c. Conducting a follow-up analysis after watching or listening to the recording
-   d. Obtaining written consent from students before the lesson begins
+   c. Obtaining written consent from students before the lesson begins
+   d. Conducting a follow-up analysis after watching or listening to the recording
 
-   *Answer: c. Conducting a follow-up analysis after watching or listening to the recording*
+   *Answer: d. Conducting a follow-up analysis after watching or listening to the recording*
    *Anchor: "The follow-up analysis is the indispensable step; a recording left unwatched is a file and nothing more"*
 
 ## Section B — Review (2 points, 1 each)
@@ -138,12 +138,12 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
 
 **14. According to the unit, what is the primary purpose of a comprehension-checking question such as 'How long do you have to answer the questions?'**
 
-   a. To give students extra practice producing spoken language
-   b. To fill time between activities during a transition
-   c. To collect evidence that students have processed an instruction
+   a. To collect evidence that students have processed an instruction
+   b. To give students extra practice producing spoken language
+   c. To fill time between activities during a transition
    d. To assess whether students have memorized new vocabulary
 
-   *Answer: c. To collect evidence that students have processed an instruction*
+   *Answer: a. To collect evidence that students have processed an instruction*
    *Anchor: "unit 1.3 quiz"*
 
 ## Section C — Scenario (5 points)

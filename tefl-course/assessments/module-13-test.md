@@ -6,8 +6,8 @@ Covers units 13.1 to 13.3. 16 points total; pass mark 70%. Section B re-asks que
 
 **1. According to the unit, what is the primary reason a peer assessment worksheet should NOT be used as a final summative grade?**
 
-   a. Peer worksheets take too long for students to complete during class time.
-   b. Peer worksheets may lack the consistency that summative assessment requires.
+   a. Peer worksheets may lack the consistency that summative assessment requires.
+   b. Peer worksheets take too long for students to complete during class time.
    c. Peer worksheets are only appropriate for advanced proficiency levels.
    d. Peer worksheets cannot include numeric scores of any kind.
 
@@ -21,30 +21,30 @@ Covers units 13.1 to 13.3. 16 points total; pass mark 70%. Section B re-asks que
 **3. A teacher whose lesson asked students to recall and define health vocabulary assigns a debate as the final assessment task. According to the unit, what is the core problem with this choice?**
 
    a. Debates are not listed as a valid form of alternative assessment.
-   b. The debate places students at the Evaluate level, demanding cognitive work the lesson did not develop.
-   c. The debate produces a summative score rather than formative feedback.
+   b. The debate produces a summative score rather than formative feedback.
+   c. The debate places students at the Evaluate level, demanding cognitive work the lesson did not develop.
    d. Debates are only appropriate when students have high intermediate proficiency.
 
 **4. According to the unit, which of the following is identified as a reason why alternative assessment can increase learner motivation?**
 
-   a. It removes the need for any formal grading system
-   b. Learners use the language for real purposes and can see their own progress clearly
+   a. Learners use the language for real purposes and can see their own progress clearly
+   b. It removes the need for any formal grading system
    c. It reduces the amount of work teachers must prepare outside class
    d. Learners compete with peers and receive ranked scores
 
 **5. The unit describes two different physical storage arrangements for portfolios observed in classrooms. What was the storage method used specifically by older students?**
 
-   a. Large plastic envelopes kept in bins on the floor
-   b. Folders hung on a dedicated classroom display board
-   c. Large binders stored on shelves that students collected on arrival
+   a. Large binders stored on shelves that students collected on arrival
+   b. Large plastic envelopes kept in bins on the floor
+   c. Folders hung on a dedicated classroom display board
    d. Cardboard boxes kept in a shared school storage room
 
 **6. In the unit's King Lear dramatization example, which of the following accurately lists language skills the unit says a student like Priya must use during the performance?**
 
    a. Writing, editing, memorizing lines, and presenting to an examiner
-   b. Listening carefully, reading for comprehension, sustaining reading fluency, attending to pronunciation, and delivering lines with dramatic expression
-   c. Speaking spontaneously, taking notes, summarizing, and debating
-   d. Reading silently, translating, writing a reflection, and answering comprehension questions
+   b. Speaking spontaneously, taking notes, summarizing, and debating
+   c. Reading silently, translating, writing a reflection, and answering comprehension questions
+   d. Listening carefully, reading for comprehension, sustaining reading fluency, attending to pronunciation, and delivering lines with dramatic expression
 
 **7. According to the unit, what specific problem arises when a gap-fill distractor can be eliminated through elementary subject-verb agreement rather than knowledge of the target form?**
 
@@ -56,31 +56,31 @@ Covers units 13.1 to 13.3. 16 points total; pass mark 70%. Section B re-asks que
 **8. The unit argues that a teacher who relies exclusively on knowledge-based test items will consistently do which of the following?**
 
    a. Overestimate students whose metalinguistic awareness exceeds their spoken production
-   b. Underestimate students whose communicative ability outpaces their metalinguistic awareness
-   c. Produce positive washback by rewarding accurate grammar recognition
+   b. Produce positive washback by rewarding accurate grammar recognition
+   c. Underestimate students whose communicative ability outpaces their metalinguistic awareness
    d. Align assessment with communicative learning goals more efficiently
 
 **9. According to the unit's test-writing workflow, what is the correct order for the first and fourth steps?**
 
    a. Draft the items first, then write the learning goals to match them
    b. Write the marking guide first, then identify the learning goals
-   c. Write the learning goals in plain language first, then write the marking guide before administering the test
-   d. Match item types to goals first, then share the assessment criteria with students
+   c. Match item types to goals first, then share the assessment criteria with students
+   d. Write the learning goals in plain language first, then write the marking guide before administering the test
 
 ## Section B — Review (2 points, 1 each)
 
 **10. What does substituting 'when' for 'if' in a first conditional sentence signal to the listener?**
 
    a. The condition is unreal
-   b. The condition is certain to occur
-   c. The condition is hypothetical
+   b. The condition is hypothetical
+   c. The condition is certain to occur
    d. The result is in the past
 
 **11. According to Karpicke and Roediger (2008), approximately what percentage of word pairs did participants in the repeated-retrieval condition recall correctly after one week?**
 
    a. 33%
-   b. 50%
-   c. 80%
+   b. 80%
+   c. 50%
    d. 95%
 
 ## Section C — Scenario (5 points)

@@ -7,41 +7,41 @@ Covers units 1.1 to 1.5. 20 points total; pass mark 70%.
 **1. According to the unit, what distinguishes a bilingual English-Spanish classroom in the United States from an EFL classroom in Costa Rica, even when both serve children aged five and six?**
 
    a. The bilingual classroom uses more games and songs than the EFL classroom.
-   b. In the bilingual setting English shares space with Spanish throughout the school day, while in the EFL classroom English arrives as a subject in its own right.
-   c. The EFL classroom has better physical resources and more learning stations.
+   b. The EFL classroom has better physical resources and more learning stations.
+   c. In the bilingual setting English shares space with Spanish throughout the school day, while in the EFL classroom English arrives as a subject in its own right.
    d. The bilingual classroom focuses on grammar explanation rather than activity-based learning.
 
-   *Answer: b. In the bilingual setting English shares space with Spanish throughout the school day, while in the EFL classroom English arrives as a subject in its own right.*
+   *Answer: c. In the bilingual setting English shares space with Spanish throughout the school day, while in the EFL classroom English arrives as a subject in its own right.*
    *Anchor: "In the bilingual setting, English shares space with Spanish throughout the school day"*
 
 **2. The unit identifies five core areas of pedagogical skill that TEFL teachers develop. Which of the following is NOT listed among them?**
 
    a. Classroom management
-   b. Language teaching techniques
-   c. Curriculum design and syllabus writing
+   b. Curriculum design and syllabus writing
+   c. Language teaching techniques
    d. Adapting activities and lesson planning
 
-   *Answer: c. Curriculum design and syllabus writing*
+   *Answer: b. Curriculum design and syllabus writing*
    *Anchor: "classroom management, language teaching techniques, encouraging critical and creative thinking, lesson observation skills, and adapting activities and lesson planning"*
 
 **3. According to the unit, what specific challenge related to classroom management is described as particularly difficult when working with very young learners?**
 
-   a. Keeping learners seated during grammar explanations
-   b. Managing transitions between activities
+   a. Managing transitions between activities
+   b. Keeping learners seated during grammar explanations
    c. Preventing learners from using their home language
    d. Assessing proficiency levels accurately
 
-   *Answer: b. Managing transitions between activities*
+   *Answer: a. Managing transitions between activities*
    *Anchor: "transitions between activities can be difficult, especially when working with very young learners"*
 
 **4. According to the unit, what fundamental advantage does a second language learner have that an infant acquiring a first language does not?**
 
    a. A longer attention span for processing new vocabulary
-   b. A complete linguistic system already in place
-   c. Prior exposure to Total Physical Response techniques
-   d. The ability to read dictionary definitions independently
+   b. Prior exposure to Total Physical Response techniques
+   c. The ability to read dictionary definitions independently
+   d. A complete linguistic system already in place
 
-   *Answer: b. A complete linguistic system already in place*
+   *Answer: d. A complete linguistic system already in place*
    *Anchor: "A learner acquiring a second language arrives in the classroom with something an infant never has: a complete linguistic system already in place."*
 
 **5. Why does the unit say that production follows comprehension in first language acquisition, rather than the other way around?**
@@ -56,12 +56,12 @@ Covers units 1.1 to 1.5. 20 points total; pass mark 70%.
 
 **6. What does the unit identify as the primary risk of enforcing a strict English-only rule that forbids any use of the learner's first language?**
 
-   a. It causes learners to rely too heavily on translation rather than inference
-   b. It prevents teachers from using realia and physical actions effectively
-   c. It may produce learners who are reluctant to attempt speech at all
+   a. It may produce learners who are reluctant to attempt speech at all
+   b. It causes learners to rely too heavily on translation rather than inference
+   c. It prevents teachers from using realia and physical actions effectively
    d. It makes concept-checking questions impossible to conduct
 
-   *Answer: c. It may produce learners who are reluctant to attempt speech at all*
+   *Answer: a. It may produce learners who are reluctant to attempt speech at all*
    *Anchor: "A classroom culture that treats L1 as entirely forbidden may produce learners who are reluctant to attempt speech at all."*
 
 **7. According to the unit, why is describing an effective teacher in terms of personality traits such as 'patience' considered less useful for trainees than describing observable behaviors?**
@@ -97,61 +97,61 @@ Covers units 1.1 to 1.5. 20 points total; pass mark 70%.
 **10. According to the unit, what distinguishes the gap between C1 and C2 proficiency?**
 
    a. C2 learners have mastered all grammatical structures, while C1 learners still make frequent errors.
-   b. The gap is more about stylistic mastery than grammatical accuracy.
-   c. C2 learners can speak faster than C1 learners in conversation.
+   b. C2 learners can speak faster than C1 learners in conversation.
+   c. The gap is more about stylistic mastery than grammatical accuracy.
    d. C1 learners cannot follow colloquial speech, whereas C2 learners can.
 
-   *Answer: b. The gap is more about stylistic mastery than grammatical accuracy.*
+   *Answer: c. The gap is more about stylistic mastery than grammatical accuracy.*
    *Anchor: "The gap between C1 and C2 is often more about stylistic mastery than grammatical accuracy."*
 
 **11. The unit warns that the six traditional proficiency band labels are not perfectly standardized. Which of the following best reflects this point?**
 
    a. Schools always use the CEFR instead of traditional band labels.
-   b. One school may call a level 'pre-intermediate' where another uses 'elementary plus.'
-   c. Advanced learners are defined identically across all course book publishers.
-   d. The bands have precise entry and exit criteria that all institutions follow.
+   b. Advanced learners are defined identically across all course book publishers.
+   c. The bands have precise entry and exit criteria that all institutions follow.
+   d. One school may call a level 'pre-intermediate' where another uses 'elementary plus.'
 
-   *Answer: b. One school may call a level 'pre-intermediate' where another uses 'elementary plus.'*
+   *Answer: d. One school may call a level 'pre-intermediate' where another uses 'elementary plus.'*
    *Anchor: "One school may call a level 'pre-intermediate' where another uses 'elementary plus'"*
 
 **12. According to the unit, what is the primary purpose of strategic pairing in a mixed-level class?**
 
-   a. To allow the teacher to focus exclusively on weaker learners while stronger ones work alone.
-   b. To ensure stronger learners always present to the group while weaker learners take notes.
-   c. To distribute cognitive load productively, giving the weaker learner a model and the stronger learner consolidation through explaining.
+   a. To distribute cognitive load productively, giving the weaker learner a model and the stronger learner consolidation through explaining.
+   b. To allow the teacher to focus exclusively on weaker learners while stronger ones work alone.
+   c. To ensure stronger learners always present to the group while weaker learners take notes.
    d. To prevent stronger learners from completing tasks too quickly by assigning them extra writing.
 
-   *Answer: c. To distribute cognitive load productively, giving the weaker learner a model and the stronger learner consolidation through explaining.*
+   *Answer: a. To distribute cognitive load productively, giving the weaker learner a model and the stronger learner consolidation through explaining.*
    *Anchor: "gives the weaker learner access to a model and gives the stronger learner the consolidation that comes from explaining and reformulating"*
 
 **13. According to the unit, what is the key reason for introducing a transition signal on the very first day rather than waiting until later in the course?**
 
    a. Students are more energetic on day one and therefore respond better to new signals.
-   b. A signal introduced and practiced on day one becomes a reliable tool by day five, whereas retrofitting it later is much harder.
-   c. Transition signals are only effective when students have not yet formed friendships with one another.
+   b. Transition signals are only effective when students have not yet formed friendships with one another.
+   c. A signal introduced and practiced on day one becomes a reliable tool by day five, whereas retrofitting it later is much harder.
    d. The first day is the only occasion when a teacher has enough spare time to explain and rehearse a new cue.
 
-   *Answer: b. A signal introduced and practiced on day one becomes a reliable tool by day five, whereas retrofitting it later is much harder.*
+   *Answer: c. A signal introduced and practiced on day one becomes a reliable tool by day five, whereas retrofitting it later is much harder.*
    *Anchor: "a signal that is introduced and practiced on day one becomes a reliable tool by day five"*
 
 **14. The unit argues that assigning small procedural roles to students from the very first day serves which purpose beyond simple task management?**
 
    a. It prevents stronger students from dominating whole-class discussions.
    b. It gives the teacher time to complete the seating chart without interruption.
-   c. It builds a sense of shared ownership over the classroom environment.
-   d. It ensures that quieter students receive more individual attention from the teacher.
+   c. It ensures that quieter students receive more individual attention from the teacher.
+   d. It builds a sense of shared ownership over the classroom environment.
 
-   *Answer: c. It builds a sense of shared ownership over the classroom environment.*
+   *Answer: d. It builds a sense of shared ownership over the classroom environment.*
    *Anchor: "builds a sense of shared ownership over the classroom environment"*
 
 **15. When the unit describes the teacher's role shifting across the four-stage icebreaker sequence, which pairing correctly matches a phase to the teacher's role?**
 
-   a. Pair work — discussion leader; whole-class phase — monitor.
-   b. Small-group work — audience; individual presentations — listener.
-   c. Pair work — monitor; individual presentations — audience.
+   a. Pair work — monitor; individual presentations — audience.
+   b. Pair work — discussion leader; whole-class phase — monitor.
+   c. Small-group work — audience; individual presentations — listener.
    d. Whole-class phase — monitor; small-group work — discussion leader.
 
-   *Answer: c. Pair work — monitor; individual presentations — audience.*
+   *Answer: a. Pair work — monitor; individual presentations — audience.*
    *Anchor: "monitor during pair work, listener during group work, discussion leader during the whole-class phase, and audience during individual presentations"*
 
 ## Section C — Scenario (5 points)

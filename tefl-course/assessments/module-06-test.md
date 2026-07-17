@@ -8,8 +8,8 @@ Covers units 6.1 to 6.4. 19 points total; pass mark 70%. Section B re-asks quest
 
    a. The tongue tip makes contact with the ridge of gum just behind the upper teeth.
    b. The back of the tongue rises to meet the soft palate at the rear of the mouth.
-   c. Both lips press together and then release, or redirect air through the nose.
-   d. The lower lip makes contact with the upper front teeth to create friction.
+   c. The lower lip makes contact with the upper front teeth to create friction.
+   d. Both lips press together and then release, or redirect air through the nose.
 
 **2. According to the unit, what distinguishes vowel production from consonant production in English?**
 
@@ -27,30 +27,30 @@ Covers units 6.1 to 6.4. 19 points total; pass mark 70%. Section B re-asks quest
 
 **4. According to the unit, what is the primary reason a learner who mispronounces a vowel in a word may benefit from the teacher pointing silently to the chart rather than repeating the word aloud?**
 
-   a. Repeating the word aloud reinforces incorrect muscle memory in the learner.
-   b. Speaking the word again repeats the input that has already failed to land.
+   a. Speaking the word again repeats the input that has already failed to land.
+   b. Repeating the word aloud reinforces incorrect muscle memory in the learner.
    c. Silent pointing activates a different part of the brain than auditory input.
    d. The chart displays stress patterns that spoken models cannot convey.
 
 **5. Which of the following best explains why the unit recommends that teachers introduce phonemic symbols in small clusters linked to vocabulary already being studied, rather than presenting the full chart in one lesson?**
 
-   a. Learners find it easier to memorize symbols when they are grouped by place of articulation.
-   b. Each symbol arrives with a concrete word attached to it, allowing familiarity to build gradually.
+   a. Each symbol arrives with a concrete word attached to it, allowing familiarity to build gradually.
+   b. Learners find it easier to memorize symbols when they are grouped by place of articulation.
    c. The full chart contains too many diphthongs for learners to process in a single session.
    d. Introducing all 44 symbols at once violates the one symbol, one sound principle.
 
 **6. The unit states that most learners' dictionaries print a full phonemic transcription alongside every headword. What practical benefit does this give a learner who can read those transcriptions?**
 
    a. It allows the learner to identify which accent a word belongs to before pronouncing it.
-   b. It enables the learner to look up any unfamiliar word and know immediately how to say it.
-   c. It helps the learner distinguish between British and American vowel inventories.
-   d. It removes the need for the learner to study the phonemic chart independently.
+   b. It helps the learner distinguish between British and American vowel inventories.
+   c. It removes the need for the learner to study the phonemic chart independently.
+   d. It enables the learner to look up any unfamiliar word and know immediately how to say it.
 
 **7. According to the unit, why can a learner who pronounces every individual sound correctly still sound unnatural or be misunderstood?**
 
    a. Because their vocabulary range is too limited for the context
-   b. Because suprasegmental errors affect intelligibility more than segmental errors do
-   c. Because native speakers expect a foreign accent at the word level
+   b. Because native speakers expect a foreign accent at the word level
+   c. Because suprasegmental errors affect intelligibility more than segmental errors do
    d. Because grammar mistakes distract listeners from the sounds
 
 **8. What happens to the word 'can' when it carries no informational weight in a sentence such as 'She can come tomorrow'?**
@@ -63,8 +63,8 @@ Covers units 6.1 to 6.4. 19 points total; pass mark 70%. Section B re-asks quest
 **9. What is the purpose of the back-chaining technique described in the unit?**
 
    a. To help learners memorize vocabulary by repeating words from front to back
-   b. To anchor the tail of a sentence in muscle memory before the full sentence is attempted
-   c. To train learners to identify weak forms by isolating function words
+   b. To train learners to identify weak forms by isolating function words
+   c. To anchor the tail of a sentence in muscle memory before the full sentence is attempted
    d. To correct intonation errors by modeling the whole sentence first
 
 **10. According to the unit, what is the primary purpose of drilling after modeling a pronunciation feature?**
@@ -76,8 +76,8 @@ Covers units 6.1 to 6.4. 19 points total; pass mark 70%. Section B re-asks quest
 
 **11. Why does the unit recommend that teachers circulate during group or pair work rather than relying solely on whole-class activities to identify pronunciation issues?**
 
-   a. Because whole-class activities are too short to reveal any pronunciation patterns
-   b. Because group work produces natural, unguarded speech that whole-class activities rarely provide
+   a. Because group work produces natural, unguarded speech that whole-class activities rarely provide
+   b. Because whole-class activities are too short to reveal any pronunciation patterns
    c. Because circulating allows the teacher to model sounds to each student individually
    d. Because students only mispronounce words when they are unaware of being observed
 
@@ -85,8 +85,8 @@ Covers units 6.1 to 6.4. 19 points total; pass mark 70%. Section B re-asks quest
 
    a. It encourages students to self-correct every minor sound deviation before speaking
    b. It positions the teacher as a judge who evaluates how each student sounds
-   c. It makes students more willing to speak, take risks, and produce longer stretches of language
-   d. It reduces the need for any pronunciation instruction during the lesson
+   c. It reduces the need for any pronunciation instruction during the lesson
+   d. It makes students more willing to speak, take risks, and produce longer stretches of language
 
 ## Section B — Review (2 points, 1 each)
 

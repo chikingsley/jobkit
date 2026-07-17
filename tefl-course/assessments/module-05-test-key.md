@@ -16,22 +16,22 @@ Covers units 5.1 to 5.4. 19 points total; pass mark 70%. Section B re-asks quest
 
 **2. The unit describes searching through visible Word Bricks to find ones that match a category. How does the unit classify this activity, and why?**
 
-   a. As retrieval practice, because students must handle and evaluate each word
-   b. As retrieval practice, because the words are sorted under time pressure
-   c. As recognition, because the words are in front of the student and the task is to sort them
+   a. As recognition, because the words are in front of the student and the task is to sort them
+   b. As retrieval practice, because students must handle and evaluate each word
+   c. As retrieval practice, because the words are sorted under time pressure
    d. As re-presentation, because the teacher selects which bricks are shown
 
-   *Answer: c. As recognition, because the words are in front of the student and the task is to sort them*
+   *Answer: a. As recognition, because the words are in front of the student and the task is to sort them*
    *Anchor: "Searching through visible bricks to find ones that match a category is recognition: the words are in front of the student, and the task is to sort them"*
 
 **3. According to the unit's three-question planning framework, what ratio problem does a teacher create by spending twenty minutes presenting vocabulary and only five minutes on practice?**
 
    a. The teacher leaves too little time for students to copy definitions accurately
-   b. The teacher has the ratio backwards, since retrieval events should occupy the bulk of lesson time
-   c. The teacher provides too many retrieval events before students have enough exposure
+   b. The teacher provides too many retrieval events before students have enough exposure
+   c. The teacher has the ratio backwards, since retrieval events should occupy the bulk of lesson time
    d. The teacher compresses the study phase so much that learners cannot attempt retrieval later
 
-   *Answer: b. The teacher has the ratio backwards, since retrieval events should occupy the bulk of lesson time*
+   *Answer: c. The teacher has the ratio backwards, since retrieval events should occupy the bulk of lesson time*
    *Anchor: "A teacher who spends twenty minutes presenting vocabulary and five minutes on practice has the ratio backwards"*
 
 **4. According to the unit, why does the effort of retrieving a word after a gap strengthen memory more than reading the word and its translation several times in a row?**
@@ -47,41 +47,41 @@ Covers units 5.1 to 5.4. 19 points total; pass mark 70%. Section B re-asks quest
 **5. The unit describes a chain story activity as a more demanding retrieval event than standard pair review. What makes it more demanding, according to the unit?**
 
    a. It requires students to write longer sentences than they would in a silent retrieval phase.
-   b. It forces students to use words productively rather than to recognize them passively.
-   c. It eliminates the need for teacher confirmation at the whole-class stage.
-   d. It compresses several spaced review sessions into a single activity block.
+   b. It eliminates the need for teacher confirmation at the whole-class stage.
+   c. It compresses several spaced review sessions into a single activity block.
+   d. It forces students to use words productively rather than to recognize them passively.
 
-   *Answer: b. It forces students to use words productively rather than to recognize them passively.*
+   *Answer: d. It forces students to use words productively rather than to recognize them passively.*
    *Anchor: "requires students to use words productively rather than to recognize them passively, a more demanding retrieval event"*
 
 **6. According to the unit, at what point can a teacher reasonably reduce how often a word appears in planned review under an expanding-schedule logic?**
 
    a. After the word has appeared in at least three consecutive lessons regardless of student accuracy.
    b. Once the word has been introduced in a formal test and the majority of students scored correctly.
-   c. When a word has survived several retrieval attempts across progressively longer gaps without error.
-   d. As soon as the word has been reviewed twice, because two spaced encounters are sufficient for consolidation.
+   c. As soon as the word has been reviewed twice, because two spaced encounters are sufficient for consolidation.
+   d. When a word has survived several retrieval attempts across progressively longer gaps without error.
 
-   *Answer: c. When a word has survived several retrieval attempts across progressively longer gaps without error.*
+   *Answer: d. When a word has survived several retrieval attempts across progressively longer gaps without error.*
    *Anchor: "when a word has survived several retrieval attempts across progressively longer gaps without error, the teacher can reasonably reduce how often it appears"*
 
 **7. According to the unit, what is the primary purpose of posting an ongoing word list visibly in the classroom?**
 
-   a. To replace the Word Bricks collection when bricks become illegible or are lost
-   b. To allow students to return to vocabulary between lessons, notice gaps, and suggest additions
+   a. To allow students to return to vocabulary between lessons, notice gaps, and suggest additions
+   b. To replace the Word Bricks collection when bricks become illegible or are lost
    c. To give the teacher a record of which words have already been called during Bingo games
    d. To display the alphabetized master list that prevents duplication across student groups
 
-   *Answer: b. To allow students to return to vocabulary between lessons, notice gaps, and suggest additions*
+   *Answer: a. To allow students to return to vocabulary between lessons, notice gaps, and suggest additions*
    *Anchor: "students can return to it between lessons, notice gaps, and suggest additions themselves"*
 
 **8. What distinguishes the memory trace formed through realia from one formed by reading a dictionary definition, according to the unit?**
 
-   a. Realia produces a memory trace based on visual images rather than printed words
-   b. Realia produces a memory trace that is qualitatively different because it is rooted in physical experience
+   a. Realia produces a memory trace that is qualitatively different because it is rooted in physical experience
+   b. Realia produces a memory trace based on visual images rather than printed words
    c. Realia produces a memory trace that is stronger because it involves hearing the word in a song or story
    d. Realia produces a memory trace that relies on grammatical categorization rather than meaning
 
-   *Answer: b. Realia produces a memory trace that is qualitatively different because it is rooted in physical experience*
+   *Answer: a. Realia produces a memory trace that is qualitatively different because it is rooted in physical experience*
    *Anchor: "carries a memory trace qualitatively different from one formed by reading a dictionary definition"*
 
 **9. In the vocabulary word poem activity, what factor determines whether students write single words, phrases, or complete sentences against each letter?**
@@ -96,32 +96,32 @@ Covers units 5.1 to 5.4. 19 points total; pass mark 70%. Section B re-asks quest
 
 **10. According to the unit, what criterion guides a teacher's selection of focus words for the Language Safari activity?**
 
-   a. Words that appear most frequently across all English texts
-   b. Words that are entirely unfamiliar to every learner in the class
-   c. Words that can occur as more than one part of speech or as part of a phrasal verb or idiom
+   a. Words that can occur as more than one part of speech or as part of a phrasal verb or idiom
+   b. Words that appear most frequently across all English texts
+   c. Words that are entirely unfamiliar to every learner in the class
    d. Words that follow regular grammatical rules and can be easily defined
 
-   *Answer: c. Words that can occur as more than one part of speech or as part of a phrasal verb or idiom*
+   *Answer: a. Words that can occur as more than one part of speech or as part of a phrasal verb or idiom*
    *Anchor: "can occur as more than one part of speech in the text (verb, noun, etc.) or as part of a phrasal verb or idiom"*
 
 **11. How does the unit distinguish language awareness from a return to traditional grammar drills?**
 
    a. Language awareness focuses exclusively on spoken language, whereas grammar drills address written forms
-   b. Language awareness centers on the learner's own deliberate thinking and reflection, whereas grammar drills do not require this analytical step
-   c. Language awareness is teacher-delivered and rule-based, whereas grammar drills are learner-driven
-   d. Language awareness avoids any attention to form, whereas grammar drills focus entirely on structure
+   b. Language awareness is teacher-delivered and rule-based, whereas grammar drills are learner-driven
+   c. Language awareness avoids any attention to form, whereas grammar drills focus entirely on structure
+   d. Language awareness centers on the learner's own deliberate thinking and reflection, whereas grammar drills do not require this analytical step
 
-   *Answer: b. Language awareness centers on the learner's own deliberate thinking and reflection, whereas grammar drills do not require this analytical step*
+   *Answer: d. Language awareness centers on the learner's own deliberate thinking and reflection, whereas grammar drills do not require this analytical step*
    *Anchor: "What separates language awareness from a return to grammar drills is the role of the learner's own thinking"*
 
 **12. In the unit's description of the travel-planning poster task, what specific feature of travel brochures makes them suitable as authentic source material?**
 
    a. They are written at a controlled vocabulary level matched to learner proficiency
-   b. They contain photographs alongside text, allowing learners at different reading levels to access meaning
-   c. They present grammar rules inductively through real-world examples
+   b. They present grammar rules inductively through real-world examples
+   c. They contain photographs alongside text, allowing learners at different reading levels to access meaning
    d. They are produced by language teachers for use in communicative classrooms
 
-   *Answer: b. They contain photographs alongside text, allowing learners at different reading levels to access meaning*
+   *Answer: c. They contain photographs alongside text, allowing learners at different reading levels to access meaning*
    *Anchor: "those brochures were chosen because they contained photographs alongside text"*
 
 ## Section B — Review (2 points, 1 each)

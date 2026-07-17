@@ -7,36 +7,36 @@ Covers units 9.1 to 9.3. 16 points total; pass mark 70%. Section B re-asks quest
 **1. According to the unit, feedback operates across which three domains simultaneously?**
 
    a. Oral, written, and peer domains
-   b. Linguistic, communicative, and affective domains
-   c. Fluency, accuracy, and pronunciation domains
+   b. Fluency, accuracy, and pronunciation domains
+   c. Linguistic, communicative, and affective domains
    d. Immediate, delayed, and self-assessment domains
 
 **2. The unit describes praise as most useful when it does which of the following?**
 
    a. Uses a warm tone to encourage the student to keep trying
-   b. Is delivered immediately after every correct student response
-   c. Names the specific thing the student did correctly rather than offering a general approval word
+   b. Names the specific thing the student did correctly rather than offering a general approval word
+   c. Is delivered immediately after every correct student response
    d. Is reserved for written work so the student can refer back to it
 
 **3. According to the unit, what should determine whether a teacher uses a recast or a prompt at a given moment?**
 
-   a. The teacher's personal preference and habitual correction style
-   b. The student's first language background and proficiency level
-   c. The channel through which the feedback is delivered
-   d. The task at hand, specifically whether communication or accuracy is the primary goal
+   a. The task at hand, specifically whether communication or accuracy is the primary goal
+   b. The teacher's personal preference and habitual correction style
+   c. The student's first language background and proficiency level
+   d. The channel through which the feedback is delivered
 
 **4. A student tells a shop assistant, 'Give me the bread,' in a context that calls for a polite request. According to the unit, what kind of error is this, and what is the risk of misidentifying it?**
 
    a. A grammatical error; the risk is that the student will be asked to repeat the sentence unnecessarily.
-   b. A pragmatic error; treating it as a grammar problem would send the student in the wrong direction entirely.
-   c. A vocabulary error; the student needs to learn more formal synonyms for common nouns.
-   d. A fluency error; interrupting to correct it would break the communicative flow of the task.
+   b. A vocabulary error; the student needs to learn more formal synonyms for common nouns.
+   c. A fluency error; interrupting to correct it would break the communicative flow of the task.
+   d. A pragmatic error; treating it as a grammar problem would send the student in the wrong direction entirely.
 
 **5. In the story-retelling lesson described in the unit, what served as natural confirmation that a student's message had been understood?**
 
-   a. The teacher repeated the student's sentence correctly to the whole class.
-   b. The teacher wrote the correct form on the board after the activity ended.
-   c. The actors' physical responses showed whether the message had landed.
+   a. The actors' physical responses showed whether the message had landed.
+   b. The teacher repeated the student's sentence correctly to the whole class.
+   c. The teacher wrote the correct form on the board after the activity ended.
    d. A peer in the audience raised a hand to signal that the meaning was clear.
 
 **6. According to the unit, what is the recommended feedback technique for an accuracy-focused writing task such as copying a text?**
@@ -48,8 +48,8 @@ Covers units 9.1 to 9.3. 16 points total; pass mark 70%. Section B re-asks quest
 
 **7. According to the unit, what is the teacher's FIRST obligation when encountering an incorrect form in a student's production?**
 
-   a. Immediately provide the correct form so the student can move on
-   b. Understand why the incorrect form occurred and determine whether it reflects missing knowledge or a careless slip
+   a. Understand why the incorrect form occurred and determine whether it reflects missing knowledge or a careless slip
+   b. Immediately provide the correct form so the student can move on
    c. Record the error and address it only if it recurs in a second piece of work
    d. Ask the whole class whether they can identify what went wrong
 
@@ -57,8 +57,8 @@ Covers units 9.1 to 9.3. 16 points total; pass mark 70%. Section B re-asks quest
 
    a. Avoiding difficult structures is a sign of strong metalinguistic awareness
    b. Attempting a structure and failing is less productive than staying within known language
-   c. A failed attempt generates useful data about the learner's developing system, making it more productive than avoidance
-   d. Teachers should discourage risk-taking until foundational structures are fully mastered
+   c. Teachers should discourage risk-taking until foundational structures are fully mastered
+   d. A failed attempt generates useful data about the learner's developing system, making it more productive than avoidance
 
 **9. When the unit discusses a pragmatic error, which of the following examples best fits its definition?**
 
