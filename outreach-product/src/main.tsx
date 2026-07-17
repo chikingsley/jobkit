@@ -8,6 +8,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import { AuthGate } from "./features/auth/auth-gate";
 import { OnboardingGate } from "./features/onboarding/onboarding-gate";
 import "./styles.css";
+import "streamdown/styles.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -168,6 +168,12 @@
 - Worked early-morning shifts for one month between Moscow teaching stints to fund an expedited passport and visa replacement.
 - Paid via Walmart Associates payroll (deposits January 22 through March 4, 2020; store #4936, Morgantown/Granville).
 
+### BarSphere Agency, Washington, DC area
+
+*Contract Bartender / Event Staff* <span class="date">October to November 2019</span>
+
+- Staffed events for the DC/MD/VA mobile bartending service; PayPal records document payments on October 24, November 11, and November 19, 2019.
+
 ### Get Hitched Mobile Bar, Ijamsville, MD
 
 *Wedding Bartender* <span class="date">November 2019</span>
@@ -179,12 +185,20 @@
 *Event Bartender (contract)* <span class="date">October 2019</span>
 
 - Bartended catered events as an independent contractor.
+- Completed contractor onboarding on October 1 and worked an October 13 shift; direct deposits on October 18 and October 25 totaled $310.60.
 
 ### The Bank, Morgantown, WV
 
-*Security Staff (Bouncer)* <span class="date">September to November 2019</span>
+*Security Staff (Bouncer)* <span class="date">September to October 2019</span>
 
-- Worked the door (about $50 per night) alongside a coworker, Omar, for roughly one to two months, up until leaving for Russia in November 2019.
+- Worked entry and floor security at the downtown bar/nightclub, monitoring patrons, enforcing house rules, and removing disruptive guests when directed by ownership.
+
+### Wholesome Hoe, Remote
+
+*Founder / E-commerce Operator* <span class="date">March to September 2019</span>
+
+- Launched and promoted the lifestyle e-commerce brand through video content, a product website, and Shopify.
+- Payout records document sales activity from May through September 2019.
 
 ### Matchbox, Bethesda, MD
 
@@ -356,9 +370,10 @@
 Driving and delivery platforms worked between and alongside full-time roles:
 
 - Caviar courier | Boston, MA | June to July 2017
-- Lyft driver | Morgantown, WV | August 2017 to early 2018
+- Lyft and Uber driver | Morgantown, WV | August 2017 to May 2018
 - Grubhub delivery | Morgantown, WV | November 2017 to April 2018
 - Mr. Delivery (via Delivery Drivers Inc.) | Morgantown, WV | November 2017 to May 2018
+- Postmates courier | December 2017 to June 2018; June to December 2019
 - Amazon Flex | December 2017 to September 2018; 2021; October 2023 to September 2024
 - Uber Eats and Uber driver | Boston, MA | June 2018 to December 2018
 - Food delivery (multi-app) | Denver, CO | May to June 2019
@@ -415,7 +430,10 @@ Driving and delivery platforms worked between and alongside full-time roles:
 
 Jobs Chi remembers that have no documentary trace so far - dates and details to confirm before any use:
 
-- ~~The Bank~~ - RESOLVED: fall 2019 (about September to November), roughly one to two months as a bouncer with a coworker named Omar, up until leaving for Russia. Matches the September 2019 blog; the recalled "2017-2018 stint" was a misremember.
+- ~~The Bank~~ - RESOLVED: documented September 14-October 18, 2019 pay window. Mint records include $50 cash income on September 14 and a $180 check dated October 18; its November 19/21 activity is that same check bouncing and being redeposited, not November work. Blog posts published September 22-23 describe the work in the present tense and identify Omar as an owner. West Virginia business records connect The Bank at 344 High to 344 High Inc. and list Omar Abulaban as president/director. No source found for an August 2019 start or the recalled 2017-2018 stint.
+- ~~Wholesome Hoe~~ - RESOLVED 2026-07-16: a separate e-commerce brand active March-September 2019, supported by a March 24 brand-launch video and Shopify payouts from May through September. Now a master entry rather than being folded into the later WePeacock venture.
+- ~~BarSphere Agency~~ - RESOLVED 2026-07-16: paid DC-area event-bartending work, October-November 2019, supported by PayPal income on October 24, November 11, and November 19 and the company's mobile-bartending service profile. Now a master entry.
+- ~~Postmates and early Uber~~ - RESOLVED 2026-07-16: Mint documents Postmates payouts from December 2017-June 2018 and June-December 2019, plus Raiser/Uber income from September 2017-May 2018 before the Boston Uber stint. Gig section corrected.
 - Pizza Hut, Morgantown, WV - about one week, circa 2011-2012 (before Arby's; absent from his own 2013 resume)
 - Bookstore job during the WVU years
 - Painting job with his sisters - painting schools/elementary schools, "way back"

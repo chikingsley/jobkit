@@ -10,9 +10,23 @@ import {
   writeAutomationPolicy,
 } from "../repositories/automation-policy";
 import { compensationFromRow } from "../repositories/jobs";
+import { generateJobDraft } from "../services/application-drafts";
 import { analyzeUserJobs } from "../services/job-analysis";
 
 export function registerJobRoutes(app: JobKitApp) {
+  app.post("/api/jobs/:id/generate", async (c) => {
+    const draft = await generateJobDraft(
+      c.env,
+      c.get("user").id,
+      c.req.param("id")
+    );
+    return c.json({
+      message: `Draft generated with ${draft.provider}/${draft.modelId}`,
+      ok: true,
+      summary: draft.summary,
+    });
+  });
+
   app.get("/api/jobs", async (c) => {
     const rows = await c.env.DB.prepare(
       `SELECT j.*,uj.status,uj.priority,

@@ -71,6 +71,17 @@ export function createAuth(env: AppEnv, request: Request) {
     baseURL: origin,
     database: env.DB,
     secret: env.BETTER_AUTH_SECRET,
+    socialProviders:
+      env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+        ? {
+            google: {
+              accessType: "offline",
+              clientId: env.GOOGLE_CLIENT_ID,
+              clientSecret: env.GOOGLE_CLIENT_SECRET,
+              prompt: "select_account consent",
+            },
+          }
+        : {},
     trustedOrigins: [origin],
   });
 }

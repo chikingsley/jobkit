@@ -6,11 +6,14 @@ import {
   Globe2,
   LogOut,
   MessageSquareText,
+  MessagesSquare,
   SlidersHorizontal,
   UserRound,
 } from "lucide-react";
+import { useNavigate } from "react-router";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,10 +38,14 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import type { WorkspaceView } from "@/features/workspace/routes";
+import {
+  type WorkspaceView,
+  workspacePaths,
+} from "@/features/workspace/routes";
 
 const navigation = [
   { icon: BriefcaseBusiness, id: "jobs", label: "Jobs" },
+  { icon: MessagesSquare, id: "messages", label: "Messages" },
   { icon: Globe2, id: "countries", label: "Countries" },
   { icon: Bot, id: "automation", label: "Automation" },
   { icon: UserRound, id: "profile", label: "Profile" },
@@ -233,12 +240,14 @@ function NavUser({
 }
 
 export function WorkspaceHeader({ activeView }: { activeView: WorkspaceView }) {
+  const navigate = useNavigate();
   const title = {
     automation: "Automation",
     countries: "Countries",
     documents: "Documents",
     jobs: "Job review",
     messageStyle: "Writing style",
+    messages: "Messages",
     preferences: "Preferences",
     profile: "Profile",
   }[activeView];
@@ -257,6 +266,14 @@ export function WorkspaceHeader({ activeView }: { activeView: WorkspaceView }) {
       ) : (
         <span className="ml-auto" />
       )}
+      <Button
+        aria-label="Messages"
+        onClick={() => navigate(workspacePaths.messages)}
+        size="icon-sm"
+        variant={activeView === "messages" ? "secondary" : "ghost"}
+      >
+        <MessagesSquare />
+      </Button>
       <ModeToggle />
     </header>
   );

@@ -14,8 +14,8 @@ Gmail does **not** give us follow-up tracking we can build on:
 - No concept of "this is outreach thread #N, follow-up #2 is due Thursday."
 
 What Gmail *is* the source of truth for: **did they reply?** A thread either has an inbound message
-from someone other than us after our send, or it doesn't. We read that via the API (`gws-profile
-chibuzor gmail users threads get`).
+from someone other than us after our send, or it doesn't. The hosted Worker reads that through the
+Gmail API after an authenticated Pub/Sub notification.
 
 So the model is **both**, with a clean split of ownership:
 
@@ -37,7 +37,7 @@ A nice touch (not required): mirror state into Gmail labels — `outreach/awaiti
 `outreach/followup-due`, `outreach/replied` — so the campaign is visible in the inbox itself, not
 just in our DB. One-way push from the store; cheap, and it makes the system legible without a UI.
 
-## 2. Where the state lives — local now, Cloudflare later
+## 2. Where the state lives
 
 **Now (personal CLI):** a local **SQLite** file under
 `~/github/jobkit/job-search/.cache/outreach/track.db`.
@@ -49,7 +49,7 @@ This is what the current build uses. It's the right call until one of these beco
 - you want it on **multiple devices**, or
 - it becomes a **product** with more than one user.
 
-**Later (Cloudflare):** you already live in Cloudflare, and the shape fits it almost too well:
+**Hosted JobKit:** the application and reply state now lives in Cloudflare:
 
 | Need | Cloudflare primitive |
 |---|---|
@@ -62,9 +62,9 @@ This is what the current build uses. It's the right call until one of these beco
 | Config / feature flags / cached OAuth tokens | **KV** / **Secrets Store** |
 | Dashboard UI | **Pages / Workers static assets** |
 
-Migration path is gentle: keep the same logical schema, swap the SQLite file for D1, move `sync` +
-`follow-ups` into a Cron-triggered Worker, and add per-user Gmail OAuth (instead of the single local
-`gws` profile). The CLI stays as the local/dev client.
+The hosted Worker uses per-user Gmail OAuth, writes verified send/thread state to D1, accepts
+authenticated Gmail Pub/Sub pushes, and renews mailbox watches with a Cron Trigger. The local
+SQLite tracker remains historical tooling for the separate draft-only outreach CLI.
 
 ## 3. The product angle — "what if I built Ben's thing, but software"
 

@@ -35,7 +35,10 @@
             "noNestedComponentDefinitions": "off",
             "useExhaustiveDependencies": "off"
           },
-          "performance": { "noNamespaceImport": "off" },
+          "performance": {
+            "noBarrelFile": "off",
+            "noNamespaceImport": "off"
+          },
           "style": { "useConsistentTypeDefinitions": "off" },
           "suspicious": {
             "noDocumentCookie": "off",

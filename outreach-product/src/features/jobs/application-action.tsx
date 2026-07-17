@@ -1,4 +1,4 @@
-import { CircleAlert, LoaderCircle, Send } from "lucide-react";
+import { CircleAlert, LoaderCircle, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ApplicationRoute, Job } from "@/features/jobs/types";
 
@@ -62,11 +62,13 @@ function EmailApplicationAction({
   onAction: (path: string, body?: object) => Promise<void>;
   route: ApplicationRoute;
 }) {
-  const path = `/api/jobs/${job.id}/email-send-requests`;
+  const path = `/api/jobs/${job.id}/email-send`;
   const attempt = job.emailAttempt;
-  const pending = Boolean(
-    attempt?.sendRequestedAt && pendingEmailStatuses.has(attempt.status)
-  );
+  const pending =
+    busy === path ||
+    Boolean(
+      attempt?.sendRequestedAt && pendingEmailStatuses.has(attempt.status)
+    );
   const terminal =
     attempt?.status === "sent" || attempt?.status === "uncertain";
   const uncertain = attempt?.status === "uncertain";
@@ -121,6 +123,26 @@ function BoardApplicationAction({
   );
 }
 
+// Bulk-imported jobs have no draft until the user asks for one.
+function GenerateApplicationAction({
+  busy,
+  job,
+  onAction,
+}: {
+  busy: string;
+  job: Job;
+  onAction: (path: string, body?: object) => Promise<void>;
+}) {
+  const path = `/api/jobs/${job.id}/generate`;
+  const isGenerating = busy === path;
+  return (
+    <Button disabled={Boolean(busy)} onClick={() => void onAction(path)}>
+      {isGenerating ? <LoaderCircle className="animate-spin" /> : <Sparkles />}
+      {isGenerating ? "Generating…" : "Generate application"}
+    </Button>
+  );
+}
+
 export function ApplicationAction({
   busy,
   job,
@@ -130,6 +152,11 @@ export function ApplicationAction({
   job: Job;
   onAction: (path: string, body?: object) => Promise<void>;
 }) {
+  if (job.draft === null && job.status !== "applied") {
+    return (
+      <GenerateApplicationAction busy={busy} job={job} onAction={onAction} />
+    );
+  }
   const emailRoute = activeEmailRoute(job);
   return emailRoute ? (
     <EmailApplicationAction
