@@ -28,7 +28,7 @@ The classroom in which a teacher works shapes almost every decision about materi
 
 These two settings illustrate a broader reality: TEFL happens across a wide range of contexts around the world, from public primary schools to secondary programs to post-secondary institutions. A teacher working in a secondary school in one country faces a different set of constraints from a colleague who leads an adult conversation class at a community college. The learners differ, the institutional expectations differ, and the role English plays in daily life outside the classroom differs. Treating all these situations as interchangeable leads to lessons that fit none of them well.
 
-Physical conditions vary just as much as institutional ones. Some classrooms are large and well-equipped, with dedicated learning stations, visual aids, and ample floor space for movement activities. Many teachers, however, work in rooms that offer far fewer resources, and a technique designed for a spacious, well-furnished environment cannot be transplanted unchanged into a smaller or less-equipped space. A teacher watching a video of an elaborate station-based lesson and thinking "I could never do that" is asking the wrong question; the more productive question is which elements of the approach can be adapted to the resources actually available.
+Physical conditions vary just as much as institutional ones. Some classrooms are large and well-equipped, with dedicated learning stations, visual aids, and ample floor space for movement activities. Many teachers, however, work in rooms that offer far fewer resources, and a technique designed for a spacious, well-furnished environment cannot be transplanted unchanged into a smaller or less-equipped space. A teacher watching a video of an elaborate station-based lesson and thinking "I could never do that" is asking the wrong question; the more productive question is which elements of the approach can be adapted to the resources available.
 
 Adaptation is a core professional skill rather than a workaround. If a lesson design calls for printed handouts and a classroom has no photocopier, the teacher might draw the same content on a chalkboard or ask students to copy a short text into their notebooks. If a song-based activity assumes a sound system, a teacher with a strong voice and a willingness to sing can achieve a comparable effect. The *Shaping* materials were designed with this in mind: teachers are encouraged to observe classroom practices, compare them to their own situations, and then adopt or adapt what they see to fit their local needs.
 
@@ -109,12 +109,12 @@ This outward-looking, reflective habit is not reserved for experienced teachers 
 **3. In the unit, what is described as the more productive question when a teacher sees an elaborate station-based lesson she cannot replicate directly?**
 
    a. How can I request more funding for better resources?
-   b. Which elements of the approach can be adapted to the resources actually available?
+   b. Which elements of the approach can be adapted to the resources available?
    c. Should I find a different school with better facilities?
    d. How can I show students a video of the lesson instead?
 
-   *Answer: Which elements of the approach can be adapted to the resources actually available?*
-   *Anchor: "which elements of the approach can be adapted to the resources actually available"*
+   *Answer: Which elements of the approach can be adapted to the resources available?*
+   *Anchor: "which elements of the approach can be adapted to the resources available"*
 
 **4. What specific term does the unit use for the context in which a student in Costa Rica learns English in a local school, and what does that term mean?**
 

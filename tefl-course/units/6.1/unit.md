@@ -62,7 +62,7 @@ The practical message for classroom teaching is direct. Learners who are told ex
 
 ## Putting It Together: What Phonological Awareness Looks Like in Practice
 
-A teacher's phonological awareness shapes classroom decisions at every level, from the choice of which words to introduce together to the way a grammar point is presented. When planning a vocabulary set, a teacher who notices that the new items include "ship" and "sheep," or "bit" and "beat," has the information needed to make a deliberate choice. Those pairs are minimal pairs, words that differ by exactly one sound. Grouping them without comment can create confusion, while highlighting the vowel contrast directly turns the potential problem into a teaching point.
+A teacher's phonological awareness shapes classroom decisions at every level, from the choice of which words to introduce together to the way a grammar point is presented. When planning a vocabulary set, a teacher who notices that the new items include "ship" and "sheep," or "bit" and "beat," has the information needed to make a deliberate choice. Those pairs are minimal pairs, words that differ by one sound. Grouping them without comment can create confusion, while highlighting the vowel contrast directly turns the potential problem into a teaching point.
 
 Grammar instruction raises similar considerations. The third-person singular present tense, a structure that appears early in most syllabuses, adds an ending that produces a consonant cluster many learners have not encountered in their first language. The word "wants" ends in /ts/ and "gets" ends in /ts/ as well; a learner whose language does not permit two consonants at the end of a syllable will often drop one of them. A teacher who anticipates this can address it before the error becomes habitual, perhaps pausing during a drill to say: "T: Listen to the end of this word, 'gets.' There are two sounds at the end, /t/ and /s/. S: Gets. T: Good, both sounds at the end."
 
@@ -109,8 +109,8 @@ Phonological awareness is not a specialist skill reserved for linguists or pronu
 
 **5. Explain what a minimal pair is and give one example from the unit that illustrates how minimal pairs can create confusion in vocabulary instruction.**
 
-   *Answer: A minimal pair consists of two words that differ by exactly one sound. The unit gives 'ship' and 'sheep' as an example, noting that grouping such pairs in a vocabulary set without comment can create confusion, while highlighting the vowel contrast directly turns the potential problem into a teaching point.*
-   *Anchor: "minimal pairs, words that differ by exactly one sound. Grouping them without comment can create confusion"*
+   *Answer: A minimal pair consists of two words that differ by one sound. The unit gives 'ship' and 'sheep' as an example, noting that grouping such pairs in a vocabulary set without comment can create confusion, while highlighting the vowel contrast directly turns the potential problem into a teaching point.*
+   *Anchor: "minimal pairs, words that differ by one sound. Grouping them without comment can create confusion"*
 
 **6. During a reading lesson, a student named Carlos encounters the word 'cough' for the first time. He has previously learned the word 'though' and pronounces 'cough' with the same vowel sound, saying something like /koʊf/. Describe the move you would make as his teacher, and justify it using phonological knowledge from the unit.**
 

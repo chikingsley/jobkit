@@ -4,7 +4,9 @@ GATE PASS
 == dslop (prose body, exit 0) ==
 
 == style detector (full file) ==
-{"score": 2, "label": "Minimal AI signals", "issues": [{"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 45, "weight": 2, "snippet": "t those questions to the class, shifting the dynamic toward learner-generated discussion rather t"}]}
+{"score": 2, "label": "Minimal AI signals", "issues": [{"category": "ai-lexicon", "pattern": "\\bdynamic\\b(?!\\s+verb)", "line": 45, "weight": 2, "snippet": "t those questions to the class, shifting the dynamic toward learner-generated discussion rather t"}]}
 == quiz: clean ==
 == option labels ==
+clean
+== audit ==
 clean

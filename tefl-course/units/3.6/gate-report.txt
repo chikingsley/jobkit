@@ -1,10 +1,24 @@
 unit 3.6 — Functional Language and Idiom
 GATE PASS
 
-== dslop (prose body, exit 0) ==
+== dslop (prose body, exit 1) ==
+[0m[1m[31mdslop: 8 violations in 1 file
+[0m  <stdin>:23:330 filler-adverbs
+  <stdin>:36:45 filler-adverbs
+  <stdin>:36:309 filler-adverbs
+  <stdin>:40:138 filler-adverbs
+  <stdin>:40:203 filler-adverbs
+  <stdin>:48:178 filler-adverbs
+  <stdin>:75:363 filler-adverbs
+  <stdin>:77:254 filler-adverbs
+
+[0m[1mfix:
+[0m  filler-adverbs: cut the adverb (quietly/actually/really/simply/essentially/etc.); if it carries weight, replace with a concrete qualifier
 
 == style detector (full file) ==
 {"score": 0, "label": "Minimal AI signals", "issues": []}
 == quiz: clean ==
 == option labels ==
+clean
+== audit ==
 clean

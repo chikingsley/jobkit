@@ -4,7 +4,9 @@ GATE PASS
 == dslop (prose body, exit 0) ==
 
 == style detector (full file) ==
-{"score": 4, "label": "Minimal AI signals", "issues": [{"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 57, "weight": 2, "snippet": "Once pairs have finished, the social dynamic can shift to small groups. Two pairs join to"}, {"category": "ai-lexicon", "pattern": "\\b(nuanced|dynamic|pivotal|transformative)\\b", "line": 67, "weight": 2, "snippet": "lmost any communicative activity. The social dynamic changes each time, and so does the kind of l"}]}
+{"score": 4, "label": "Minimal AI signals", "issues": [{"category": "ai-lexicon", "pattern": "\\bdynamic\\b(?!\\s+verb)", "line": 57, "weight": 2, "snippet": "Once pairs have finished, the social dynamic can shift to small groups. Two pairs join to"}, {"category": "ai-lexicon", "pattern": "\\bdynamic\\b(?!\\s+verb)", "line": 67, "weight": 2, "snippet": "lmost any communicative activity. The social dynamic changes each time, and so does the kind of l"}]}
 == quiz: clean ==
 == option labels ==
+clean
+== audit ==
 clean
