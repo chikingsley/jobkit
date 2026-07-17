@@ -1,5 +1,5 @@
 unit 1.3 — What Makes an Effective Teacher
-GATE PASS
+GATE FAIL (audit (10 errors))
 
 == dslop (prose body, exit 0) ==
 
@@ -8,3 +8,14 @@ GATE PASS
 == quiz: clean ==
 == option labels ==
 clean
+== audit ==
+units/1.3/unit.md:11: cast-role: learner Daniel used as a teacher: 'teacher named Daniel'
+units/1.3/unit.md:19: cast-role: learner Fatima used as a teacher: 'teacher named Fatima'
+units/1.3/unit.md:41: cast-age: Priya (young-adult) in a child context: 'A child like Priya, who might feel intimidated looking up at an adult standing over her, i'
+units/1.3/unit.md:61: cast-age: Carlos (adult) in a child context: 'When a teacher stops the whole class to correct one child named Carlos, she has handed Car'
+units/1.3/unit.md:75: cast-role: learner Yuki used as a teacher: 'teacher named Yuki'
+units/1.3/unit.md:79: cast-role: learner Wei used as a teacher: 'teacher named Wei'
+units/1.3/unit.md:113: anchor-verbatim: anchor not found verbatim in body: 'the teacher knows only what that one student knows'
+units/1.3/unit.md:118: anchor-verbatim: anchor not found verbatim in body: 'what went well, what you might do differently, and what alternative approaches o'
+units/1.3/unit.md:123: anchor-verbatim: anchor not found verbatim in body: 'the teacher can write them on the board, creating a visible record that students'
+units/1.3/unit.md:128: anchor-verbatim: anchor not found verbatim in body: 'give the teacher a far more accurate sense of where the class stands'
