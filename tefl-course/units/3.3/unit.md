@@ -18,7 +18,7 @@ When a speaker reports what someone said at an earlier time, the verb in the rep
 
 The main backshift pairs work as follows. Simple present shifts to simple past: "I am tired," she said becomes She said she was tired. Present continuous shifts to past continuous: "We are waiting outside," they said becomes They said they were waiting outside. Simple past shifts to past perfect: "I finished the report," he said becomes He said he had finished the report. Present perfect shifts to past perfect: "She has called twice," he said becomes He said she had called twice. The modal "will" shifts to "would": "I will help you," she said becomes She said she would help me. The modal "can" shifts to "could": "I can explain," he said becomes He said he could explain. Finally, "may" shifts to "might": "It may rain," she said becomes She said it might rain.
 
-A common classroom error appears when students apply backshift regardless of the tense of the reporting verb. Backshift is only required when the reporting verb is in the past tense. When the reporting verb is in the present tense, the verb in the reported clause stays in its original form. Consider a student named Fatima who writes, "My teacher says that we had to submit the essay by Friday." Because the reporting verb "says" is in the present tense, no backshift is needed, and the correct form is "My teacher says that we have to submit the essay by Friday." A teacher can address this directly in class.
+A common classroom error appears when students apply backshift regardless of the tense of the reporting verb. Backshift is only required when the reporting verb is in the past tense. When the reporting verb is in the present tense, the verb in the reported clause stays in its original form. Consider Fatima, who writes, "My teacher says that we had to submit the essay by Friday." Because the reporting verb "says" is in the present tense, no backshift is needed, and the correct form is "My teacher says that we have to submit the essay by Friday." A teacher can address this directly in class.
 
 T: Fatima, read your sentence aloud.
 S: My teacher says that we had to submit the essay by Friday.
@@ -35,13 +35,13 @@ This optionality can confuse learners who have been taught backshift as an absol
 
 When speech moves from one person to another, and from one moment to a later one, pronouns and adverbials of time and place shift systematically to reflect the new speaker and the new context. These shifts are not optional in the way that tense backshift sometimes is; they are required for the reported sentence to make sense. A learner who ignores them produces statements that are accurate about the grammar but misleading about the meaning.
 
-Pronoun shifts depend on who originally spoke and who is now doing the reporting. Suppose Yuki says to Ben, "I will call you tomorrow." If a third person, say Carlos, reports this to someone else, the sentence becomes "Yuki said she would call him the following day." The first-person pronoun "I" becomes "she" because Carlos is referring to Yuki, and the second-person "you" becomes "him" because Ben is now the person being referred to. The possessive adjectives follow the same logic: if Yuki had said "I left my bag at your place," Carlos would report "Yuki said she had left her bag at his place."
+Pronoun shifts depend on who originally spoke and who is now doing the reporting. Suppose Yuki says to Daniel, "I will call you tomorrow." If a third person, say Carlos, reports this to someone else, the sentence becomes "Yuki said she would call him the following day." The first-person pronoun "I" becomes "she" because Carlos is referring to Yuki, and the second-person "you" becomes "him" because Daniel is now the person being referred to. The possessive adjectives follow the same logic: if Yuki had said "I left my bag at your place," Carlos would report "Yuki said she had left her bag at his place."
 
-The combinations multiply when the reporter is one of the original participants. If Ben himself reports Yuki's words to a third person, the sentence is identical: "She said she would call me the following day." Here "you" shifts to "me" because Ben is now the one speaking. A learner named Fatima once produced the sentence "Yuki said I will call you tomorrow" in a written exercise, keeping both original pronouns intact. The sentence is confusing because a reader cannot tell whether Fatima is quoting Yuki or making a statement about herself.
+The combinations multiply when the reporter is one of the original participants. If Daniel himself reports Yuki's words to a third person, the sentence is identical: "She said she would call me the following day." Here "you" shifts to "me" because Daniel is now the one speaking. A learner named Fatima once produced the sentence "Yuki said I will call you tomorrow" in a written exercise, keeping both original pronouns intact. The sentence is confusing because a reader cannot tell whether Fatima is quoting Yuki or making a statement about herself.
 
 Time and place adverbials shift because the moment of reporting is different from the moment of speaking. The standard correspondences are as follows. "Now" becomes "then." "Today" becomes "that day." "Yesterday" becomes "the day before." "Tomorrow" becomes "the following day" or "the next day." "Here" becomes "there." The demonstratives "this" and "these" become "that" and "those." The construction "ago" is replaced by "before" or "previously," so "two weeks ago" becomes "two weeks before."
 
-A short invented dialogue shows all these changes working together. On Monday, Yuki says to Ben: "I'm finishing my report here today, but I sent you the draft yesterday. Can you check it now?" Reported on Wednesday by Carlos, this becomes: "Yuki told Ben that she was finishing her report there that day, but that she had sent him the draft the day before, and asked whether he could check it then." Every pronoun, possessive, and time or place word has shifted to fit Carlos's position in time and space.
+A short invented dialogue shows all these changes working together. On Monday, Yuki says to Daniel: "I'm finishing my report here today, but I sent you the draft yesterday. Can you check it now?" Reported on Wednesday by Carlos, this becomes: "Yuki told Daniel that she was finishing her report there that day, but that she had sent him the draft the day before, and asked whether he could check it then." Every pronoun, possessive, and time or place word has shifted to fit Carlos's position in time and space.
 
 The most common error learners make is backshifting the verb correctly while leaving the pronouns unchanged. A student might write "Yuki said she had finished her report here today," combining a correctly shifted verb with adverbials that still point to Yuki's original moment of speaking. The result is grammatically mixed and signals to a reader that the reporter has not fully stepped outside the original speech situation. Treating pronoun and adverbial shifts as a single operation, rather than as separate tasks, helps learners avoid this inconsistency.
 
@@ -49,7 +49,7 @@ The most common error learners make is backshifting the verb correctly while lea
 
 English has a rich set of reporting verbs. Choosing among them allows a speaker or writer to convey what someone said and what that person was doing with their words at the same time. The verb "said" tells a reader that speech occurred; "warned" tells a reader that the speech carried a threat or caution. That distinction between content and speech act is one of the most useful tools available to any writer working with reported speech.
 
-The first and most flexible grammatical pattern is verb followed by a that-clause. Verbs such as "claim," "admit," "explain," "insist," and "warn" all follow this structure. A student named Fatima, writing up a class discussion, might produce sentences like "The manager admitted that the deadline had been missed" or "The scientist insisted that the results were accurate." The that-clause carries the reported content, while the verb itself signals the speaker's intention or attitude toward what they were saying.
+The first and most flexible grammatical pattern is verb followed by a that-clause. Verbs such as "claim," "admit," "explain," "insist," and "warn" all follow this structure. Fatima, writing up a class discussion, might produce sentences like "The manager admitted that the deadline had been missed" or "The scientist insisted that the results were accurate." The that-clause carries the reported content, while the verb itself signals the speaker's intention or attitude toward what they were saying.
 
 A second pattern requires a personal object placed between the verb and the infinitive. Verbs including "tell," "ask," "remind," "advise," "urge," and "order" work this way. In a grammar lesson, a teacher might offer the example "He urged his students to revise carefully" or "The doctor advised Priya to rest for a week." The personal object names the person addressed, and the infinitive phrase carries the reported instruction or request. Without the personal object, these verbs produce ungrammatical or incomplete sentences.
 
@@ -104,7 +104,7 @@ This unit has covered the main transformations that occur when direct speech bec
    c. She said me she was tired.
    d. She told she was tired.
 
-   *Answer: B) She said she was tired.*
+   *Answer: She said she was tired.*
    *Anchor: ""I am tired," she said becomes She said she was tired."*
 
 **2. A student named Fatima writes: 'My teacher says that we had to submit the essay by Friday.' Why is this sentence incorrect?**
@@ -114,7 +114,7 @@ This unit has covered the main transformations that occur when direct speech bec
    c. The infinitive 'to submit' should replace 'had to submit.'
    d. The time adverbial 'by Friday' must shift to 'the following day.'
 
-   *Answer: B) The reporting verb is in the present tense, so no backshift is needed.*
+   *Answer: The reporting verb is in the present tense, so no backshift is needed.*
    *Anchor: "Because the reporting verb "says" is in the present tense, no backshift is needed."*
 
 **3. Which of the following sentences correctly reports the direct question 'Where does Priya work?'**
@@ -124,13 +124,13 @@ This unit has covered the main transformations that occur when direct speech bec
    c. He asked where Priya worked.
    d. He asked where was Priya working.
 
-   *Answer: C) He asked where Priya worked.*
-   *Anchor: ""Where does Priya work?" becomes "He asked where Priya worked.""*
+   *Answer: He asked where Priya worked.*
+   *Anchor: ""Where does Priya work?" ... "He asked where Priya worked.""*
 
-**4. On Monday, Yuki says to Ben: 'I finished my report here today.' Carlos reports this on Wednesday. Write the fully correct reported version, adjusting all verbs, pronouns, and time or place adverbials.**
+**4. On Monday, Yuki says to Daniel: 'I finished my report here today.' Carlos reports this on Wednesday. Write the fully correct reported version, adjusting all verbs, pronouns, and time or place adverbials.**
 
    *Answer: Yuki said she had finished her report there that day.*
-   *Anchor: ""Today" becomes "that day." "Here" becomes "there.""*
+   *Anchor: ""Today" becomes "that day." ... "Here" becomes "there.""*
 
 **5. Explain the grammatical difference between 'say' and 'tell' as reporting verbs, and give one correct example sentence for each.**
 
@@ -143,3 +143,7 @@ This unit has covered the main transformations that occur when direct speech bec
    *Anchor: "If it sounds like a question, the word order is almost certainly wrong."*
 
 ## References
+
+- Celce-Murcia, M., & Larsen-Freeman, D. (1999). *The Grammar Book: An ESL/EFL Teacher's Course* (2nd ed.). Heinle & Heinle.
+- Parrott, M. (2010). *Grammar for English Language Teachers* (2nd ed.). Cambridge University Press.
+- Swan, M. (2016). *Practical English Usage* (4th ed.). Oxford University Press.

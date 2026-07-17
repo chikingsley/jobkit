@@ -4,11 +4,11 @@
 
 Metalanguage is language used to talk about language itself. When a teacher says "verb," "clause," or "subject," those words are metalanguage: they name features of language rather than carrying ordinary meaning. A working knowledge of these terms is one of the practical tools a teacher brings to the classroom, even when students never hear the terms themselves.
 
-Precise identification of an error depends on knowing what kind of error it is. Suppose a student named Carlos writes "She sings beautiful" instead of "She sings beautifully." A teacher who can identify "beautiful" as an adjective used where an adverb is required has a clear picture of what has gone wrong. Without that identification, the teacher can only sense that something sounds wrong, and the feedback given to Carlos will be vague at best.
+Precise identification of an error depends on knowing what kind of error it is. Suppose a student named Priya writes "She sings beautiful" instead of "She sings beautifully." A teacher who can identify "beautiful" as an adjective used where an adverb is required has a clear picture of what has gone wrong. Without that identification, the teacher can only sense that something sounds wrong, and the feedback given to Priya will be vague at best.
 
 Accurate feedback depends on the teacher having already diagnosed the problem. Consider a classroom exchange where the teacher has spotted the same pattern across several students' writing:
 
-T: Carlos, you've used the adjective form here, but this word is describing the verb, so we need the adverb form.
+T: Priya, you've used the adjective form here, but this word is describing the verb, so we need the adverb form.
 S: So I should say "beautifully"?
 T: Exactly.
 
@@ -16,7 +16,7 @@ That exchange is possible because the teacher arrived at it with a diagnosis alr
 
 Lesson planning also relies on metalanguage, because syllabuses and grammar references are written in it. A teacher preparing a lesson on reported speech needs to read about backshift in tense, pronoun changes, and the behavior of reporting verbs. Those concepts are named in every grammar reference a teacher is likely to consult, from a classroom grammar to a detailed pedagogical reference. A teacher unfamiliar with the terms will find those resources difficult to use.
 
-The same applies when a teacher reads a course syllabus. Entries such as "present perfect for recent events" or "comparative adjectives" assume the reader can map those labels onto actual language. A teacher named Priya, preparing her first intermediate class, needs to look at the entry "modal verbs of deduction" and know immediately which forms she is planning to teach and what their grammatical behavior is. Metalanguage is the shared vocabulary that connects the syllabus, the grammar reference, and the classroom; a teacher without it is working with an incomplete set of professional tools.
+The same applies when a teacher reads a course syllabus. Entries such as "present perfect for recent events" or "comparative adjectives" assume the reader can map those labels onto actual language. Ms. Reyes, preparing her first intermediate class, needs to look at the entry "modal verbs of deduction" and know immediately which forms she is planning to teach and what their grammatical behavior is. Metalanguage is the shared vocabulary that connects the syllabus, the grammar reference, and the classroom; a teacher without it is working with an incomplete set of professional tools.
 
 ## Nouns, Pronouns, and Determiners
 
@@ -48,13 +48,13 @@ Identifying a verb as main or auxiliary, and as stative or dynamic, gives teache
 
 ## Adjectives and Adverbs
 
-An adjective is a word that modifies a noun or pronoun, indicating a quality, quantity, or state. Adjectives appear in two positions in English sentences. In attributive position, the adjective sits directly before the noun it modifies, as in *a dusty road* or *three nervous students*. In predicative position, the adjective follows a linking verb and describes the subject, as in *the road is dusty* or *the students seemed nervous*. Most common adjectives move freely between the two positions, though a small set, such as *asleep* or *afraid*, is restricted to predicative use only.
+An adjective is a word that modifies a noun or pronoun, indicating a quality, quantity, or state. Adjectives appear in two positions in English sentences. In attributive position, the adjective sits directly before the noun it modifies, as in *a dusty road* or *three nervous students*. In predicative position, the adjective follows a linking verb and describes the subject, as in *the students seemed nervous* or *the road is dusty*. Most common adjectives move freely between the two positions, though a small set, such as *asleep* or *afraid*, is restricted to predicative use only.
 
 Adverbs form a broader and more varied class. An adverb is a word that modifies a verb, an adjective, another adverb, or an entire clause. The main semantic categories are manner, degree, frequency, and time. Manner adverbs describe how an action is performed: *the technician worked carefully* or *the child laughed loudly*. Degree adverbs indicate the intensity of an adjective or another adverb: *the exam was extremely difficult* or *she spoke barely audibly*. Frequency adverbs express how often something occurs: *Daniel always checks his work* or *the class rarely finishes early*. Time adverbs locate an event in time: *they submitted the report yesterday* or *the results will arrive soon*.
 
 The boundary between adjectives and adverbs causes persistent difficulty for learners, particularly those whose first language does not mark the distinction morphologically. A common error is using an adjective where an adverb is required, as when a learner writes *she sings beautiful* instead of *she sings beautifully*. In that sentence, *sings* is a dynamic verb, not a linking verb, so the modifier describes the manner of the action rather than the subject herself. The modifier therefore needs to be an adverb. The adjective *beautiful* would be grammatical only in a construction such as *her voice sounds beautiful*, where *sounds* functions as a linking verb connecting the adjective back to the subject.
 
-A teacher who understands this distinction can diagnose the error with precision, identifying its grammatical source rather than marking it wrong without explanation. Consider the following exchange during a writing feedback session.
+A teacher who understands this distinction can diagnose the error with precision, identifying its grammatical source rather than marking it wrong without explanation. The following exchange comes from a writing feedback session.
 
 T: Carlos, you wrote "he drives careful." What is *careful* describing here?
 S: The way he drives?
@@ -69,7 +69,7 @@ Without the adjective and adverb categories available as working concepts, a tea
 
 A preposition is a word that links a noun phrase to the rest of the sentence, expressing a relationship such as place, time, direction, or another logical connection. The noun phrase that follows the preposition is called its object, and together they form a prepositional phrase. In the sentence *The report is on the desk*, the preposition *on* links the noun phrase *the desk* to the rest of the clause, indicating location. In *The meeting starts at noon*, *at* expresses a point in time, and in *She walked towards the exit*, *towards* expresses direction.
 
-Grammarians distinguish simple prepositions from complex ones. Simple prepositions are single words: *in*, *on*, *at*, *by*, *from*, *with*, and *through* are among the most common. Complex prepositions consist of two or three words functioning as a single unit: *in front of*, *next to*, *because of*, *in spite of*, and *on behalf of* all behave as single prepositions even though they contain more than one word. A student named Fatima might write *The car parked in front of the gate*, using the complex preposition *in front of* to locate the car precisely. Treating *in front of* as three separate words with independent grammatical roles misrepresents the way the phrase functions within the sentence.
+Grammarians distinguish simple prepositions from complex ones. Simple prepositions are single words: *in*, *on*, *at*, *by*, *from*, *with*, and *through* are among the most common. Complex prepositions consist of two or three words functioning as a single unit: *in front of*, *next to*, *because of*, *in spite of*, and *on behalf of* all behave as single prepositions even though they contain more than one word. A learner such as Fatima might write *The car parked in front of the gate*, using the complex preposition *in front of* to locate the car precisely. Treating *in front of* as three separate words with independent grammatical roles misrepresents the way the phrase functions within the sentence.
 
 A conjunction is a word that connects words, phrases, or clauses. The two main classes are coordinating conjunctions and subordinating conjunctions, and the distinction between them matters for both grammar teaching and error correction. Coordinating conjunctions, including *and*, *but*, *or*, and *so*, join elements of equal grammatical rank. In *Wei finished the exercise, but he checked his answers twice*, the conjunction *but* links two independent clauses, each capable of standing alone. In *She ordered coffee and a sandwich*, *and* joins two noun phrases of the same rank.
 
@@ -138,7 +138,7 @@ Grammatical terminology is a professional tool for the teacher rather than a req
    *Answer: A stative verb describes a state that exists rather than an action that unfolds; a dynamic verb describes an action or process that can be observed as it happens. Stative verbs do not normally appear in the continuous form, so a teacher needs this distinction to explain errors such as 'I am knowing the answer.'*
    *Anchor: "Stative verbs, because they describe conditions rather than unfolding events, do not normally appear in the continuous form"*
 
-**6. During a writing activity, a student named Daniel submits the sentence 'She go to the market every Saturday.' You notice the same error in three other students' work. Describe the move you would make and justify it using grammatical metalanguage from the unit.**
+**6. During a writing activity, a student named Yuki submits the sentence 'She go to the market every Saturday.' You notice the same error in three other students' work. Describe the move you would make and justify it using grammatical metalanguage from the unit.**
 
    *Answer: The teacher should address the error explicitly by identifying 'go' as a present-tense verb that fails to agree with its third-person singular subject 'she,' then elicit the correct form 'goes' through targeted questioning. This move is justified because precise identification of the error type allows the teacher to give specific, transferable feedback rather than simply marking the sentence wrong. The metalanguage of subject-verb agreement, person, and tense gives the teacher a consistent framework applicable every time the same pattern reappears across the class.*
    *Anchor: "go as a present-tense verb that fails to agree with its third-person singular subject she"*

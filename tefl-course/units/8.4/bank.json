@@ -40,5 +40,17 @@
     "question": "According to the unit, why does a student with weaker writing skills benefit in a particular way from noticing their own errors during peer review, rather than being told about them by the teacher?",
     "answer": "When a weaker student notices an error themselves, they are doing the cognitive work of diagnosis, and that act of noticing is what strengthens the skill. The improvement comes from their own experience of the process rather than from an external correction handed down to them, moving them toward greater autonomy.",
     "anchor": "the improvement comes from their own experience of the process rather than from an external correction handed down to them"
+  },
+  {
+    "type": "mc",
+    "question": "According to the unit, what does a correction code's marginal symbol deliberately NOT do?",
+    "options": [
+      "Locate the line in which an error occurs",
+      "Classify the kind of error the line contains",
+      "Fix the error by supplying the correct form",
+      "Signal which errors relate to the lesson's target language"
+    ],
+    "answer": "Fix the error by supplying the correct form — Each mark locates and classifies the problem, but what the mark deliberately does not do is fix anything; the repair stays with the writer.",
+    "anchor": "What the mark deliberately does not do is fix anything"
   }
 ]

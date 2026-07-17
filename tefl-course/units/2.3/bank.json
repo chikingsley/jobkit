@@ -1,7 +1,7 @@
 [
   {
     "type": "mc",
-    "question": "According to the unit, what is the key difference between the perfect simple 'He has run five kilometres today' and the perfect continuous 'He has been running'?",
+    "question": "According to the unit, what is the key difference between the perfect simple 'He has run five miles today' and the perfect continuous 'He has been running'?",
     "options": [
       "A. The perfect simple refers to present time while the perfect continuous refers to past time.",
       "B. The perfect simple foregrounds a completed, measurable result while the perfect continuous foregrounds the activity as an extended process.",
@@ -9,7 +9,7 @@
       "D. The perfect continuous can only be used when the activity has fully stopped, whereas the perfect simple implies it is still ongoing."
     ],
     "answer": "B. The perfect simple foregrounds a completed, measurable result while the perfect continuous foregrounds the activity as an extended process.",
-    "anchor": "'He has run five kilometres today' focuses on the finished quantity, a measurable result."
+    "anchor": "'He has run five miles today' focuses on the finished quantity, a measurable result."
   },
   {
     "type": "mc",

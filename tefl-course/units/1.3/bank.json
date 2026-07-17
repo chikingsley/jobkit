@@ -29,11 +29,11 @@
     "options": [
       "The corrected student is likely to become more disruptive afterward",
       "The teacher loses the opportunity to use proximity as a management tool",
-      "The teacher has handed Carlos's inattention to every other student in the room",
+      "The teacher has handed that student's inattention to every other student in the room",
       "The lesson objective becomes unclear to the rest of the class"
     ],
-    "answer": "The teacher has handed Carlos's inattention to every other student in the room",
-    "anchor": "she has handed Carlos's inattention to every other student in the room"
+    "answer": "The teacher has handed that student's inattention to every other student in the room",
+    "anchor": "she has handed that child's inattention to every other student in the room"
   },
   {
     "type": "short",
