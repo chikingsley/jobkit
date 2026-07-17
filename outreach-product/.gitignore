@@ -2,6 +2,7 @@
 .env.*
 !.env.example
 .dev.vars
+.secrets/
 .wrangler/
 dist/
 node_modules/
