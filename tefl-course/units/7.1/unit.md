@@ -4,6 +4,8 @@
 
 Listening is a skill that develops through deliberate, structured practice, not through incidental exposure alone. A student who hears English spoken around her every day may still struggle to follow a recorded announcement or understand a colleague speaking quickly on the phone. The classroom is where that gap closes, because the teacher can control the input, sequence the tasks, and give the student repeated opportunities to process spoken language with a clear purpose.
 
+The claim that listening instruction pays off has been tested directly. Vandergrift and Tafaghodtari (2010) taught 59 learners of French through a semester-long cycle of prediction, monitoring, evaluation, and problem solving applied to their own listening, while a control group of 47 heard the same recordings the same number of times without that guidance. The instructed group made significantly larger comprehension gains, and the less skilled listeners in that group gained the most. Vandergrift and Goh (2012) later built a complete teaching methodology on the same metacognitive cycle.
+
 Audio materials serve several distinct functions when they are used well. A student named Carlos, working at an intermediate level, may encounter the word "registration" in a reading passage and learn its spelling without ever connecting it to the sound a native speaker produces. Hearing the word in a recorded dialogue, in a sentence where context makes the meaning clear, builds a different kind of knowledge. *Shaping the Way We Teach English* identifies four specific gains that audio materials make possible: students develop and improve listening comprehension, hear new vocabulary in context, make connections between sounds and written words, and encounter a range of accents they would not otherwise meet in a single classroom.
 
 One practical way to integrate audio is to present instructions and tasks in spoken form rather than written form, so that students must use listening skills to understand what they are being asked to do. A teacher might record the directions for a grammar exercise and play them at the start of class, requiring students like Fatima to listen carefully before they can begin. This shifts the cognitive demand from reading to listening without changing the underlying language content of the lesson.
@@ -126,3 +128,5 @@ One practical constraint governs the whole sequence: time. Extending the warm-up
 ## References
 
 - U.S. Department of State. *Shaping the Way We Teach English: From Observation to Action*. americanenglish.state.gov (public domain).
+- Vandergrift, L., & Goh, C. C. M. (2012). *Teaching and Learning Second Language Listening: Metacognition in Action*. Routledge.
+- Vandergrift, L., & Tafaghodtari, M. H. (2010). Teaching L2 learners how to listen does make a difference: An empirical study. *Language Learning*, 60(2), 470-497.

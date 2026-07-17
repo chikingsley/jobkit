@@ -126,6 +126,7 @@ The most practical tool for sustaining the collection is a running list posted s
 
 ## References
 
+- Nation, I. S. P. (2022). *Learning Vocabulary in Another Language* (3rd ed.). Cambridge University Press.
 - U.S. Department of State. *Activate: Games for Learning American English*. americanenglish.state.gov (public domain).
 - U.S. Department of State. *Create to Communicate*. americanenglish.state.gov (public domain).
 - U.S. Department of State. *Shaping the Way We Teach English: From Observation to Action*. americanenglish.state.gov (public domain).
