@@ -136,3 +136,8 @@ Across all four of these error types, correction is most effective when explaine
    *Anchor: "the playing was already underway before the arrival, and that the past continuous carries that relationship clearly"*
 
 ## References
+
+The form-meaning descriptions of the twelve verb forms in this unit are standard pedagogical grammar, of the kind codified in the reference and practice literature below.
+
+- Murphy, R. (2019). *English Grammar in Use* (5th ed.). Cambridge University Press.
+- Swan, M. (2016). *Practical English Usage* (4th ed.). Oxford University Press.

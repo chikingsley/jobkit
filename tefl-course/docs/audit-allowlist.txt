@@ -1,0 +1,5 @@
+# Audit allowlist — lines of <path-suffix>|<check>|<substring> (see src/tefl_course/audit.py).
+# "Helen" is a real character in Dialog 30 of Dobson's public-domain *Dialogs for
+# Everyday Use* (U.S. Dept. of State). Unit 3.6 quotes that source accurately, so the
+# name is a verbatim citation, not an out-of-cast example learner.
+units/3.6/unit.md|cast-outsider|Helen

@@ -144,3 +144,8 @@ Grammatical terminology is a professional tool for the teacher rather than a req
    *Anchor: "go as a present-tense verb that fails to agree with its third-person singular subject she"*
 
 ## References
+
+The grammatical descriptions in this unit are standard facts of English pedagogical grammar rather than any single author's analysis. For fuller treatment of the parts of speech from a teacher's perspective:
+
+- Parrott, M. (2010). *Grammar for English Language Teachers* (2nd ed.). Cambridge University Press.
+- Swan, M. (2016). *Practical English Usage* (4th ed.). Oxford University Press.

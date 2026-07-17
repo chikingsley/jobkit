@@ -143,3 +143,8 @@ Sentence structure is the foundation on which the grammar teaching in the rest o
    *Anchor: "the subordinating conjunction 'although' has made the clause dependent"*
 
 ## References
+
+The account of sentence elements, phrases, clauses, and sentence types given here follows standard pedagogical grammar. For further reading on English sentence structure as it bears on teaching:
+
+- Parrott, M. (2010). *Grammar for English Language Teachers* (2nd ed.). Cambridge University Press.
+- Celce-Murcia, M., & Larsen-Freeman, D. (1999). *The Grammar Book: An ESL/EFL Teacher's Course* (2nd ed.). Heinle & Heinle.

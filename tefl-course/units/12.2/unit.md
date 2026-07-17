@@ -24,7 +24,7 @@ The precision of the research finding is worth holding onto. A teacher who hears
 
 ## The Difference Between Preference and Learning
 
-The slippage begins in the language used to define the categories themselves. The source glossary for this course describes a visual learner as someone who "benefits from or prefers" learning through visual input, and a kinesthetic learner as someone who "benefits from or prefers" hands-on experiences. Those two verbs are doing very different work, and placing them side by side without comment treats them as equivalent. Preferring a format means a learner finds it more comfortable, more familiar, or more enjoyable. Benefiting from a format means that format produces measurably better retention or performance. A student named Fatima may prefer listening to explanations over reading them, yet retain more from a well-structured reading task than from a spoken one on the same material. Her preference is real; it does not determine her optimal learning channel.
+The slippage begins in the language used to define the categories themselves. The source glossary for this course describes a visual learner as someone who "benefits from or prefers" learning through visual input, and a kinesthetic learner as someone who "benefits from or prefers" hands-on experiences. Those two verbs are doing very different work, and placing them side by side without comment treats them as equivalent. Preferring a format means a learner finds it more comfortable, more familiar, or more enjoyable. Benefiting from a format means that format produces measurably better retention or performance. A student like Fatima may prefer listening to explanations over reading them, yet retain more from a well-structured reading task than from a spoken one on the same material. Her preference is real; it does not determine her optimal learning channel.
 
 The same glossary describes kinesthetic learning as "hands-on" activity incorporating "gestures, body movement, actions, facial expressions, manipulatives." Any experienced teacher recognizes that list as a description of good pedagogy for a mixed classroom, not a prescription for a particular subset of students. When Mr. Osei has his beginners mime the action of verbs while repeating them aloud, every student in the room is encoding the word through movement and sound at once. The activity does not serve only the students who self-identify as kinesthetic learners; it gives all learners an additional retrieval route. Reserving such techniques for a diagnosed group would mean withholding a useful tool from everyone else.
 
@@ -99,17 +99,17 @@ The core position of this unit can be stated plainly. Recognizing that learners 
    *Answer: Willingham, Hughes, and Dobolyi (2015) concluded that scientific support for learning-styles theories is lacking, and that educators' limited time and energy are better spent on practices the evidence does support. The variety-of-formats recommendation is this course's evidence-consistent guidance, not a finding of their paper.*
    *Anchor: "scientific support for learning-styles theories is lacking, and educators' limited time and energy are better spent on practices the evidence does support"*
 
-**3. How does the unit characterise the design logic of learning stations, as described in the source text?**
+**3. How does the unit characterize the design logic of learning stations, as described in the source text?**
 
    a. Each station is assigned to students whose diagnosed style matches that station's format
-   b. Every student rotates through every station, meeting the same target concept through different formats in sequence
+   b. Whether students rotate through every station or choose among them, no sound design routes anyone to a station by diagnosed style
    c. Stations are reserved for kinesthetic learners who need movement-based tasks
-   d. Students choose which station to visit based on their self-reported learning preference
+   d. Each station presents different target content so that separate objectives can be taught simultaneously
 
-   *Answer: Every student rotates through every station, meeting the same target concept through different formats in sequence.*
-   *Anchor: "Every student rotates through every station, meeting the same target concept"*
+   *Answer: Station designs vary between full rotation and student choice, but no sound design routes students to stations by diagnosed style; every learner encounters the target content through complementary formats.*
+   *Anchor: "What no sound design does is route students to stations by diagnosed style"*
 
-**4. Explain the distinction the unit draws between a learner preferring a format and a learner benefiting from a format. Use the example of a student named Fatima to illustrate your answer.**
+**4. Explain the distinction the unit draws between a learner preferring a format and a learner benefiting from a format. Use the unit's example of Fatima to illustrate your answer.**
 
    *Answer: Preferring a format means a learner finds it more comfortable or enjoyable; benefiting from a format means it produces measurably better retention or performance. Fatima may prefer listening to explanations yet retain more from a well-structured reading task on the same material, so her preference does not determine her optimal learning channel.*
    *Anchor: "Preferring a format means a learner finds it more comfortable, more familiar, or more enjoyable"*
@@ -119,9 +119,9 @@ The core position of this unit can be stated plainly. Recognizing that learners 
    *Answer: Their finding was that diagnosing a fixed style and then restricting instruction to fit that diagnosis does not produce the predicted benefit; the sorting-and-matching procedure is the unsupported step, not the existence of learner differences.*
    *Anchor: "diagnosing a fixed style and then restricting instruction to fit that diagnosis does not produce the predicted benefit"*
 
-**6. A trainee teacher, Yuki, has administered an online learning-style inventory to her adult intermediate class. She plans to divide students into visual, auditory, and kinesthetic groups and give each group separate task streams for the next unit. A mentor observes her planning session and must respond. Describe one specific move the mentor should make, justify it using evidence from the unit, and explain what Yuki should do differently in her lesson plan.**
+**6. A trainee teacher has administered an online learning-style inventory to her adult intermediate class. She plans to divide students into visual, auditory, and kinesthetic groups and give each group separate task streams for the next unit. A mentor observes her planning session and must respond. Describe one specific move the mentor should make, justify it using evidence from the unit, and explain what the trainee should do differently in her lesson plan.**
 
-   *Answer: The mentor should name the specific unsupported step in Yuki's plan: the sorting-and-matching procedure. Pashler, McDaniel, Rohrer, and Bjork (2008) found no adequate evidence that matching instruction format to a diagnosed style produces better outcomes, and Willingham, Hughes, and Dobolyi (2015) argue the theory should be treated as scientifically debunked rather than merely unproven. The mentor should not simply tell Yuki that individual differences are unimportant, because that misreads the evidence in an equally unhelpful direction. Instead, the mentor should redirect Yuki toward planning a single lesson sequence that moves through multiple formats, such as a whole-class visual presentation, a paired oral task, a physical sorting activity with word cards, and an individual written component, so that every student encounters the target content through more than one route without being confined to a diagnosed category.*
+   *Answer: The mentor should name the specific unsupported step in the trainee's plan: the sorting-and-matching procedure. Pashler, McDaniel, Rohrer, and Bjork (2008) found no adequate evidence that matching instruction format to a diagnosed style produces better outcomes, and Willingham, Hughes, and Dobolyi (2015) argue the theory should be treated as scientifically debunked rather than merely unproven. The mentor should not simply tell the trainee that individual differences are unimportant, because that misreads the evidence in an equally unhelpful direction. Instead, the mentor should redirect her toward planning a single lesson sequence that moves through multiple formats, such as a whole-class visual presentation, a paired oral task, a physical sorting activity with word cards, and an individual written component, so that every student encounters the target content through more than one route without being confined to a diagnosed category.*
    *Anchor: "the sorting-and-matching procedure is the unsupported step. Learner differences are real"*
 
 ## References

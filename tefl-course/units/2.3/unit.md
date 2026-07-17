@@ -126,3 +126,8 @@ Learners whose first languages handle tense and aspect differently will not abso
    *Anchor: "Combining these two tenses with four aspects produces eight core verb forms."*
 
 ## References
+
+The two-tense, four-aspect analysis presented in this unit reflects the standard linguistic description of English. For deeper discussion of tense and aspect written for language teachers:
+
+- Celce-Murcia, M., & Larsen-Freeman, D. (1999). *The Grammar Book: An ESL/EFL Teacher's Course* (2nd ed.). Heinle & Heinle.
+- Parrott, M. (2010). *Grammar for English Language Teachers* (2nd ed.). Cambridge University Press.
