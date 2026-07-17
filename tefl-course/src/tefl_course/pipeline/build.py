@@ -23,6 +23,7 @@ import sys
 import time
 from typing import TYPE_CHECKING, cast
 
+from tefl_course.audit import audit_file, check_bank_anchors
 from tefl_course.checks import find_doubled_option_labels, strip_duplicate_option_label
 from tefl_course.detectors.ai_style import analyze_text
 from tefl_course.llm import SuperwhisperClient
@@ -346,7 +347,14 @@ def gate(unit: Unit) -> bool:
     quiz_ok = not quiz_warn.exists()
     option_labels_ok = not option_label_issues
     dslop_ok = dslop.returncode == 0 or rhythm_only
-    passed = dslop_ok and style_ok and quiz_ok and option_labels_ok
+    # Truth-level audit (cast, anchors, references, spelling, punctuation): errors block.
+    audit_issues = [
+        issue
+        for issue in (*audit_file(path), *check_bank_anchors(path))
+        if issue.severity == "error"
+    ]
+    audit_ok = not audit_issues
+    passed = dslop_ok and style_ok and quiz_ok and option_labels_ok and audit_ok
     if passed and rhythm_only:
         status = "PASS (rhythm metric flagged — owner review)"
     elif passed:
@@ -361,6 +369,8 @@ def gate(unit: Unit) -> bool:
             failures.append("quiz warnings")
         if not option_labels_ok:
             failures.append("option labels")
+        if not audit_ok:
+            failures.append(f"audit ({len(audit_issues)} errors)")
         status = f"FAIL ({', '.join(failures)})"
 
     report = UNITS_DIR / unit.uid / "gate-report.txt"
@@ -376,7 +386,13 @@ def gate(unit: Unit) -> bool:
         f"== dslop (prose body, exit {dslop.returncode}) ==\n{dslop.stdout}{dslop.stderr}\n"
         f"== style detector (full file) ==\n{detector.to_json()}\n"
         f"== quiz: {'clean' if quiz_ok else 'WARNINGS (see quiz-warnings.txt)'} ==\n"
-        f"== option labels ==\n{option_label_text}\n",
+        f"== option labels ==\n{option_label_text}\n"
+        f"== audit ==\n"
+        + ("clean" if audit_ok else "\n".join(
+            f"{issue.path}:{issue.line}: {issue.check}: {issue.message}"
+            for issue in audit_issues
+        ))
+        + "\n",
         encoding="utf-8",
     )
     _log(f"[{unit.uid}] gate: {status} (style score {detector.score})")

@@ -20,9 +20,20 @@ A deliberate set of six learners (and two teachers) used consistently across eve
 | **Ms. Reyes** | f | the default teacher in worked examples |
 | **Mr. Osei** | m | second teacher, for peer-observation / two-teacher scenarios |
 
-## Rules (also in pilot/style-rules.md)
+## Rules (also in pilot/style-rules.md; enforced by `tefl-course-audit` since 2026-07-17)
 
 - Use only these names for learner/teacher examples. Do not invent new ones.
+- **Roles are fixed.** The six learners are only ever learners — never "a teacher named
+  Carlos", never trainee teachers, never observers of a colleague's class. The only named
+  teachers are Ms. Reyes and Mr. Osei; scenes needing more teachers use unnamed colleagues.
+- **Ages, countries, and L1s are fixed.** Yuki is a teenager; the rest are adults/young
+  adults. No cast member appears as a child. Scenes that need child learners (young-learner
+  units) use unnamed children ("a six-year-old near the door").
+- **L1-specific error examples must match the speaker's L1** — a final-devoicing example
+  needs a devoicing L1; if no cast member fits, use an unnamed learner with the L1 stated.
 - Keep each character's gender consistent so pronouns never drift.
-- Use examples sparingly — a named vignette should earn its place by clarifying a point, not decorate every paragraph. Aim for a few per unit, not one per idea.
-- A draft's scattered names were consolidated onto this cast 2026-06-09 by a gender-aware remap (same-gender targets only), then pronoun-checked.
+- Use examples sparingly — a named vignette should earn its place by clarifying a point, not
+  decorate every paragraph. Aim for a few per unit, not one per idea.
+- History: scattered draft names were consolidated onto this cast 2026-06-09 by a
+  gender-aware remap. That remap ignored role/age/L1 and corrupted ~150 sites; the
+  2026-07-17 repair wave fixed them and added the audit gate so it cannot recur.
