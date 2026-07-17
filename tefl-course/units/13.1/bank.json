@@ -36,6 +36,18 @@
     "anchor": "Assigning a debate as the assessment task would place students at the Evaluate level, asking them to perform cognitive work they have not yet been guided through"
   },
   {
+    "type": "mc",
+    "question": "According to the unit, what is the relationship between reliability and validity?",
+    "options": [
+      "Reliability and validity are two names for the same property of a well-designed task.",
+      "A test can be reliable but not valid, and validity presupposes reliability.",
+      "A valid test does not need to be reliable as long as the rubric is shared in advance.",
+      "Reliability applies only to speaking assessments, while validity applies to written tests."
+    ],
+    "answer": "A test can be reliable but not valid, and validity presupposes reliability.",
+    "anchor": "A test can be reliable but not valid... Validity, however, presupposes reliability"
+  },
+  {
     "type": "short",
     "question": "Why does the unit say that students who use a peer assessment worksheet for the first time often produce vague or unhelpful feedback, and what should a teacher do about it?",
     "options": null,

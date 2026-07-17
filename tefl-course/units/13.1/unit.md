@@ -4,7 +4,7 @@
 
 Assessment, at its most basic, means determining or evaluating what students know or can do. A teacher who asks a student to summarize a reading passage is assessing that student, as is a teacher who watches a group complete a role-play and takes notes on fluency and accuracy. The word carries no implication of formality or paperwork; it describes the act of finding out where learners stand.
 
-Teachers generally draw on two broad categories when they assess. Traditional assessment refers to the familiar pen-and-paper methods: multiple-choice tests, fill-in-the-blank exercises, written grammar quizzes. Alternative assessment uses non-traditional methods to evaluate student knowledge or skills. The source glossary lists self-assessment, peer assessment, portfolio assessment, student conferences, and performance-based assessment, including role-plays, debates, and presentations, as examples of this second category.
+Teachers generally draw on two broad categories when they assess. Traditional assessment refers to the familiar pen-and-paper methods: multiple-choice tests, fill-in-the-blank exercises, written grammar quizzes. Alternative assessment uses non-traditional methods to evaluate student knowledge or skills. The glossary of *Shaping the Way We Teach English*, the State Department training course this module draws on, lists self-assessment, peer assessment, portfolio assessment, student conferences, and performance-based assessment, including role-plays, debates, and presentations, as examples of this second category.
 
 The distinction between the two categories matters because each one reveals something different about a learner. A written vocabulary test can show whether a student like Fatima recognizes the meaning of a word in isolation. A classroom debate, assessed with a rubric, can show whether she can use that word while speaking under real communicative pressure. Neither method is superior in the abstract; the question is always what the teacher needs to find out.
 
@@ -18,7 +18,7 @@ Assessment serves two distinct purposes, and the difference between them shapes 
 
 A single classroom activity can generate both kinds of evidence at the same time, and the student-led discussion is a clear example of this. When a teacher listens to a student named Fatima lead her group, takes notes on her performance, and then completes a teacher rubric that produces a final numeric score, that score is summative: it becomes part of Fatima's grade and stands as a record of her achievement. The same discussion also produces peer assessment forms completed by Fatima's classmates. Those forms are explicitly not a formal grade; they reflect the other students' experience of the discussion and give Fatima structured feedback she can use to improve. The two instruments sit side by side in the same lesson, yet they serve entirely different purposes.
 
-The distinction matters for task selection because the two purposes place different demands on the instrument. A summative task needs to produce a result that is consistent and defensible enough to stand as a final record. A formative task needs to produce information that is specific and timely enough to be acted upon. When a teacher asks students to complete peer assessment worksheets, the value of those worksheets lies in the feedback they carry, not in any score they might assign. The teacher in the source material makes this explicit by telling students that a score of three is acceptable, a four is good, and a five is excellent, and by reminding them to write at least one sentence of comment. The comment is the formative payload; the number alone would not be enough.
+The distinction matters for task selection because the two purposes place different demands on the instrument. A summative task needs to produce a result that is consistent and defensible enough to stand as a final record. A formative task needs to produce information that is specific and timely enough to be acted upon. When a teacher asks students to complete peer assessment worksheets, the value of those worksheets lies in the feedback they carry, not in any score they might assign. The teacher in the module's video makes this explicit by telling students that a score of three is acceptable, a four is good, and a five is excellent, and by reminding them to write at least one sentence of comment. The comment is the formative payload; the number alone would not be enough.
 
 Before selecting any assessment task, a teacher should therefore answer one prior question: what will this evidence be used for? If the answer is to assign a grade, the task must be capable of producing a score that reflects the learning goals reliably. If the answer is to help a student like Fatima understand what she did well and what to work on before the next discussion, the task should be designed to generate specific, readable feedback rather than a defensible number. Choosing a task for the wrong purpose produces information that cannot do the job required of it. A peer worksheet used as a final grade may lack the consistency that summative assessment requires; a formal rubric used only for feedback may be too blunt to tell Fatima anything she can act on. Deciding the purpose first makes the choice of task considerably more straightforward.
 
@@ -36,18 +36,28 @@ Selecting the task therefore begins before the lesson ends, and in many cases be
 
 ## Validity in Plain Terms: Does the Task Measure What You Claim?
 
-Validity, in practical terms, is the degree to which an assessment task measures the skill it claims to measure. A teacher who spends a lesson developing students' spoken discussion skills and then tests them with a written grammar quiz has produced a mismatch: the quiz may tell her something about grammar knowledge, but it gives no evidence of whether students can hold a conversation. The source text frames this directly, noting that alternative assessment helps test students' actual ability to use English for real-world communication, not just their knowledge of English. That distinction is the core of validity as a classroom concern.
+Validity, in practical terms, is the degree to which an assessment task measures the skill it claims to measure. A teacher who spends a lesson developing students' spoken discussion skills and then tests them with a written grammar quiz has produced a mismatch: the quiz may tell her something about grammar knowledge, but it gives no evidence of whether students can hold a conversation. The training materials frame this directly: alternative assessment helps test students' actual ability to use English for real-world communication, not just their knowledge of English. That distinction is the core of validity as a classroom concern.
 
 The practical check is straightforward. A teacher states an objective, designs or selects an assessment task, and then asks whether completing that task would require students to demonstrate the exact skill named in the objective. Consider a teacher whose objective is for students to lead a small-group discussion on a real-world topic. If she assesses them by observing their performance and scoring it against a rubric whose categories match the stated goals, the task is valid. If she instead asks them to write a paragraph summarizing the topic, she has shifted from assessing speaking to assessing writing, and the evidence she collects no longer speaks to what she said she was teaching.
 
-Alignment matters beyond the teacher's gradebook because assessment shapes what students pay attention to. The source introduces the term washback to describe the effect or influence that assessment has on learning and teaching. When students understand how they will be assessed and can see that the assessment connects to what they have been practicing, they are more likely to engage seriously with the learning activity itself. A student named Fatima, preparing for a discussion she knows will be scored on her ability to ask follow-up questions, will practice asking follow-up questions. The assessment has pulled her attention toward the right skill.
+Alignment matters beyond the teacher's gradebook because assessment shapes what students pay attention to. This influence has a name: washback, the effect or influence that assessment has on learning and teaching. When students understand how they will be assessed and can see that the assessment connects to what they have been practicing, they are more likely to engage seriously with the learning activity itself. A student named Fatima, preparing for a discussion she knows will be scored on her ability to ask follow-up questions, will practice asking follow-up questions. The assessment has pulled her attention toward the right skill.
 
-Washback can run in the opposite direction when validity is weak. The source notes that if students do not think an assessment is valid or do not see how it relates to their learning, the washback effect can be negative. A student named Carlos who receives peer feedback on a discussion but cannot see how the rubric categories connect to anything he was taught may dismiss the process entirely.
+Washback can run in the opposite direction when validity is weak. If students do not think an assessment is valid or do not see how it relates to their learning, the washback effect can be negative. A student named Carlos who receives peer feedback on a discussion but cannot see how the rubric categories connect to anything he was taught may dismiss the process entirely.
 
 T: "Carlos, what did you notice about how your peer scored your turn-taking?"
 S: "I don't know what that means on the form."
 
-That exchange signals a validity problem the teacher can address by revisiting the rubric and making its connection to the lesson's objectives explicit. When students clearly see the connection to language learning outcomes, the source states, the washback effect is likely positive, and the assessment begins to function as a tool for learning rather than a mechanism for producing a grade.
+That exchange signals a validity problem the teacher can address by revisiting the rubric and making its connection to the lesson's objectives explicit. When students clearly see the connection to language learning outcomes, the washback effect is likely to be positive, and the assessment begins to function as a tool for learning rather than a mechanism for producing a grade.
+
+## Reliability: Would the Result Hold Up a Second Time?
+
+Reliability is the consistency of assessment results across occasions, raters, and forms. An assessment is reliable when the same performance earns the same result no matter when the assessment takes place, who scores it, or which version of the task the student receives. A vocabulary quiz given on Tuesday and again on Thursday should not produce sharply different scores for a student whose knowledge has not changed; two teachers scoring the same recorded presentation should reach broadly the same judgment; and two versions of a placement test built to the same specification should be equally difficult. When any of these conditions fails, the score says as much about the circumstances of the assessment as it does about the learner.
+
+Reliability and validity are related but distinct, and the relationship runs in one direction. A test can be reliable but not valid: a written grammar quiz scored against an answer key will produce highly consistent results, yet if the objective was spoken discussion skill, that consistency is consistency in measuring the wrong thing. Validity, however, presupposes reliability. A task cannot measure the skill it claims to measure if its results shift with the rater or the occasion, because unstable results cannot support any claim at all. Checking reliability is therefore not a separate, optional exercise; it is part of what makes a claim of validity defensible.
+
+The problem shows up most clearly in speaking assessment. Suppose two raters listen to the same speaking test, in which a student leads a short group discussion. One rater, attending mostly to fluency and confidence, awards a four out of five. The other, troubled by repeated article errors, awards a two. The student gave one performance and received two contradictory verdicts, and neither score can stand as a fair summative record. Nothing was wrong with the task itself; the scoring lacked a shared basis.
+
+The practical remedy in a language classroom is inter-rater agreement built on shared rubrics. When both raters score against the same categories, each with a short description of what performance at each level looks like, their attention is directed to the same features of the performance, and their scores converge. Agreement improves further when raters score a sample performance together before the real assessment and talk through any differences. The next unit's work on establishing criteria in advance and sharing them with learners serves exactly this purpose from the scoring side: criteria that are written down, agreed upon, and understood by everyone are what make consistent judgment possible.
 
 ## Practical Guidance for Selecting Assessment Tasks
 
@@ -59,7 +69,7 @@ A third question asks whether the task and its assessment tool suit the proficie
 
 Class size is a fourth practical consideration. An assessment format designed for two groups of eight to ten students will need adjustment when thirty-five students are present. A teacher might form more groups and circulate among them, or use smaller groups and ask students to rearrange their seating. The assessment tool itself may also need to be simplified so that peer assessors are not overwhelmed by the number of forms they must complete in the time available.
 
-A teacher should also ask how familiar the class is with the assessment format being used. Students who encounter a peer assessment worksheet for the first time often produce feedback that is vague or unhelpful, not because they lack the ability to observe their peers, but because they have not yet learned what a useful comment looks like in this context. The source notes that students become more familiar with and adept at using rubrics and feedback forms over time by practicing with them. A teacher selecting a peer assessment task for a class that has never used one should therefore plan for an initial practice round, treating the format itself as something that requires instruction, in the same way that a new grammar structure or speaking skill does.
+A teacher should also ask how familiar the class is with the assessment format being used. Students who encounter a peer assessment worksheet for the first time often produce feedback that is vague or unhelpful, not because they lack the ability to observe their peers, but because they have not yet learned what a useful comment looks like in this context. Students become more familiar with and adept at using rubrics and feedback forms over time by practicing with them. A teacher selecting a peer assessment task for a class that has never used one should therefore plan for an initial practice round, treating the format itself as something that requires instruction, in the same way that a new grammar structure or speaking skill does.
 
 ## Bloom's Taxonomy as a Task-Selection Tool
 
@@ -75,15 +85,15 @@ Selecting a task from the appropriate level of the wheel is one way to apply the
 
 ## Check your understanding
 
-**1. Which term describes the effect that an assessment has on learning and teaching?**
+**1. Which term describes the consistency of assessment results across occasions, raters, and forms?**
 
-   a. Alignment
-   b. Washback
+   a. Washback
+   b. Reliability
    c. Validity
-   d. Summative feedback
+   d. Alignment
 
-   *Answer: Washback*
-   *Anchor: "the term washback to describe the effect or influence that assessment has on learning and teaching"*
+   *Answer: Reliability*
+   *Anchor: "Reliability is the consistency of assessment results across occasions, raters, and forms"*
 
 **2. According to the unit, what distinguishes alternative assessment from traditional assessment?**
 
@@ -93,7 +103,7 @@ Selecting a task from the appropriate level of the wheel is one way to apply the
    d. Alternative assessment is only appropriate for advanced learners.
 
    *Answer: Alternative assessment uses non-traditional methods to evaluate student knowledge or skills.*
-   *Anchor: "Alternative assessment, by contrast, uses non-traditional methods to evaluate student knowledge or skills"*
+   *Anchor: "Alternative assessment uses non-traditional methods to evaluate student knowledge or skills"*
 
 **3. At which level of Bloom's Revised Taxonomy would a teacher be working if the lesson asked students to identify the assumptions behind a writer's argument?**
 
@@ -107,8 +117,8 @@ Selecting a task from the appropriate level of the wheel is one way to apply the
 
 **4. What is validity as defined in the unit, and give one example of a validity mismatch a teacher might create?**
 
-   *Answer: Validity is the degree to which an assessment task actually measures the skill it claims to measure. A mismatch occurs when, for example, a teacher develops students' spoken discussion skills but then tests them with a written grammar quiz.*
-   *Anchor: "Validity, in practical terms, is the degree to which an assessment task actually measures the skill it claims to measure"*
+   *Answer: Validity is the degree to which an assessment task measures the skill it claims to measure. A mismatch occurs when, for example, a teacher develops students' spoken discussion skills but then tests them with a written grammar quiz.*
+   *Anchor: "Validity, in practical terms, is the degree to which an assessment task measures the skill it claims to measure"*
 
 **5. Why does the unit recommend that students receive a rubric before an assessment task begins, and what practical difference can this make for a student?**
 
