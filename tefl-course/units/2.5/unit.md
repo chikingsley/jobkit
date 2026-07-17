@@ -88,7 +88,7 @@ A Spanish-speaking student named Carlos might write "I dreamed with my grandmoth
 
 These errors are among the most persistent in learner writing because there is rarely a rule that resolves them. The teacher cannot explain to Carlos by any principled rule why English speakers dream "about" or "of" someone rather than "with" them; the pairing is a fixed feature of English, and no deeper logic governs it. Prepositions therefore need to be taught as part of fixed collocations and lexical chunks, the term for multi-word units stored and retrieved as single items. A teacher presenting the word "depend" should introduce the full phrase "depend on someone" from the start, so that the preposition is bound to the verb in the learner's memory rather than selected separately each time.
 
-T: "Priya, you wrote 'she depends of her parents.' In English, the verb is always 'depend on.' Say the whole phrase for me."
+T: "You wrote 'she depends of her parents.' In English, the verb is always 'depend on.' Say the whole phrase for me."
 S: "She depends on her parents."
 T: "Good. Write that phrase in your vocabulary notebook exactly like that, with the preposition included."
 
