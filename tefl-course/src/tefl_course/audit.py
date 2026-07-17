@@ -412,6 +412,20 @@ def check_bank_anchors(unit_md: Path) -> list[Issue]:
         entries = json.loads(bank.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         return [Issue(rel, 1, "bank-anchor", "error", f"bank.json unparseable: {exc}")]
+    # Structural contract (pipeline/assessments.py): exactly 4 entries, positions 1-3
+    # multiple-choice (module test), position 4 short-answer (reserved for the final).
+    if isinstance(entries, list):
+        if len(entries) != 4:
+            issues.append(Issue(rel, 1, "bank-structure", "error",
+                                f"bank.json must have exactly 4 entries, has {len(entries)}"))
+        for i, entry in enumerate(entries):
+            is_mc = isinstance(entry, dict) and isinstance(entry.get("options"), list)
+            if i < 3 and not is_mc:
+                issues.append(Issue(rel, 1, "bank-structure", "error",
+                                    f"bank entry {i + 1} must be multiple-choice"))
+            if i == 3 and is_mc:
+                issues.append(Issue(rel, 1, "bank-structure", "error",
+                                    "bank entry 4 must be short-answer (final-exam reserve)"))
     for i, entry in enumerate(entries if isinstance(entries, list) else []):
         anchor = entry.get("anchor", "") if isinstance(entry, dict) else ""
         if not anchor:

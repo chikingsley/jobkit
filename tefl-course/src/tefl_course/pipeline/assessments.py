@@ -241,6 +241,9 @@ def _render_mc(i: int, q: dict[str, object], *, include_key: bool) -> str:
         anchor = str(q.get("anchor", "")).strip()
         if anchor:
             lines.append(f'   *Anchor: "{anchor}"*')
+        rubric = str(q.get("rubric", "")).strip()
+        if rubric:  # scenario keys carry a point-allocation rubric
+            lines.append(f"   *{rubric}*")
         lines.append("")
     return "\n".join(lines)
 
@@ -386,10 +389,22 @@ def _preflight() -> None:
         raise SystemExit(msg)
 
 
-def cmd_assemble() -> None:
-    """Write all module tests and the final exam."""
+def cmd_assemble(*, force: bool) -> None:
+    """Write all module tests and the final exam.
+
+    The assembled markdown was hand-finalized after generation (2026-07-17 repair pass).
+    To protect that work, refuse to overwrite existing output unless `force` is set; the
+    scenario caches and bank option order are kept in sync with the markdown so a forced
+    regeneration reproduces it.
+    """
     ASSESSMENTS_DIR.mkdir(exist_ok=True)
     _preflight()
+    if not force and any(ASSESSMENTS_DIR.glob("*-test.md")):
+        msg = (
+            "assemble: assessment markdown already exists and is hand-finalized. "
+            "Re-run with --force to regenerate from bank.json + _scenario-*.json."
+        )
+        raise SystemExit(msg)
     for module in sorted(MODULE_TITLES):
         for suffix, key in (("", False), ("-key", True)):
             # Same seed for both versions so the sampled review questions match.
@@ -411,6 +426,9 @@ def main() -> None:
     )
     parser.add_argument("command", choices=["bank", "scenarios", "assemble"])
     parser.add_argument("units", nargs="*", help="unit ids or 'all' (bank only)")
+    parser.add_argument(
+        "--force", action="store_true", help="assemble: overwrite hand-finalized markdown"
+    )
     args = parser.parse_args()
     if args.command == "bank":
         uids = list(UNITS) if args.units in ([], ["all"]) else args.units
@@ -418,7 +436,7 @@ def main() -> None:
     elif args.command == "scenarios":
         cmd_scenarios()
     else:
-        cmd_assemble()
+        cmd_assemble(force=args.force)
 
 
 if __name__ == "__main__":
