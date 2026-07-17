@@ -23,6 +23,7 @@ import { registerOnboardingRoutes } from "./routes/onboarding";
 import { registerUserSettingsRoutes } from "./routes/user-settings";
 import { ImportSchema, ReviseSchema, SubmitSchema } from "./schemas";
 import {
+  DraftMessageFoundationRequiredError,
   DraftProfileRequiredError,
   importJobsWithDrafts,
   regenerateDrafts,
@@ -80,6 +81,9 @@ app.onError((error, c) => {
   if (error instanceof DraftProfileRequiredError) {
     return c.json({ message: error.message, ok: false }, 409);
   }
+  if (error instanceof DraftMessageFoundationRequiredError) {
+    return c.json({ message: error.message, ok: false }, 409);
+  }
   if (error instanceof EmailAttemptError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
@@ -102,11 +106,17 @@ const RUNNER_TOKEN_PATHS = [
   "/api/country-sweep-tasks/",
   "/api/job-match-facts",
 ];
+// Draft generation (never approval or sending) is also runner-scoped so
+// campaign batches can stage drafts for human review.
+const RUNNER_GENERATE_PATH = /^\/api\/jobs\/[^/]+\/generate$/u;
 
 app.use("/api/*", async (c, next) => {
   const authorization = c.req.header("authorization") ?? "";
   if (authorization.startsWith("Bearer ")) {
-    if (!RUNNER_TOKEN_PATHS.some((path) => c.req.path.startsWith(path))) {
+    const allowed =
+      RUNNER_TOKEN_PATHS.some((path) => c.req.path.startsWith(path)) ||
+      RUNNER_GENERATE_PATH.test(c.req.path);
+    if (!allowed) {
       return c.json(
         {
           message:

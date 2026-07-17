@@ -1,6 +1,8 @@
 import type { Profile } from "../../src/features/profile/schema";
 import {
   generateApplicationMessage,
+  type MessageContext,
+  messageRouteFor,
   reviseApplicationMessage,
 } from "../ai/application-messages";
 import type { AppEnv } from "../env";
@@ -15,12 +17,76 @@ import {
 } from "../repositories/draft-attachments";
 import { recordJobEvent } from "../repositories/job-events";
 import { upsertJob, upsertUserJob } from "../repositories/jobs";
+import { readMessageExemplars } from "../repositories/message-exemplars";
+import { readActiveMessageFoundation } from "../repositories/message-foundations";
 import { readMessageStyleGuidance } from "../repositories/message-style";
-import { readProfile } from "../repositories/user-settings";
+import { readPreferences, readProfile } from "../repositories/user-settings";
 import { type JobImport, JobImportSchema } from "../schemas";
 import { ensureJobMatchFactsForImport } from "./job-analysis";
 
 export class DraftProfileRequiredError extends Error {}
+export class DraftMessageFoundationRequiredError extends Error {}
+
+async function messageContext(
+  env: AppEnv,
+  userId: string,
+  job: JobImport
+): Promise<MessageContext> {
+  const [preferences, exemplars, emailRoute, factsRow] = await Promise.all([
+    readPreferences(env.DB, userId),
+    readMessageExemplars(env.DB, userId, job.country),
+    env.DB.prepare(
+      "SELECT 1 present FROM application_routes WHERE job_id=? AND kind='email' AND status='active' LIMIT 1"
+    )
+      .bind(job.id)
+      .first(),
+    env.DB.prepare("SELECT facts_json FROM job_match_facts WHERE job_id=?")
+      .bind(job.id)
+      .first<{ facts_json: string }>(),
+  ]);
+  const audiences = audiencesFrom(factsRow?.facts_json);
+  const shape = {
+    // Young-learner shape only when the listing is exclusively about young
+    // audiences; board-form submissions get the short template.
+    audience:
+      audiences.length > 0 &&
+      audiences.every((value) => value === "preschool" || value === "primary")
+        ? ("young" as const)
+        : ("general" as const),
+    length: emailRoute ? ("long" as const) : ("short" as const),
+  };
+  const foundation = await readActiveMessageFoundation(
+    env.DB,
+    userId,
+    messageRouteFor(job),
+    shape
+  );
+  if (!foundation) {
+    throw new DraftMessageFoundationRequiredError(
+      "Complete message setup before generating applications"
+    );
+  }
+  return {
+    exemplars,
+    ...foundation,
+    preferences: preferences.value,
+    shape,
+  };
+}
+
+function audiencesFrom(factsJson: string | undefined): string[] {
+  if (!factsJson) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(factsJson) as {
+      audiences?: { value?: string }[];
+    };
+    return (parsed.audiences ?? []).map((fact) => String(fact.value ?? ""));
+  } catch {
+    return [];
+  }
+}
 
 export async function regenerateDrafts(
   env: AppEnv,
@@ -48,12 +114,14 @@ export async function regenerateDrafts(
     )
       .bind(userJobId)
       .first<{ version: number }>();
+    const context = await messageContext(env, userId, job);
     const draft = await generateApplicationMessage(
       env,
       model,
       job,
       profile,
-      styleGuidance
+      styleGuidance,
+      context
     );
     const draftId = crypto.randomUUID();
     const timestamp = new Date().toISOString();
@@ -68,7 +136,10 @@ export async function regenerateDrafts(
         "UPDATE application_drafts SET status='superseded' WHERE user_job_id=? AND status='draft'"
       ).bind(userJobId),
       env.DB.prepare(
-        "INSERT INTO application_drafts (id,user_job_id,version,message,change_summary,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?)"
+        `INSERT INTO application_drafts
+          (id,user_job_id,version,message,change_summary,model_provider,model_id,
+           message_foundation_id,message_template_key,created_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?)`
       ).bind(
         draftId,
         userJobId,
@@ -77,6 +148,8 @@ export async function regenerateDrafts(
         draft.summary,
         draft.provider,
         draft.modelId,
+        context.foundationId,
+        context.templateKey,
         timestamp
       ),
       ...snapshotStatements,
@@ -120,8 +193,16 @@ export async function importJobsWithDrafts(
       await ensureJobMatchFactsForImport(env, factsModel, job);
       continue;
     }
+    const context = await messageContext(env, userId, job);
     const [draft] = await Promise.all([
-      generateApplicationMessage(env, model, job, profile, styleGuidance),
+      generateApplicationMessage(
+        env,
+        model,
+        job,
+        profile,
+        styleGuidance,
+        context
+      ),
       ensureJobMatchFactsForImport(env, factsModel, job),
     ]);
     const draftId = crypto.randomUUID();
@@ -133,7 +214,10 @@ export async function importJobsWithDrafts(
     );
     await env.DB.batch([
       env.DB.prepare(
-        "INSERT INTO application_drafts (id,user_job_id,version,message,change_summary,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?)"
+        `INSERT INTO application_drafts
+          (id,user_job_id,version,message,change_summary,model_provider,model_id,
+           message_foundation_id,message_template_key,created_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?)`
       ).bind(
         draftId,
         userJobId,
@@ -142,6 +226,8 @@ export async function importJobsWithDrafts(
         draft.summary,
         draft.provider,
         draft.modelId,
+        context.foundationId,
+        context.templateKey,
         timestamp
       ),
       ...snapshotStatements,
@@ -153,6 +239,87 @@ export async function importJobsWithDrafts(
       `Automatic tailored draft created with ${draft.provider}/${draft.modelId}`
     );
   }
+}
+
+// On-demand draft creation for a single job that has none yet — the
+// "Generate application" button. Bulk-imported jobs deliberately skip
+// pre-generation; a draft is written only when the user asks for one.
+export async function generateJobDraft(
+  env: AppEnv,
+  userId: string,
+  jobId: string
+) {
+  const [model, profile, styleGuidance] = await Promise.all([
+    readApplicationMessageModel(env.DB),
+    savedProfile(env.DB, userId),
+    readMessageStyleGuidance(env.DB, userId),
+  ]);
+  const row = await env.DB.prepare(
+    `SELECT j.*,uj.id user_job_id,uj.priority,
+            (SELECT MAX(version) FROM application_drafts d
+              WHERE d.user_job_id=uj.id) latest_version
+       FROM user_jobs uj
+       JOIN jobs j ON j.id=uj.job_id
+      WHERE uj.user_id=? AND j.id=?`
+  )
+    .bind(userId, jobId)
+    .first<Record<string, unknown>>();
+  if (!row) {
+    throw new Error("Job not found");
+  }
+  const job = toJobImport(row);
+  const userJobId = String(row.user_job_id);
+  const context = await messageContext(env, userId, job);
+  const draft = await generateApplicationMessage(
+    env,
+    model,
+    job,
+    profile,
+    styleGuidance,
+    context
+  );
+  const draftId = crypto.randomUUID();
+  const timestamp = new Date().toISOString();
+  const snapshotStatements = await defaultPacketSnapshotStatements(
+    env,
+    userId,
+    draftId,
+    timestamp
+  );
+  await env.DB.batch([
+    env.DB.prepare(
+      "UPDATE application_drafts SET status='superseded' WHERE user_job_id=? AND status='draft'"
+    ).bind(userJobId),
+    env.DB.prepare(
+      `INSERT INTO application_drafts
+        (id,user_job_id,version,message,change_summary,model_provider,model_id,
+         message_foundation_id,message_template_key,created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?)`
+    ).bind(
+      draftId,
+      userJobId,
+      Number(row.latest_version ?? 0) + 1,
+      draft.message,
+      draft.summary,
+      draft.provider,
+      draft.modelId,
+      context.foundationId,
+      context.templateKey,
+      timestamp
+    ),
+    ...snapshotStatements,
+    env.DB.prepare(
+      "UPDATE user_jobs SET status='review',updated_at=? WHERE id=? AND user_id=?"
+    ).bind(timestamp, userJobId, userId),
+  ]);
+  await recordJobEvent(
+    env.DB,
+    userJobId,
+    "draft_generated",
+    `On-demand draft created with ${draft.provider}/${draft.modelId}`,
+    draftId
+  );
+  return draft;
 }
 
 export async function reviseJobDraft(
@@ -167,6 +334,7 @@ export async function reviseJobDraft(
     currentJobAndDraft(env.DB, userId, jobId),
     readMessageStyleGuidance(env.DB, userId),
   ]);
+  const context = await messageContext(env, userId, row.job);
   const revised = await reviseApplicationMessage(
     env,
     model,
@@ -174,7 +342,8 @@ export async function reviseJobDraft(
     profile,
     row.message,
     instruction,
-    styleGuidance
+    styleGuidance,
+    context
   );
   const draftId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
@@ -188,7 +357,10 @@ export async function reviseJobDraft(
       "UPDATE application_drafts SET status='superseded' WHERE id=? AND status IN ('draft','approved')"
     ).bind(row.draftId),
     env.DB.prepare(
-      "INSERT INTO application_drafts (id,user_job_id,version,message,change_summary,revision_instruction,model_provider,model_id,created_at) VALUES (?,?,?,?,?,?,?,?,?)"
+      `INSERT INTO application_drafts
+        (id,user_job_id,version,message,change_summary,revision_instruction,
+         model_provider,model_id,message_foundation_id,message_template_key,created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`
     ).bind(
       draftId,
       row.userJobId,
@@ -198,6 +370,8 @@ export async function reviseJobDraft(
       instruction,
       revised.provider,
       revised.modelId,
+      context.foundationId,
+      context.templateKey,
       timestamp
     ),
     ...copyPacketSnapshotStatements(env.DB, row.draftId, draftId, timestamp),

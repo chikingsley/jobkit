@@ -1,11 +1,15 @@
 import { generateText, Output } from "ai";
 import { z } from "zod";
+import type { Preferences } from "../../src/features/preferences/schema";
 import type { Profile } from "../../src/features/profile/schema";
 import type { AppEnv } from "../env";
+import type { MessageExemplar } from "../repositories/message-exemplars";
+import type { ActiveMessageFoundation } from "../repositories/message-foundations";
 import type { ApplicationMessageRoute, JobImport } from "../schemas";
 import {
   APPLICATION_MESSAGE_INSTRUCTIONS,
   applicationMessagePolicyFor,
+  type MessageShape,
   validateApplicationMessage,
 } from "./application-message-policy";
 import { type AiModelSelection, createAiModel } from "./model-catalog";
@@ -34,26 +38,37 @@ export interface GeneratedApplicationMessage
 
 export class ApplicationMessageGenerationError extends Error {}
 
+export interface MessageContext extends ActiveMessageFoundation {
+  exemplars?: MessageExemplar[];
+  preferences?: Preferences | null;
+  shape?: MessageShape;
+}
+
 export function generateApplicationMessage(
   env: AppEnv,
   model: AiModelSelection,
   job: JobImport,
   profile: Profile,
-  styleGuidance: string[] = []
+  styleGuidance: string[],
+  context: MessageContext
 ): Promise<GeneratedApplicationMessage> {
   const signature = signatureFor(profile);
   const messageRoute = messageRouteFor(job);
-  const policy = applicationMessagePolicyFor(messageRoute);
+  const policy = applicationMessagePolicyFor(
+    messageRoute,
+    context.approvedTemplate
+  );
   return runModel(env, model, {
+    approvedTemplate: policy.approvedTemplate,
+    candidatePreferences: messagePreferences(context.preferences),
     candidateProfile: messageProfile(profile),
-    forbiddenInstitutionNames: institutionNames(profile),
     job,
     messageRoute,
+    provenExamples: exemplarPrompts(context.exemplars),
     questionGuidance: policy.questionGuidance,
-    referencePatterns: policy.referencePatterns,
     request: "Write a new application message.",
     requiredEnding: `Best,\n${signature}`,
-    styleGuidance,
+    styleGuidance: [...context.voiceRules, ...styleGuidance],
   });
 }
 
@@ -64,24 +79,29 @@ export function reviseApplicationMessage(
   profile: Profile,
   currentMessage: string,
   revisionInstruction: string,
-  styleGuidance: string[] = []
+  styleGuidance: string[],
+  context: MessageContext
 ): Promise<GeneratedApplicationMessage> {
   const signature = signatureFor(profile);
   const messageRoute = messageRouteFor(job);
-  const policy = applicationMessagePolicyFor(messageRoute);
+  const policy = applicationMessagePolicyFor(
+    messageRoute,
+    context.approvedTemplate
+  );
   return runModel(env, model, {
+    approvedTemplate: policy.approvedTemplate,
+    candidatePreferences: messagePreferences(context.preferences),
     candidateProfile: messageProfile(profile),
     currentMessage,
-    forbiddenInstitutionNames: institutionNames(profile),
     job,
     messageRoute,
+    provenExamples: exemplarPrompts(context.exemplars),
     questionGuidance: policy.questionGuidance,
-    referencePatterns: policy.referencePatterns,
     request:
       "Revise the current message according to revisionInstruction while preserving every rule.",
     requiredEnding: `Best,\n${signature}`,
     revisionInstruction,
-    styleGuidance,
+    styleGuidance: [...context.voiceRules, ...styleGuidance],
   });
 }
 
@@ -89,7 +109,6 @@ async function runModel(
   env: AppEnv,
   selection: AiModelSelection,
   input: Record<string, unknown> & {
-    forbiddenInstitutionNames: string[];
     messageRoute: ApplicationMessageRoute;
     requiredEnding: string;
   }
@@ -126,8 +145,7 @@ async function runModel(
         const message = validateApplicationMessage(
           output.message,
           input.requiredEnding,
-          input.messageRoute,
-          input.forbiddenInstitutionNames
+          input.messageRoute
         );
         return {
           message,
@@ -162,17 +180,10 @@ async function runModel(
   }
 }
 
-function messageRouteFor(job: JobImport): ApplicationMessageRoute {
+export function messageRouteFor(job: JobImport): ApplicationMessageRoute {
   return job.opportunityScope === "multi_position"
     ? "multi_position"
     : job.messageRoute;
-}
-
-function institutionNames(profile: Profile) {
-  return [
-    ...profile.workExperience.map((entry) => entry.employer),
-    ...profile.education.map((entry) => entry.institution),
-  ].filter(Boolean);
 }
 
 function messageProfile(profile: Profile) {
@@ -181,16 +192,41 @@ function messageProfile(profile: Profile) {
     citizenship: profile.citizenship,
     credentials: profile.credentials,
     currentLocation: profile.currentLocation,
-    education: profile.education.map(
-      ({ institution: _institution, ...entry }) => entry
-    ),
+    education: profile.education,
+    experienceLabel: profile.experienceLabel,
     fields: profile.fields,
+    introduction: profile.introduction,
     languages: profile.languages,
     workAuthorization: profile.workAuthorization,
-    workExperience: profile.workExperience.map(
-      ({ employer: _employer, ...entry }) => entry
-    ),
+    workExperience: profile.workExperience,
   };
+}
+
+// Preferences relevant to how the candidate frames interest in a message;
+// compensation floors and benefit demands never belong in an application.
+function messagePreferences(preferences: Preferences | null | undefined) {
+  if (!preferences) {
+    return null;
+  }
+  const wanted = (rules: Record<string, string>) =>
+    Object.entries(rules)
+      .filter(([, strength]) => strength === "prefer")
+      .map(([name]) => name);
+  return {
+    preferredAudiences: wanted(preferences.audiences),
+    preferredCountries: preferences.countries.preferred,
+    preferredEmployment: wanted(preferences.employment),
+  };
+}
+
+function exemplarPrompts(exemplars: MessageExemplar[] | undefined) {
+  if (!exemplars || exemplars.length === 0) {
+    return [];
+  }
+  return exemplars.map((exemplar) => ({
+    body: exemplar.body,
+    context: `Sent ${exemplar.sentAt.slice(0, 7)} to a ${exemplar.country || "school"} contact; outcome: ${exemplar.outcome}`,
+  }));
 }
 
 function signatureFor(profile: Profile): string {

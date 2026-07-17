@@ -318,6 +318,39 @@ function requireSupportedPeriod(
   );
 }
 
+// A zero or negative amount is a placeholder, not a real salary. When no
+// positive amount survives, the compensation is downgraded to unstated.
+function downgradePlaceholderAmounts(
+  compensation: ProviderJobEconomics["compensation"],
+  reviewNotes: string[]
+) {
+  let dropped = false;
+  if (compensation.amountMinimum !== null && compensation.amountMinimum <= 0) {
+    compensation.amountMinimum = null;
+    dropped = true;
+  }
+  if (compensation.amountMaximum !== null && compensation.amountMaximum <= 0) {
+    compensation.amountMaximum = null;
+    dropped = true;
+  }
+  if (
+    !dropped ||
+    compensation.amountMinimum !== null ||
+    compensation.amountMaximum !== null
+  ) {
+    return false;
+  }
+  reviewNotes.push(
+    "Compensation stated a zero or placeholder amount; treated as unstated."
+  );
+  compensation.kind = "unstated";
+  compensation.currency = null;
+  compensation.period = null;
+  compensation.qualifier = null;
+  compensation.taxBasis = "unspecified";
+  return true;
+}
+
 function normalizeCompensation(
   value: ProviderJobEconomics["compensation"],
   reviewNotes: string[]
@@ -345,6 +378,10 @@ function normalizeCompensation(
     compensation.period = null;
     compensation.qualifier = null;
     compensation.taxBasis = "unspecified";
+    return compensation;
+  }
+
+  if (downgradePlaceholderAmounts(compensation, reviewNotes)) {
     return compensation;
   }
 
