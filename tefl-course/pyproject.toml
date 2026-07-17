@@ -19,6 +19,7 @@ dev = [
 tefl-course-build = "tefl_course.pipeline.build:main"
 tefl-course-assessments = "tefl_course.pipeline.assessments:main"
 tefl-course-check = "tefl_course.checks:main"
+tefl-course-audit = "tefl_course.audit:main"
 tefl-course-detect-style = "tefl_course.detectors.ai_style:main"
 tefl-course-pilot-draft = "tefl_course.pilot.draft_unit:main"
 tefl-course-transcribe-archive = "tefl_course.pipeline.transcribe_archive:main"
@@ -58,6 +59,15 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "src/tefl_course/checks.py" = ["T201"]
+"src/tefl_course/audit.py" = [
+  "T201",     # CLI prints
+  "PERF401",  # append-in-loop reads clearer for issue collection
+  "PLR2004",  # regex/heuristic thresholds are self-describing in context
+  "E501",     # a few long message strings
+  "RUF001",   # ambiguous-unicode: curly quotes/dashes are the point of the checks
+  "C901", "PLR0912", "PLR0915",  # check_cast is one deliberate rule table
+  "SIM102", "D401",
+]
 "src/tefl_course/detectors/ai_style.py" = ["T201"]
 "src/tefl_course/pipeline/assessments.py" = ["T201"]
 "src/tefl_course/pipeline/build.py" = ["T201"]
