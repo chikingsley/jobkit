@@ -64,7 +64,7 @@ Covers units 13.1 to 13.3. 16 points total; pass mark 70%. Section B re-asks que
    *Answer: d. Listening carefully, reading for comprehension, sustaining reading fluency, attending to pronunciation, and delivering lines with dramatic expression*
    *Anchor: "listen carefully to hear the play read correctly, read for comprehension, sustain reading fluency, attend to pronunciation, and deliver her lines with dramatic expression."*
 
-**7. According to the unit, what specific problem arises when a gap-fill distractor can be eliminated through elementary subject-verb agreement rather than knowledge of the target form?**
+**7. According to the unit, what specific problem arises when a multiple-choice distractor can be eliminated through elementary subject-verb agreement rather than knowledge of the target form?**
 
    a. The item becomes double-barreled and tests two skills simultaneously
    b. The item is reduced to a guessing exercise with an obvious answer

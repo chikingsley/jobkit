@@ -102,7 +102,7 @@ Covers units 10.1 to 10.6. 25 points total; pass mark 70%. Section B re-asks que
    c. Students can color and cut them out, making construction itself a form of language work
    d. They are simple enough for students to make, so class time goes toward the language activity
 
-**15. The unit presents Fatima's gap-fill activity built around a popular local song as an example of what broader principle?**
+**15. The unit presents Ms. Reyes's gap-fill activity built around a popular local song as an example of what broader principle?**
 
    a. That supplementary materials should always replace formal reading texts in the coursebook
    b. That self-made materials are a normal feature of experienced teaching, not a fallback when published resources are unavailable
