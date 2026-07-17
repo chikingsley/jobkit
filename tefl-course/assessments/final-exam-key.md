@@ -114,7 +114,7 @@ Comprehensive: one question from every unit of the course, plus three scenario q
 
 **21. The unit describes a student named Fatima who scores well on a fill-in-the-blank grammar test but still omits the target inflection during a role-play activity. What does this example illustrate about the relationship between test type and conclusions drawn from research on explicit instruction?**
 
-   *Answer: The example illustrates that a fill-in-the-blank test measures controlled, declarative knowledge — the same kind of knowledge that explicit instruction directly targets — while a role-play measures spontaneous production under communicative pressure. Because the two instruments tap different types of knowledge, a study using only controlled tests will overestimate the advantage of explicit instruction. When communicative or spontaneous-production measures are used, the gap between explicit and implicit instruction narrows considerably, meaning the choice of outcome measure shapes the conclusions a researcher draws.*
+   *Answer: The example illustrates that a fill-in-the-blank test measures controlled, declarative knowledge — the same kind of knowledge that explicit instruction directly targets — while a role-play measures spontaneous production under communicative pressure. Because the two instruments tap different types of knowledge, the choice of outcome measure shapes the conclusions a researcher draws. This is why Kang, Sok, and Han (2019) treated measure mode as a moderating variable: they found only a minor overall difference between explicit and implicit instruction, with oral measures showing larger overall effects for form-focused instruction than written measures alone and implicit instruction showing the more durable effect on delayed posttests.*
    *Anchor: "The test and the task are measuring different things, and the choice of measure shapes the conclusion a researcher draws"*
 
 ### Module 5 — Vocabulary
@@ -129,9 +129,9 @@ Comprehensive: one question from every unit of the course, plus three scenario q
    *Answer: The design of what happens in subsequent lessons — specifically, how vocabulary review is scheduled and distributed across those lessons — determines how much vocabulary survives into long-term use.*
    *Anchor: "the design of what happens in subsequent lessons determines how much of that vocabulary survives into long-term use"*
 
-**24. Explain what a collocation is and why the unit argues that including function word bricks in the Word Bricks collection helps students practice collocational patterns.**
+**24. The unit distinguishes lexical collocation from the grammatical patterning that function word bricks support. Explain the difference, and describe how a Word Bricks collection can give students practice with each.**
 
-   *Answer: Collocations are fixed or strongly preferred word combinations that cannot be predicted from individual word meanings alone. Function words act as 'glue' that binds content words into grammatically complete structures, so having function bricks available means students practice the collocational patterns that make sentences sound natural rather than producing incomplete strings like 'cat drink water.'*
+   *Answer: Collocations are fixed or strongly preferred word combinations, such as 'make a decision,' that cannot be predicted from individual word meanings alone. Function words support something different: grammatical patterning, sometimes called colligation, because they are the glue that binds content items into grammatically complete structures. A collection stocked with plenty of function bricks lets students rehearse that grammatical patterning as they build sentences (avoiding incomplete strings like 'cat drink water'), while lexical collocation can be layered on by asking students to pair verb and noun bricks that genuinely go together and reject combinations a proficient speaker would not produce.*
    *Anchor: "These are the glue words that bind content items into grammatically complete structures"*
 
 **25. The unit's four-step action plan for trainee teachers begins with a specific starting point rather than a syllabus item. What is that starting point, and why does the unit present it as the correct place to begin planning?**
@@ -151,10 +151,10 @@ Comprehensive: one question from every unit of the course, plus three scenario q
    *Answer: A monophthong is produced with the mouth holding a single steady position throughout the sound, while a diphthong involves the mouth gliding from one position to a second position within the same syllable. If a learner holds the starting position of a diphthong without completing the glide, they will produce something that sounds like a different word entirely.*
    *Anchor: "a learner who holds the starting position without completing the glide will produce something that sounds like a different word entirely"*
 
-**28. The unit describes a student named Fatima producing 'I want to go to the shops' with six syllables of nearly equal length. Identify the three natural stress beats a native English speaker would place in that sentence, and explain what happens to the unstressed words between those beats.**
+**28. The unit describes a student named Wei producing 'I want to go to the store' with seven syllables of nearly equal length. Identify the three natural stress beats a native English speaker would place in that sentence, and explain what happens to the unstressed words between those beats.**
 
-   *Answer: The three natural stress beats are WANT, GO, and SHOPS. The unstressed function words 'to' and 'the' are compressed and reduced between those beats, keeping the rhythmic pulse steady rather than lengthening the overall utterance.*
-   *Anchor: "The sentence has three natural stress beats: WANT, GO, and SHOPS. The words 'to' and 'the' shrink almost to nothing between those beats"*
+   *Answer: The three natural stress beats are WANT, GO, and STORE. The unstressed function words 'to' and 'the' are compressed and reduced between those beats, keeping the rhythmic pulse steady rather than lengthening the overall utterance.*
+   *Anchor: "The sentence has three natural stress beats: WANT, GO, and STORE. The words 'to' and 'the' shrink almost to nothing between those beats"*
 
 **29. Explain why the unit presents minimal pairs as particularly useful for learners whose first language does not contain a sound contrast found in English, and what sequence of activities does the unit recommend for teaching with minimal pairs?**
 
@@ -215,7 +215,7 @@ Comprehensive: one question from every unit of the course, plus three scenario q
 **39. The unit describes the 'three-pile sort' technique. Explain what the three categories are and what benefit this technique provides to the teacher.**
 
    *Answer: The three categories are 'went well,' 'needs work,' and 'not sure.' The benefit to the teacher is that it gives immediate information about where a student's uncertainty actually lies, rather than where the teacher assumes it lies.*
-   *Anchor: "the three-pile sort trains learners to categorise their own production as 'went well,' 'needs work,' or 'not sure'"*
+   *Anchor: "trains learners to categorize their own production as 'went well,' 'needs work,' or 'not sure'"*
 
 **40. The unit warns that a teacher's stated beliefs about mistakes must be matched by consistent classroom behavior. What specific consequence does the unit say will follow if a teacher's words and actions contradict each other?**
 
@@ -327,7 +327,7 @@ Comprehensive: one question from every unit of the course, plus three scenario q
 
 ### Module 14 — Specializations
 
-**60. The unit describes several types of learning stations observed in the source's video segment. Name at least three station types mentioned and explain what the unit says about how children move among them.**
+**60. The unit describes several types of learning stations observed in the module's video segment. Name at least three station types mentioned and explain what the unit says about how children move among them.**
 
    *Answer: The unit names stations for reading, writing, imagination and arts and crafts, painting, manipulables (such as games, puzzles, and building blocks), and science or other content areas. According to the unit, children move among stations according to established routines rather than moment-by-moment teacher direction.*
    *Anchor: "children move among them according to established routines rather than moment-by-moment teacher direction"*

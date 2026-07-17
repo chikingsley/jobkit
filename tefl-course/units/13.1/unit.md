@@ -10,7 +10,7 @@ The distinction between the two categories matters because each one reveals some
 
 Choosing between traditional and alternative assessment follows from the learning goals of a lesson. If a teacher has spent several weeks helping students like Daniel develop spoken discussion skills, a written test cannot tell that teacher whether those skills have developed. A performance-based task, in which Daniel leads a small-group discussion while the teacher listens and takes notes, aligns the assessment directly with what was taught. The assessment task and the learning goal point toward the same outcome.
 
-Alignment of this kind is not automatic. A teacher can easily design a lesson around speaking and then reach for a grammar quiz at the end out of habit or convenience. Recognizing that the choice of assessment task is a deliberate instructional decision, rather than an afterthought, is the starting point for everything else this unit covers.
+Alignment of this kind is not automatic. A teacher can easily design a lesson around speaking and then reach for a grammar quiz at the end out of habit or convenience. Recognizing that the choice of assessment task is a deliberate instructional decision, rather than an afterthought, is the starting point for everything else this unit covers. Hughes and Hughes (2020) give a book-length treatment of these decisions, written for classroom teachers rather than testing specialists.
 
 ## Formative and Summative Purposes: Choosing the Right Moment
 
@@ -132,4 +132,6 @@ Selecting a task from the appropriate level of the wheel is one way to apply the
 
 ## References
 
+- Bachman, L. F., & Palmer, A. S. (1996). *Language Testing in Practice: Designing and Developing Useful Language Tests*. Oxford University Press.
+- Hughes, A., & Hughes, J. (2020). *Testing for Language Teachers* (3rd ed.). Cambridge University Press.
 - U.S. Department of State. *Shaping the Way We Teach English: From Observation to Action*. americanenglish.state.gov (public domain).

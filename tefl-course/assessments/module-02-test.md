@@ -21,7 +21,7 @@ Covers units 2.1 to 2.5. 22 points total; pass mark 70%. Section B re-asks quest
 **3. Why does metalanguage matter when a teacher reads a course syllabus entry such as 'modal verbs of deduction'?**
 
    a. It allows the teacher to correct student pronunciation errors immediately.
-   b. It enables the teacher to map syllabus labels onto actual language forms and their grammatical behaviour.
+   b. It enables the teacher to map syllabus labels onto actual language forms and their grammatical behavior.
    c. It ensures the teacher can write the target forms on the board without consulting a reference.
    d. It replaces the need for a grammar reference when planning lessons.
 
@@ -46,7 +46,7 @@ Covers units 2.1 to 2.5. 22 points total; pass mark 70%. Section B re-asks quest
    c. They have placed an adverbial between the verb and its object.
    d. They have confused a subordinate clause with a main clause.
 
-**7. According to the unit, what is the key difference between the perfect simple 'He has run five kilometres today' and the perfect continuous 'He has been running'?**
+**7. According to the unit, what is the key difference between the perfect simple 'He has run five miles today' and the perfect continuous 'He has been running'?**
 
    a. The perfect simple refers to present time while the perfect continuous refers to past time.
    b. The perfect simple foregrounds a completed, measurable result while the perfect continuous foregrounds the activity as an extended process.
@@ -78,7 +78,7 @@ Covers units 2.1 to 2.5. 22 points total; pass mark 70%. Section B re-asks quest
 
    a. She is writing in her notebook.
    b. I am knowing the answer.
-   c. Carlos is commuting to Cardiff this week.
+   c. Carlos is commuting across Mexico City this week.
    d. They are preparing the food right now.
 
 **12. According to the unit, what distinguishes the future perfect from the future simple in a sentence such as 'By Friday evening, I'll have finished all four practice papers'?**
@@ -92,7 +92,7 @@ Covers units 2.1 to 2.5. 22 points total; pass mark 70%. Section B re-asks quest
 
    a. Interlanguage
    b. Transfer
-   c. Fossilisation
+   c. Fossilization
    d. Contrastive analysis
 
 **14. The unit describes a pattern where learners who have learned that English requires articles begin inserting 'the' where zero article is required. What is this pattern called?**
@@ -122,4 +122,4 @@ Covers units 2.1 to 2.5. 22 points total; pass mark 70%. Section B re-asks quest
 
 ## Section C — Scenario (5 points)
 
-**18. Mr. Osei is reviewing a writing task with his intermediate class. He notices that Wei has written 'I am living in Tokyo for three years' and Yuki has written 'She yesterday the book read.' Mr. Osei wants to give each student precise, targeted feedback rather than simply saying their sentences 'sound wrong.' What should Mr. Osei say to Wei and to Yuki, and why should he approach each error differently?**
+**18. Mr. Osei is reviewing a writing task with his intermediate class. He notices that Wei has written 'I am living in Beijing for three years' and Yuki has written 'She yesterday the book read.' Mr. Osei wants to give each student precise, targeted feedback rather than simply saying their sentences 'sound wrong.' What should Mr. Osei say to Wei and to Yuki, and why should he approach each error differently?**

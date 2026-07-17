@@ -6,6 +6,8 @@ The goal of pronunciation teaching is to help learners communicate clearly, not 
 
 Intelligibility, then, is the practical standard. A speaker is intelligible when listeners can understand what is being said without undue effort. Consider a student named Fatima, who consistently produces the English vowel in "ship" as the vowel in "sheep." If her classmates and teacher follow her meaning without confusion, her pronunciation is doing its job, and the teacher's attention is better directed toward vocabulary, fluency, or the content of Fatima's ideas.
 
+The separation between accent and intelligibility has been measured directly. Munro and Derwing (1995) asked eighteen native English listeners to transcribe and rate recorded English speech from ten native speakers of Mandarin, and found that utterances judged heavily accented were often transcribed word for word without error. A strong accent and full intelligibility can coexist in the same speaker, which means the two are partly independent dimensions rather than points on a single scale. Levis (2005) gave the field its vocabulary for this distinction, separating the nativeness principle, which sets a native-like accent as the goal of pronunciation teaching, from the intelligibility principle, which asks only that speakers be understood. Everything in this unit rests on the second.
+
 The same text supports this directly, stating that a teacher "can ignore the issue of pronunciation altogether if student pronunciation is not interfering with communication." Classroom time is limited. A principled allocation of that time means every minute spent drilling a sound that poses no real communicative obstacle is a minute taken from activities that build fluency, vocabulary, or confidence.
 
 Keeping intelligibility as the standard also changes the emotional atmosphere of the classroom. When a student named Carlos knows his accent will not be treated as a deficiency, he is more willing to speak, to take risks, and to produce longer stretches of language. The source text warns that "constantly interrupting students to correct minor pronunciation mistakes or patterns of errors may have the negative effect of undermining student's self-confidence or preventing the development of oral fluency." The teacher is no longer positioned as a judge of how a student sounds, but as a guide helping the student be understood.
@@ -147,4 +149,6 @@ The goal of pronunciation teaching is always communication. When a student is un
 
 ## References
 
+- Levis, J. M. (2005). Changing contexts and shifting paradigms in pronunciation teaching. *TESOL Quarterly*, 39(3), 369-377.
+- Munro, M. J., & Derwing, T. M. (1995). Foreign accent, comprehensibility, and intelligibility in the speech of second language learners. *Language Learning*, 45(1), 73-97.
 - U.S. Department of State. *Shaping the Way We Teach English: From Observation to Action*. americanenglish.state.gov (public domain).

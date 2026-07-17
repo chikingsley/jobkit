@@ -43,7 +43,7 @@ Covers units 12.1 to 12.4. 19 points total; pass mark 70%. Section B re-asks que
 
    a. They proposed a revised taxonomy of learning styles based on neuroimaging data
    b. They argued that learning-styles theories should be presented to teachers as a popular but scientifically debunked idea rather than as a basis for planning
-   c. They recommended that style inventories be replaced with standardised aptitude tests
+   c. They recommended that style inventories be replaced with standardized aptitude tests
    d. They called for learning styles to be removed from all national curriculum frameworks
 
 **7. According to Beckman, what is the recommended approach when introducing cognitive strategies to learners?**

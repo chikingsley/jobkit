@@ -88,11 +88,11 @@ Covers units 1.1 to 1.5. 20 points total; pass mark 70%.
 
    a. The corrected student is likely to become more disruptive afterward
    b. The teacher loses the opportunity to use proximity as a management tool
-   c. The teacher has handed Carlos's inattention to every other student in the room
+   c. The teacher has handed that student's inattention to every other student in the room
    d. The lesson objective becomes unclear to the rest of the class
 
-   *Answer: c. The teacher has handed Carlos's inattention to every other student in the room*
-   *Anchor: "she has handed Carlos's inattention to every other student in the room"*
+   *Answer: c. The teacher has handed that student's inattention to every other student in the room*
+   *Anchor: "she has handed that child's inattention to every other student in the room"*
 
 **10. According to the unit, what distinguishes the gap between C1 and C2 proficiency?**
 
@@ -104,7 +104,7 @@ Covers units 1.1 to 1.5. 20 points total; pass mark 70%.
    *Answer: b. The gap is more about stylistic mastery than grammatical accuracy.*
    *Anchor: "The gap between C1 and C2 is often more about stylistic mastery than grammatical accuracy."*
 
-**11. The unit warns that the six traditional proficiency band labels are not perfectly standardised. Which of the following best reflects this point?**
+**11. The unit warns that the six traditional proficiency band labels are not perfectly standardized. Which of the following best reflects this point?**
 
    a. Schools always use the CEFR instead of traditional band labels.
    b. One school may call a level 'pre-intermediate' where another uses 'elementary plus.'
@@ -156,7 +156,7 @@ Covers units 1.1 to 1.5. 20 points total; pass mark 70%.
 
 ## Section C — Scenario (5 points)
 
-**16. Ms. Reyes is teaching a mixed-age primary class. She introduces the word 'burrow' by writing it on the board and reading its dictionary definition aloud. Carlos (age 6) stares blankly, Fatima (age 6) starts fidgeting, and Priya (age 8) looks confused. Only Wei (age 10) attempts to use the word in a sentence. Ms. Reyes asks you, her TEFL trainee, to observe and then suggest what she should do differently in her next lesson when introducing new vocabulary to the very young learners in the group. What would you recommend, and why?**
+**16. Ms. Reyes is teaching a mixed-age primary class. She introduces the word 'burrow' by writing it on the board and reading its dictionary definition aloud. One six-year-old stares blankly, another six-year-old starts fidgeting, and an eight-year-old looks confused. Only a ten-year-old near the front attempts to use the word in a sentence. Ms. Reyes asks you, her TEFL trainee, to observe and then suggest what she should do differently in her next lesson when introducing new vocabulary to the very young learners in the group. What would you recommend, and why?**
 
-   *Answer: I would recommend that Ms. Reyes replace the dictionary-definition approach with a combination of realia, gesture, and a brief physical action when introducing 'burrow' to Carlos and Fatima. For example, she could bring in a small toy animal, mime digging into the ground while saying 'burrow,' and have the children copy the digging movement as she repeats the word. This approach is grounded in the module's explanation of how very young learners acquire language: words presented in isolation, without objects, pictures, or actions to anchor them, tend to slide past without leaving a trace. At age five and six, Carlos and Fatima cannot yet draw on a developed first-language conceptual system the way Wei can, so they need a sensory and situational experience tied to the sound of the word before any production can be expected. The module also notes that keeping activities short and varying them often aligns with the way children absorb language, so Ms. Reyes should follow the miming activity with a quick Total Physical Response sequence—'Dig a burrow! Hide in your burrow!'—before moving on. This mirrors the listen-and-respond pattern of first language acquisition, where production follows comprehension rather than preceding it. After the lesson, Ms. Reyes should apply the observe-evaluate-adapt-act cycle: note which students produced the word spontaneously during free activity, evaluate whether the physical anchor was sufficient, and adapt the next vocabulary introduction accordingly.*
+   *Answer: I would recommend that Ms. Reyes replace the dictionary-definition approach with a combination of realia, gesture, and a brief physical action when introducing 'burrow' to the youngest children. For example, she could bring in a small toy animal, mime digging into the ground while saying 'burrow,' and have the children copy the digging movement as she repeats the word. This approach is grounded in the module's explanation of how very young learners acquire language: words presented in isolation, without objects, pictures, or actions to anchor them, tend to slide past without leaving a trace. At age five and six, the youngest children cannot yet draw on a developed first-language conceptual system the way the ten-year-old can, so they need a sensory and situational experience tied to the sound of the word before any production can be expected. The module also notes that keeping activities short and varying them often aligns with the way children absorb language, so Ms. Reyes should follow the miming activity with a quick Total Physical Response sequence—'Dig a burrow! Hide in your burrow!'—before moving on. This mirrors the listen-and-respond pattern of first language acquisition, where production follows comprehension rather than preceding it. After the lesson, Ms. Reyes should apply the observe-evaluate-adapt-act cycle: note which students produced the word spontaneously during free activity, evaluate whether the physical anchor was sufficient, and adapt the next vocabulary introduction accordingly.*
    *Anchor: "words presented in isolation, without objects, pictures, or actions to anchor them, tend to slide past without leaving a trace"*

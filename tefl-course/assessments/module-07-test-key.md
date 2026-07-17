@@ -64,7 +64,7 @@ Covers units 7.1 to 7.4. 19 points total; pass mark 70%. Section B re-asks quest
    *Answer: b. Texts should be chosen because they carry genuine communicative purpose.*
    *Anchor: "texts should be chosen because they carry genuine communicative purpose, not merely because they happen to be on hand"*
 
-**7. How many studies did Jeon and Day (2016) synthesise in their meta-analysis, and why does this number matter?**
+**7. How many studies did Jeon and Day (2016) synthesize in their meta-analysis, and why does this number matter?**
 
    a. 34 studies, because a smaller sample produces more precise effect sizes
    b. 49 studies, because a broader sample reduces the chance that results reflect an unusual cluster from a narrow range of contexts
@@ -126,10 +126,10 @@ Covers units 7.1 to 7.4. 19 points total; pass mark 70%. Section B re-asks quest
 
 ## Section B — Review (2 points, 1 each)
 
-**13. Explain why function words must be included in sufficient quantity in a Word Bricks collection, using the unit's reasoning.**
+**13. What is the schwa, and in what type of syllable does it appear exclusively?**
 
-   *Answer: Without enough function words, students can hold content bricks but cannot build grammatically complete sentences; for example, a student with 'cat,' 'drink,' and 'water' but no brick for 'the' or 'can' is unable to produce even a simple sentence.*
-   *Anchor: "unit 5.3 quiz"*
+   *Answer: The schwa, transcribed as /ə/, is the most frequent vowel sound in English and appears exclusively in unstressed syllables.*
+   *Anchor: "unit 6.2 quiz"*
 
 **14. Explain the difference in meaning between these two sentences: 'If I applied for that job, I would earn more money' and 'If I had applied for that job, I would have earned more money.'**
 

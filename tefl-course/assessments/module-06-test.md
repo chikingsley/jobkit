@@ -62,10 +62,10 @@ Covers units 6.1 to 6.4. 19 points total; pass mark 70%. Section B re-asks quest
 
 **9. What is the purpose of the back-chaining technique described in the unit?**
 
-   a. To help learners memorise vocabulary by repeating words from front to back
+   a. To help learners memorize vocabulary by repeating words from front to back
    b. To anchor the tail of a sentence in muscle memory before the full sentence is attempted
    c. To train learners to identify weak forms by isolating function words
-   d. To correct intonation errors by modelling the whole sentence first
+   d. To correct intonation errors by modeling the whole sentence first
 
 **10. According to the unit, what is the primary purpose of drilling after modeling a pronunciation feature?**
 
@@ -96,4 +96,4 @@ Covers units 6.1 to 6.4. 19 points total; pass mark 70%. Section B re-asks quest
 
 ## Section C — Scenario (5 points)
 
-**15. Mr. Osei is running a speaking activity in which learners take turns describing a memorable experience. Carlos is mid-sentence, telling the class about a childhood trip, when he mispronounces the vowel in 'ship' as the vowel in 'sheep.' The rest of the class — Daniel, Wei, Fatima, Yuki, and Priya — all nod along and show no sign of confusion. Mr. Osei is tempted to stop Carlos immediately and drill the correct vowel. What should Mr. Osei do, and why?**
+**15. Mr. Osei is running a speaking activity in which learners take turns describing a memorable experience. Carlos is mid-sentence, telling the class about a trip he took years ago, when he mispronounces the vowel in 'ship' as the vowel in 'sheep.' The rest of the class — Daniel, Wei, Fatima, Yuki, and Priya — all nod along and show no sign of confusion. Mr. Osei is tempted to stop Carlos immediately and drill the correct vowel. What should Mr. Osei do, and why?**

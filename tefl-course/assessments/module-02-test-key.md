@@ -27,11 +27,11 @@ Covers units 2.1 to 2.5. 22 points total; pass mark 70%. Section B re-asks quest
 **3. Why does metalanguage matter when a teacher reads a course syllabus entry such as 'modal verbs of deduction'?**
 
    a. It allows the teacher to correct student pronunciation errors immediately.
-   b. It enables the teacher to map syllabus labels onto actual language forms and their grammatical behaviour.
+   b. It enables the teacher to map syllabus labels onto actual language forms and their grammatical behavior.
    c. It ensures the teacher can write the target forms on the board without consulting a reference.
    d. It replaces the need for a grammar reference when planning lessons.
 
-   *Answer: b. It enables the teacher to map syllabus labels onto actual language forms and their grammatical behaviour.*
+   *Answer: b. It enables the teacher to map syllabus labels onto actual language forms and their grammatical behavior.*
    *Anchor: "Entries such as 'present perfect for recent events' or 'comparative adjectives' assume the reader can map those labels onto actual language"*
 
 **4. Which coordinating conjunction would best signal a contrast relationship when joining two main clauses in a compound sentence?**
@@ -64,7 +64,7 @@ Covers units 2.1 to 2.5. 22 points total; pass mark 70%. Section B re-asks quest
    *Answer: b. They have treated the complement slot as though it requires a noun the way an object does.*
    *Anchor: "Carlos who writes 'He seems tiredness' has treated the complement slot as though it requires a noun in the same way an object does"*
 
-**7. According to the unit, what is the key difference between the perfect simple 'He has run five kilometres today' and the perfect continuous 'He has been running'?**
+**7. According to the unit, what is the key difference between the perfect simple 'He has run five miles today' and the perfect continuous 'He has been running'?**
 
    a. The perfect simple refers to present time while the perfect continuous refers to past time.
    b. The perfect simple foregrounds a completed, measurable result while the perfect continuous foregrounds the activity as an extended process.
@@ -72,7 +72,7 @@ Covers units 2.1 to 2.5. 22 points total; pass mark 70%. Section B re-asks quest
    d. The perfect continuous can only be used when the activity has fully stopped, whereas the perfect simple implies it is still ongoing.
 
    *Answer: b. The perfect simple foregrounds a completed, measurable result while the perfect continuous foregrounds the activity as an extended process.*
-   *Anchor: "'He has run five kilometres today' focuses on the finished quantity, a measurable result."*
+   *Anchor: "'He has run five miles today' focuses on the finished quantity, a measurable result."*
 
 **8. The unit uses the image of a horizontal line representing time to explain aspect. Which of the following correctly matches the two aspects to their visual representations?**
 
@@ -108,7 +108,7 @@ Covers units 2.1 to 2.5. 22 points total; pass mark 70%. Section B re-asks quest
 
    a. She is writing in her notebook.
    b. I am knowing the answer.
-   c. Carlos is commuting to Cardiff this week.
+   c. Carlos is commuting across Mexico City this week.
    d. They are preparing the food right now.
 
    *Answer: b. I am knowing the answer.*
@@ -128,7 +128,7 @@ Covers units 2.1 to 2.5. 22 points total; pass mark 70%. Section B re-asks quest
 
    a. Interlanguage
    b. Transfer
-   c. Fossilisation
+   c. Fossilization
    d. Contrastive analysis
 
    *Answer: b. Transfer*
@@ -173,7 +173,7 @@ Covers units 2.1 to 2.5. 22 points total; pass mark 70%. Section B re-asks quest
 
 ## Section C — Scenario (5 points)
 
-**18. Mr. Osei is reviewing a writing task with his intermediate class. He notices that Wei has written 'I am living in Tokyo for three years' and Yuki has written 'She yesterday the book read.' Mr. Osei wants to give each student precise, targeted feedback rather than simply saying their sentences 'sound wrong.' What should Mr. Osei say to Wei and to Yuki, and why should he approach each error differently?**
+**18. Mr. Osei is reviewing a writing task with his intermediate class. He notices that Wei has written 'I am living in Beijing for three years' and Yuki has written 'She yesterday the book read.' Mr. Osei wants to give each student precise, targeted feedback rather than simply saying their sentences 'sound wrong.' What should Mr. Osei say to Wei and to Yuki, and why should he approach each error differently?**
 
-   *Answer: Mr. Osei should treat the two errors as distinct in kind and address each accordingly. Wei's error is aspectual: she has used the present continuous ('am living') because the situation is current, but the present continuous only marks an action as ongoing at the moment of speaking. A duration 'for three years' extending up to the present moment requires the present perfect continuous ('I have been living in Tokyo for three years'). Mr. Osei should explain that both forms refer to the present time frame, but the present perfect continuous packages the event as a duration connected to now, which is an aspectual distinction, not a difference in when the event occurred. Wei's error reflects the common intermediate-level conflation of time frame with aspect. Yuki's error is different in origin: she has placed the verb at the end of the clause ('the book read'), which is grammatically correct in Japanese, a verb-final language. This is a case of negative transfer, where Yuki's L1 word order habit has been applied to English, which requires the fixed subject-verb-object sequence. Mr. Osei should explain that in English, position signals grammatical role: the noun before the verb is the subject performing the action, and the noun after the verb is the object receiving it. Moving elements changes meaning or produces an ungrammatical string. Because the two errors have different sources—one aspectual confusion, one L1 transfer—Mr. Osei needs separate, targeted explanations for each rather than generic correction.*
+   *Answer: Mr. Osei should treat the two errors as distinct in kind and address each accordingly. Wei's error is aspectual: he has used the present continuous ('am living') because the situation is current, but the present continuous only marks an action as ongoing at the moment of speaking. A duration 'for three years' extending up to the present moment requires the present perfect continuous ('I have been living in Beijing for three years'). Mr. Osei should explain that both forms refer to the present time frame, but the present perfect continuous packages the event as a duration connected to now, which is an aspectual distinction, not a difference in when the event occurred. Wei's error reflects the common intermediate-level conflation of time frame with aspect. Yuki's error is different in origin: she has placed the verb at the end of the clause ('the book read'), which is grammatically correct in Japanese, a verb-final language. This is a case of negative transfer, where Yuki's L1 word order habit has been applied to English, which requires the fixed subject-verb-object sequence. Mr. Osei should explain that in English, position signals grammatical role: the noun before the verb is the subject performing the action, and the noun after the verb is the object receiving it. Moving elements changes meaning or produces an ungrammatical string. Because the two errors have different sources—one aspectual confusion, one L1 transfer—Mr. Osei needs separate, targeted explanations for each rather than generic correction.*
    *Anchor: "The conflation of time frame with aspect is the single most common source of tense errors at intermediate level"*

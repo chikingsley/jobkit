@@ -39,18 +39,18 @@ Covers units 13.1 to 13.3. 16 points total; pass mark 70%. Section B re-asks que
    c. Large binders stored on shelves that students collected on arrival
    d. Cardboard boxes kept in a shared school storage room
 
-**6. In the unit's King Lear dramatisation example, which of the following accurately lists language skills the unit says a student like Priya must use during the performance?**
+**6. In the unit's King Lear dramatization example, which of the following accurately lists language skills the unit says a student like Priya must use during the performance?**
 
-   a. Writing, editing, memorising lines, and presenting to an examiner
+   a. Writing, editing, memorizing lines, and presenting to an examiner
    b. Listening carefully, reading for comprehension, sustaining reading fluency, attending to pronunciation, and delivering lines with dramatic expression
-   c. Speaking spontaneously, taking notes, summarising, and debating
+   c. Speaking spontaneously, taking notes, summarizing, and debating
    d. Reading silently, translating, writing a reflection, and answering comprehension questions
 
 **7. According to the unit, what specific problem arises when a gap-fill distractor can be eliminated through elementary subject-verb agreement rather than knowledge of the target form?**
 
-   a. The item becomes double-barrelled and tests two skills simultaneously
+   a. The item becomes double-barreled and tests two skills simultaneously
    b. The item is reduced to a guessing exercise with an obvious answer
-   c. The item produces negative washback by penalising correct responses
+   c. The item produces negative washback by penalizing correct responses
    d. The item fails the alignment check because it targets an unstated objective
 
 **8. The unit argues that a teacher who relies exclusively on knowledge-based test items will consistently do which of the following?**
@@ -85,4 +85,4 @@ Covers units 13.1 to 13.3. 16 points total; pass mark 70%. Section B re-asks que
 
 ## Section C — Scenario (5 points)
 
-**12. Mr. Osei has spent three weeks running speaking activities with his intermediate class. His students — Carlos, Daniel, Wei, Fatima, Yuki, and Priya — have been practising leading small-group discussions, giving opinions, and including quieter classmates. At the end of the unit, Mr. Osei wants to find out how well each student can actually perform these skills. He also wants to give students feedback they can act on before he records a final grade. He drafts a written grammar quiz on discourse markers as his end-of-unit assessment because it is quick to mark. A colleague, Ms. Reyes, suggests he reconsider. What should Mr. Osei do instead, and why? Design a brief assessment plan (two components) that addresses both his summative and his formative purposes, and explain how each component aligns with what was taught.**
+**12. Mr. Osei has spent three weeks running speaking activities with his intermediate class. His students — Carlos, Daniel, Wei, Fatima, Yuki, and Priya — have been practicing leading small-group discussions, giving opinions, and including quieter classmates. At the end of the unit, Mr. Osei wants to find out how well each student can actually perform these skills. He also wants to give students feedback they can act on before he records a final grade. He drafts a written grammar quiz on discourse markers as his end-of-unit assessment because it is quick to mark. A colleague, Ms. Reyes, suggests he reconsider. What should Mr. Osei do instead, and why? Design a brief assessment plan (two components) that addresses both his summative and his formative purposes, and explain how each component aligns with what was taught.**

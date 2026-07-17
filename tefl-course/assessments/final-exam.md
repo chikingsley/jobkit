@@ -60,7 +60,7 @@ Comprehensive: one question from every unit of the course, plus three scenario q
 
 **23. The unit argues that introducing vocabulary well on the first day is necessary but not sufficient. What, according to the unit, actually determines how much vocabulary survives into long-term use?**
 
-**24. Explain what a collocation is and why the unit argues that including function word bricks in the Word Bricks collection helps students practice collocational patterns.**
+**24. The unit distinguishes lexical collocation from the grammatical patterning that function word bricks support. Explain the difference, and describe how a Word Bricks collection can give students practice with each.**
 
 **25. The unit's four-step action plan for trainee teachers begins with a specific starting point rather than a syllabus item. What is that starting point, and why does the unit present it as the correct place to begin planning?**
 
@@ -70,7 +70,7 @@ Comprehensive: one question from every unit of the course, plus three scenario q
 
 **27. What distinguishes a diphthong from a monophthong, and what problem arises for a learner who holds the starting position of a diphthong without completing the glide?**
 
-**28. The unit describes a student named Fatima producing 'I want to go to the shops' with six syllables of nearly equal length. Identify the three natural stress beats a native English speaker would place in that sentence, and explain what happens to the unstressed words between those beats.**
+**28. The unit describes a student named Wei producing 'I want to go to the store' with seven syllables of nearly equal length. Identify the three natural stress beats a native English speaker would place in that sentence, and explain what happens to the unstressed words between those beats.**
 
 **29. Explain why the unit presents minimal pairs as particularly useful for learners whose first language does not contain a sound contrast found in English, and what sequence of activities does the unit recommend for teaching with minimal pairs?**
 
@@ -150,7 +150,7 @@ Comprehensive: one question from every unit of the course, plus three scenario q
 
 ### Module 14 — Specializations
 
-**60. The unit describes several types of learning stations observed in the source's video segment. Name at least three station types mentioned and explain what the unit says about how children move among them.**
+**60. The unit describes several types of learning stations observed in the module's video segment. Name at least three station types mentioned and explain what the unit says about how children move among them.**
 
 **61. The unit describes three specific signs a teacher should watch for that indicate a learner may be experiencing fatigue or disengagement during a one-to-one lesson. Name all three.**
 

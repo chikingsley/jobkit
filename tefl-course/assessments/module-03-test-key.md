@@ -48,7 +48,7 @@ Covers units 3.1 to 3.6. 25 points total; pass mark 70%. Section B re-asks quest
 
    a. It allows teachers to skip drilling exercises entirely
    b. It saves learners considerable confusion
-   c. It ensures learners memorise the numbered labels first
+   c. It ensures learners memorize the numbered labels first
    d. It prevents learners from encountering mixed conditionals too early
 
    *Answer: b. It saves learners considerable confusion*
@@ -74,7 +74,7 @@ Covers units 3.1 to 3.6. 25 points total; pass mark 70%. Section B re-asks quest
    *Answer: b. She told them not to open their books.*
    *Anchor: ""Don't open your books" becomes She told them not to open their books."*
 
-**8. Yuki says to Ben on Monday: 'I will call you tomorrow.' Carlos reports this to a third person on Wednesday. Which reported version is fully correct?**
+**8. Yuki says to Daniel on Monday: 'I will call you tomorrow.' Carlos reports this to a third person on Wednesday. Which reported version is fully correct?**
 
    a. Yuki said she will call him tomorrow.
    b. Yuki said she would call you the following day.
@@ -108,15 +108,15 @@ Covers units 3.1 to 3.6. 25 points total; pass mark 70%. Section B re-asks quest
 
    a. All transitive phrasal verbs are separable.
    b. All separable phrasal verbs are intransitive.
-   c. The separable-intransitive cell of the two-by-two grid is empty because separability requires an object to move.
+   c. Separability is a distinction among transitive phrasal verbs only; intransitive phrasal verbs stand outside the separable/inseparable contrast.
    d. Inseparable phrasal verbs are always intransitive.
 
-   *Answer: c. The separable-intransitive cell of the two-by-two grid is empty because separability requires an object to move.*
-   *Anchor: "The separable-intransitive cell is empty, because separability requires an object to move, and intransitive verbs have none."*
+   *Answer: c. Separability is a distinction among transitive phrasal verbs only; intransitive phrasal verbs stand outside the separable/inseparable contrast.*
+   *Anchor: "separability is a distinction among transitive phrasal verbs only, because there must be an object to move"*
 
 **12. What specific purpose does the unit assign to the particle-swap activity using the base verb 'give'?**
 
-   a. To help learners memorise the correct spelling of particles through repeated writing practice.
+   a. To help learners memorize the correct spelling of particles through repeated writing practice.
    b. To train learners to treat particles as meaningful units so that unfamiliar combinations become less opaque.
    c. To demonstrate that all particles attached to 'give' share a single core meaning.
    d. To show learners that phrasal verbs with 'give' are always inseparable.
@@ -200,5 +200,5 @@ Covers units 3.1 to 3.6. 25 points total; pass mark 70%. Section B re-asks quest
 
 **21. Mr. Osei is conducting a reported speech lesson. He asks the class to report what Carlos said earlier that morning. Carlos had said, 'I can explain my answer.' Yuki writes on the board: 'Carlos said he could explain his answer.' Daniel, however, writes: 'Carlos says he could explain his answer.' Mr. Osei notices that Daniel's sentence contains an error but is unsure how to explain it clearly to the class. What would you advise Mr. Osei to say to Daniel, and why?**
 
-   *Answer: Mr. Osei should point out that Daniel's error lies in mixing a present-tense reporting verb ('says') with a backshifted modal ('could'). According to the module, tense backshift is only triggered when the reporting verb is in the past tense. When the reporting verb is in the present tense, the verb in the reported clause stays in its original form. So Daniel's sentence should read either 'Carlos says he can explain his answer' (present reporting verb, no backshift) or 'Carlos said he could explain his answer' (past reporting verb, backshift applied), matching Yuki's correct version. Mr. Osei could write both corrected options on the board alongside Daniel's original and ask the class to identify what changed in each, making the rule visible through direct comparison. He should emphasise that the tense of the reporting verb is the trigger: 'says' requires 'can'; 'said' requires 'could.' This prevents the common overgeneralisation of applying backshift regardless of context.*
+   *Answer: Mr. Osei should point out that Daniel's error lies in mixing a present-tense reporting verb ('says') with a backshifted modal ('could'). According to the module, tense backshift is only triggered when the reporting verb is in the past tense. When the reporting verb is in the present tense, the verb in the reported clause stays in its original form. So Daniel's sentence should read either 'Carlos says he can explain his answer' (present reporting verb, no backshift) or 'Carlos said he could explain his answer' (past reporting verb, backshift applied), matching Yuki's correct version. Mr. Osei could write both corrected options on the board alongside Daniel's original and ask the class to identify what changed in each, making the rule visible through direct comparison. He should emphasize that the tense of the reporting verb is the trigger: 'says' requires 'can'; 'said' requires 'could.' This prevents the common overgeneralization of applying backshift regardless of context.*
    *Anchor: "Backshift is only required when the reporting verb is in the past tense."*

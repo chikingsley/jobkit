@@ -12,6 +12,8 @@ The physical and social conditions of the classroom also bear directly on motiva
 
 Motivation also responds to choice. Short tasks with narrow formats can stall a willing learner. When students in the song lesson are offered a range of mini-projects, including acting out a story, drawing, or singing with altered words, a student like Daniel who dislikes writing in front of others can select a mode that suits his strengths. Allowing students to work in areas that interest them and draw on their preferences can increase both confidence and motivation. Teachers cannot manufacture motivation from nothing, but they can arrange conditions that make it more likely to appear.
 
+The weight motivation carries in language learning has been measured. Masgoret and Gardner (2003) pooled 75 samples totaling 10,489 language learners and found that motivation correlated with second language achievement more strongly than any attitude variable they tested, including learners' attitudes toward the learning situation itself. Effort and desire to learn, measured directly, predicted success better than attitudes did. Dörnyei (2005) proposed the framework that now organizes much of the research on where that effort comes from, the L2 Motivational Self System, and developed it in full a few years later (Dörnyei, 2009). The model has three parts: the ideal L2 self, the person a learner hopes to become, someone who uses the language well; the ought-to L2 self, the person a learner feels expected to be by parents, employers, or examiners; and the L2 learning experience, the classroom, the teacher, and the tasks themselves. The first two belong to the learner. The third is the one a teacher shapes in every lesson, and it is the part this unit works on.
+
 ## What Teachers Can and Cannot Control
 
 A teacher cannot change the fact that a student like Fatima arrives in class exhausted from a second job, or that a student like Daniel carries a long history of failure in language classrooms. Personal circumstances, prior experiences, and attitudes formed over years of schooling belong to the learner. They are real forces, and pretending otherwise leads to frustration on both sides of the classroom.
@@ -133,4 +135,7 @@ No single technique works for every learner every time. A student who loved the 
 
 ## References
 
+- Dörnyei, Z. (2005). *The Psychology of the Language Learner: Individual Differences in Second Language Acquisition*. Lawrence Erlbaum Associates.
+- Dörnyei, Z. (2009). The L2 Motivational Self System. In Z. Dörnyei & E. Ushioda (Eds.), *Motivation, Language Identity and the L2 Self* (pp. 9-42). Multilingual Matters.
+- Masgoret, A.-M., & Gardner, R. C. (2003). Attitudes, motivation, and second language learning: A meta-analysis of studies conducted by Gardner and associates. *Language Learning*, 53(1), 123-163.
 - U.S. Department of State. *Shaping the Way We Teach English: From Observation to Action*. americanenglish.state.gov (public domain).

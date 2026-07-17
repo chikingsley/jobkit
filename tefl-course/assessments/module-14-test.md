@@ -25,7 +25,7 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
    c. Routines ensure that all students progress at the same rate regardless of individual development.
    d. Routines replace the need for varied activities because children find repetition of procedures motivating.
 
-**4. According to the unit, why might a Business English learner like Yuki still struggle professionally despite controlling complex grammar and a wide vocabulary?**
+**4. According to the unit, why might a Business English learner like Priya still struggle professionally despite controlling complex grammar and a wide vocabulary?**
 
    a. She lacks the instrumental motivation that drives focused study.
    b. She has not yet reached an intermediate level of general English.
@@ -44,7 +44,7 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
    a. Reschedule the full lesson and avoid covering any new material in the shortened time.
    b. Know at any point which single language point is most worth returning to if time is suddenly reduced.
    c. Ask the learner to complete the remaining activities independently as homework.
-   d. Apologise and end the session early to respect the learner's professional commitments.
+   d. Apologize and end the session early to respect the learner's professional commitments.
 
 **7. According to the unit, what happens when students take on roles other than their own in the television talk show simulation?**
 
@@ -106,4 +106,4 @@ Covers units 14.1 to 14.4. 19 points total; pass mark 70%. Section B re-asks que
 
 ## Section C — Scenario (5 points)
 
-**15. Ms. Reyes is teaching a mixed-age primary class of six- and seven-year-olds that includes Carlos, Daniel, Wei, Fatima, Yuki, and Priya. She has planned a single 35-minute activity: learners sit quietly, study a printed grammar table showing present-tense verb endings, and then complete a written gap-fill exercise. Five minutes in, Daniel is whispering to Wei, Priya is drawing on her worksheet, and Fatima has put her head on the desk. Only Yuki and Carlos are still attempting the exercise, and both are visibly struggling. Ms. Reyes is frustrated and cannot understand why the lesson is failing. As a TEFL trainee observing this class, what would you tell Ms. Reyes she should change, and why?**
+**15. Ms. Reyes is teaching a primary class of six- and seven-year-olds. She has planned a single 35-minute activity: learners sit quietly, study a printed grammar table showing present-tense verb endings, and then complete a written gap-fill exercise. Five minutes in, one boy is whispering to his neighbor, a girl by the window is drawing on her worksheet, and another child has put her head on the desk. Only two children at the front are still attempting the exercise, and both are visibly struggling. Ms. Reyes is frustrated and cannot understand why the lesson is failing. As a TEFL trainee observing this class, what would you tell Ms. Reyes she should change, and why?**

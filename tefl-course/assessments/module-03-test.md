@@ -36,7 +36,7 @@ Covers units 3.1 to 3.6. 25 points total; pass mark 70%. Section B re-asks quest
 
    a. It allows teachers to skip drilling exercises entirely
    b. It saves learners considerable confusion
-   c. It ensures learners memorise the numbered labels first
+   c. It ensures learners memorize the numbered labels first
    d. It prevents learners from encountering mixed conditionals too early
 
 **6. In the sentence 'If she has already left, we will need to call her,' what aspect is used in the condition clause and why?**
@@ -53,7 +53,7 @@ Covers units 3.1 to 3.6. 25 points total; pass mark 70%. Section B re-asks quest
    c. She said them not to open their books.
    d. She told them to not opening their books.
 
-**8. Yuki says to Ben on Monday: 'I will call you tomorrow.' Carlos reports this to a third person on Wednesday. Which reported version is fully correct?**
+**8. Yuki says to Daniel on Monday: 'I will call you tomorrow.' Carlos reports this to a third person on Wednesday. Which reported version is fully correct?**
 
    a. Yuki said she will call him tomorrow.
    b. Yuki said she would call you the following day.
@@ -78,12 +78,12 @@ Covers units 3.1 to 3.6. 25 points total; pass mark 70%. Section B re-asks quest
 
    a. All transitive phrasal verbs are separable.
    b. All separable phrasal verbs are intransitive.
-   c. The separable-intransitive cell of the two-by-two grid is empty because separability requires an object to move.
+   c. Separability is a distinction among transitive phrasal verbs only; intransitive phrasal verbs stand outside the separable/inseparable contrast.
    d. Inseparable phrasal verbs are always intransitive.
 
 **12. What specific purpose does the unit assign to the particle-swap activity using the base verb 'give'?**
 
-   a. To help learners memorise the correct spelling of particles through repeated writing practice.
+   a. To help learners memorize the correct spelling of particles through repeated writing practice.
    b. To train learners to treat particles as meaningful units so that unfamiliar combinations become less opaque.
    c. To demonstrate that all particles attached to 'give' share a single core meaning.
    d. To show learners that phrasal verbs with 'give' are always inseparable.

@@ -96,7 +96,7 @@ Covers units 10.1 to 10.6. 25 points total; pass mark 70%. Section B re-asks que
 
 **10. According to the unit, what is the primary purpose of pre-reading two or three units ahead of the one currently being taught?**
 
-   a. To allow the teacher to memorise the coursebook content and reduce preparation time each week.
+   a. To allow the teacher to memorize the coursebook content and reduce preparation time each week.
    b. To ensure that isolated lesson decisions become coherent course planning with awareness of downstream consequences.
    c. To identify which units can be skipped entirely before the course begins.
    d. To help the teacher decide which supplementary materials to purchase before the term starts.

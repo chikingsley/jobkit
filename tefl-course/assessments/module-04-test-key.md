@@ -126,7 +126,7 @@ Covers units 4.1 to 4.5. 22 points total; pass mark 70%. Section B re-asks quest
 
 **13. According to the unit, which of the following is identified as one of the five characteristics of language awareness as a teaching orientation?**
 
-   a. Prioritising rote memorisation of conjugation tables before communicative use.
+   a. Prioritizing rote memorization of conjugation tables before communicative use.
    b. Drawing on comprehensible input from authentic sources produced for real communicative purposes.
    c. Avoiding meta-language so learners focus entirely on meaning.
    d. Restricting inductive techniques to advanced learners only.
@@ -139,10 +139,10 @@ Covers units 4.1 to 4.5. 22 points total; pass mark 70%. Section B re-asks quest
    a. 49 studies; implicit instruction produces stronger outcomes than explicit instruction.
    b. 41 studies; explicit and implicit instruction produce equivalent outcomes.
    c. 34 studies; explicit instruction produces stronger outcomes than implicit instruction.
-   d. 428 studies; the overall difference between explicit and implicit instruction is only minor.
+   d. 54 studies; the overall difference between explicit and implicit instruction was only minor.
 
    *Answer: c. 34 studies; explicit instruction produces stronger outcomes than implicit instruction.*
-   *Anchor: "Goo, Granena, Yilmaz, and Novella (2015) then conducted an independent replication across 34 studies and arrived at the same conclusion: explicit instruction produces stronger outcomes than implicit instruction"*
+   *Anchor: "Goo, Granena, Yilmaz, and Novella (2015) then updated and extended the Norris and Ortega synthesis with a pool of 34 studies ... explicit instruction produces stronger outcomes than implicit instruction"*
 
 **15. In the unit's recommended four-step lesson design framework, what is the FIRST decision a teacher must make?**
 

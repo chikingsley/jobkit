@@ -77,7 +77,7 @@ Covers units 5.1 to 5.4. 19 points total; pass mark 70%. Section B re-asks quest
 **11. How does the unit distinguish language awareness from a return to traditional grammar drills?**
 
    a. Language awareness focuses exclusively on spoken language, whereas grammar drills address written forms
-   b. Language awareness centres on the learner's own deliberate thinking and reflection, whereas grammar drills do not require this analytical step
+   b. Language awareness centers on the learner's own deliberate thinking and reflection, whereas grammar drills do not require this analytical step
    c. Language awareness is teacher-delivered and rule-based, whereas grammar drills are learner-driven
    d. Language awareness avoids any attention to form, whereas grammar drills focus entirely on structure
 

@@ -46,7 +46,7 @@ Covers units 7.1 to 7.4. 19 points total; pass mark 70%. Section B re-asks quest
    c. Texts should be chosen to match a single narrow proficiency band in the class.
    d. Texts should be chosen primarily for their grammatical complexity and range.
 
-**7. How many studies did Jeon and Day (2016) synthesise in their meta-analysis, and why does this number matter?**
+**7. How many studies did Jeon and Day (2016) synthesize in their meta-analysis, and why does this number matter?**
 
    a. 34 studies, because a smaller sample produces more precise effect sizes
    b. 49 studies, because a broader sample reduces the chance that results reflect an unusual cluster from a narrow range of contexts
@@ -90,7 +90,7 @@ Covers units 7.1 to 7.4. 19 points total; pass mark 70%. Section B re-asks quest
 
 ## Section B — Review (2 points, 1 each)
 
-**13. Explain why function words must be included in sufficient quantity in a Word Bricks collection, using the unit's reasoning.**
+**13. What is the schwa, and in what type of syllable does it appear exclusively?**
 
 **14. Explain the difference in meaning between these two sentences: 'If I applied for that job, I would earn more money' and 'If I had applied for that job, I would have earned more money.'**
 

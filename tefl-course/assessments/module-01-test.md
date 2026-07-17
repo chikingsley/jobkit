@@ -64,7 +64,7 @@ Covers units 1.1 to 1.5. 20 points total; pass mark 70%.
 
    a. The corrected student is likely to become more disruptive afterward
    b. The teacher loses the opportunity to use proximity as a management tool
-   c. The teacher has handed Carlos's inattention to every other student in the room
+   c. The teacher has handed that student's inattention to every other student in the room
    d. The lesson objective becomes unclear to the rest of the class
 
 **10. According to the unit, what distinguishes the gap between C1 and C2 proficiency?**
@@ -74,7 +74,7 @@ Covers units 1.1 to 1.5. 20 points total; pass mark 70%.
    c. C2 learners can speak faster than C1 learners in conversation.
    d. C1 learners cannot follow colloquial speech, whereas C2 learners can.
 
-**11. The unit warns that the six traditional proficiency band labels are not perfectly standardised. Which of the following best reflects this point?**
+**11. The unit warns that the six traditional proficiency band labels are not perfectly standardized. Which of the following best reflects this point?**
 
    a. Schools always use the CEFR instead of traditional band labels.
    b. One school may call a level 'pre-intermediate' where another uses 'elementary plus.'
@@ -111,4 +111,4 @@ Covers units 1.1 to 1.5. 20 points total; pass mark 70%.
 
 ## Section C — Scenario (5 points)
 
-**16. Ms. Reyes is teaching a mixed-age primary class. She introduces the word 'burrow' by writing it on the board and reading its dictionary definition aloud. Carlos (age 6) stares blankly, Fatima (age 6) starts fidgeting, and Priya (age 8) looks confused. Only Wei (age 10) attempts to use the word in a sentence. Ms. Reyes asks you, her TEFL trainee, to observe and then suggest what she should do differently in her next lesson when introducing new vocabulary to the very young learners in the group. What would you recommend, and why?**
+**16. Ms. Reyes is teaching a mixed-age primary class. She introduces the word 'burrow' by writing it on the board and reading its dictionary definition aloud. One six-year-old stares blankly, another six-year-old starts fidgeting, and an eight-year-old looks confused. Only a ten-year-old near the front attempts to use the word in a sentence. Ms. Reyes asks you, her TEFL trainee, to observe and then suggest what she should do differently in her next lesson when introducing new vocabulary to the very young learners in the group. What would you recommend, and why?**

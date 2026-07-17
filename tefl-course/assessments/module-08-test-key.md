@@ -26,7 +26,7 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
 
 **3. The unit identifies three features shared by both the problem-solution role-play and the TV Talk Show activity. Which of the following is one of those three features?**
 
-   a. Students are given a grammatical structure to practise and must use it throughout the performance.
+   a. Students are given a grammatical structure to practice and must use it throughout the performance.
    b. The teacher supplies the characters and dialogue so that students can focus on accurate delivery.
    c. Students make creative decisions about characters or scenarios, meaning the language they produce is genuinely their own.
    d. The activity is conducted entirely in small groups with no whole-class performance phase.
@@ -114,15 +114,15 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
    *Answer: c. To create a visible record showing which elements have been examined and where changes were made*
    *Anchor: "The color coding creates a visible record of the review: by the time a student has worked through all ten stations"*
 
-**12. According to the unit, how does peer editing benefit a student who notices a missing introduction in a classmate's essay?**
+**12. A teacher using the correction code described in the unit writes 'vt' in the margin beside a line of a student's draft, leaving the line itself untouched. According to the unit, what two jobs does that mark do at once?**
 
-   a. It allows the student to earn extra credit by correcting the classmate's work
-   b. It prompts the student to return to their own essay and check whether the same element is present
-   c. It gives the student a model introduction to copy into their own draft
-   d. It replaces the need for the teacher to explain structural requirements
+   a. It locates the problem and it classifies it, without supplying the repair
+   b. It supplies the corrected verb form and models the rule behind it
+   c. It ranks the error's seriousness and signals how many points were deducted
+   d. It identifies the error's source in the learner's first language and prescribes a drill
 
-   *Answer: b. It prompts the student to return to their own essay and check whether the same element is present*
-   *Anchor: "that observation prompts a return to their own essay to check whether the same element is present"*
+   *Answer: a. It locates the problem and it classifies it, without supplying the repair*
+   *Anchor: "Each mark does two jobs at once: it locates the problem and it classifies it. What the mark deliberately does not do is fix anything."*
 
 **13. According to the unit, what distinguishes receptive skills from productive skills?**
 
@@ -152,7 +152,7 @@ Covers units 8.1 to 8.5. 22 points total; pass mark 70%. Section B re-asks quest
    d. It gives students advance notice of which skill will be graded so they can prepare accordingly.
 
    *Answer: c. It helps the teacher shorten a supporting stage without abandoning the lesson's primary purpose.*
-   *Anchor: "If Mateus needs another five minutes to finish his paragraph, the teacher can shorten the read-aloud stage without abandoning the lesson's purpose"*
+   *Anchor: "If Daniel needs another five minutes to finish his paragraph, the teacher can shorten the read-aloud stage without abandoning the lesson's purpose"*
 
 ## Section B — Review (2 points, 1 each)
 
