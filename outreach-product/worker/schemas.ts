@@ -51,6 +51,9 @@ export const ImportSchema = z.object({
 export const ReviseSchema = z.object({
   instruction: z.string().min(1).max(1000),
 });
+export const ManualDraftSchema = z.object({
+  message: z.string().min(100).max(5000),
+});
 export const SubmitSchema = z.object({ draftId: z.string().min(1) });
 
 export type JobImport = z.infer<typeof JobImportSchema>;
@@ -81,7 +84,10 @@ export interface ReviewJob {
     version: number;
     message: string;
     changeSummary: string;
+    createdAt: string;
     status: string;
+    previousMessage: string;
+    revisionSource: "ai_revision" | "generated" | "manual_edit" | "undo";
   };
   emailAttempt: null | {
     attemptId: string;

@@ -9,11 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { ApplicationAction } from "@/features/jobs/application-action";
 import { ApplicationDelivery } from "@/features/jobs/application-delivery";
 import { compensationDisplay } from "@/features/jobs/compensation";
 import { formatDescription, questionsFor } from "@/features/jobs/content";
+import { DraftEditor } from "@/features/jobs/draft-editor";
 import {
   formatStatedHourlyUsd,
   housingLabel,
@@ -23,7 +23,7 @@ import {
 import { humanize } from "@/features/jobs/format";
 import { JobMarketContext } from "@/features/jobs/market-context";
 import { MatchPanel } from "@/features/jobs/match";
-import type { FxData, Job } from "@/features/jobs/types";
+import type { DraftMutationResult, FxData, Job } from "@/features/jobs/types";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
 import type { JobMatch } from "@/profile-types";
 
@@ -54,6 +54,7 @@ export function JobDetail({
   job,
   match,
   onAction,
+  onDraftAction,
   onInstruction,
   onQualificationClaim,
 }: {
@@ -64,6 +65,10 @@ export function JobDetail({
   job: Job;
   match?: JobMatch;
   onAction: (path: string, body?: object) => Promise<void>;
+  onDraftAction: (
+    path: string,
+    options: { body?: object; method?: "POST" | "PUT" }
+  ) => Promise<DraftMutationResult | null>;
   onInstruction: (value: string) => void;
   onQualificationClaim: (input: {
     answer: QualificationClaimAnswer | null;
@@ -208,42 +213,16 @@ export function JobDetail({
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <ApplicationDelivery job={job} />
-          <Textarea
-            aria-label="Tailored application message"
-            className="min-h-72 resize-y bg-background leading-7"
-            readOnly
-            value={job.draft?.message}
-          />
-          {job.draft?.changeSummary ? (
-            <div className="rounded-lg bg-muted/60 p-3 text-sm">
-              <div className="font-medium">What was tailored</div>
-              <p className="mt-1 text-muted-foreground">
-                {job.draft.changeSummary}
-              </p>
-            </div>
-          ) : null}
-          <div className="flex flex-col gap-2">
-            <Textarea
-              className="min-h-20 flex-1"
-              onChange={(event) => onInstruction(event.target.value)}
-              placeholder="Describe one change, for example: Ask only about the schedule and start date."
-              value={instruction}
+          {job.draft ? (
+            <DraftEditor
+              busy={Boolean(busy) || deliveryStatus(job) === "sending"}
+              draft={job.draft}
+              instruction={instruction}
+              jobId={job.id}
+              onDraftAction={onDraftAction}
+              onInstruction={onInstruction}
             />
-            <Button
-              className="self-end"
-              disabled={
-                !instruction ||
-                Boolean(busy) ||
-                deliveryStatus(job) === "sending"
-              }
-              onClick={() =>
-                void onAction(`/api/jobs/${job.id}/revise`, { instruction })
-              }
-              variant="secondary"
-            >
-              Revise message
-            </Button>
-          </div>
+          ) : null}
         </CardContent>
         <CardFooter className="justify-end">
           <ApplicationAction busy={busy} job={job} onAction={onAction} />

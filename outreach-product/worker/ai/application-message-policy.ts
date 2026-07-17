@@ -24,6 +24,7 @@ Message policy:
 - Keep the message concise, specific to the employer and role, and free of generic listing boilerplate.
 - Use the shortest complete version. Let useful content determine the length; never add detail or extra paragraphs to reach a preferred word count.
 - Ask exactly one useful question using the supplied questionGuidance for the messageRoute. The route determines whether the candidate is responding to a known position, contacting a school generally, or asking about a multi-position listing.
+- When requiredQuestion is supplied, use that exact sentence as the one question. It is calculated from the candidate's current calendar and replaces the template question.
 - Put that question in the final content paragraph immediately before the required ending. Do not place qualifications or other content after it.
 - Never mention attachments. Document-packet selection and delivery are handled separately from message generation.
 - End with the exact requiredEnding string supplied in the request.
@@ -88,11 +89,58 @@ export function messageTemplateKeyFor(
 
 export function applicationMessagePolicyFor(
   route: ApplicationMessageRoute,
-  approvedTemplate: string
+  approvedTemplate: string,
+  now: Date,
+  timeZone: string
 ) {
   return {
     approvedTemplate,
     questionGuidance: ROUTE_QUESTION_GUIDANCE[route],
+    requiredQuestion:
+      route === "advertised_position"
+        ? advertisedPositionQuestion(now, timeZone)
+        : null,
+  };
+}
+
+export function advertisedPositionQuestion(now: Date, timeZone: string) {
+  const local = localCalendarDate(now, timeZone);
+  const dayOfWeek = new Date(
+    Date.UTC(local.year, local.month - 1, local.day)
+  ).getUTCDay();
+  if (dayOfWeek <= 3) {
+    return "Would you be free to speak about the role this week?";
+  }
+  const daysUntilMonday = 8 - dayOfWeek;
+  const monday = new Date(
+    Date.UTC(local.year, local.month - 1, local.day + daysUntilMonday)
+  );
+  const weekOf = new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  }).format(monday);
+  return `Would you be free to speak about the role next week, the week of ${weekOf}?`;
+}
+
+function localCalendarDate(now: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "numeric",
+    timeZone,
+    year: "numeric",
+  }).formatToParts(now);
+  const valueFor = (type: "day" | "month" | "year") => {
+    const value = parts.find((part) => part.type === type)?.value;
+    if (!value) {
+      throw new Error(`Unable to resolve the local ${type}`);
+    }
+    return Number(value);
+  };
+  return {
+    day: valueFor("day"),
+    month: valueFor("month"),
+    year: valueFor("year"),
   };
 }
 
@@ -102,7 +150,8 @@ export function validateApplicationMessage(
   rawMessage: string,
   requiredOpening: string,
   requiredEnding: string,
-  route: ApplicationMessageRoute
+  route: ApplicationMessageRoute,
+  requiredQuestion?: string | null
 ): string {
   const message = validateApplicationMessageOpening(
     rawMessage,
@@ -129,6 +178,11 @@ export function validateApplicationMessage(
   if (!contentBeforeEnding.endsWith("?")) {
     problems.push(
       "the route question must be the final content before the ending"
+    );
+  }
+  if (requiredQuestion && !contentBeforeEnding.endsWith(requiredQuestion)) {
+    problems.push(
+      `message must use the exact calendar-aware question ${JSON.stringify(requiredQuestion)}`
     );
   }
 

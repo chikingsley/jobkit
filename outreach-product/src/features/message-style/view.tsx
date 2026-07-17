@@ -19,6 +19,7 @@ import {
   messageStyleComparisons,
   messageStyleSummary,
 } from "@/features/message-style/calibration";
+import { MessagePreview } from "@/features/message-style/message-preview";
 import { workspacePaths } from "@/features/workspace/routes";
 import type { ApiRequest } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,7 @@ export function MessageStyleView({ request }: { request: ApiRequest }) {
           setIndex(0);
           setReviewing(true);
         }}
+        request={request}
       />
     );
   }
@@ -190,10 +192,12 @@ function StyleCompletion({
   choices,
   onJobs,
   onReview,
+  request,
 }: {
   choices: MessageStyleChoices;
   onJobs: () => void;
   onReview: () => void;
+  request: ApiRequest;
 }) {
   const summary = messageStyleSummary(choices);
   return (
@@ -201,35 +205,38 @@ function StyleCompletion({
       description="Your saved choices guide future application drafts and can be changed at any time."
       title="Writing style"
     >
-      <Card className="mx-auto w-full max-w-3xl">
-        <CardHeader className="items-center text-center">
-          <div className="mb-2 grid size-11 place-items-center rounded-full bg-primary/10 text-primary">
-            <Check className="size-6" />
-          </div>
-          <CardTitle>Writing style saved</CardTitle>
-          <CardDescription>
-            All {messageStyleComparisons.length} choices are saved. Future
-            drafts will use these preferences.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-2 sm:grid-cols-2">
-          {summary.map((item) => (
-            <div
-              className="flex items-start gap-2 rounded-lg border bg-muted/20 px-3 py-2 text-sm"
-              key={item}
-            >
-              <Check className="mt-0.5 size-4 shrink-0 text-primary" />
-              <span>{item}</span>
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+        <Card>
+          <CardHeader className="items-center text-center">
+            <div className="mb-2 grid size-11 place-items-center rounded-full bg-primary/10 text-primary">
+              <Check className="size-6" />
             </div>
-          ))}
-        </CardContent>
-        <CardFooter className="justify-end gap-2 border-t">
-          <Button onClick={onReview} variant="outline">
-            Review answers
-          </Button>
-          <Button onClick={onJobs}>Review job drafts</Button>
-        </CardFooter>
-      </Card>
+            <CardTitle>Writing style saved</CardTitle>
+            <CardDescription>
+              All {messageStyleComparisons.length} choices are saved. Future
+              drafts will use these preferences.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-2 sm:grid-cols-2">
+            {summary.map((item) => (
+              <div
+                className="flex items-start gap-2 rounded-lg border bg-muted/20 px-3 py-2 text-sm"
+                key={item}
+              >
+                <Check className="mt-0.5 size-4 shrink-0 text-primary" />
+                <span>{item}</span>
+              </div>
+            ))}
+          </CardContent>
+          <CardFooter className="justify-end gap-2 border-t">
+            <Button onClick={onReview} variant="outline">
+              Review answers
+            </Button>
+            <Button onClick={onJobs}>Review job drafts</Button>
+          </CardFooter>
+        </Card>
+        <MessagePreview request={request} />
+      </div>
     </SettingsPage>
   );
 }

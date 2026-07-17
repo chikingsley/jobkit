@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { monthlyCompensationUsd } from "@/features/jobs/compensation";
-import type { FxData, Job } from "@/features/jobs/types";
+import type { DraftMutationResult, FxData, Job } from "@/features/jobs/types";
 import type {
   QualificationClaim,
   QualificationClaimAnswer,
@@ -53,6 +53,22 @@ export function useWorkspaceData() {
   useEffect(() => {
     void loadJobs();
   }, [loadJobs]);
+
+  useEffect(() => {
+    const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
+    if (!timeZone) {
+      return;
+    }
+    void apiRequest("/api/time-zone", {
+      body: JSON.stringify({ timeZone }),
+      headers: { "content-type": "application/json" },
+      method: "PUT",
+    }).catch((error) =>
+      toast.error(
+        error instanceof Error ? error.message : "Time zone could not be saved"
+      )
+    );
+  }, []);
 
   useEffect(() => {
     void apiRequest("/api/fx")
@@ -137,7 +153,26 @@ export function useWorkspaceData() {
     }
   }
 
+  function applyDraftMutation(jobId: string, result: DraftMutationResult) {
+    setJobs((current) =>
+      current.map((job) =>
+        job.id === jobId
+          ? {
+              ...job,
+              draft: {
+                ...result.draft,
+                attachments: job.draft?.attachments ?? [],
+              },
+              emailAttempt: null,
+              status: "review",
+            }
+          : job
+      )
+    );
+  }
+
   return {
+    applyDraftMutation,
     busyClaimKey,
     countries: [...new Set(jobs.map((job) => job.country))].sort(),
     documents,

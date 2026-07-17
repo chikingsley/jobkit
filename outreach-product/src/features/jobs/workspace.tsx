@@ -14,7 +14,7 @@ import {
 import { JobDetail } from "@/features/jobs/job-detail";
 import { JobQueueItem } from "@/features/jobs/job-queue-item";
 import { type JobSort, sortJobs } from "@/features/jobs/sorting";
-import type { FxData, Job } from "@/features/jobs/types";
+import type { DraftMutationResult, FxData, Job } from "@/features/jobs/types";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
 import { cn } from "@/lib/utils";
 import type { JobMatch, Preferences, Profile } from "@/profile-types";
@@ -51,6 +51,7 @@ export function JobsWorkspace({
   matches,
   onAction,
   onCountryFilter,
+  onDraftAction,
   onFitFilter,
   onInstruction,
   onQualificationClaim,
@@ -76,6 +77,10 @@ export function JobsWorkspace({
   matches: Map<string, JobMatch>;
   onAction: (path: string, body?: object) => Promise<void>;
   onCountryFilter: (value: string) => void;
+  onDraftAction: (
+    path: string,
+    options: { body?: object; method?: "POST" | "PUT" }
+  ) => Promise<DraftMutationResult | null>;
   onFitFilter: (value: string) => void;
   onInstruction: (value: string) => void;
   onQualificationClaim: (input: {
@@ -256,6 +261,7 @@ export function JobsWorkspace({
                 profile && preferences ? matches.get(selected.id) : undefined
               }
               onAction={onAction}
+              onDraftAction={onDraftAction}
               onInstruction={onInstruction}
               onQualificationClaim={onQualificationClaim}
             />

@@ -32,6 +32,12 @@ export function registerJobRoutes(app: JobKitApp) {
       `SELECT j.*,uj.status,uj.priority,
                 mf.facts_json,mf.schema_version match_facts_schema_version,
                 d.id draft_id,d.version,d.message,d.change_summary,d.status draft_status,
+                d.created_at draft_created_at,d.revision_source,
+                COALESCE((
+                  SELECT previous.message FROM application_drafts previous
+                  WHERE previous.user_job_id=uj.id AND previous.version<d.version
+                  ORDER BY previous.version DESC LIMIT 1
+                ),'') previous_message,
                 COALESCE((
                   SELECT json_group_array(json_object(
                     'category',da.category,
@@ -138,8 +144,11 @@ function toReviewJob(row: Record<string, unknown>) {
             String(row.draft_attachments_json)
           ) as unknown,
           changeSummary: String(row.change_summary),
+          createdAt: String(row.draft_created_at),
           id: String(row.draft_id),
           message: String(row.message),
+          previousMessage: String(row.previous_message),
+          revisionSource: String(row.revision_source),
           status: String(row.draft_status),
           version: Number(row.version),
         }

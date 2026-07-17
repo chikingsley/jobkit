@@ -13,6 +13,7 @@ import {
   readQualificationClaims,
   writeQualificationClaim,
 } from "../repositories/qualification-claims";
+import { writeUserTimeZone } from "../repositories/user-time-zone";
 
 const QualificationClaimSchema = z
   .object({
@@ -28,6 +29,24 @@ const MessageStyleSchema = z
     comparisonId: z.string().min(1).max(80),
   })
   .strict();
+const TimeZoneSchema = z
+  .object({
+    timeZone: z
+      .string()
+      .min(1)
+      .max(100)
+      .refine(isValidTimeZone, "Enter a valid IANA time zone"),
+  })
+  .strict();
+
+function isValidTimeZone(timeZone: string) {
+  try {
+    new Intl.DateTimeFormat("en", { timeZone }).format();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export function registerUserSettingsRoutes(app: JobKitApp) {
   app.get("/api/qualification-claims", async (c) =>
@@ -62,5 +81,13 @@ export function registerUserSettingsRoutes(app: JobKitApp) {
       input.choice
     );
     return c.json({ message: "Writing preference saved", ok: true });
+  });
+
+  app.put("/api/time-zone", async (c) => {
+    const { timeZone } = TimeZoneSchema.parse(await c.req.json());
+    return c.json({
+      ok: true,
+      timeZone: await writeUserTimeZone(c.env.DB, c.get("user").id, timeZone),
+    });
   });
 }

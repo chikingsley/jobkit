@@ -9,8 +9,6 @@ export type AiProviderEnv = Pick<
   | "CEREBRAS_API_KEY"
   | "LLAMACPP_API_KEY"
   | "LLAMACPP_BASE_URL"
-  | "LLAMACPP_CF_ACCESS_CLIENT_ID"
-  | "LLAMACPP_CF_ACCESS_CLIENT_SECRET"
   | "MISTRAL_API_KEY"
 >;
 
@@ -144,13 +142,6 @@ export function createAiModel(
   const provider = createOpenAICompatible({
     apiKey: env.LLAMACPP_API_KEY,
     baseURL: env.LLAMACPP_BASE_URL,
-    headers:
-      env.LLAMACPP_CF_ACCESS_CLIENT_ID && env.LLAMACPP_CF_ACCESS_CLIENT_SECRET
-        ? {
-            "CF-Access-Client-Id": env.LLAMACPP_CF_ACCESS_CLIENT_ID,
-            "CF-Access-Client-Secret": env.LLAMACPP_CF_ACCESS_CLIENT_SECRET,
-          }
-        : undefined,
     name: "llamacpp",
     supportsStructuredOutputs: true,
     transformRequestBody: (body) => {

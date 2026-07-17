@@ -5,10 +5,19 @@ export interface JobDraft {
     sizeBytes: number;
   }>;
   changeSummary: string;
+  createdAt: string;
   id: string;
   message: string;
+  previousMessage: string;
+  revisionSource: "ai_revision" | "generated" | "manual_edit" | "undo";
   status: string;
   version: number;
+}
+
+export interface DraftMutationResult {
+  draft: Omit<JobDraft, "attachments">;
+  notice: string;
+  ok: true;
 }
 
 export interface EmailAttempt {

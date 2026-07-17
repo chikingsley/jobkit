@@ -1,9 +1,12 @@
 import type { Profile } from "../../src/features/profile/schema";
+import { validateApplicationMessage } from "../ai/application-message-policy";
 import {
   generateApplicationMessage,
   type MessageContext,
   messageRouteFor,
+  openingFor,
   reviseApplicationMessage,
+  signatureFor,
 } from "../ai/application-messages";
 import type { AppEnv } from "../env";
 import {
@@ -21,31 +24,43 @@ import { readMessageExemplars } from "../repositories/message-exemplars";
 import { readActiveMessageFoundation } from "../repositories/message-foundations";
 import { readMessageStyleGuidance } from "../repositories/message-style";
 import { readPreferences, readProfile } from "../repositories/user-settings";
+import { readUserTimeZone } from "../repositories/user-time-zone";
 import { type JobImport, JobImportSchema } from "../schemas";
 import { ensureJobMatchFactsForImport } from "./job-analysis";
 
 export class DraftProfileRequiredError extends Error {}
 export class DraftMessageFoundationRequiredError extends Error {}
+export class DraftMutationError extends Error {
+  readonly status: 409 | 422;
 
-async function messageContext(
+  constructor(message: string, options: ErrorOptions, status: 409 | 422) {
+    super(message, options);
+    this.status = status;
+  }
+}
+
+export async function messageContext(
   env: AppEnv,
   userId: string,
-  job: JobImport
+  job: JobImport,
+  shapeOverride?: MessageContext["shape"]
 ): Promise<MessageContext> {
-  const [preferences, exemplars, emailRoute, factsRow] = await Promise.all([
-    readPreferences(env.DB, userId),
-    readMessageExemplars(env.DB, userId, job.country),
-    env.DB.prepare(
-      "SELECT 1 present FROM application_routes WHERE job_id=? AND kind='email' AND status='active' LIMIT 1"
-    )
-      .bind(job.id)
-      .first(),
-    env.DB.prepare("SELECT facts_json FROM job_match_facts WHERE job_id=?")
-      .bind(job.id)
-      .first<{ facts_json: string }>(),
-  ]);
+  const [preferences, exemplars, emailRoute, factsRow, timeZone] =
+    await Promise.all([
+      readPreferences(env.DB, userId),
+      readMessageExemplars(env.DB, userId, job.country),
+      env.DB.prepare(
+        "SELECT 1 present FROM application_routes WHERE job_id=? AND kind='email' AND status='active' LIMIT 1"
+      )
+        .bind(job.id)
+        .first(),
+      env.DB.prepare("SELECT facts_json FROM job_match_facts WHERE job_id=?")
+        .bind(job.id)
+        .first<{ facts_json: string }>(),
+      readUserTimeZone(env.DB, userId),
+    ]);
   const audiences = audiencesFrom(factsRow?.facts_json);
-  const shape = {
+  const shape = shapeOverride ?? {
     // Young-learner shape only when the listing is exclusively about young
     // audiences; board-form submissions get the short template.
     audience:
@@ -71,6 +86,7 @@ async function messageContext(
     ...foundation,
     preferences: preferences.value,
     shape,
+    timeZone,
   };
 }
 
@@ -347,48 +363,196 @@ export async function reviseJobDraft(
     styleGuidance,
     context
   );
+  return persistDraftMutation(env, userId, row, {
+    changeSummary: revised.summary,
+    eventType: "draft_revised",
+    foundationId: context.foundationId,
+    message: revised.message,
+    modelId: revised.modelId,
+    modelProvider: revised.provider,
+    revisionInstruction: instruction,
+    revisionSource: "ai_revision",
+    snapshotDraftId: row.draftId,
+    templateKey: context.templateKey,
+  });
+}
+
+export async function saveManualJobDraft(
+  env: AppEnv,
+  userId: string,
+  jobId: string,
+  rawMessage: string
+) {
+  const [profile, row] = await Promise.all([
+    savedProfile(env.DB, userId),
+    currentJobAndDraft(env.DB, userId, jobId),
+  ]);
+  if (rawMessage.trim() === row.message.trim()) {
+    throw new DraftMutationError("The message has no changes to save", {}, 409);
+  }
+  let message: string;
+  try {
+    message = validateApplicationMessage(
+      rawMessage,
+      openingFor(row.job.contactName),
+      `Best,\n${signatureFor(profile)}`,
+      messageRouteFor(row.job)
+    );
+  } catch (error) {
+    throw new DraftMutationError(
+      error instanceof Error ? error.message : "The message is invalid",
+      { cause: error },
+      422
+    );
+  }
+  return persistDraftMutation(env, userId, row, {
+    changeSummary: "Saved a manual edit.",
+    eventType: "draft_edited",
+    foundationId: row.foundationId,
+    message,
+    modelId: null,
+    modelProvider: null,
+    revisionInstruction: "Manual edit",
+    revisionSource: "manual_edit",
+    snapshotDraftId: row.draftId,
+    templateKey: row.templateKey,
+  });
+}
+
+export async function undoJobDraft(env: AppEnv, userId: string, jobId: string) {
+  const row = await currentJobAndDraft(env.DB, userId, jobId);
+  const previous = await env.DB.prepare(
+    `SELECT id,version,message,model_provider,model_id,
+            message_foundation_id,message_template_key
+       FROM application_drafts
+      WHERE user_job_id=? AND version<?
+      ORDER BY version DESC LIMIT 1`
+  )
+    .bind(row.userJobId, row.version)
+    .first<PreviousDraftRow>();
+  if (!previous) {
+    throw new DraftMutationError(
+      "There is no earlier draft to restore",
+      {},
+      409
+    );
+  }
+  return persistDraftMutation(env, userId, row, {
+    changeSummary: `Restored draft version ${previous.version}.`,
+    eventType: "draft_undone",
+    foundationId: previous.message_foundation_id,
+    message: previous.message,
+    modelId: previous.model_id,
+    modelProvider: previous.model_provider,
+    revisionInstruction: `Undo to version ${previous.version}`,
+    revisionSource: "undo",
+    snapshotDraftId: previous.id,
+    templateKey: previous.message_template_key,
+  });
+}
+
+type DraftRevisionSource = "ai_revision" | "manual_edit" | "undo";
+
+interface CurrentDraft {
+  draftId: string;
+  foundationId: string | null;
+  job: JobImport;
+  message: string;
+  templateKey: string | null;
+  userJobId: string;
+  version: number;
+}
+
+interface PreviousDraftRow {
+  id: string;
+  message: string;
+  message_foundation_id: string | null;
+  message_template_key: string | null;
+  model_id: string | null;
+  model_provider: string | null;
+  version: number;
+}
+
+interface DraftMutationInput {
+  changeSummary: string;
+  eventType: string;
+  foundationId: string | null;
+  message: string;
+  modelId: string | null;
+  modelProvider: string | null;
+  revisionInstruction: string;
+  revisionSource: DraftRevisionSource;
+  snapshotDraftId: string;
+  templateKey: string | null;
+}
+
+async function persistDraftMutation(
+  env: AppEnv,
+  userId: string,
+  current: CurrentDraft,
+  input: DraftMutationInput
+) {
   const draftId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
+  const version = current.version + 1;
   await env.DB.batch([
     env.DB.prepare(
       `DELETE FROM application_attempts
        WHERE draft_id=? AND status='approved' AND send_requested_at IS NULL
          AND gmail_draft_id=''`
-    ).bind(row.draftId),
+    ).bind(current.draftId),
     env.DB.prepare(
       "UPDATE application_drafts SET status='superseded' WHERE id=? AND status IN ('draft','approved')"
-    ).bind(row.draftId),
+    ).bind(current.draftId),
     env.DB.prepare(
       `INSERT INTO application_drafts
         (id,user_job_id,version,message,change_summary,revision_instruction,
-         model_provider,model_id,message_foundation_id,message_template_key,created_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+         model_provider,model_id,message_foundation_id,message_template_key,
+         revision_source,created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
     ).bind(
       draftId,
-      row.userJobId,
-      row.version + 1,
-      revised.message,
-      revised.summary,
-      instruction,
-      revised.provider,
-      revised.modelId,
-      context.foundationId,
-      context.templateKey,
+      current.userJobId,
+      version,
+      input.message,
+      input.changeSummary,
+      input.revisionInstruction,
+      input.modelProvider,
+      input.modelId,
+      input.foundationId,
+      input.templateKey,
+      input.revisionSource,
       timestamp
     ),
-    ...copyPacketSnapshotStatements(env.DB, row.draftId, draftId, timestamp),
+    ...copyPacketSnapshotStatements(
+      env.DB,
+      input.snapshotDraftId,
+      draftId,
+      timestamp
+    ),
     env.DB.prepare(
       "UPDATE user_jobs SET status='review',updated_at=? WHERE id=? AND user_id=?"
-    ).bind(timestamp, row.userJobId, userId),
+    ).bind(timestamp, current.userJobId, userId),
   ]);
   await recordJobEvent(
     env.DB,
-    row.userJobId,
-    "draft_revised",
-    revised.summary,
+    current.userJobId,
+    input.eventType,
+    input.changeSummary,
     draftId
   );
-  return revised;
+  return {
+    draft: {
+      changeSummary: input.changeSummary,
+      createdAt: timestamp,
+      id: draftId,
+      message: input.message,
+      previousMessage: current.message,
+      revisionSource: input.revisionSource,
+      status: "draft" as const,
+      version,
+    },
+  };
 }
 
 async function currentJobAndDraft(
@@ -398,7 +562,8 @@ async function currentJobAndDraft(
 ) {
   const row = await db
     .prepare(
-      `SELECT j.*,uj.id user_job_id,uj.priority,d.id draft_id,d.version,d.message
+      `SELECT j.*,uj.id user_job_id,uj.priority,d.id draft_id,d.version,d.message,
+              d.message_foundation_id,d.message_template_key
        FROM user_jobs uj
        JOIN jobs j ON j.id=uj.job_id
        JOIN application_drafts d ON d.user_job_id=uj.id
@@ -412,14 +577,23 @@ async function currentJobAndDraft(
   }
   return {
     draftId: String(row.draft_id),
+    foundationId: row.message_foundation_id
+      ? String(row.message_foundation_id)
+      : null,
     job: toJobImport(row),
     message: String(row.message),
+    templateKey: row.message_template_key
+      ? String(row.message_template_key)
+      : null,
     userJobId: String(row.user_job_id),
     version: Number(row.version),
   };
 }
 
-async function savedProfile(db: D1Database, userId: string): Promise<Profile> {
+export async function savedProfile(
+  db: D1Database,
+  userId: string
+): Promise<Profile> {
   const profile = await readProfile(db, userId);
   if (!profile.updatedAt) {
     throw new DraftProfileRequiredError(

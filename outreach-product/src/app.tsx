@@ -18,6 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useCurrentUser } from "@/features/auth/auth-gate";
 import { filterJobs, selectVisibleJob } from "@/features/jobs/filters";
+import type { DraftMutationResult } from "@/features/jobs/types";
 import { useWorkspaceQueryState } from "@/features/workspace/query-state";
 import {
   type WorkspaceView,
@@ -89,6 +90,7 @@ export function App() {
   const [instruction, setInstruction] = useState("");
   const [busy, setBusy] = useState("");
   const {
+    applyDraftMutation,
     busyClaimKey,
     countries,
     documents,
@@ -143,6 +145,35 @@ export function App() {
     } catch (error) {
       await loadJobs({ quiet: true }).catch(() => undefined);
       toast.error(error instanceof Error ? error.message : "Request failed");
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function draftAction(
+    path: string,
+    options: { body?: object; method?: "POST" | "PUT" }
+  ): Promise<DraftMutationResult | null> {
+    if (!selected) {
+      return null;
+    }
+    setBusy(path);
+    try {
+      const response = await apiRequest(path, {
+        body: options.body ? JSON.stringify(options.body) : undefined,
+        headers: { "content-type": "application/json" },
+        method: options.method ?? "POST",
+      });
+      const result = (await response.json()) as DraftMutationResult;
+      applyDraftMutation(selected.id, result);
+      setInstruction("");
+      toast.success(result.notice);
+      return result;
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Draft update failed"
+      );
+      return null;
     } finally {
       setBusy("");
     }
@@ -208,6 +239,7 @@ export function App() {
                   matches={matches}
                   onAction={action}
                   onCountryFilter={setCountryFilter}
+                  onDraftAction={draftAction}
                   onFitFilter={setFitFilter}
                   onInstruction={setInstruction}
                   onQualificationClaim={saveQualificationClaim}

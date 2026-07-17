@@ -13,22 +13,24 @@ import {
   writePreferences,
   writeProfile,
 } from "./repositories/user-settings";
+import { registerApplicationDraftRoutes } from "./routes/application-drafts";
 import { registerCountryRoutes } from "./routes/countries";
 import { registerDocumentRoutes } from "./routes/documents";
 import { registerEmailAttemptRoutes } from "./routes/email-attempts";
 import { GMAIL_PUBSUB_WEBHOOK_PATH, registerGmailRoutes } from "./routes/gmail";
 import { registerJobMatchFactRoutes } from "./routes/job-match-facts";
 import { registerJobRoutes } from "./routes/jobs";
+import { registerMessagePreviewRoutes } from "./routes/message-preview";
 import { registerMessageRoutes } from "./routes/messages";
 import { registerOnboardingRoutes } from "./routes/onboarding";
 import { registerUserSettingsRoutes } from "./routes/user-settings";
-import { ImportSchema, ReviseSchema, SubmitSchema } from "./schemas";
+import { ImportSchema, SubmitSchema } from "./schemas";
 import {
   DraftMessageFoundationRequiredError,
+  DraftMutationError,
   DraftProfileRequiredError,
   importJobsWithDrafts,
   regenerateDrafts,
-  reviseJobDraft,
 } from "./services/application-drafts";
 import { CountryMarketError } from "./services/country-markets";
 import { authenticateCountrySweepRunner } from "./services/country-sweep-runner-auth";
@@ -86,6 +88,9 @@ app.onError((error, c) => {
   }
   if (error instanceof DraftMessageFoundationRequiredError) {
     return c.json({ message: error.message, ok: false }, 409);
+  }
+  if (error instanceof DraftMutationError) {
+    return c.json({ message: error.message, ok: false }, error.status);
   }
   if (error instanceof EmailAttemptError) {
     return c.json({ message: error.message, ok: false }, error.status);
@@ -170,6 +175,7 @@ app.use("/api/*", async (c, next) => {
 });
 
 registerOnboardingRoutes(app);
+registerApplicationDraftRoutes(app);
 registerJobRoutes(app);
 registerJobMatchFactRoutes(app);
 registerDocumentRoutes(app);
@@ -177,6 +183,7 @@ registerCountryRoutes(app);
 registerEmailAttemptRoutes(app);
 registerGmailRoutes(app);
 registerMessageRoutes(app);
+registerMessagePreviewRoutes(app);
 registerUserSettingsRoutes(app);
 
 app.get("/api/fx", async (c) => c.json(await fetchExchangeRates()));
@@ -256,42 +263,6 @@ app.put("/api/preferences", async (c) => {
   await writePreferences(c.env.DB, c.get("user").id, await c.req.json());
   return c.json({ message: "Preferences saved", ok: true });
 });
-
-app.openapi(
-  createRoute({
-    method: "post",
-    path: "/api/jobs/{id}/revise",
-    request: {
-      body: { content: { "application/json": { schema: ReviseSchema } } },
-      params: z.object({ id: z.string() }),
-    },
-    responses: {
-      200: {
-        content: { "application/json": { schema: jsonMessage } },
-        description: "Revised",
-      },
-      409: {
-        content: { "application/json": { schema: jsonMessage } },
-        description: "Profile required",
-      },
-      502: {
-        content: { "application/json": { schema: jsonMessage } },
-        description: "Draft model failed",
-      },
-    },
-  }),
-  async (c) => {
-    const { id } = c.req.valid("param");
-    const { instruction } = c.req.valid("json");
-    const revised = await reviseJobDraft(
-      c.env,
-      c.get("user").id,
-      id,
-      instruction
-    );
-    return c.json({ message: revised.message, ok: true });
-  }
-);
 
 app.openapi(
   createRoute({

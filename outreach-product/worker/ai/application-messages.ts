@@ -45,8 +45,10 @@ export class ApplicationMessageGenerationError extends Error {}
 
 export interface MessageContext extends ActiveMessageFoundation {
   exemplars?: MessageExemplar[];
+  now?: Date;
   preferences?: Preferences | null;
   shape?: MessageShape;
+  timeZone: string;
 }
 
 export function generateApplicationMessage(
@@ -62,7 +64,9 @@ export function generateApplicationMessage(
   const messageRoute = messageRouteFor(job);
   const policy = applicationMessagePolicyFor(
     messageRoute,
-    context.approvedTemplate
+    context.approvedTemplate,
+    context.now ?? new Date(),
+    context.timeZone
   );
   return runModel(env, model, {
     approvedTemplate: policy.approvedTemplate,
@@ -75,6 +79,7 @@ export function generateApplicationMessage(
     request: "Write a new application message.",
     requiredEnding: `Best,\n${signature}`,
     requiredOpening,
+    requiredQuestion: policy.requiredQuestion,
     styleGuidance: [...context.voiceRules, ...styleGuidance],
   });
 }
@@ -94,7 +99,9 @@ export function reviseApplicationMessage(
   const messageRoute = messageRouteFor(job);
   const policy = applicationMessagePolicyFor(
     messageRoute,
-    context.approvedTemplate
+    context.approvedTemplate,
+    context.now ?? new Date(),
+    context.timeZone
   );
   return runModel(env, model, {
     approvedTemplate: policy.approvedTemplate,
@@ -109,6 +116,7 @@ export function reviseApplicationMessage(
       "Revise the current message according to revisionInstruction while preserving every rule.",
     requiredEnding: `Best,\n${signature}`,
     requiredOpening,
+    requiredQuestion: policy.requiredQuestion,
     revisionInstruction,
     styleGuidance: [...context.voiceRules, ...styleGuidance],
   });
@@ -119,8 +127,9 @@ async function runModel(
   selection: AiModelSelection,
   input: Record<string, unknown> & {
     messageRoute: ApplicationMessageRoute;
-    requiredOpening: string;
     requiredEnding: string;
+    requiredOpening: string;
+    requiredQuestion?: string | null;
   }
 ): Promise<GeneratedApplicationMessage> {
   const model = createAiModel(env, selection);
@@ -157,7 +166,8 @@ async function runModel(
           output.message,
           input.requiredOpening,
           input.requiredEnding,
-          input.messageRoute
+          input.messageRoute,
+          input.requiredQuestion
         );
         return {
           message,
@@ -241,7 +251,7 @@ function exemplarPrompts(exemplars: MessageExemplar[] | undefined) {
   }));
 }
 
-function signatureFor(profile: Profile): string {
+export function signatureFor(profile: Profile): string {
   const surname =
     profile.fullName.trim().split(WHITESPACE_PATTERN).at(-1) ?? "";
   const lines = [`${profile.preferredName} ${surname}`.trim()];
@@ -279,7 +289,7 @@ const HONORIFICS = new Map([
   ["prof", "Prof."],
 ]);
 
-function openingFor(contactName: string) {
+export function openingFor(contactName: string) {
   const parts = contactName.trim().split(WHITESPACE_PATTERN).filter(Boolean);
   const [first] = parts;
   if (!first) {
