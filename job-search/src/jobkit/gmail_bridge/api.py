@@ -99,6 +99,10 @@ class JobKitClient(AbstractContextManager["JobKitClient"]):
             raise JobKitApiError(msg)
         return list(_objects(attempts))
 
+    def record_inbound_message(self, payload: JsonObject) -> JsonObject:
+        """Record one classified inbound reply; duplicate gmail message ids are no-ops."""
+        return self._request_json("POST", "/api/messages/inbound", json=payload)
+
     def claim_email_attempt(self, attempt_id: str) -> JsonObject:
         """Claim one approved attempt and return its exact base64url MIME payload."""
         payload = self._request_json("POST", f"/api/email-attempts/{attempt_id}/claim")

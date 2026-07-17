@@ -64,6 +64,9 @@ const PreferencesView = lazy(async () => ({
 const ProfileView = lazy(async () => ({
   default: (await import("@/views/profile-view")).ProfileView,
 }));
+const MessagesWorkspace = lazy(async () => ({
+  default: (await import("@/features/messages/workspace")).MessagesWorkspace,
+}));
 
 function WorkspacePage({ children }: PropsWithChildren) {
   return (
@@ -398,6 +401,14 @@ export function App() {
               </WorkspacePage>
             }
             path={workspacePaths.messageStyle}
+          />
+          <Route
+            element={
+              <Suspense fallback={<ViewLoading />}>
+                <MessagesWorkspace request={apiRequest} />
+              </Suspense>
+            }
+            path={workspacePaths.messages}
           />
           <Route
             element={<Navigate replace to={workspacePaths.jobs} />}

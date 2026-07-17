@@ -13,7 +13,9 @@ from urllib.parse import urlsplit
 from jobkit.gmail_bridge.api import EMAIL_ATTEMPT_STATUSES, JobKitClient
 from jobkit.gmail_bridge.executor import process_requested_sends, watch_requested_sends
 from jobkit.gmail_bridge.gmail import GmailClient
+from jobkit.gmail_bridge.replies import sync_inbound_replies
 from jobkit.gmail_bridge.workflow import send_drafted_attempt, stage_approved_attempt
+from jobkit.outreach.track import _sender_address
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -68,6 +70,12 @@ def _dispatch(args: argparse.Namespace, api: JobKitClient) -> object | None:
                 attempt for status in statuses for attempt in api.list_email_attempts(status)
             ],
         }
+    if args.command == "sync-replies":
+        return sync_inbound_replies(
+            api,
+            args.gws_profile,
+            sender_email=args.sender or _sender_address(),
+        )
     gmail = GmailClient(args.gws_profile)
     if args.command == "watch":
         if args.once:
@@ -132,6 +140,16 @@ def _parser() -> argparse.ArgumentParser:
         help="explicitly send one existing, API-recorded Gmail draft and verify SENT",
     )
     send.add_argument("attempt_id")
+
+    sync_replies = subparsers.add_parser(
+        "sync-replies",
+        help="pull genuine inbound Gmail replies for sent attempts into the hosted thread view",
+    )
+    sync_replies.add_argument(
+        "--sender",
+        default="",
+        help="our sending address for inbound classification (default: outreach sender)",
+    )
 
     watch = subparsers.add_parser(
         "watch",
