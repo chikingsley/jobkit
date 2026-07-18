@@ -42,6 +42,16 @@ describe("job position analyses", () => {
           (id,user_id,job_id,created_at,updated_at)
          VALUES ('position-user-job',?,'position-job',?,?)`
       ).bind(userId, timestamp, timestamp),
+      testEnv.DB.prepare(
+        `INSERT INTO jobs
+          (id,board,title,salary,description,apply_url,first_seen_at,updated_at)
+         VALUES ('position-e2e-job','jobkit-e2e','Delivery test','','',?,?,?)`
+      ).bind("https://example.test/test", timestamp, timestamp),
+      testEnv.DB.prepare(
+        `INSERT INTO user_jobs
+          (id,user_id,job_id,created_at,updated_at)
+         VALUES ('position-e2e-user-job',?,'position-e2e-job',?,?)`
+      ).bind(userId, timestamp, timestamp),
     ]);
 
     const pendingResponse = await exports.default.fetch(
@@ -154,7 +164,10 @@ describe("job position analyses", () => {
       }>;
     };
     expect(jobsResponse.status).toBe(200);
-    expect(jobs.jobs[0]?.positionAnalysis).toMatchObject({
+    expect(
+      jobs.jobs.find((candidate) => candidate.id === "position-job")
+        ?.positionAnalysis
+    ).toMatchObject({
       positions: [
         expect.objectContaining({ roleFamily: "english_language" }),
         expect.objectContaining({ roleFamily: "subject_specialist" }),

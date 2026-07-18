@@ -59,6 +59,7 @@ export function registerJobPositionAnalysisRoutes(app: JobKitApp) {
          LEFT JOIN job_position_analyses pa
            ON pa.job_id=j.id AND pa.schema_version=?1
          WHERE uj.user_id=?2 AND pa.job_id IS NULL
+           AND j.board<>'jobkit-e2e'
          ORDER BY uj.priority DESC,uj.updated_at DESC
          LIMIT ?3`
       )
