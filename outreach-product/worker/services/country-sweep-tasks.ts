@@ -348,7 +348,7 @@ async function upsertOrganizations(
   if (contactStatements.length > 0) {
     await db.batch(contactStatements);
   }
-  return ids;
+  return [...new Set(ids)];
 }
 
 async function advanceSweep(

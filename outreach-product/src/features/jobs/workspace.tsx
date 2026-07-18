@@ -8,7 +8,7 @@ import { JobQueueGroup } from "@/features/jobs/job-queue-group";
 import { type JobSort, sortJobs } from "@/features/jobs/sorting";
 import type { DraftMutationResult, FxData, Job } from "@/features/jobs/types";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
-import { cn } from "@/lib/utils";
+import { SplitWorkspace } from "@/features/workspace/split-workspace";
 import type { JobMatch, Preferences, Profile } from "@/profile-types";
 
 const INITIAL_VISIBLE_JOBS = 100;
@@ -63,91 +63,88 @@ export function JobsWorkspace({
     [sortedJobs, visibleLimit]
   );
   return (
-    <div className="jobs-workspace flex min-h-0 flex-1 overflow-hidden">
-      <section
-        className={cn(
-          "jobs-list-pane h-full min-h-0 w-full flex-col bg-background",
-          showQueue ? "flex" : "hidden"
-        )}
-      >
-        <div className="border-b px-4 py-3">
-          <div>
-            <h2 className="font-semibold text-sm">Review queue</h2>
-            <p className="text-muted-foreground text-xs">
-              Showing {queueJobs.length.toLocaleString()} of{" "}
-              {jobs.length.toLocaleString()} jobs
-            </p>
-          </div>
-        </div>
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="p-2">
-            {queueGroups.map((group) => (
-              <JobQueueGroup
+    <SplitWorkspace
+      detail={
+        <ScrollArea
+          className="min-h-0 flex-1"
+          key={selected ? selected.id : "empty"}
+        >
+          {selected ? (
+            <>
+              <div className="split-workspace-back border-b bg-background px-4 py-2">
+                <Button onClick={() => setShowQueue(true)} variant="ghost">
+                  <ChevronLeft /> Review queue
+                </Button>
+              </div>
+              <JobDetail
+                busy={busy}
+                busyClaimKey={busyClaimKey}
                 fx={fx}
-                group={group}
-                key={group.id}
-                matches={matches}
-                onSelect={(jobId) => {
-                  onSelect(jobId);
-                  setShowQueue(false);
-                }}
-                selectedId={selected?.id}
-              />
-            ))}
-            {queueJobs.length < sortedJobs.length ? (
-              <Button
-                className="mt-2 w-full"
-                onClick={() =>
-                  setVisibleLimit((current) => current + INITIAL_VISIBLE_JOBS)
+                instruction={instruction}
+                job={selected}
+                match={
+                  profile && preferences ? matches.get(selected.id) : undefined
                 }
-                variant="outline"
-              >
-                Show 100 more
-              </Button>
-            ) : null}
-          </div>
-        </ScrollArea>
-      </section>
-      <ScrollArea
-        className={cn(
-          "jobs-detail-pane min-h-0 min-w-0 flex-1 bg-muted/20",
-          showQueue ? "hidden" : "block"
-        )}
-        key={selected ? selected.id : "empty"}
-      >
-        {selected ? (
-          <>
-            <div className="jobs-back border-b bg-background px-4 py-2">
-              <Button onClick={() => setShowQueue(true)} variant="ghost">
-                <ChevronLeft /> Review queue
-              </Button>
+                onAction={onAction}
+                onDraftAction={onDraftAction}
+                onInstruction={onInstruction}
+                onQualificationClaim={onQualificationClaim}
+              />
+            </>
+          ) : (
+            <div className="grid min-h-[24rem] place-items-center p-8 text-center">
+              <div>
+                <h2 className="font-semibold">No jobs in this view</h2>
+                <p className="mt-1 text-muted-foreground text-sm">
+                  Adjust the filters or sync the private board.
+                </p>
+              </div>
             </div>
-            <JobDetail
-              busy={busy}
-              busyClaimKey={busyClaimKey}
-              fx={fx}
-              instruction={instruction}
-              job={selected}
-              match={
-                profile && preferences ? matches.get(selected.id) : undefined
-              }
-              onAction={onAction}
-              onDraftAction={onDraftAction}
-              onInstruction={onInstruction}
-              onQualificationClaim={onQualificationClaim}
-            />
-          </>
-        ) : (
-          <div className="grid min-h-[24rem] place-items-center p-8 text-center">
+          )}
+        </ScrollArea>
+      }
+      detailOpen={!showQueue}
+      list={
+        <>
+          <div className="border-b px-4 py-3">
             <div>
-              <h2 className="font-semibold">No jobs in this view</h2>
-              <p className="mt-1 text-muted-foreground text-sm">
-                Adjust the filters or sync the private board.
+              <h2 className="font-semibold text-sm">Review queue</h2>
+              <p className="text-muted-foreground text-xs">
+                Showing {queueJobs.length.toLocaleString()} of{" "}
+                {jobs.length.toLocaleString()} jobs
               </p>
             </div>
           </div>
-        )}
-      </ScrollArea>
-    </div>
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="p-2">
+              {queueGroups.map((group) => (
+                <JobQueueGroup
+                  fx={fx}
+                  group={group}
+                  key={group.id}
+                  matches={matches}
+                  onSelect={(jobId) => {
+                    onSelect(jobId);
+                    setShowQueue(false);
+                  }}
+                  selectedId={selected?.id}
+                />
+              ))}
+              {queueJobs.length < sortedJobs.length ? (
+                <Button
+                  className="mt-2 w-full"
+                  onClick={() =>
+                    setVisibleLimit((current) => current + INITIAL_VISIBLE_JOBS)
+                  }
+                  variant="outline"
+                >
+                  Show 100 more
+                </Button>
+              ) : null}
+            </div>
+          </ScrollArea>
+        </>
+      }
+    />
   );
 }

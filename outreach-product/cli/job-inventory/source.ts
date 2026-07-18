@@ -1,4 +1,5 @@
 import { Database } from "bun:sqlite";
+import { getCountries } from "libphonenumber-js";
 
 export interface InventoryCompensation {
   amountMaximum: number | null;
@@ -99,6 +100,26 @@ const TAIWAN_DOLLAR_PATTERN = /(?:NT\$|\$\s*[\d,.]+\s*NT\b)/iu;
 const UP_TO_AMOUNT_PATTERN = /\b(?:up to|maximum|max\.?|not more than)\b/u;
 const YEARLY_PERIOD_PATTERN =
   /\b(?:per|a|each)\s+year\b|\/\s*(?:year|yr)\b|\b(?:annual|annually|annum)\b/u;
+const countryDisplayNames = new Intl.DisplayNames(["en"], { type: "region" });
+const countryNames = new Map(
+  getCountries().map((code) => {
+    const name = countryDisplayNames.of(code) ?? code;
+    return [normalizeCountryText(name), name] as const;
+  })
+);
+const countryAliases = new Map<string, string>([
+  ["czech republic", "Czechia"],
+  ["korea", "South Korea"],
+  ["republic of korea", "South Korea"],
+  ["russia", "Russia"],
+  ["uae", "United Arab Emirates"],
+  ["uk", "United Kingdom"],
+  ["usa", "United States"],
+  ["united states of america", "United States"],
+]);
+const countryCandidates = [...countryNames, ...countryAliases].sort(
+  ([left], [right]) => right.length - left.length
+);
 
 export function readSourceInventory(databasePath: string): SourceInventory {
   const database = new Database(databasePath, {
@@ -220,7 +241,32 @@ function countryFor(row: SourceJobRow) {
   if (row.board === "ajarn") {
     return "Thailand";
   }
-  return row.country.replace(COUNTRY_FOOTNOTE_PATTERN, "").trim();
+  const stored = row.country.replace(COUNTRY_FOOTNOTE_PATTERN, "").trim();
+  return canonicalCountry(stored) ?? countryIn(row.location) ?? stored;
+}
+
+function canonicalCountry(value: string) {
+  const normalized = normalizeCountryText(value);
+  return countryAliases.get(normalized) ?? countryNames.get(normalized);
+}
+
+function countryIn(value: string) {
+  const normalized = ` ${normalizeCountryText(value)} `;
+  const matches = new Set<string>();
+  for (const [candidate, country] of countryCandidates) {
+    if (normalized.includes(` ${candidate} `)) {
+      matches.add(country);
+    }
+  }
+  return matches.size === 1 ? [...matches][0] : undefined;
+}
+
+function normalizeCountryText(value: string) {
+  return value
+    .normalize("NFKD")
+    .toLocaleLowerCase("en")
+    .replaceAll(/[^a-z]+/gu, " ")
+    .trim();
 }
 
 function marketSegments(

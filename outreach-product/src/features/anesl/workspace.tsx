@@ -10,6 +10,7 @@ import { monthlyCompensationUsd } from "@/features/jobs/compensation";
 import type { FxData, Job } from "@/features/jobs/types";
 import type { QualificationClaims } from "@/features/matching/claims";
 import { evaluateJob } from "@/features/matching/evaluate";
+import { SplitWorkspace } from "@/features/workspace/split-workspace";
 import type { ApiRequest } from "@/lib/api";
 import type { Preferences, Profile, StoredDocument } from "@/profile-types";
 import { ApplicationSetPanel } from "./application-set-panel";
@@ -146,99 +147,107 @@ export function AneslWorkspace({
   }
 
   return (
-    <div className="grid min-h-0 flex-1 overflow-hidden md:grid-cols-[20rem_minmax(0,1fr)]">
-      <section className="flex min-h-0 flex-col border-e bg-background">
-        <div className="border-b p-4">
-          <h2 className="font-semibold text-sm">Choose up to five positions</h2>
-          <p className="mt-1 text-muted-foreground text-xs">
-            {total.toLocaleString()} available · {selectedIds.length} selected
-          </p>
-          <div className="relative mt-3">
-            <Search className="absolute top-2 left-2.5 size-4 text-muted-foreground" />
-            <Input
-              className="pl-8"
-              onChange={(event) => {
-                setQuery(event.target.value);
-                void setSize(1);
-              }}
-              placeholder="Search ID, title, or city"
-              value={query}
-            />
-          </div>
-          <Button
-            className="mt-3 w-full"
-            disabled={
-              Boolean(currentSet) || selectedIds.length === 0 || Boolean(busy)
-            }
-            onClick={() => void createSet()}
-          >
-            {busy === "create"
-              ? "Creating application set…"
-              : `Review ${selectedIds.length || "selected"} position${selectedIds.length === 1 ? "" : "s"}`}
-          </Button>
-          {currentSet ? (
-            <p className="mt-2 text-muted-foreground text-xs">
-              Finish or start over from the current set before choosing another
-              batch.
-            </p>
-          ) : null}
-        </div>
+    <SplitWorkspace
+      detail={
         <ScrollArea className="min-h-0 flex-1">
-          <div className="flex flex-col gap-2 p-2">
-            {positions.map((job) => {
-              const checked = selectedIds.includes(job.id);
-              return (
-                <AneslPositionItem
-                  checked={checked}
-                  disabled={
-                    Boolean(currentSet) || (!checked && selectedIds.length >= 5)
-                  }
-                  fx={fx}
-                  job={job}
-                  key={job.id}
-                  match={matches.get(job.id)}
-                  onCheckedChange={(next) => toggle(job.id, next)}
-                />
-              );
-            })}
-            {hasMore ? (
-              <Button
-                disabled={positionsLoading}
-                onClick={() => void setSize(size + 1)}
-                variant="outline"
-              >
-                {positionsLoading ? "Loading…" : "Show 100 more"}
-              </Button>
+          {currentSet ? (
+            <ApplicationSetPanel
+              applicationSet={currentSet}
+              busy={busy}
+              onBusy={setBusy}
+              onChanged={async () => {
+                await Promise.all([mutateSets(), mutatePositions()]);
+              }}
+              request={request}
+            />
+          ) : (
+            <div className="grid min-h-[30rem] place-items-center p-8 text-center">
+              <div className="max-w-md">
+                <h2 className="font-semibold text-xl">
+                  Build one ANESL application set
+                </h2>
+                <p className="mt-2 text-muted-foreground text-sm leading-6">
+                  Select the strongest one to five position IDs. JobKit will
+                  create one shared message, freeze one document packet, and
+                  track every selected position under the same Gmail thread.
+                </p>
+              </div>
+            </div>
+          )}
+        </ScrollArea>
+      }
+      detailOpen={Boolean(currentSet)}
+      list={
+        <>
+          <div className="border-b p-4">
+            <h2 className="font-semibold text-sm">
+              Choose up to five positions
+            </h2>
+            <p className="mt-1 text-muted-foreground text-xs">
+              {total.toLocaleString()} available · {selectedIds.length} selected
+            </p>
+            <div className="relative mt-3">
+              <Search className="absolute top-2 left-2.5 size-4 text-muted-foreground" />
+              <Input
+                className="pl-8"
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  void setSize(1);
+                }}
+                placeholder="Search ID, title, or city"
+                value={query}
+              />
+            </div>
+            <Button
+              className="mt-3 w-full"
+              disabled={
+                Boolean(currentSet) || selectedIds.length === 0 || Boolean(busy)
+              }
+              onClick={() => void createSet()}
+            >
+              {busy === "create"
+                ? "Creating application set…"
+                : `Review ${selectedIds.length || "selected"} position${selectedIds.length === 1 ? "" : "s"}`}
+            </Button>
+            {currentSet ? (
+              <p className="mt-2 text-muted-foreground text-xs">
+                Finish or start over from the current set before choosing
+                another batch.
+              </p>
             ) : null}
           </div>
-        </ScrollArea>
-      </section>
-      <ScrollArea className="min-h-0 bg-muted/20">
-        {currentSet ? (
-          <ApplicationSetPanel
-            applicationSet={currentSet}
-            busy={busy}
-            onBusy={setBusy}
-            onChanged={async () => {
-              await Promise.all([mutateSets(), mutatePositions()]);
-            }}
-            request={request}
-          />
-        ) : (
-          <div className="grid min-h-[30rem] place-items-center p-8 text-center">
-            <div className="max-w-md">
-              <h2 className="font-semibold text-xl">
-                Build one ANESL application set
-              </h2>
-              <p className="mt-2 text-muted-foreground text-sm leading-6">
-                Select the strongest one to five position IDs. JobKit will
-                create one shared message, freeze one document packet, and track
-                every selected position under the same Gmail thread.
-              </p>
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="flex flex-col gap-2 p-2">
+              {positions.map((job) => {
+                const checked = selectedIds.includes(job.id);
+                return (
+                  <AneslPositionItem
+                    checked={checked}
+                    disabled={
+                      Boolean(currentSet) ||
+                      (!checked && selectedIds.length >= 5)
+                    }
+                    fx={fx}
+                    job={job}
+                    key={job.id}
+                    match={matches.get(job.id)}
+                    onCheckedChange={(next) => toggle(job.id, next)}
+                  />
+                );
+              })}
+              {hasMore ? (
+                <Button
+                  disabled={positionsLoading}
+                  onClick={() => void setSize(size + 1)}
+                  variant="outline"
+                >
+                  {positionsLoading ? "Loading…" : "Show 100 more"}
+                </Button>
+              ) : null}
             </div>
-          </div>
-        )}
-      </ScrollArea>
-    </div>
+          </ScrollArea>
+        </>
+      }
+    />
   );
 }
