@@ -1,3 +1,9 @@
+import type {
+  MessageThreadDetail,
+  MessageThreadSummary,
+  ThreadAttachment,
+  ThreadMessage,
+} from "../../src/features/messages/types";
 import type { AppEnv } from "../env";
 
 // Hosted Gmail replies land keyed by gmail_thread_id and stitch into the same
@@ -6,59 +12,6 @@ import type { AppEnv } from "../env";
 const THREAD_STATUSES = ["sent", "sending", "uncertain"] as const;
 const ATTEMPT_THREAD_PREFIX = "attempt:";
 const LINE_BREAK_PATTERN = /\r?\n/u;
-
-export interface ThreadAttachmentView {
-  category: string;
-  contentType: string;
-  filename: string;
-  position: number;
-  sizeBytes: number;
-  url: string;
-}
-
-export interface ThreadMessageView {
-  attachments: ThreadAttachmentView[];
-  body: string;
-  direction: "inbound" | "outbound";
-  error: null | { detail: string; stage: string };
-  from: string;
-  gmailMessageId: string;
-  id: string;
-  sentAt: string;
-  status: string;
-  subject: string;
-  to: string;
-}
-
-export interface MessageThreadSummary {
-  attachmentCount: number;
-  attemptId: string;
-  company: string;
-  country: string;
-  jobId: string;
-  lastActivityAt: string;
-  location: string;
-  messageCount: number;
-  preview: string;
-  recipient: string;
-  sentAt: string;
-  status: string;
-  subject: string;
-  threadId: string;
-  title: string;
-  unreadCount: number;
-}
-
-export interface MessageThreadDetail {
-  company: string;
-  gmailThreadId: string;
-  jobId: string;
-  messages: ThreadMessageView[];
-  recipient: string;
-  subject: string;
-  threadId: string;
-  title: string;
-}
 
 export class MessageThreadError extends Error {
   readonly status: 404 | 409;
@@ -373,8 +326,8 @@ async function loadThreadAttachments(
   db: D1Database,
   userId: string,
   attemptIds: string[]
-): Promise<Map<string, ThreadAttachmentView[]>> {
-  const byAttempt = new Map<string, ThreadAttachmentView[]>();
+): Promise<Map<string, ThreadAttachment[]>> {
+  const byAttempt = new Map<string, ThreadAttachment[]>();
   if (attemptIds.length === 0) {
     return byAttempt;
   }
@@ -433,7 +386,7 @@ function toThreadSummary(row: ThreadSummaryRow): MessageThreadSummary {
   };
 }
 
-function toInboundThreadMessage(row: InboundMessageRow): ThreadMessageView {
+function toInboundThreadMessage(row: InboundMessageRow): ThreadMessage {
   return {
     attachments: [],
     body: row.body_text,
@@ -451,8 +404,8 @@ function toInboundThreadMessage(row: InboundMessageRow): ThreadMessageView {
 
 function toThreadMessage(
   row: ThreadMessageRow,
-  attachments: ThreadAttachmentView[]
-): ThreadMessageView {
+  attachments: ThreadAttachment[]
+): ThreadMessage {
   return {
     attachments,
     body: row.message,
