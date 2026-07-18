@@ -17,6 +17,7 @@ interface DraftAttachmentRow {
   object_key: string;
   position: number;
   r2_version: string;
+  required_opening: string;
   size_bytes: number;
 }
 
@@ -47,7 +48,8 @@ export async function buildGmailMessagePayload(
   envelope: GmailEnvelope
 ): Promise<GmailMessagePayload> {
   const rows = await env.DB.prepare(
-    `SELECT d.message,d.document_packet_manifest_json,a.position,a.category,
+    `SELECT d.message,d.document_packet_manifest_json,d.required_opening,
+            a.position,a.category,
             a.filename,a.object_key,a.content_type,
             a.size_bytes,a.r2_version,a.etag
        FROM application_drafts d
@@ -61,7 +63,10 @@ export async function buildGmailMessagePayload(
   if (!first) {
     throw new GmailMessagePayloadError("Application draft not found");
   }
-  const applicationMessage = validateApplicationMessageOpening(first.message);
+  const applicationMessage = validateApplicationMessageOpening(
+    first.message,
+    first.required_opening
+  );
   const attachmentRows = rows.results.filter((row) => row.object_key);
   const expectedCategories = JSON.parse(
     first.document_packet_manifest_json

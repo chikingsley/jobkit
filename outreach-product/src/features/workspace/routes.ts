@@ -1,4 +1,5 @@
 export const workspacePaths = {
+  anesl: "/anesl",
   automation: "/automation",
   countries: "/countries",
   documents: "/documents",

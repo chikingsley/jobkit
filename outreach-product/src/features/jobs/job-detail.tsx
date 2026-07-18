@@ -228,9 +228,9 @@ export function JobDetail({
               busy={Boolean(busy) || deliveryStatus(job) === "sending"}
               draft={job.draft}
               instruction={instruction}
-              jobId={job.id}
               onDraftAction={onDraftAction}
               onInstruction={onInstruction}
+              resourcePath={`/api/jobs/${job.id}`}
             />
           ) : null}
         </CardContent>

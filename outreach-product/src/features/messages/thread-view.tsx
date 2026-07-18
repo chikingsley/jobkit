@@ -12,6 +12,7 @@ import {
   AttachmentTrigger,
 } from "@/components/ui/attachment";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { Marker, MarkerContent } from "@/components/ui/marker";
 import {
@@ -53,6 +54,20 @@ export function MessageThread({ detail }: { detail: MessageThreadDetail }) {
             <Marker variant="separator">
               <MarkerContent>{detail.subject}</MarkerContent>
             </Marker>
+            {detail.applicationTargets.length > 0 ? (
+              <div className="mb-4 rounded-lg border bg-background p-3">
+                <p className="font-medium text-xs">
+                  Positions in this application
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {detail.applicationTargets.map((target) => (
+                    <Badge key={target.jobId} variant="outline">
+                      {target.sourceReference} · {target.location}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             {detail.messages.map((message) => (
               <MessageScrollerItem
                 key={message.id}

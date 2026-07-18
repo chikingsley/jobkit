@@ -4,6 +4,7 @@ import {
   Suspense,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import {
@@ -62,6 +63,9 @@ const MessagesWorkspace = lazy(async () => ({
 const JobsWorkspace = lazy(async () => ({
   default: (await import("@/features/jobs/workspace")).JobsWorkspace,
 }));
+const AneslWorkspace = lazy(async () => ({
+  default: (await import("@/features/anesl/workspace")).AneslWorkspace,
+}));
 
 function WorkspacePage({ children }: PropsWithChildren) {
   return (
@@ -102,6 +106,7 @@ export function App() {
     matches,
     preferences,
     profile,
+    qualificationClaims,
     refreshing,
     saveQualificationClaim,
     setPreferences,
@@ -111,18 +116,26 @@ export function App() {
     (view: WorkspaceView) => navigate(workspacePaths[view]),
     [navigate]
   );
+  const nonAneslJobs = useMemo(
+    () => jobs.filter((job) => job.board.toLowerCase() !== "anesl"),
+    [jobs]
+  );
+  const visibleJobs = useMemo(
+    () =>
+      filterJobs(nonAneslJobs, matches, {
+        country: countryFilter,
+        fit: fitFilter,
+        showExcluded,
+      }),
+    [countryFilter, fitFilter, matches, nonAneslJobs, showExcluded]
+  );
   useEffect(() => {
-    const [firstJob] = jobs;
-    if (!selectedId && firstJob) {
+    const selectedIsVisible = visibleJobs.some((job) => job.id === selectedId);
+    const [firstJob] = visibleJobs;
+    if (!selectedIsVisible && firstJob) {
       setSelectedId(firstJob.id);
     }
-  }, [jobs, selectedId, setSelectedId]);
-
-  const visibleJobs = filterJobs(jobs, matches, {
-    country: countryFilter,
-    fit: fitFilter,
-    showExcluded,
-  });
+  }, [selectedId, setSelectedId, visibleJobs]);
   const selected = selectVisibleJob(visibleJobs, selectedId);
 
   async function action(path: string, body?: object) {
@@ -216,6 +229,21 @@ export function App() {
           }
         />
         <Routes>
+          <Route
+            element={
+              <Suspense fallback={<ViewLoading />}>
+                <AneslWorkspace
+                  documents={documents}
+                  fx={fx}
+                  preferences={preferences}
+                  profile={profile}
+                  qualificationClaims={qualificationClaims}
+                  request={apiRequest}
+                />
+              </Suspense>
+            }
+            path={workspacePaths.anesl}
+          />
           <Route
             element={
               <WorkspacePage>

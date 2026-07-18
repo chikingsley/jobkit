@@ -209,6 +209,7 @@ function toReviewJob(row: Record<string, unknown>) {
     opportunityScope: String(row.opportunity_scope),
     positionAnalysis: positionAnalysisFromRow(row),
     priority: Number(row.priority),
+    sourceReference: String(row.source_reference),
     sourceUrl: String(row.source_url),
     status: String(row.status),
     title: String(row.title),

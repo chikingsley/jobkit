@@ -35,12 +35,20 @@ export interface MessageThreadSummary {
   sentAt: string;
   status: string;
   subject: string;
+  targetCount: number;
+  targetReferences: string[];
   threadId: string;
   title: string;
   unreadCount: number;
 }
 
 export interface MessageThreadDetail {
+  applicationTargets: Array<{
+    jobId: string;
+    location: string;
+    sourceReference: string;
+    title: string;
+  }>;
   company: string;
   gmailThreadId: string;
   jobId: string;

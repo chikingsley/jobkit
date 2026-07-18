@@ -4,13 +4,8 @@ import { resolve } from "node:path";
 const COMMANDS = new Map<string, string>([
   ["analyze jobs", "analyze-jobs/run.ts"],
   ["analyze positions", "analyze-job-positions/run.ts"],
-  ["analyze regroup", "analyze-jobs/regroup.ts"],
-  ["drafts generate", "application-drafts/generate-batch.ts"],
-  ["economics evaluate", "evaluate-job-economics.ts"],
+  ["applications prepare", "applications/prepare.ts"],
   ["inventory sync", "job-inventory/sync.ts"],
-  ["jobs rank", "job-ranking/rank.ts"],
-  ["messages import-exemplars", "message-exemplars/import.ts"],
-  ["messages import-foundation", "message-foundations/import.ts"],
   ["sweeps run", "run-country-sweeps.ts"],
 ]);
 
@@ -39,13 +34,8 @@ Usage:
 Commands:
   analyze jobs                 Extract job requirements and economics
   analyze positions            Extract distinct positions from listings
-  analyze regroup              Rebuild job groups from stored analysis
-  drafts generate              Generate application drafts in a batch
-  economics evaluate           Evaluate source-inventory economics
+  applications prepare         Prepare selected applications for review
   inventory sync               Sync the local source inventory into D1
-  jobs rank                    Rank jobs for the configured profile
-  messages import-exemplars    Import sent-message exemplars
-  messages import-foundation   Import the approved message foundation
   sweeps run                   Claim and execute country-sweep tasks`);
   if (unknownCommand) {
     process.exitCode = 1;

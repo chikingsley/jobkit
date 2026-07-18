@@ -4,6 +4,7 @@ import {
   ChevronsUpDown,
   Files,
   Globe2,
+  Layers3,
   LogOut,
   MessageSquareText,
   MessagesSquare,
@@ -46,6 +47,7 @@ import {
 
 const navigation = [
   { icon: BriefcaseBusiness, id: "jobs", label: "Jobs" },
+  { icon: Layers3, id: "anesl", label: "ANESL sets" },
   { icon: MessagesSquare, id: "messages", label: "Messages" },
   { icon: Globe2, id: "countries", label: "Countries" },
   { icon: Bot, id: "automation", label: "Automation" },
@@ -249,6 +251,7 @@ export function WorkspaceHeader({
 }) {
   const navigate = useNavigate();
   const title = {
+    anesl: "ANESL application sets",
     automation: "Automation",
     countries: "Countries",
     documents: "Documents",

@@ -480,7 +480,7 @@ function benefitCriteria(job: Job, preferences: Preferences) {
 function positionCriteria(job: Job, preferences: Preferences) {
   const analysis = job.positionAnalysis;
   if (!analysis) {
-    return [];
+    return [criterion("Advertised role has not been classified", "unknown")];
   }
   const positions = analysis.positions.map((position) => ({
     preference: preferences.roles[position.roleFamily],

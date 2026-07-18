@@ -13,6 +13,7 @@ import {
   writePreferences,
   writeProfile,
 } from "./repositories/user-settings";
+import { registerApplicationBundleRoutes } from "./routes/application-bundles";
 import { registerApplicationDraftRoutes } from "./routes/application-drafts";
 import { registerCountryRoutes } from "./routes/countries";
 import { registerDocumentRoutes } from "./routes/documents";
@@ -26,6 +27,7 @@ import { registerMessageRoutes } from "./routes/messages";
 import { registerOnboardingRoutes } from "./routes/onboarding";
 import { registerUserSettingsRoutes } from "./routes/user-settings";
 import { ImportSchema, SubmitSchema } from "./schemas";
+import { ApplicationBundleError } from "./services/application-bundle-model";
 import {
   DraftMessageFoundationRequiredError,
   DraftMutationError,
@@ -94,6 +96,9 @@ app.onError((error, c) => {
     return c.json({ message: error.message, ok: false }, error.status);
   }
   if (error instanceof EmailAttemptError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
+  if (error instanceof ApplicationBundleError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
   if (error instanceof GmailIntegrationError) {
@@ -184,6 +189,7 @@ app.use("/api/*", async (c, next) => {
 });
 
 registerOnboardingRoutes(app);
+registerApplicationBundleRoutes(app);
 registerApplicationDraftRoutes(app);
 registerJobRoutes(app);
 registerJobMatchFactRoutes(app);

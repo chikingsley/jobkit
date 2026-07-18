@@ -183,6 +183,7 @@ export function useWorkspaceData() {
     matches,
     preferences,
     profile,
+    qualificationClaims,
     refreshing,
     saveQualificationClaim,
     setPreferences,

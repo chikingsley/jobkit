@@ -2,6 +2,7 @@ import type { AppEnv } from "../env";
 import {
   claimEmailAttempt,
   type EmailAttemptView,
+  prepareBundleEmailSend,
   prepareEmailSend,
   recordFailedEmailAttempt,
   recordGmailDraft,
@@ -116,6 +117,29 @@ export async function sendApplicationEmailWithGmail(
   };
 }
 
+export async function sendApplicationBundleEmailWithGmail(
+  env: AppEnv,
+  userId: string,
+  bundleId: string,
+  draftId: string
+) {
+  const status = await readGmailConnectionStatus(env, userId);
+  if (status.watch?.status !== "active") {
+    throw new GmailIntegrationError(
+      "Finish Gmail setup in Messages before sending applications",
+      { status: 409 }
+    );
+  }
+  const accessToken = await getGoogleAccessToken(env, userId);
+  const attempt = await prepareBundleEmailSend(env, userId, bundleId, draftId);
+  const sent = await deliverEmailAttempt(env, userId, attempt, accessToken);
+  return {
+    attempt: sent,
+    message: `ANESL application set sent to ${sent.recipient}`,
+    ok: true as const,
+  };
+}
+
 export async function deliverEmailAttempt(
   env: AppEnv,
   userId: string,
@@ -164,10 +188,9 @@ export async function startOrRenewGmailWatch(env: AppEnv, userId: string) {
     });
   }
   const accessToken = await getGoogleAccessToken(env, userId);
-  const [profile, watchResult, existing] = await Promise.all([
+  const [profile, watchResult] = await Promise.all([
     getGmailProfile(accessToken),
     startGmailWatch(accessToken, env.GOOGLE_PUBSUB_TOPIC),
-    readWatchByUser(env.DB, userId),
   ]);
   const expirationAt = expirationIso(watchResult.expiration);
   const timestamp = new Date().toISOString();
@@ -192,14 +215,12 @@ export async function startOrRenewGmailWatch(env: AppEnv, userId: string) {
     )
     .run();
 
-  const messagesRecorded = existing
-    ? 0
-    : await reconcileRecentReplies(
-        env,
-        userId,
-        profile.emailAddress,
-        accessToken
-      );
+  const messagesRecorded = await reconcileRecentReplies(
+    env,
+    userId,
+    profile.emailAddress,
+    accessToken
+  );
   return {
     emailAddress: profile.emailAddress,
     expirationAt,

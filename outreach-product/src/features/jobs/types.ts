@@ -65,6 +65,7 @@ export interface Job {
   messageRoute: "advertised_position" | "multi_position" | "school_outreach";
   opportunityScope: "direct" | "multi_position" | "unknown";
   positionAnalysis: JobPositionAnalysis | null;
+  sourceReference: string;
   sourceUrl: string;
   status: string;
   title: string;

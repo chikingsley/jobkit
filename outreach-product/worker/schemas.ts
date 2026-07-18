@@ -115,6 +115,7 @@ export interface ReviewJob {
   opportunityScope: z.infer<typeof OpportunityScopeSchema>;
   positionAnalysis: JobPositionAnalysis | null;
   priority: number;
+  sourceReference: string;
   sourceUrl: string;
   status: string;
   title: string;

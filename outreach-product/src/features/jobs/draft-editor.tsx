@@ -9,19 +9,19 @@ export function DraftEditor({
   busy,
   draft,
   instruction,
-  jobId,
   onDraftAction,
   onInstruction,
+  resourcePath,
 }: {
   busy: boolean;
   draft: JobDraft;
   instruction: string;
-  jobId: string;
   onDraftAction: (
     path: string,
     options: { body?: object; method?: "POST" | "PUT" }
   ) => Promise<DraftMutationResult | null>;
   onInstruction: (value: string) => void;
+  resourcePath: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [highlightChanges, setHighlightChanges] = useState(false);
@@ -63,7 +63,7 @@ export function DraftEditor({
                 manualMessage.trim().length < 100
               }
               onClick={() =>
-                void mutate(`/api/jobs/${jobId}/draft`, {
+                void mutate(`${resourcePath}/draft`, {
                   body: { message: manualMessage },
                   method: "PUT",
                 })
@@ -95,7 +95,7 @@ export function DraftEditor({
             <Button
               disabled={busy || draft.version <= 1}
               onClick={() =>
-                void mutate(`/api/jobs/${jobId}/undo`, { method: "POST" })
+                void mutate(`${resourcePath}/undo`, { method: "POST" })
               }
               size="sm"
               variant="outline"
@@ -127,7 +127,7 @@ export function DraftEditor({
           className="self-end"
           disabled={!instruction.trim() || busy}
           onClick={() =>
-            void mutate(`/api/jobs/${jobId}/revise`, {
+            void mutate(`${resourcePath}/revise`, {
               body: { instruction },
             })
           }

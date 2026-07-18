@@ -15,6 +15,7 @@ export type EmailAttemptStatus =
 interface AttemptSourceRow {
   board: string;
   contact_channel_id: string | null;
+  contact_role: string;
   country: string;
   draft_id: string;
   draft_status: string;
@@ -23,6 +24,7 @@ interface AttemptSourceRow {
   location: string;
   message: string;
   recipient: string;
+  required_opening: string;
   route_id: string;
   route_kind: string;
   route_status: string;
@@ -32,6 +34,7 @@ interface AttemptSourceRow {
 }
 
 interface AttemptRow {
+  application_bundle_id: string | null;
   attachment_count?: number;
   company: string;
   created_at: string;
@@ -60,6 +63,7 @@ interface OwnedAttemptRow extends AttemptRow {
 
 export interface EmailAttemptView {
   attemptId: string;
+  bundleId: string | null;
   company: string;
   createdAt: string;
   draftId: string;
@@ -96,9 +100,10 @@ export async function createApprovedEmailAttempt(
 ): Promise<EmailAttemptView> {
   const source = await env.DB.prepare(
     `SELECT uj.id user_job_id,uj.status job_status,
-            d.id draft_id,d.status draft_status,d.message,
+            d.id draft_id,d.status draft_status,d.message,d.required_opening,
             ar.id route_id,ar.kind route_kind,ar.destination recipient,
             ar.contact_channel_id,
+            COALESCE(c.role,'unknown') contact_role,
             ar.status route_status,j.board,j.title,j.location,j.country,
             j.source_reference,u.email from_email
        FROM user_jobs uj
@@ -106,6 +111,8 @@ export async function createApprovedEmailAttempt(
        JOIN jobs j ON j.id=uj.job_id
        JOIN application_drafts d ON d.user_job_id=uj.id
        JOIN application_routes ar ON ar.job_id=j.id
+       LEFT JOIN contact_channels cc ON cc.id=ar.contact_channel_id
+       LEFT JOIN contacts c ON c.id=cc.contact_id
       WHERE uj.user_id=? AND j.id=? AND d.id=? AND ar.id=?
         AND d.id=(
           SELECT id FROM application_drafts
@@ -132,7 +139,10 @@ export async function createApprovedEmailAttempt(
     throw new EmailAttemptError("The selected draft is not approvable", 409);
   }
   await assertNoExistingContactAttempt(env.DB, userId, source);
-  const messagePolicyProblem = applicationMessageOpeningProblem(source.message);
+  const messagePolicyProblem = applicationMessageOpeningProblem(
+    source.message,
+    source.required_opening
+  );
   if (messagePolicyProblem) {
     throw new EmailAttemptError(messagePolicyProblem, 422);
   }
@@ -223,6 +233,7 @@ async function assertNoExistingContactAttempt(
          AND a.status IN (
            'approved','claimed','drafted','sending','sent','uncertain'
          )
+         AND (a.status<>'sent' OR ?<>'board_intermediary')
          AND NOT (
            a.user_job_id=? AND a.draft_id=? AND a.route_id=?
          )
@@ -233,6 +244,7 @@ async function assertNoExistingContactAttempt(
       userId,
       source.contact_channel_id,
       source.recipient,
+      source.contact_role,
       source.user_job_id,
       source.draft_id,
       source.route_id
@@ -245,6 +257,124 @@ async function assertNoExistingContactAttempt(
     `This contact already has an application for “${existing.title}” (${existing.status}). Review that thread instead of starting another email.`,
     409
   );
+}
+
+export async function createApprovedBundleEmailAttempt(
+  env: AppEnv,
+  userId: string,
+  bundleId: string,
+  draftId: string
+): Promise<EmailAttemptView> {
+  const source = await env.DB.prepare(
+    `SELECT uj.id user_job_id,uj.status job_status,
+            d.id draft_id,d.status draft_status,d.message,d.required_opening,
+            ar.id route_id,ar.kind route_kind,ar.destination recipient,
+            ar.contact_channel_id,COALESCE(c.role,'unknown') contact_role,
+            ar.status route_status,j.board,j.title,j.location,j.country,
+            j.source_reference,u.email from_email,b.status bundle_status,
+            b.subject
+       FROM application_bundles b
+       JOIN application_bundle_targets bt
+         ON bt.bundle_id=b.id AND bt.ordinal=0
+       JOIN user_jobs uj ON uj.id=bt.user_job_id
+       JOIN users u ON u.id=uj.user_id
+       JOIN jobs j ON j.id=uj.job_id
+       JOIN application_routes ar ON ar.id=bt.route_id
+       JOIN application_drafts d ON d.application_bundle_id=b.id
+       LEFT JOIN contact_channels cc ON cc.id=ar.contact_channel_id
+       LEFT JOIN contacts c ON c.id=cc.contact_id
+      WHERE b.id=? AND b.user_id=? AND d.id=?
+        AND d.id=(
+          SELECT id FROM application_drafts
+           WHERE application_bundle_id=b.id ORDER BY version DESC LIMIT 1
+        )`
+  )
+    .bind(bundleId, userId, draftId)
+    .first<AttemptSourceRow & { bundle_status: string; subject: string }>();
+  if (!source) {
+    throw new EmailAttemptError(
+      "The application set or its draft is no longer current",
+      404
+    );
+  }
+  if (source.route_kind !== "email" || source.route_status !== "active") {
+    throw new EmailAttemptError("The ANESL email route is not active", 409);
+  }
+  if (!new Set(["review", "approved", "failed"]).has(source.bundle_status)) {
+    throw new EmailAttemptError(
+      "The application set is not ready for approval",
+      409
+    );
+  }
+  if (!new Set(["draft", "approved"]).has(source.draft_status)) {
+    throw new EmailAttemptError("The selected draft is not approvable", 409);
+  }
+  await assertNoExistingContactAttempt(env.DB, userId, source);
+  const messagePolicyProblem = applicationMessageOpeningProblem(
+    source.message,
+    source.required_opening
+  );
+  if (messagePolicyProblem) {
+    throw new EmailAttemptError(messagePolicyProblem, 422);
+  }
+
+  const timestamp = new Date().toISOString();
+  const attemptId = crypto.randomUUID();
+  const results = await env.DB.batch([
+    env.DB.prepare(
+      `UPDATE user_jobs SET status='approved',updated_at=?
+        WHERE user_id=? AND id IN (
+          SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
+        ) AND status IN ('new','review','approved','failed')`
+    ).bind(timestamp, userId, bundleId),
+    env.DB.prepare(
+      `UPDATE application_drafts
+          SET status='approved',approved_at=COALESCE(approved_at,?)
+        WHERE id=? AND application_bundle_id=? AND status IN ('draft','approved')`
+    ).bind(timestamp, draftId, bundleId),
+    env.DB.prepare(
+      `UPDATE application_bundles SET status='approved',updated_at=?
+        WHERE id=? AND user_id=? AND status IN ('review','approved','failed')`
+    ).bind(timestamp, bundleId, userId),
+    env.DB.prepare(
+      `INSERT INTO application_attempts
+        (id,user_job_id,draft_id,route_id,application_bundle_id,channel,
+         recipient,subject,status,approved_at,created_at,updated_at)
+       VALUES (?,?,?,?,?,'email',?,?,'approved',?,?,?)
+       ON CONFLICT(user_job_id,draft_id,route_id) DO UPDATE SET
+         application_bundle_id=excluded.application_bundle_id,status='approved',
+         payload_sha256='',claimed_at=NULL,error_stage='',error_detail='',
+         approved_at=excluded.approved_at,updated_at=excluded.updated_at
+       WHERE application_attempts.status='failed'`
+    ).bind(
+      attemptId,
+      source.user_job_id,
+      draftId,
+      source.route_id,
+      bundleId,
+      source.recipient,
+      source.subject,
+      timestamp,
+      timestamp,
+      timestamp
+    ),
+  ]);
+  if ((results.at(3)?.meta.changes ?? 0) !== 1) {
+    throw new EmailAttemptError(
+      "The application set already has an active email attempt",
+      409
+    );
+  }
+  const row = await readAttemptByBundleSelection(
+    env.DB,
+    userId,
+    bundleId,
+    draftId
+  );
+  if (!row) {
+    throw new Error("Approved bundle email attempt could not be read back");
+  }
+  return toAttemptView(row);
 }
 
 export async function listEmailAttempts(
@@ -310,6 +440,49 @@ export async function prepareEmailSend(
   const updated = await readOwnedAttempt(env.DB, userId, attempt.attemptId);
   if (!updated) {
     throw new Error("Requested email attempt could not be read back");
+  }
+  return toAttemptView(updated);
+}
+
+export async function prepareBundleEmailSend(
+  env: AppEnv,
+  userId: string,
+  bundleId: string,
+  draftId: string
+): Promise<EmailAttemptView> {
+  const attempt = await createApprovedBundleEmailAttempt(
+    env,
+    userId,
+    bundleId,
+    draftId
+  );
+  if (attempt.status === "sent") {
+    return attempt;
+  }
+  if (!(attempt.status === "approved" || attempt.status === "drafted")) {
+    throw new EmailAttemptError(
+      `Bundle email send cannot be requested from ${attempt.status}`,
+      409
+    );
+  }
+  const timestamp = new Date().toISOString();
+  const result = await env.DB.prepare(
+    `UPDATE application_attempts SET send_requested_at=?,updated_at=?
+      WHERE id=? AND application_bundle_id=?
+        AND status IN ('approved','drafted')
+        AND user_job_id IN (SELECT id FROM user_jobs WHERE user_id=?)`
+  )
+    .bind(timestamp, timestamp, attempt.attemptId, bundleId, userId)
+    .run();
+  if ((result.meta.changes ?? 0) !== 1) {
+    throw new EmailAttemptError(
+      "Bundle email send request changed concurrently",
+      409
+    );
+  }
+  const updated = await readOwnedAttempt(env.DB, userId, attempt.attemptId);
+  if (!updated) {
+    throw new Error("Requested bundle email attempt could not be read back");
   }
   return toAttemptView(updated);
 }
@@ -451,7 +624,7 @@ export async function recordGmailSent(
     );
   }
   const timestamp = new Date().toISOString();
-  const results = await db.batch([
+  const sentStatements: D1PreparedStatement[] = [
     db
       .prepare(
         `UPDATE application_attempts
@@ -468,16 +641,60 @@ export async function recordGmailSent(
         gmailDraftId,
         userId
       ),
-    db
-      .prepare(
-        `UPDATE user_jobs SET status='applied',updated_at=?
+  ];
+  if (attempt.application_bundle_id) {
+    sentStatements.push(
+      db
+        .prepare(
+          `UPDATE user_jobs SET status='applied',updated_at=?
+        WHERE user_id=? AND id IN (
+          SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
+        )
+          AND EXISTS (
+            SELECT 1 FROM application_attempts
+            WHERE id=? AND status='sent' AND updated_at=?
+          )`
+        )
+        .bind(
+          timestamp,
+          userId,
+          attempt.application_bundle_id,
+          attemptId,
+          timestamp
+        ),
+      db
+        .prepare(
+          `UPDATE application_bundles SET status='sent',sent_at=?,updated_at=?
+          WHERE id=? AND user_id=?
+            AND EXISTS (
+              SELECT 1 FROM application_attempts
+               WHERE id=? AND status='sent' AND updated_at=?
+            )`
+        )
+        .bind(
+          timestamp,
+          timestamp,
+          attempt.application_bundle_id,
+          userId,
+          attemptId,
+          timestamp
+        )
+    );
+  } else {
+    sentStatements.push(
+      db
+        .prepare(
+          `UPDATE user_jobs SET status='applied',updated_at=?
         WHERE id=? AND user_id=?
           AND EXISTS (
             SELECT 1 FROM application_attempts
             WHERE id=? AND status='sent' AND updated_at=?
           )`
-      )
-      .bind(timestamp, attempt.user_job_id, userId, attemptId, timestamp),
+        )
+        .bind(timestamp, attempt.user_job_id, userId, attemptId, timestamp)
+    );
+  }
+  sentStatements.push(
     db
       .prepare(
         `UPDATE application_drafts SET status='submitted',submitted_at=?
@@ -487,28 +704,58 @@ export async function recordGmailSent(
             WHERE id=? AND status='sent' AND updated_at=?
           )`
       )
-      .bind(timestamp, attempt.draft_id, attemptId, timestamp),
-    db
-      .prepare(
-        `INSERT INTO job_events
+      .bind(timestamp, attempt.draft_id, attemptId, timestamp)
+  );
+  if (attempt.application_bundle_id) {
+    sentStatements.push(
+      db
+        .prepare(
+          `INSERT INTO job_events
+          (id,user_job_id,event_type,draft_id,detail,metadata_json,created_at)
+         SELECT 'event:' || lower(hex(randomblob(16))),bt.user_job_id,
+                'email_sent',?,?,json_object('applicationBundleId',?),?
+           FROM application_bundle_targets bt
+          WHERE bt.bundle_id=?
+            AND EXISTS (
+              SELECT 1 FROM application_attempts
+               WHERE id=? AND status='sent' AND updated_at=?
+            )`
+        )
+        .bind(
+          attempt.draft_id,
+          `Gmail message ${gmailMessageId} verified with SENT label`,
+          attempt.application_bundle_id,
+          timestamp,
+          attempt.application_bundle_id,
+          attemptId,
+          timestamp
+        )
+    );
+  } else {
+    sentStatements.push(
+      db
+        .prepare(
+          `INSERT INTO job_events
         (id,user_job_id,event_type,draft_id,detail,metadata_json,created_at)
        SELECT ?,?,'email_sent',?,?,?,?
        WHERE EXISTS (
          SELECT 1 FROM application_attempts
          WHERE id=? AND status='sent' AND updated_at=?
        )`
-      )
-      .bind(
-        crypto.randomUUID(),
-        attempt.user_job_id,
-        attempt.draft_id,
-        `Gmail message ${gmailMessageId} verified with SENT label`,
-        "{}",
-        timestamp,
-        attemptId,
-        timestamp
-      ),
-  ]);
+        )
+        .bind(
+          crypto.randomUUID(),
+          attempt.user_job_id,
+          attempt.draft_id,
+          `Gmail message ${gmailMessageId} verified with SENT label`,
+          "{}",
+          timestamp,
+          attemptId,
+          timestamp
+        )
+    );
+  }
+  const results = await db.batch(sentStatements);
   if ((results.at(0)?.meta.changes ?? 0) !== 1) {
     throw new EmailAttemptError("Email send state changed concurrently", 409);
   }
@@ -639,6 +886,24 @@ function readAttemptBySelection(
     .first<AttemptRow>();
 }
 
+function readAttemptByBundleSelection(
+  db: D1Database,
+  userId: string,
+  bundleId: string,
+  draftId: string
+) {
+  return db
+    .prepare(
+      `SELECT a.*,uj.job_id,j.title,j.company
+         FROM application_attempts a
+         JOIN user_jobs uj ON uj.id=a.user_job_id
+         JOIN jobs j ON j.id=uj.job_id
+        WHERE uj.user_id=? AND a.application_bundle_id=? AND a.draft_id=?`
+    )
+    .bind(userId, bundleId, draftId)
+    .first<AttemptRow>();
+}
+
 function readOwnedAttempt(db: D1Database, userId: string, attemptId: string) {
   return db
     .prepare(
@@ -656,6 +921,7 @@ function readOwnedAttempt(db: D1Database, userId: string, attemptId: string) {
 function toAttemptView(row: AttemptRow): EmailAttemptView {
   return {
     attemptId: row.id,
+    bundleId: row.application_bundle_id,
     company: row.company,
     createdAt: row.created_at,
     draftId: row.draft_id,

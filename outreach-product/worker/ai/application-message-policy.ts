@@ -24,6 +24,7 @@ Message policy:
 - Keep the message concise, specific to the employer and role, and free of generic listing boilerplate.
 - Use the shortest complete version. Let useful content determine the length; never add detail or extra paragraphs to reach a preferred word count.
 - Ask exactly one useful question using the supplied questionGuidance for the messageRoute. The route determines whether the candidate is responding to a known position, contacting a school generally, or asking about a multi-position listing.
+- When requiredPositionReferences contains values, add one short paragraph after the qualifications and before the final question that lists every selected position ID exactly once. This is the only permitted addition to the approved template structure.
 - When requiredQuestion is supplied, use that exact sentence as the one question. It is calculated from the candidate's current calendar and replaces the template question.
 - Put that question in the final content paragraph immediately before the required ending. Do not place qualifications or other content after it.
 - Never mention attachments. Document-packet selection and delivery are handled separately from message generation.

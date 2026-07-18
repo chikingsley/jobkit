@@ -20,6 +20,17 @@ interface GmailWatchRow {
   user_id: string;
 }
 
+interface TrackedGmailRoute {
+  gmail_thread_id: string;
+  id: string;
+  kind: "attempt" | "test";
+  recipient: string;
+  subject: string;
+}
+
+const EMAIL_ADDRESS_PATTERN = /<([^<>]+)>/u;
+const REPLY_PREFIX_PATTERN = /^(?:(?:re|fw|fwd):\s*)+/iu;
+
 const GmailPushDataSchema = z.object({
   emailAddress: z.string().trim().min(1),
   historyId: z.string().regex(/^\d+$/u),
@@ -196,30 +207,58 @@ async function syncInboundMessages(
   messageIds: string[]
 ) {
   const tracked = await env.DB.prepare(
-    `SELECT DISTINCT a.gmail_thread_id
+    `SELECT a.id,'attempt' kind,a.gmail_thread_id,'' recipient,'' subject
        FROM application_attempts a
        JOIN user_jobs uj ON uj.id=a.user_job_id
       WHERE uj.user_id=? AND a.gmail_thread_id<>''
-        AND a.status IN ('sent','sending','uncertain')`
+        AND a.status IN ('sent','sending','uncertain')
+      UNION ALL
+     SELECT test_send.id,'test' kind,test_send.gmail_thread_id,
+            test_send.recipient,test_send.subject
+       FROM application_bundle_test_sends test_send
+       JOIN application_bundles bundle ON bundle.id=test_send.bundle_id
+      WHERE bundle.user_id=? AND test_send.gmail_thread_id<>''
+        AND test_send.status='sent'`
   )
-    .bind(userId)
-    .all<{ gmail_thread_id: string }>();
-  const trackedThreads = new Set(
-    tracked.results.map((row) => row.gmail_thread_id)
-  );
-  if (trackedThreads.size === 0) {
+    .bind(userId, userId)
+    .all<TrackedGmailRoute>();
+  if (tracked.results.length === 0) {
     return 0;
   }
+  const attemptThreads = new Set(
+    tracked.results
+      .filter((route) => route.kind === "attempt")
+      .map((route) => route.gmail_thread_id)
+  );
+  const testSendsByThread = new Map(
+    tracked.results
+      .filter((route) => route.kind === "test")
+      .map((route) => [route.gmail_thread_id, route.id])
+  );
+  const testSendsByReply = new Map(
+    tracked.results
+      .filter((route) => route.kind === "test")
+      .map((route) => [testReplyKey(route.subject, route.recipient), route.id])
+  );
   const messages = await Promise.all(
     [...new Set(messageIds)].map((messageId) =>
       getGmailMessage(accessToken, messageId, "full")
     )
   );
   const inbound = messages.flatMap((message) => {
-    if (!isTrackedInboxReply(message, trackedThreads)) {
+    const headers = messageHeaders(message);
+    const testSendId = matchingTestSendId(
+      message,
+      headers,
+      testSendsByThread,
+      testSendsByReply
+    );
+    if (!(attemptThreads.has(message.threadId) || testSendId)) {
       return [];
     }
-    const headers = messageHeaders(message);
+    if (!isInboxReply(message)) {
+      return [];
+    }
     if (automatedMessage(headers, emailAddress)) {
       return [];
     }
@@ -231,6 +270,7 @@ async function syncInboundMessages(
         gmailThreadId: message.threadId,
         sentAt: messageSentAt(message),
         subject: headers.get("subject") ?? "",
+        testSendId,
         toAddress: headers.get("to") ?? "",
       },
     ];
@@ -241,15 +281,34 @@ async function syncInboundMessages(
   return results.filter((result) => result.created).length;
 }
 
-function isTrackedInboxReply(
-  message: GmailMessage,
-  trackedThreads: Set<string>
-) {
+function isInboxReply(message: GmailMessage) {
   return (
-    trackedThreads.has(message.threadId) &&
     Boolean(message.labelIds?.includes("INBOX")) &&
     !message.labelIds?.includes("SENT")
   );
+}
+
+function matchingTestSendId(
+  message: GmailMessage,
+  headers: Map<string, string>,
+  byThread: Map<string, string>,
+  byReply: Map<string, string>
+) {
+  return (
+    byThread.get(message.threadId) ??
+    byReply.get(
+      testReplyKey(headers.get("subject") ?? "", headers.get("from") ?? "")
+    )
+  );
+}
+
+function testReplyKey(subject: string, address: string) {
+  const normalizedSubject = subject
+    .trim()
+    .replace(REPLY_PREFIX_PATTERN, "")
+    .toLowerCase();
+  const bracketedAddress = address.match(EMAIL_ADDRESS_PATTERN)?.[1];
+  return `${normalizedSubject}\u0000${(bracketedAddress ?? address).trim().toLowerCase()}`;
 }
 
 async function collectHistoryMessageIds(

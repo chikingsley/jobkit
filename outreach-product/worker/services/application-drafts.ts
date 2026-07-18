@@ -154,14 +154,16 @@ export async function regenerateDrafts(
       ).bind(userJobId),
       env.DB.prepare(
         `INSERT INTO application_drafts
-          (id,user_job_id,version,message,change_summary,model_provider,model_id,
-           message_foundation_id,message_template_key,created_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?)`
+          (id,user_job_id,version,message,required_opening,change_summary,
+           model_provider,model_id,message_foundation_id,message_template_key,
+           created_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?)`
       ).bind(
         draftId,
         userJobId,
         (latest?.version ?? 0) + 1,
         draft.message,
+        openingFor(job.contactName),
         draft.summary,
         draft.provider,
         draft.modelId,
@@ -233,14 +235,16 @@ export async function importJobsWithDrafts(
     await env.DB.batch([
       env.DB.prepare(
         `INSERT INTO application_drafts
-          (id,user_job_id,version,message,change_summary,model_provider,model_id,
-           message_foundation_id,message_template_key,created_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?)`
+          (id,user_job_id,version,message,required_opening,change_summary,
+           model_provider,model_id,message_foundation_id,message_template_key,
+           created_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?)`
       ).bind(
         draftId,
         userJobId,
         1,
         draft.message,
+        openingFor(job.contactName),
         draft.summary,
         draft.provider,
         draft.modelId,
@@ -310,14 +314,16 @@ export async function generateJobDraft(
     ).bind(userJobId),
     env.DB.prepare(
       `INSERT INTO application_drafts
-        (id,user_job_id,version,message,change_summary,model_provider,model_id,
-         message_foundation_id,message_template_key,created_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?)`
+        (id,user_job_id,version,message,required_opening,change_summary,
+         model_provider,model_id,message_foundation_id,message_template_key,
+         created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`
     ).bind(
       draftId,
       userJobId,
       Number(row.latest_version ?? 0) + 1,
       draft.message,
+      openingFor(job.contactName),
       draft.summary,
       draft.provider,
       draft.modelId,
@@ -458,6 +464,7 @@ interface CurrentDraft {
   foundationId: string | null;
   job: JobImport;
   message: string;
+  requiredOpening: string;
   templateKey: string | null;
   userJobId: string;
   version: number;
@@ -506,15 +513,16 @@ async function persistDraftMutation(
     ).bind(current.draftId),
     env.DB.prepare(
       `INSERT INTO application_drafts
-        (id,user_job_id,version,message,change_summary,revision_instruction,
-         model_provider,model_id,message_foundation_id,message_template_key,
-         revision_source,created_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
+        (id,user_job_id,version,message,required_opening,change_summary,
+         revision_instruction,model_provider,model_id,message_foundation_id,
+         message_template_key,revision_source,created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
     ).bind(
       draftId,
       current.userJobId,
       version,
       input.message,
+      current.requiredOpening,
       input.changeSummary,
       input.revisionInstruction,
       input.modelProvider,
@@ -563,7 +571,7 @@ async function currentJobAndDraft(
   const row = await db
     .prepare(
       `SELECT j.*,uj.id user_job_id,uj.priority,d.id draft_id,d.version,d.message,
-              d.message_foundation_id,d.message_template_key
+              d.required_opening,d.message_foundation_id,d.message_template_key
        FROM user_jobs uj
        JOIN jobs j ON j.id=uj.job_id
        JOIN application_drafts d ON d.user_job_id=uj.id
@@ -582,6 +590,7 @@ async function currentJobAndDraft(
       : null,
     job: toJobImport(row),
     message: String(row.message),
+    requiredOpening: String(row.required_opening),
     templateKey: row.message_template_key
       ? String(row.message_template_key)
       : null,

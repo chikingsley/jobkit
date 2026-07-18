@@ -47,6 +47,8 @@ export interface MessageContext extends ActiveMessageFoundation {
   exemplars?: MessageExemplar[];
   now?: Date;
   preferences?: Preferences | null;
+  requiredPositionReferences?: string[];
+  requiredQuestion?: string;
   shape?: MessageShape;
   timeZone: string;
 }
@@ -68,6 +70,7 @@ export function generateApplicationMessage(
     context.now ?? new Date(),
     context.timeZone
   );
+  const requiredQuestion = context.requiredQuestion ?? policy.requiredQuestion;
   return runModel(env, model, {
     approvedTemplate: policy.approvedTemplate,
     candidatePreferences: messagePreferences(context.preferences),
@@ -79,7 +82,8 @@ export function generateApplicationMessage(
     request: "Write a new application message.",
     requiredEnding: `Best,\n${signature}`,
     requiredOpening,
-    requiredQuestion: policy.requiredQuestion,
+    requiredPositionReferences: context.requiredPositionReferences ?? [],
+    requiredQuestion,
     styleGuidance: [...context.voiceRules, ...styleGuidance],
   });
 }
@@ -103,6 +107,7 @@ export function reviseApplicationMessage(
     context.now ?? new Date(),
     context.timeZone
   );
+  const requiredQuestion = context.requiredQuestion ?? policy.requiredQuestion;
   return runModel(env, model, {
     approvedTemplate: policy.approvedTemplate,
     candidatePreferences: messagePreferences(context.preferences),
@@ -116,7 +121,8 @@ export function reviseApplicationMessage(
       "Revise the current message according to revisionInstruction while preserving every rule.",
     requiredEnding: `Best,\n${signature}`,
     requiredOpening,
-    requiredQuestion: policy.requiredQuestion,
+    requiredPositionReferences: context.requiredPositionReferences ?? [],
+    requiredQuestion,
     revisionInstruction,
     styleGuidance: [...context.voiceRules, ...styleGuidance],
   });
@@ -129,6 +135,7 @@ async function runModel(
     messageRoute: ApplicationMessageRoute;
     requiredEnding: string;
     requiredOpening: string;
+    requiredPositionReferences: string[];
     requiredQuestion?: string | null;
   }
 ): Promise<GeneratedApplicationMessage> {
@@ -169,6 +176,10 @@ async function runModel(
           input.messageRoute,
           input.requiredQuestion
         );
+        validateRequiredPositionReferences(
+          message,
+          input.requiredPositionReferences
+        );
         return {
           message,
           modelId: selection.modelId,
@@ -198,6 +209,20 @@ async function runModel(
     throw new ApplicationMessageGenerationError(
       `Application-message generation failed using ${selection.provider}/${selection.modelId}`,
       { cause: error }
+    );
+  }
+}
+
+function validateRequiredPositionReferences(
+  message: string,
+  references: string[]
+) {
+  const missing = references.filter(
+    (reference) => !message.includes(reference)
+  );
+  if (missing.length > 0) {
+    throw new Error(
+      `message must include every selected position ID; missing ${missing.join(", ")}`
     );
   }
 }

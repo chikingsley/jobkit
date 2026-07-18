@@ -1,8 +1,7 @@
-// Campaign batch: stage drafts for a list of jobs via the runner-scoped
-// generate endpoint. Drafts land in the review queue; nothing is approved or
-// sent. Recurring campaign tool.
+// Prepare selected applications through the runner-scoped generation endpoint.
+// Every generated draft remains in review; this command never approves or sends.
 //
-// Usage: bun run jobkit -- drafts generate --ids a,b,c
+// Usage: bun run jobkit -- applications prepare --ids a,b,c
 import { parseArgs } from "node:util";
 
 const { values: args } = parseArgs({
@@ -19,10 +18,10 @@ const ids = args.ids
   .split(",")
   .map((id) => id.trim())
   .filter(Boolean);
-let generated = 0;
+let prepared = 0;
 for (const id of ids) {
   const startedAt = Date.now();
-  // biome-ignore lint/performance/noAwaitInLoops: Draft generation is deliberately serialized to avoid model-provider bursts.
+  // biome-ignore lint/performance/noAwaitInLoops: Application preparation is deliberately serialized to avoid model-provider bursts.
   const response = await fetch(
     `${base}/api/jobs/${encodeURIComponent(id)}/generate`,
     { headers: { authorization: `Bearer ${runnerToken}` }, method: "POST" }
@@ -30,7 +29,7 @@ for (const id of ids) {
   const body = (await response.json()) as { message?: string };
   const seconds = ((Date.now() - startedAt) / 1000).toFixed(1);
   if (response.ok) {
-    generated += 1;
+    prepared += 1;
     console.log(`OK ${id} (${seconds}s): ${body.message ?? ""}`);
   } else {
     console.error(
@@ -38,7 +37,7 @@ for (const id of ids) {
     );
   }
 }
-console.log(`Generated ${generated}/${ids.length} drafts`);
-if (generated !== ids.length) {
+console.log(`Prepared ${prepared}/${ids.length} applications`);
+if (prepared !== ids.length) {
   process.exitCode = 1;
 }
