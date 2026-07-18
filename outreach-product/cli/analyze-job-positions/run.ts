@@ -26,6 +26,9 @@ const { values: args } = parseArgs({
     concurrency: { default: "1", type: "string" },
     drain: { default: false, type: "boolean" },
     effort: { default: "medium", type: "string" },
+    "fallback-effort": { default: "", type: "string" },
+    "fallback-model": { default: "", type: "string" },
+    "fallback-provider": { default: "", type: "string" },
     ids: { default: "", type: "string" },
     limit: { default: "10", type: "string" },
     model: { default: "", type: "string" },
@@ -42,6 +45,16 @@ const provider: StructuredAgentProvider = args.provider;
 const model =
   args.model ||
   (provider === "codex" ? "gpt-5.6-terra" : "opencode-go/deepseek-v4-flash");
+const fallbackProvider = fallbackProviderFor(
+  args["fallback-provider"],
+  provider
+);
+const fallbackModel =
+  args["fallback-model"] ||
+  (fallbackProvider === "codex"
+    ? "gpt-5.6-terra"
+    : "opencode-go/deepseek-v4-flash");
+const fallbackEffort = args["fallback-effort"] || args.effort;
 const runnerToken = process.env.JOBKIT_RUNNER_TOKEN ?? "";
 if (!runnerToken) {
   throw new Error("JOBKIT_RUNNER_TOKEN is not set");
@@ -81,7 +94,39 @@ async function api(path: string, init: RequestInit = {}) {
 const providerJsonSchema = z.toJSONSchema(ProviderJobPositionAnalysisSchema);
 const providerSchemaText = JSON.stringify(providerJsonSchema);
 
+interface AgentSelection {
+  effort: string;
+  model: string;
+  provider: StructuredAgentProvider;
+}
+
 async function analyze(job: PendingJob) {
+  const selections: AgentSelection[] = [
+    { effort: args.effort, model, provider },
+  ];
+  if (fallbackProvider) {
+    selections.push({
+      effort: fallbackEffort,
+      model: fallbackModel,
+      provider: fallbackProvider,
+    });
+  }
+  const failures: string[] = [];
+  for (const selection of selections) {
+    try {
+      // biome-ignore lint/performance/noAwaitInLoops: Fallback agents run only after the preceding provider fails.
+      const analysis = await analyzeWithAgent(job, selection);
+      return { analysis, ...selection };
+    } catch (error) {
+      failures.push(
+        `${selection.provider}/${selection.model}: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+  throw new Error(failures.join(" | "));
+}
+
+async function analyzeWithAgent(job: PendingJob, agent: AgentSelection) {
   const source = jobFactSource(job);
   const prompt = `${JOB_POSITION_EXTRACTION_INSTRUCTIONS}
 
@@ -96,12 +141,12 @@ ${source}
     // biome-ignore lint/performance/noAwaitInLoops: The second attempt receives exact validation feedback from the first.
     const output = await runStructuredAgent({
       cwd: resolve(import.meta.dir, "../.."),
-      effort: args.effort,
-      model,
+      effort: agent.effort,
+      model: agent.model,
       outputSchema: providerJsonSchema,
       prompt: prompt + feedback,
-      provider,
-      timeoutMs: provider === "codex" ? 600_000 : 180_000,
+      provider: agent.provider,
+      timeoutMs: agent.provider === "codex" ? 600_000 : 300_000,
       variant: args.variant,
     });
     const parsed = parseAgentJson(output);
@@ -122,7 +167,24 @@ ${source}
     }
     return analysis;
   }
-  throw new Error(`${provider} output failed position validation twice`);
+  throw new Error("output failed position validation twice");
+}
+
+function fallbackProviderFor(
+  requested: string,
+  primary: StructuredAgentProvider
+): StructuredAgentProvider | null {
+  const value = requested || (primary === "opencode" ? "codex" : "none");
+  if (value === "none") {
+    return null;
+  }
+  if (!(value === "codex" || value === "opencode")) {
+    throw new Error(`Unsupported fallback provider: ${value}`);
+  }
+  if (value === primary) {
+    return null;
+  }
+  return value;
 }
 
 function parseAgentJson(
@@ -179,7 +241,8 @@ async function processBatch(jobs: PendingJob[]) {
 async function processJob(job: PendingJob) {
   const startedAt = Date.now();
   try {
-    const analysis = await analyze(job);
+    const result = await analyze(job);
+    const { analysis } = result;
     console.log(
       `\n${job.id} (${((Date.now() - startedAt) / 1000).toFixed(1)}s)\n${job.title}\nscope: ${analysis.scope}`
     );
@@ -197,13 +260,13 @@ async function processJob(job: PendingJob) {
         body: JSON.stringify({
           analysis,
           jobId: job.id,
-          modelId: model,
-          provider,
+          modelId: result.model,
+          provider: result.provider,
           sourceHash: await jobSourceHash(job),
         }),
         method: "POST",
       });
-      console.log("  recorded");
+      console.log(`  recorded via ${result.provider}/${result.model}`);
     }
     return { failure: "", recorded: args.record };
   } catch (error) {

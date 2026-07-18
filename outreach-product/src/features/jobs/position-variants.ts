@@ -43,7 +43,7 @@ export const JobPositionVariantSchema = z
 export const JobPositionAnalysisSchema = z
   .object({
     positions: z.array(JobPositionVariantSchema).min(1).max(30),
-    reviewNotes: z.array(z.string().min(1).max(300)).max(20),
+    reviewNotes: z.array(z.string().min(1).max(1200)).max(20),
     scope: z.enum(["direct", "multi_position", "ambiguous"]),
   })
   .strict();
