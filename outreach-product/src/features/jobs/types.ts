@@ -32,11 +32,20 @@ export interface EmailAttempt {
 }
 
 export interface ApplicationRoute {
+  contact: ContactSummary | null;
   destination: string;
   id: string;
   kind: string;
   lastVerifiedAt: string | null;
   status: string;
+}
+
+export interface ContactSummary {
+  displayName: string;
+  id: string;
+  organizationName: string;
+  relatedListingCount: number;
+  role: "board_intermediary" | "employer" | "recruiter" | "unknown";
 }
 
 export interface Job {
@@ -55,6 +64,7 @@ export interface Job {
   matchFacts: JobMatchFacts | null;
   messageRoute: "advertised_position" | "multi_position" | "school_outreach";
   opportunityScope: "direct" | "multi_position" | "unknown";
+  positionAnalysis: JobPositionAnalysis | null;
   sourceUrl: string;
   status: string;
   title: string;
@@ -73,5 +83,6 @@ export type MarketSegment =
 
 import type { JobMatchFacts } from "@/features/matching/schema";
 import type { Compensation } from "./economics";
+import type { JobPositionAnalysis } from "./position-variants";
 
 export type { Compensation, FxData } from "./economics";

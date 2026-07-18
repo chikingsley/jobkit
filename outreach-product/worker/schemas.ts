@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { JobPositionAnalysis } from "../src/features/jobs/position-variants";
 import type { Compensation } from "../src/features/jobs/types";
 
 export const MarketSegmentSchema = z.enum([
@@ -63,6 +64,13 @@ export type ApplicationMessageRoute = z.infer<
 
 export interface ReviewJob {
   applicationRoutes: Array<{
+    contact: null | {
+      displayName: string;
+      id: string;
+      organizationName: string;
+      relatedListingCount: number;
+      role: "board_intermediary" | "employer" | "recruiter" | "unknown";
+    };
     destination: string;
     id: string;
     kind: string;
@@ -104,6 +112,7 @@ export interface ReviewJob {
   marketSegments: z.infer<typeof MarketSegmentSchema>[];
   messageRoute: z.infer<typeof ApplicationMessageRouteSchema>;
   opportunityScope: z.infer<typeof OpportunityScopeSchema>;
+  positionAnalysis: JobPositionAnalysis | null;
   priority: number;
   sourceUrl: string;
   status: string;

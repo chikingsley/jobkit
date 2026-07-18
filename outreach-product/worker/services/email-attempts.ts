@@ -13,6 +13,7 @@ export type EmailAttemptStatus =
   | "uncertain";
 
 interface AttemptSourceRow {
+  contact_channel_id: string | null;
   country: string;
   draft_id: string;
   draft_status: string;
@@ -95,6 +96,7 @@ export async function createApprovedEmailAttempt(
     `SELECT uj.id user_job_id,uj.status job_status,
             d.id draft_id,d.status draft_status,d.message,
             ar.id route_id,ar.kind route_kind,ar.destination recipient,
+            ar.contact_channel_id,
             ar.status route_status,j.title,j.location,j.country,u.email from_email
        FROM user_jobs uj
        JOIN users u ON u.id=uj.user_id
@@ -126,6 +128,7 @@ export async function createApprovedEmailAttempt(
   if (!new Set(["draft", "approved"]).has(source.draft_status)) {
     throw new EmailAttemptError("The selected draft is not approvable", 409);
   }
+  await assertNoExistingContactAttempt(env.DB, userId, source);
   const messagePolicyProblem = applicationMessageOpeningProblem(source.message);
   if (messagePolicyProblem) {
     throw new EmailAttemptError(messagePolicyProblem, 422);
@@ -193,6 +196,50 @@ export async function createApprovedEmailAttempt(
     throw new Error("Approved email attempt could not be read back");
   }
   return toAttemptView(row);
+}
+
+async function assertNoExistingContactAttempt(
+  db: D1Database,
+  userId: string,
+  source: AttemptSourceRow
+) {
+  const existing = await db
+    .prepare(
+      `SELECT a.status,j.title
+       FROM application_attempts a
+       JOIN user_jobs uj ON uj.id=a.user_job_id
+       JOIN jobs j ON j.id=uj.job_id
+       JOIN application_routes previous_route ON previous_route.id=a.route_id
+       WHERE uj.user_id=?
+         AND COALESCE(
+           previous_route.contact_channel_id,
+           'email:' || lower(trim(a.recipient))
+         )=COALESCE(?, 'email:' || lower(trim(?)))
+         AND a.status IN (
+           'approved','claimed','drafted','sending','sent','uncertain'
+         )
+         AND NOT (
+           a.user_job_id=? AND a.draft_id=? AND a.route_id=?
+         )
+       ORDER BY a.created_at DESC
+       LIMIT 1`
+    )
+    .bind(
+      userId,
+      source.contact_channel_id,
+      source.recipient,
+      source.user_job_id,
+      source.draft_id,
+      source.route_id
+    )
+    .first<{ status: EmailAttemptStatus; title: string }>();
+  if (!existing) {
+    return;
+  }
+  throw new EmailAttemptError(
+    `This contact already has an application for “${existing.title}” (${existing.status}). Review that thread instead of starting another email.`,
+    409
+  );
 }
 
 export async function listEmailAttempts(

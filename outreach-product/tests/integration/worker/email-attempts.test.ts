@@ -30,7 +30,8 @@ interface EmailFixture {
 
 async function seedEmailFixture(
   userId: string,
-  suffix: string
+  suffix: string,
+  recipient = `${suffix}@example.test`
 ): Promise<EmailFixture> {
   const jobId = `eslcafe-modern:${suffix}`;
   const userJobId = `user-job-${suffix}`;
@@ -77,7 +78,7 @@ async function seedEmailFixture(
     ).bind(
       routeId,
       jobId,
-      `${suffix}@example.test`,
+      recipient,
       `https://example.test/jobs/${suffix}`,
       timestamp,
       timestamp,
@@ -104,6 +105,28 @@ async function approve(userId: string, fixture: EmailFixture): Promise<string> {
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("email application attempts", () => {
+  it("prevents a second initial application to the same canonical recipient", async () => {
+    const { userId } = await createAuthenticatedUser(
+      "duplicate-contact@example.test"
+    );
+    const first = await seedEmailFixture(
+      userId,
+      "duplicate-first",
+      "shared@example.test"
+    );
+    const second = await seedEmailFixture(
+      userId,
+      "duplicate-second",
+      "SHARED@example.test"
+    );
+    await approve(userId, first);
+
+    await expect(approve(userId, second)).rejects.toMatchObject({
+      message: expect.stringContaining("already has an application"),
+      status: 409,
+    });
+  });
+
   it("keeps approval, Gmail drafting, and verified sending as explicit states", async () => {
     const { userId } = await createAuthenticatedUser(
       "email-attempt@example.test"

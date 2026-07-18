@@ -1,5 +1,9 @@
 import { compensationFromEconomics } from "../../src/features/jobs/economics";
 import {
+  type JobPositionAnalysis,
+  JobPositionAnalysisSchema,
+} from "../../src/features/jobs/position-variants";
+import {
   type JobMatchFacts,
   JobMatchFactsSchema,
 } from "../../src/features/matching/schema";
@@ -31,6 +35,31 @@ export function registerJobRoutes(app: JobKitApp) {
     const rows = await c.env.DB.prepare(
       `SELECT j.*,uj.status,uj.priority,
                 mf.facts_json,mf.schema_version match_facts_schema_version,
+                (
+                  SELECT json_object(
+                    'scope',pa.scope,
+                    'reviewNotes',json(pa.review_notes_json),
+                    'positions',COALESCE((
+                      SELECT json_group_array(json_object(
+                        'title',pv.title,
+                        'roleFamily',pv.role_family,
+                        'subjects',json(pv.subjects_json),
+                        'locations',json(pv.locations_json),
+                        'audiences',json(pv.audiences_json),
+                        'employmentTypes',json(pv.employment_types_json),
+                        'requirements',json(pv.requirements_json),
+                        'evidence',json(pv.evidence_json),
+                        'compensationEvidence',json(pv.compensation_evidence_json),
+                        'certainty',pv.certainty
+                      ))
+                      FROM job_position_variants pv
+                      WHERE pv.job_id=j.id
+                      ORDER BY pv.ordinal
+                    ),'[]')
+                  )
+                  FROM job_position_analyses pa
+                  WHERE pa.job_id=j.id AND pa.schema_version=2
+                ) position_analysis_json,
                 d.id draft_id,d.version,d.message,d.change_summary,d.status draft_status,
                 d.created_at draft_created_at,d.revision_source,
                 COALESCE((
@@ -68,9 +97,25 @@ export function registerJobRoutes(app: JobKitApp) {
                     'kind',ar.kind,
                     'destination',ar.destination,
                     'status',ar.status,
-                    'lastVerifiedAt',ar.last_verified_at
+                    'lastVerifiedAt',ar.last_verified_at,
+                    'contact',CASE WHEN c.id IS NULL THEN NULL ELSE json_object(
+                      'id',c.id,
+                      'displayName',c.display_name,
+                      'organizationName',c.organization_name,
+                      'role',c.role,
+                      'relatedListingCount',(
+                        SELECT COUNT(DISTINCT related_route.job_id)
+                        FROM contact_channels related_channel
+                        JOIN application_routes related_route
+                          ON related_route.contact_channel_id=related_channel.id
+                        WHERE related_channel.contact_id=c.id
+                          AND related_route.status='active'
+                      )
+                    ) END
                   ))
                   FROM application_routes ar
+                  LEFT JOIN contact_channels cc ON cc.id=ar.contact_channel_id
+                  LEFT JOIN contacts c ON c.id=cc.contact_id
                   WHERE ar.job_id=j.id
                 ),'[]') application_routes_json
          FROM user_jobs uj
@@ -162,11 +207,24 @@ function toReviewJob(row: Record<string, unknown>) {
     matchFacts,
     messageRoute: String(row.message_route),
     opportunityScope: String(row.opportunity_scope),
+    positionAnalysis: positionAnalysisFromRow(row),
     priority: Number(row.priority),
     sourceUrl: String(row.source_url),
     status: String(row.status),
     title: String(row.title),
   };
+}
+
+function positionAnalysisFromRow(
+  row: Record<string, unknown>
+): JobPositionAnalysis | null {
+  if (!row.position_analysis_json) {
+    return null;
+  }
+  const parsed = JobPositionAnalysisSchema.safeParse(
+    JSON.parse(String(row.position_analysis_json)) as unknown
+  );
+  return parsed.success ? parsed.data : null;
 }
 
 function matchFactsFromRow(row: Record<string, unknown>): JobMatchFacts | null {

@@ -9,6 +9,7 @@
     "deploy:dry-run": "bun run build && wrangler deploy --dry-run",
     "dev": "vite",
     "analyze:jobs": "bun --env-file=.dev.vars scripts/analyze-jobs/run.ts",
+    "analyze:positions": "bun --env-file=.dev.vars scripts/analyze-job-positions/run.ts",
     "drafts:generate-batch": "bun --env-file=.dev.vars scripts/application-drafts/generate-batch.ts",
     "economics:evaluate": "bun --env-file=.dev.vars scripts/evaluate-job-economics.ts",
     "fix": "ultracite fix",

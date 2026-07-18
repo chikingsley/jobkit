@@ -63,6 +63,8 @@ export function evaluateJob(
     criteria.push(criterion(`${job.country} is preferred`, "match"));
   }
 
+  criteria.push(...positionCriteria(job, preferences));
+
   if (job.matchFacts) {
     criteria.push(
       ...evaluateRequirements(
@@ -473,6 +475,38 @@ function benefitCriteria(job: Job, preferences: Preferences) {
     }
   }
   return criteria;
+}
+
+function positionCriteria(job: Job, preferences: Preferences) {
+  const analysis = job.positionAnalysis;
+  if (!analysis) {
+    return [];
+  }
+  const positions = analysis.positions.map((position) => ({
+    preference: preferences.roles[position.roleFamily],
+    title: position.title,
+  }));
+  const available = positions.filter(
+    ({ preference }) => preference !== "exclude"
+  );
+  if (available.length === 0) {
+    return [
+      criterion(
+        `None of the ${positions.length} advertised roles match your role preferences`,
+        "conflict"
+      ),
+    ];
+  }
+  const preferred = available.find(({ preference }) => preference === "prefer");
+  if (preferred) {
+    return [
+      criterion(`Includes a preferred role: ${preferred.title}`, "match"),
+    ];
+  }
+  if (available.every(({ preference }) => preference === "avoid")) {
+    return [criterion("All advertised roles are marked Avoid", "preference")];
+  }
+  return [];
 }
 
 function preferenceCriterion(

@@ -19,6 +19,7 @@ import { registerDocumentRoutes } from "./routes/documents";
 import { registerEmailAttemptRoutes } from "./routes/email-attempts";
 import { GMAIL_PUBSUB_WEBHOOK_PATH, registerGmailRoutes } from "./routes/gmail";
 import { registerJobMatchFactRoutes } from "./routes/job-match-facts";
+import { registerJobPositionAnalysisRoutes } from "./routes/job-position-analyses";
 import { registerJobRoutes } from "./routes/jobs";
 import { registerMessagePreviewRoutes } from "./routes/message-preview";
 import { registerMessageRoutes } from "./routes/messages";
@@ -117,15 +118,23 @@ const RUNNER_TASK_RESULT_PATH =
   /^\/api\/country-sweep-tasks\/[^/]+\/(complete|fail)$/u;
 const RUNNER_CLAIM_PATH = "/api/country-sweep-tasks/claim";
 const RUNNER_MATCH_FACTS_PATH = "/api/job-match-facts";
+const RUNNER_POSITION_ANALYSES_PATH = "/api/job-position-analyses";
 const RUNNER_GENERATE_PATH = /^\/api\/jobs\/[^/]+\/generate$/u;
 
 function runnerRequestAllowed(method: string, path: string) {
+  if (method === "GET") {
+    return (
+      path === `${RUNNER_MATCH_FACTS_PATH}/pending` ||
+      path === `${RUNNER_POSITION_ANALYSES_PATH}/pending`
+    );
+  }
   if (method !== "POST") {
     return false;
   }
   return (
     path === RUNNER_CLAIM_PATH ||
     path === RUNNER_MATCH_FACTS_PATH ||
+    path === RUNNER_POSITION_ANALYSES_PATH ||
     RUNNER_TASK_RESULT_PATH.test(path) ||
     // Draft generation, approval, and sending remain separate capabilities.
     RUNNER_GENERATE_PATH.test(path)
@@ -143,7 +152,7 @@ app.use("/api/*", async (c, next) => {
       return c.json(
         {
           message:
-            "Runner token is limited to sweep tasks, match facts, and draft generation",
+            "Runner token is limited to sweep tasks, job analysis, and draft generation",
           ok: false,
         },
         403
@@ -178,6 +187,7 @@ registerOnboardingRoutes(app);
 registerApplicationDraftRoutes(app);
 registerJobRoutes(app);
 registerJobMatchFactRoutes(app);
+registerJobPositionAnalysisRoutes(app);
 registerDocumentRoutes(app);
 registerCountryRoutes(app);
 registerEmailAttemptRoutes(app);

@@ -22,6 +22,7 @@ export function ApplicationDelivery({ job }: { job: Job }) {
     ? job.emailAttempt.subject
     : "Created when you send";
   const attachments = job.draft ? job.draft.attachments : [];
+  const { contact } = emailRoute;
 
   return (
     <div className="grid gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:grid-cols-2">
@@ -30,6 +31,13 @@ export function ApplicationDelivery({ job }: { job: Job }) {
           <Mail className="size-3.5" /> To
         </div>
         <p className="mt-1 break-all">{recipient}</p>
+        {contact && contact.relatedListingCount > 1 ? (
+          <p className="mt-1 text-muted-foreground text-xs">
+            {contact.role === "board_intermediary"
+              ? `Shared board inbox used by ${contact.relatedListingCount.toLocaleString()} listings`
+              : `${contact.relatedListingCount.toLocaleString()} listings route to this contact`}
+          </p>
+        ) : null}
       </div>
       <div className="min-w-0">
         <div className="font-medium text-muted-foreground text-xs uppercase tracking-wide">

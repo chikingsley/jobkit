@@ -11,8 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { groupJobsByContact } from "@/features/jobs/job-contact-groups";
 import { JobDetail } from "@/features/jobs/job-detail";
-import { JobQueueItem } from "@/features/jobs/job-queue-item";
+import { JobQueueGroup } from "@/features/jobs/job-queue-group";
 import { type JobSort, sortJobs } from "@/features/jobs/sorting";
 import type { DraftMutationResult, FxData, Job } from "@/features/jobs/types";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
@@ -104,6 +105,10 @@ export function JobsWorkspace({
   const [visibleLimit, setVisibleLimit] = useState(INITIAL_VISIBLE_JOBS);
   const sortedJobs = useMemo(() => sortJobs(jobs, fx, sort), [fx, jobs, sort]);
   const queueJobs = sortedJobs.slice(0, visibleLimit);
+  const queueGroups = useMemo(
+    () => groupJobsByContact(sortedJobs.slice(0, visibleLimit)),
+    [sortedJobs, visibleLimit]
+  );
   const countryOptions = [
     { label: "All countries", value: "all" },
     ...countries.map((country) => ({ label: country, value: country })),
@@ -210,17 +215,17 @@ export function JobsWorkspace({
         </div>
         <ScrollArea className="min-h-0 flex-1">
           <div className="p-2">
-            {queueJobs.map((job) => (
-              <JobQueueItem
-                active={job.id === selected?.id}
+            {queueGroups.map((group) => (
+              <JobQueueGroup
                 fx={fx}
-                job={job}
-                key={job.id}
-                match={matches.get(job.id)}
-                onSelect={() => {
-                  onSelect(job.id);
+                group={group}
+                key={group.id}
+                matches={matches}
+                onSelect={(jobId) => {
+                  onSelect(jobId);
                   setShowQueue(false);
                 }}
+                selectedId={selected?.id}
               />
             ))}
             {queueJobs.length < sortedJobs.length ? (

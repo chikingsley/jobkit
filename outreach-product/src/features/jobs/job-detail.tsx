@@ -12,7 +12,7 @@ import {
 import { ApplicationAction } from "@/features/jobs/application-action";
 import { ApplicationDelivery } from "@/features/jobs/application-delivery";
 import { compensationDisplay } from "@/features/jobs/compensation";
-import { formatDescription, questionsFor } from "@/features/jobs/content";
+import { questionsFor } from "@/features/jobs/content";
 import { DraftEditor } from "@/features/jobs/draft-editor";
 import {
   formatStatedHourlyUsd,
@@ -23,6 +23,8 @@ import {
 import { humanize } from "@/features/jobs/format";
 import { JobMarketContext } from "@/features/jobs/market-context";
 import { MatchPanel } from "@/features/jobs/match";
+import { PositionAnalysis } from "@/features/jobs/position-analysis";
+import { SourceDescription } from "@/features/jobs/source-description";
 import type { DraftMutationResult, FxData, Job } from "@/features/jobs/types";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
 import type { JobMatch } from "@/profile-types";
@@ -130,6 +132,10 @@ export function JobDetail({
 
       <JobMarketContext job={job} />
 
+      {job.positionAnalysis ? (
+        <PositionAnalysis analysis={job.positionAnalysis} />
+      ) : null}
+
       {match ? (
         <MatchPanel
           busyClaimKey={busyClaimKey}
@@ -181,13 +187,17 @@ export function JobDetail({
         </CardContent>
       </Card>
 
-      <details className="mt-4 rounded-xl border bg-background px-4 py-3 text-sm">
+      <details
+        className="mt-4 rounded-xl border bg-background px-4 py-3 text-sm"
+        open
+      >
         <summary className="cursor-pointer font-medium">
           Full original job description
         </summary>
-        <p className="mt-4 whitespace-pre-line text-muted-foreground leading-7">
-          {formatDescription(job.description) || "No description was imported."}
-        </p>
+        <SourceDescription
+          description={job.description}
+          routes={job.applicationRoutes}
+        />
       </details>
 
       <Card className="mt-8">

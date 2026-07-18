@@ -167,6 +167,27 @@ export function PreferencesView({
         values={draft.employment}
       />
 
+      <PreferenceSection
+        description="The kinds of roles you want the application queue to include."
+        labels={[
+          ["english_language", "English language"],
+          ["homeroom", "Homeroom / classroom"],
+          ["early_childhood", "Early childhood"],
+          ["subject_specialist", "Subject specialist"],
+          ["leadership", "Leadership"],
+          ["student_support", "Student support"],
+          ["other", "Other roles"],
+        ]}
+        onChange={(key, value) =>
+          update({
+            ...draft,
+            roles: { ...draft.roles, [key]: value },
+          })
+        }
+        title="Roles"
+        values={draft.roles}
+      />
+
       <BenefitSection
         description="Rank what an employer provides with the job."
         labels={[
