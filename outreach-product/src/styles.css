@@ -138,11 +138,11 @@
   container-type: inline-size;
 }
 
-@container (min-width: 48rem) {
+@container (min-width: 40rem) {
   .jobs-list-pane {
     display: flex !important;
     flex: none;
-    width: 21rem;
+    width: 19rem;
     border-right: 1px solid var(--border);
   }
 

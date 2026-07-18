@@ -13,6 +13,7 @@ export type EmailAttemptStatus =
   | "uncertain";
 
 interface AttemptSourceRow {
+  board: string;
   contact_channel_id: string | null;
   country: string;
   draft_id: string;
@@ -25,6 +26,7 @@ interface AttemptSourceRow {
   route_id: string;
   route_kind: string;
   route_status: string;
+  source_reference: string;
   title: string;
   user_job_id: string;
 }
@@ -97,7 +99,8 @@ export async function createApprovedEmailAttempt(
             d.id draft_id,d.status draft_status,d.message,
             ar.id route_id,ar.kind route_kind,ar.destination recipient,
             ar.contact_channel_id,
-            ar.status route_status,j.title,j.location,j.country,u.email from_email
+            ar.status route_status,j.board,j.title,j.location,j.country,
+            j.source_reference,u.email from_email
        FROM user_jobs uj
        JOIN users u ON u.id=uj.user_id
        JOIN jobs j ON j.id=uj.job_id
@@ -137,6 +140,8 @@ export async function createApprovedEmailAttempt(
   const timestamp = new Date().toISOString();
   const attemptId = crypto.randomUUID();
   const subject = applicationSubject(
+    source.board,
+    source.source_reference,
     source.title,
     source.location,
     source.country
@@ -672,7 +677,17 @@ function toAttemptView(row: AttemptRow): EmailAttemptView {
   };
 }
 
-function applicationSubject(title: string, location: string, country: string) {
+function applicationSubject(
+  board: string,
+  sourceReference: string,
+  title: string,
+  location: string,
+  country: string
+) {
+  const reference = sourceReference.replace(/[\r\n]+/gu, " ").trim();
+  if (board === "anesl" && reference) {
+    return `Native English Teacher Application - ${reference}`.slice(0, 180);
+  }
   const place = (location || country).replace(/[\r\n]+/gu, " ").trim();
   const fallback = title.replace(/[\r\n]+/gu, " ").trim();
   const suffix = place || fallback;

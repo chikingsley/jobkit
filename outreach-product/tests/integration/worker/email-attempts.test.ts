@@ -105,6 +105,33 @@ async function approve(userId: string, fixture: EmailFixture): Promise<string> {
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("email application attempts", () => {
+  it("includes the ANESL position reference in the email subject", async () => {
+    const { userId } = await createAuthenticatedUser(
+      "anesl-subject@example.test"
+    );
+    const fixture = await seedEmailFixture(
+      userId,
+      "anesl-subject",
+      "hr@anesl.com"
+    );
+    await env.DB.prepare(
+      "UPDATE jobs SET board='anesl',source_reference='HUN8932' WHERE id=?"
+    )
+      .bind(fixture.jobId)
+      .run();
+
+    await approve(userId, fixture);
+
+    expect(await listEmailAttempts(env.DB, userId, ["approved"])).toMatchObject(
+      [
+        {
+          recipient: "hr@anesl.com",
+          subject: "Native English Teacher Application - HUN8932",
+        },
+      ]
+    );
+  });
+
   it("prevents a second initial application to the same canonical recipient", async () => {
     const { userId } = await createAuthenticatedUser(
       "duplicate-contact@example.test"
@@ -132,6 +159,11 @@ describe("email application attempts", () => {
       "email-attempt@example.test"
     );
     const fixture = await seedEmailFixture(userId, "happy");
+    const exactMessage =
+      "Hello,\n\nFirst paragraph.\n\nSecond paragraph.\n\nBest,\nTest Candidate";
+    await env.DB.prepare("UPDATE application_drafts SET message=? WHERE id=?")
+      .bind(exactMessage, fixture.draftId)
+      .run();
     const attemptId = await approve(userId, fixture);
 
     const listed = await listEmailAttempts(env.DB, userId, ["approved"]);
@@ -142,6 +174,7 @@ describe("email application attempts", () => {
     const claimPayload = await claimEmailAttempt(env, userId, attemptId);
     expect(claimPayload).toMatchObject({ attachmentCount: 0, attemptId });
     expect(claimPayload.raw.length).toBeGreaterThan(100);
+    expect(plainTextBodyOf(claimPayload.raw)).toBe(exactMessage);
 
     await recordGmailDraft(
       env.DB,
@@ -345,3 +378,20 @@ describe("email application attempts", () => {
     expect(claimError).toMatchObject({ status: 404 });
   });
 });
+
+function plainTextBodyOf(raw: string): string {
+  const padded = raw.replaceAll("-", "+").replaceAll("_", "/");
+  const mime = atob(padded.padEnd(Math.ceil(padded.length / 4) * 4, "="));
+  const marker = "Content-Transfer-Encoding: base64\r\n\r\n";
+  const encoded = mime
+    .slice(mime.indexOf(marker) + marker.length)
+    .split("\r\n--jobkit-", 1)[0]
+    ?.replaceAll("\r\n", "");
+  if (!encoded) {
+    throw new Error("Expected a base64 plain-text MIME part");
+  }
+  const bytes = Uint8Array.from(atob(encoded), (character) =>
+    character.charCodeAt(0)
+  );
+  return new TextDecoder().decode(bytes);
+}

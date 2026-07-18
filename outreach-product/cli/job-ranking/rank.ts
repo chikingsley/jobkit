@@ -3,7 +3,7 @@
 // and qualification claims, convert pay to USD with live FX, and print the top
 // qualified jobs by monthly and hourly USD plus fun-country inventory.
 //
-// Usage: bun scripts/job-ranking/rank.ts [--top 20] [--countries "Thailand,..."]
+// Usage: bun run jobkit -- jobs rank [--top 20] [--countries "Thailand,..."]
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
@@ -13,6 +13,10 @@ import {
   statedHourlyUsd,
 } from "../../src/features/jobs/economics";
 import type { Job } from "../../src/features/jobs/types";
+import type {
+  QualificationClaim,
+  QualificationClaimAnswer,
+} from "../../src/features/matching/claims";
 import { evaluateJob } from "../../src/features/matching/evaluate";
 import { JobMatchFactsSchema } from "../../src/features/matching/schema";
 import { PreferencesSchema } from "../../src/features/preferences/schema";
@@ -52,14 +56,17 @@ function d1(query: string): Record<string, unknown>[] {
   const payloads = JSON.parse(raw.slice(raw.indexOf("["))) as {
     results: Record<string, unknown>[];
   }[];
-  return payloads.length > 0 ? payloads[0].results : [];
+  const firstPayload = payloads.at(0);
+  return firstPayload ? firstPayload.results : [];
 }
 
 const [profileRow] = d1("SELECT profile_json FROM user_profiles LIMIT 1");
 const [preferencesRow] = d1(
   "SELECT preferences_json FROM user_preferences LIMIT 1"
 );
-const claimRows = d1("SELECT claim_key, answer FROM user_qualification_claims");
+const claimRows = d1(
+  "SELECT claim_key,label,kind,answer,updated_at FROM user_qualification_claims"
+);
 const jobRows = d1(
   `SELECT j.*, mf.facts_json
      FROM jobs j
@@ -78,12 +85,28 @@ const preferences = PreferencesSchema.parse(
   JSON.parse(String(preferencesRow.preferences_json))
 );
 const claims = Object.fromEntries(
-  claimRows.map((row) => [String(row.claim_key), String(row.answer)])
-) as Record<string, "no" | "yes">;
+  claimRows.map((row) => {
+    const answer = String(row.answer);
+    if (!(answer === "yes" || answer === "no")) {
+      throw new Error(`Invalid qualification claim answer: ${answer}`);
+    }
+    const claim: QualificationClaim = {
+      answer: answer as QualificationClaimAnswer,
+      claimKey: String(row.claim_key),
+      kind: String(row.kind),
+      label: String(row.label),
+      updatedAt: String(row.updated_at),
+    };
+    return [claim.claimKey, claim];
+  })
+);
 
 const fxResponse = await fetch("https://open.er-api.com/v6/latest/USD");
 const fxRaw = (await fxResponse.json()) as { rates: Record<string, number> };
-const fx: FxData = { asOf: new Date().toISOString(), rates: fxRaw.rates };
+const fx: FxData = {
+  rates: fxRaw.rates,
+  updatedAt: new Date().toISOString(),
+};
 
 const MONTHLY_MULTIPLIER: Record<string, number> = {
   fortnight: 2.17,

@@ -39,18 +39,34 @@ export function registerJobPositionAnalysisRoutes(app: JobKitApp) {
       .map((id) => id.trim())
       .filter(Boolean)
       .slice(0, PENDING_IDS_MAX);
-    const rows = ids.length
-      ? await c.env.DB.prepare(
-          `SELECT j.id,j.title,j.company,j.country,j.location,j.salary,j.description
+    const allListings = c.req.query("mode") === "all";
+    let rows: D1Result<PendingJobRow>;
+    if (ids.length) {
+      rows = await c.env.DB.prepare(
+        `SELECT j.id,j.title,j.company,j.country,j.location,j.salary,j.description
            FROM user_jobs uj
            JOIN jobs j ON j.id=uj.job_id
            WHERE uj.user_id=?1
              AND j.id IN (SELECT value FROM json_each(?2))`
-        )
-          .bind(c.get("user").id, JSON.stringify(ids))
-          .all<PendingJobRow>()
-      : await c.env.DB.prepare(
-          `SELECT j.id,j.title,j.company,j.country,j.location,j.salary,j.description
+      )
+        .bind(c.get("user").id, JSON.stringify(ids))
+        .all<PendingJobRow>();
+    } else if (allListings) {
+      rows = await c.env.DB.prepare(
+        `SELECT j.id,j.title,j.company,j.country,j.location,j.salary,j.description
+         FROM user_jobs uj
+         JOIN jobs j ON j.id=uj.job_id
+         LEFT JOIN job_position_analyses pa
+           ON pa.job_id=j.id AND pa.schema_version=?1
+         WHERE uj.user_id=?2 AND pa.job_id IS NULL
+         ORDER BY uj.priority DESC,uj.updated_at DESC
+         LIMIT ?3`
+      )
+        .bind(JOB_POSITION_ANALYSIS_SCHEMA_VERSION, c.get("user").id, limit)
+        .all<PendingJobRow>();
+    } else {
+      rows = await c.env.DB.prepare(
+        `SELECT j.id,j.title,j.company,j.country,j.location,j.salary,j.description
            FROM user_jobs uj
            JOIN jobs j ON j.id=uj.job_id
            LEFT JOIN job_position_analyses pa
@@ -63,9 +79,10 @@ export function registerJobPositionAnalysisRoutes(app: JobKitApp) {
              )
            ORDER BY uj.priority DESC,uj.updated_at DESC
            LIMIT ?3`
-        )
-          .bind(JOB_POSITION_ANALYSIS_SCHEMA_VERSION, c.get("user").id, limit)
-          .all<PendingJobRow>();
+      )
+        .bind(JOB_POSITION_ANALYSIS_SCHEMA_VERSION, c.get("user").id, limit)
+        .all<PendingJobRow>();
+    }
     return c.json({
       pending: rows.results.map((row) => ({
         company: String(row.company),

@@ -56,6 +56,18 @@ describe("job position analyses", () => {
       expect.objectContaining({ id: "position-job" }),
     ]);
 
+    const fullInventoryResponse = await exports.default.fetch(
+      "https://outreach.test/api/job-position-analyses/pending?mode=all&limit=10",
+      { headers: { cookie } }
+    );
+    const fullInventory = (await fullInventoryResponse.json()) as {
+      pending: Array<{ id: string }>;
+    };
+    expect(fullInventoryResponse.status).toBe(200);
+    expect(fullInventory.pending).toEqual([
+      expect.objectContaining({ id: "position-job" }),
+    ]);
+
     const analysis = {
       positions: [
         {

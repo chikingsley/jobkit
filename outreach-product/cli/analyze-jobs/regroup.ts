@@ -3,7 +3,7 @@
 // rule existed. No LLM involved; facts are re-validated locally and re-posted
 // through the writeback endpoint with their original model attribution.
 //
-// Usage: bun --env-file=.dev.vars scripts/analyze-jobs/regroup.ts
+// Usage: bun run jobkit -- analyze regroup
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import {
@@ -53,7 +53,8 @@ const raw = result.stdout;
 const payloads = JSON.parse(raw.slice(raw.indexOf("["))) as {
   results: Record<string, string>[];
 }[];
-const rows = payloads.length > 0 ? payloads[0].results : [];
+const firstPayload = payloads.at(0);
+const rows = firstPayload ? firstPayload.results : [];
 console.log(`${rows.length} rows to regroup`);
 
 let updated = 0;

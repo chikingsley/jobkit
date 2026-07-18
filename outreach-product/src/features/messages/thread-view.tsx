@@ -1,6 +1,5 @@
 import { format } from "date-fns";
 import { DownloadIcon, FileTextIcon } from "lucide-react";
-import { Streamdown } from "streamdown";
 import {
   Attachment,
   AttachmentAction,
@@ -95,9 +94,9 @@ function ThreadBubble({ message }: { message: ThreadMessage }) {
           variant={outbound ? "tinted" : "muted"}
         >
           <BubbleContent>
-            <Streamdown className="min-w-0 text-sm [&_*]:my-1 [&_:first-child]:mt-0 [&_:last-child]:mb-0">
+            <div className="min-w-0 whitespace-pre-wrap break-words text-sm leading-6">
               {message.body}
-            </Streamdown>
+            </div>
           </BubbleContent>
         </Bubble>
         {message.attachments.length > 0 ? (

@@ -18,6 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useCurrentUser } from "@/features/auth/auth-gate";
 import { filterJobs, selectVisibleJob } from "@/features/jobs/filters";
+import { JobToolbar } from "@/features/jobs/job-toolbar";
 import type { DraftMutationResult } from "@/features/jobs/types";
 import { useWorkspaceQueryState } from "@/features/workspace/query-state";
 import {
@@ -180,7 +181,10 @@ export function App() {
   }
 
   return (
-    <SidebarProvider className="h-svh min-h-0 overflow-hidden">
+    <SidebarProvider
+      className="h-svh min-h-0 overflow-hidden"
+      defaultOpen={false}
+    >
       <WorkspaceSidebar
         activeView={activeView}
         applied={jobs.filter((job) => job.status === "applied").length}
@@ -191,7 +195,26 @@ export function App() {
         totalJobs={jobs.length}
       />
       <SidebarInset className="h-svh min-h-0 min-w-0 overflow-hidden">
-        <WorkspaceHeader activeView={activeView} />
+        <WorkspaceHeader
+          activeView={activeView}
+          toolbar={
+            activeView === "jobs" ? (
+              <JobToolbar
+                countries={countries}
+                countryFilter={countryFilter}
+                fitFilter={fitFilter}
+                onCountryFilter={setCountryFilter}
+                onFitFilter={setFitFilter}
+                onRefresh={loadJobs}
+                onShowExcluded={setShowExcluded}
+                onSort={setSort}
+                refreshing={refreshing}
+                showExcluded={showExcluded}
+                sort={sort}
+              />
+            ) : undefined
+          }
+        />
         <Routes>
           <Route
             element={
@@ -230,28 +253,18 @@ export function App() {
                 <JobsWorkspace
                   busy={busy}
                   busyClaimKey={busyClaimKey}
-                  countries={countries}
-                  countryFilter={countryFilter}
-                  fitFilter={fitFilter}
                   fx={fx}
                   instruction={instruction}
                   jobs={visibleJobs}
                   matches={matches}
                   onAction={action}
-                  onCountryFilter={setCountryFilter}
                   onDraftAction={draftAction}
-                  onFitFilter={setFitFilter}
                   onInstruction={setInstruction}
                   onQualificationClaim={saveQualificationClaim}
-                  onRefresh={loadJobs}
                   onSelect={setSelectedId}
-                  onShowExcluded={setShowExcluded}
-                  onSort={setSort}
                   preferences={preferences}
                   profile={profile}
-                  refreshing={refreshing}
                   selected={selected}
-                  showExcluded={showExcluded}
                   sort={sort}
                 />
               </Suspense>

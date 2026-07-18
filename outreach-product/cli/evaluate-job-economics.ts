@@ -198,6 +198,7 @@ function sourceJob(row: SourceJobRow): JobImport {
     applyUrl: row.apply_url || row.url || "https://example.invalid/apply",
     board: row.board,
     company: row.company,
+    contactName: "",
     country: row.country,
     description: row.raw || row.description,
     employerId: "",
@@ -211,6 +212,7 @@ function sourceJob(row: SourceJobRow): JobImport {
     opportunityScope: "unknown",
     priority: 0,
     salary: sourceSalary(row),
+    sourceReference: "",
     sourceUrl: row.url,
     title: row.title,
   };

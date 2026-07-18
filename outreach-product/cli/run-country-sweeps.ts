@@ -1,6 +1,7 @@
-import { spawn } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import { hostname } from "node:os";
 import { resolve } from "node:path";
+import { runStructuredAgent } from "./lib/structured-agent";
 
 interface SweepTask {
   countryCode: string;
@@ -24,6 +25,7 @@ const workerId = process.env.JOBKIT_COUNTRY_RUNNER_ID ?? `${hostname()}-codex`;
 const once = process.argv.includes("--once");
 const schemaPath = resolve(import.meta.dir, "country-sweep-output.schema.json");
 const repoRoot = resolve(import.meta.dir, "../..");
+const outputSchema = JSON.parse(await readFile(schemaPath, "utf8")) as object;
 
 if (!token) {
   throw new Error(
@@ -71,38 +73,16 @@ async function main() {
 
 async function runCodex(task: SweepTask) {
   const { model, reasoning } = modelForPhase(task.phase);
-  const child = spawn(
-    [
-      "codex",
-      "exec",
-      "--ephemeral",
-      "--sandbox",
-      "read-only",
-      "--model",
-      model,
-      "--config",
-      `model_reasoning_effort=${JSON.stringify(reasoning)}`,
-      "--cd",
-      repoRoot,
-      "--output-schema",
-      schemaPath,
-      "-",
-    ],
-    { stdio: ["pipe", "pipe", "inherit"] }
-  );
-  let output = "";
-  child.stdout.setEncoding("utf8");
-  child.stdout.on("data", (chunk: string) => {
-    output += chunk;
+  const output = await runStructuredAgent({
+    cwd: repoRoot,
+    effort: reasoning,
+    model,
+    outputSchema,
+    prompt: promptForTask(task),
+    provider: "codex",
+    timeoutMs: 900_000,
+    variant: "",
   });
-  child.stdin.end(promptForTask(task));
-  const exitCode = await new Promise<number>((resolveExit, reject) => {
-    child.once("error", reject);
-    child.once("exit", (code) => resolveExit(code ?? 1));
-  });
-  if (exitCode !== 0) {
-    throw new Error(`Codex exited with status ${exitCode}`);
-  }
   return JSON.parse(output) as unknown;
 }
 

@@ -3,7 +3,7 @@
 // model, and posts validated facts back through /api/job-match-facts.
 //
 // Usage:
-//   bun --env-file=.dev.vars scripts/analyze-jobs/run.ts [--limit 5]
+//   bun run jobkit -- analyze jobs [--limit 5]
 //     [--ids id1,id2] [--model gemini-3.5-flash] [--base https://...]
 //
 // Requires JOBKIT_RUNNER_TOKEN and GOOGLE_GENERATIVE_AI_API_KEY in the env.

@@ -15,7 +15,7 @@ function jobStatements(job: InventoryJob, userId: string, timestamp: string) {
   const statements = [
     `INSERT INTO jobs (
       id,board,title,company,contact_name,country,location,salary,description,source_url,
-      apply_url,employer_id,first_seen_at,updated_at,compensation_display,
+      apply_url,employer_id,source_reference,first_seen_at,updated_at,compensation_display,
       compensation_amount_min,compensation_amount_max,compensation_currency,
       compensation_period,compensation_qualifier,compensation_source,
       compensation_confidence,compensation_notes_json,opportunity_scope,
@@ -24,7 +24,7 @@ function jobStatements(job: InventoryJob, userId: string, timestamp: string) {
       ${sql(job.id)},${sql(job.board)},${sql(job.title)},${sql(job.company)},${sql(job.contactName)},
       ${sql(job.country)},${sql(job.location)},${sql(job.salary)},
       ${sql(job.description)},${sql(job.sourceUrl)},${sql(job.applyUrl)},'',
-      ${sql(job.lastSeenAt)},${sql(timestamp)},${sql(compensation.display)},
+      ${sql(job.sourceReference)},${sql(job.lastSeenAt)},${sql(timestamp)},${sql(compensation.display)},
       ${numberOrNull(compensation.amountMinimum)},
       ${numberOrNull(compensation.amountMaximum)},${nullable(compensation.currency)},
       ${nullable(compensation.period)},${nullable(compensation.qualifier)},
@@ -36,7 +36,8 @@ function jobStatements(job: InventoryJob, userId: string, timestamp: string) {
       contact_name=excluded.contact_name,
       country=excluded.country,location=excluded.location,salary=excluded.salary,
       description=excluded.description,source_url=excluded.source_url,
-      apply_url=excluded.apply_url,updated_at=excluded.updated_at,
+      apply_url=excluded.apply_url,source_reference=excluded.source_reference,
+      updated_at=excluded.updated_at,
       compensation_display=excluded.compensation_display,
       compensation_amount_min=excluded.compensation_amount_min,
       compensation_amount_max=excluded.compensation_amount_max,

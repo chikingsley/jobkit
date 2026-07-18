@@ -24,6 +24,7 @@ export interface InventoryJob {
   location: string;
   marketSegments: string[];
   salary: string;
+  sourceReference: string;
   sourceUrl: string;
   title: string;
 }
@@ -154,9 +155,28 @@ function toInventoryJob(row: SourceJobRow): InventoryJob {
     location: row.location,
     marketSegments: marketSegments(row, fields),
     salary,
+    sourceReference: sourceReferenceFor(row, fields),
     sourceUrl: row.url,
     title: row.title,
   };
+}
+
+function sourceReferenceFor(
+  row: SourceJobRow,
+  fields: Record<string, string | undefined>
+) {
+  return fields["Position ID"]?.trim() || labeledValue(row.raw, "Position ID");
+}
+
+function labeledValue(source: string, label: string) {
+  const prefix = `${label}:`;
+  for (const line of source.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith(prefix)) {
+      return trimmed.slice(prefix.length).trim();
+    }
+  }
+  return "";
 }
 
 function contactNameFor(fields: Record<string, string | undefined>) {

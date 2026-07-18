@@ -1,7 +1,7 @@
 // Import one immutable user message foundation and optional calibration votes.
 //
 // Usage:
-//   bun scripts/message-foundations/import.ts \
+//   bun run jobkit -- messages import-foundation \
 //     --email candidate@example.com --foundation foundation.json \
 //     [--samples samples.json --votes votes.json --source fable-review] \
 //     [--backfill-model mistral-medium-latest] [--remote]
@@ -58,6 +58,7 @@ const { values: args } = parseArgs({
 if (!(args.email && args.foundation)) {
   throw new Error("--email and --foundation are required");
 }
+const { email } = args;
 if (Boolean(args.samples) !== Boolean(args.votes)) {
   throw new Error("--samples and --votes must be supplied together");
 }
@@ -112,7 +113,7 @@ const statements = [
             '${quoteSql(sample.message)}','${quoteSql(vote.verdict)}',
             '${quoteSql(vote.note)}','${quoteSql(args.source)}',
             '${quoteSql(vote.votedAt)}'
-       FROM users u WHERE u.email='${quoteSql(args.email)}'
+       FROM users u WHERE u.email='${quoteSql(email)}'
      ON CONFLICT(id) DO NOTHING;`;
   }),
 ];

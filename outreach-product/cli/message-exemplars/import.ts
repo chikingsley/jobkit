@@ -1,7 +1,7 @@
 // Import outcome-labeled outreach exemplars from the recovered sent-mail
 // corpus (job-search/job-data/outreach-sent/corpus.md) into message_exemplars.
 //
-// Usage: bun scripts/message-exemplars/import.ts [--remote]
+// Usage: bun run jobkit -- messages import-exemplars [--remote]
 //
 // Idempotent: rows use deterministic ids and are fully replaced per run.
 

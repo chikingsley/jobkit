@@ -2,7 +2,7 @@
 // generate endpoint. Drafts land in the review queue; nothing is approved or
 // sent. Recurring campaign tool.
 //
-// Usage: bun --env-file=.dev.vars scripts/application-drafts/generate-batch.ts --ids a,b,c
+// Usage: bun run jobkit -- drafts generate --ids a,b,c
 import { parseArgs } from "node:util";
 
 const { values: args } = parseArgs({

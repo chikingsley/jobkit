@@ -159,7 +159,7 @@ describe("inbound message sync", () => {
       cookie
     );
     const { thread } = (await detail.json()) as {
-      thread: { messages: { direction: string; from: string }[] };
+      thread: { messages: { body: string; direction: string; from: string }[] };
     };
     expect(thread.messages).toHaveLength(2);
     const [outbound, inbound] = thread.messages;
@@ -167,6 +167,9 @@ describe("inbound message sync", () => {
       throw new Error("Expected outbound and inbound thread messages");
     }
     expect(outbound.direction).toBe("outbound");
+    expect(outbound.body).toBe(
+      "Hello,\n\nIs this role still open?\n\nBest,\nTest Candidate"
+    );
     expect(inbound).toMatchObject({
       direction: "inbound",
       from: "Recruiter <school@example.test>",

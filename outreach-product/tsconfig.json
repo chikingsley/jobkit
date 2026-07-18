@@ -17,9 +17,17 @@
     "target": "ES2024",
     "types": [
       "./worker-configuration.d.ts",
+      "bun",
       "@cloudflare/vitest-pool-workers/types",
       "vite/client"
     ]
   },
-  "include": ["auth.config.ts", "src", "tests", "worker", "vite.config.ts"]
+  "include": [
+    "auth.config.ts",
+    "cli",
+    "src",
+    "tests",
+    "worker",
+    "vite.config.ts"
+  ]
 }

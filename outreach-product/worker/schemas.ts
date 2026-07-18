@@ -42,6 +42,7 @@ export const JobImportSchema = z.object({
   opportunityScope: OpportunityScopeSchema.default("unknown"),
   priority: z.number().int().default(0),
   salary: z.string().default(""),
+  sourceReference: z.string().default(""),
   sourceUrl: z.string().default(""),
   title: z.string().min(1),
 });

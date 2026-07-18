@@ -124,7 +124,7 @@ function run(command: string[]) {
   const result = spawnSync(executable, args, {
     cwd: resolve(import.meta.dir, "../.."),
     encoding: "utf8",
-    stderr: "inherit",
+    stdio: ["ignore", "pipe", "inherit"],
   });
   if (result.status !== 0) {
     throw new Error(`${command.slice(0, 4).join(" ")} failed`);
