@@ -1,65 +1,54 @@
-import { CheckCircle2, Copy, Database, TriangleAlert } from "lucide-react";
-import { toast } from "sonner";
+import { CheckCircle2, Database, TriangleAlert } from "lucide-react";
 import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import type { ApiRequest } from "@/lib/api";
+import { InventoryRefreshControls } from "./refresh-controls";
+import {
+  type InventoryRefreshSummary,
+  type InventoryRunSummary,
+  InventoryStatusSchema,
+} from "./status";
 
-interface InventoryRunSummary {
-  closedCount: number;
-  completedAt: string | null;
-  error: string;
-  failedCount: number;
-  id: string;
-  processedCount: number;
-  sourceActiveCount: number;
-  sourceId: string;
-  sourceTotalCount: number;
-  startedAt: string;
-  status: string;
-  unchangedCount: number;
-  upsertedCount: number;
-}
-
-interface InventorySourceSummary {
-  id: string;
-  lastError: string;
-  lastSuccessAt: string | null;
-  name: string;
-  status: string;
-}
-
-interface InventoryStatus {
-  runs: InventoryRunSummary[];
-  sources: InventorySourceSummary[];
-}
-
-const SYNC_COMMAND = "bun run jobkit -- inventory sync --apply";
+const SOURCE_ID = "job-search-sqlite";
+const ACTIVE_REFRESH_STATUSES = new Set([
+  "queued",
+  "claimed",
+  "crawling",
+  "publishing",
+]);
 
 export function InventoryStatusCard({ request }: { request: ApiRequest }) {
-  const { data, isLoading } = useSWR(
+  const { data, isLoading, mutate } = useSWR(
     "/api/inventory/status",
-    async (path) => (await (await request(path)).json()) as InventoryStatus
+    async (path) =>
+      InventoryStatusSchema.parse(await (await request(path)).json()),
+    {
+      refreshInterval(latestData) {
+        return latestData?.refreshes.some((refresh) =>
+          ACTIVE_REFRESH_STATUSES.has(refresh.status)
+        )
+          ? 3000
+          : 0;
+      },
+    }
   );
-  const source = data?.sources.find(
-    (candidate) => candidate.id === "job-search-sqlite"
+  const source = data?.sources.find((candidate) => candidate.id === SOURCE_ID);
+  const run = data?.runs.find((candidate) => candidate.sourceId === SOURCE_ID);
+  const activeRefresh = data?.refreshes.find(
+    (candidate) =>
+      candidate.sourceId === SOURCE_ID &&
+      ACTIVE_REFRESH_STATUSES.has(candidate.status)
   );
-  const run = data?.runs.find(
-    (candidate) => candidate.sourceId === "job-search-sqlite"
+  const latestRefresh = data?.refreshes.find(
+    (candidate) => candidate.sourceId === SOURCE_ID
   );
-
-  async function copyCommand() {
-    await navigator.clipboard.writeText(SYNC_COMMAND);
-    toast.success("Inventory command copied");
-  }
 
   return (
     <Card>
@@ -70,14 +59,18 @@ export function InventoryStatusCard({ request }: { request: ApiRequest }) {
               <Database className="size-4" /> Inventory
             </CardTitle>
             <CardDescription>
-              The paired operations runner reconciles the complete local source
-              snapshot with the hosted job catalog.
+              The paired operations runner refreshes source boards and
+              reconciles their durable snapshot with the hosted job catalog.
             </CardDescription>
           </div>
-          <InventoryBadge loading={isLoading} run={run} />
+          <InventoryBadge
+            loading={isLoading}
+            refresh={activeRefresh}
+            run={run}
+          />
         </div>
       </CardHeader>
-      <CardContent className="grid gap-3">
+      <CardContent className="grid gap-4">
         {run ? (
           <div className="grid gap-3 rounded-lg border p-3 sm:grid-cols-3">
             <Metric label="Source records" value={run.sourceTotalCount} />
@@ -86,46 +79,61 @@ export function InventoryStatusCard({ request }: { request: ApiRequest }) {
           </div>
         ) : (
           <div className="rounded-lg border p-3 text-muted-foreground text-sm">
-            No hosted inventory run has completed yet.
+            No hosted inventory snapshot has completed yet.
           </div>
         )}
+        {activeRefresh ? <RefreshProgress refresh={activeRefresh} /> : null}
+        {!activeRefresh && latestRefresh ? (
+          <div className="text-muted-foreground text-sm">
+            Last refresh request: {latestRefresh.mode} · {latestRefresh.status}{" "}
+            · {new Date(latestRefresh.updatedAt).toLocaleString()}
+          </div>
+        ) : null}
         {source?.lastSuccessAt ? (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <CheckCircle2 className="size-4 text-emerald-600" /> Last reconciled{" "}
             {new Date(source.lastSuccessAt).toLocaleString()}
           </div>
         ) : null}
-        {source?.lastError || run?.error ? (
+        {source?.lastError || run?.error || latestRefresh?.error ? (
           <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
             <TriangleAlert className="mt-0.5 size-4 text-destructive" />
-            <span>{source?.lastError || run?.error}</span>
+            <span>
+              {source?.lastError || run?.error || latestRefresh?.error}
+            </span>
           </div>
         ) : null}
-        <code className="break-all rounded bg-muted p-2 text-xs">
-          {SYNC_COMMAND}
-        </code>
+        {source?.canOperate ? (
+          <InventoryRefreshControls
+            activeRefresh={activeRefresh}
+            onChanged={() => mutate()}
+            request={request}
+            source={source}
+          />
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            Inventory controls are available to an assigned source operator.
+          </p>
+        )}
       </CardContent>
-      <CardFooter className="justify-between gap-3">
-        <span className="text-muted-foreground text-xs">
-          Dry-run is the default; --apply is explicit.
-        </span>
-        <Button onClick={() => void copyCommand()} variant="outline">
-          <Copy /> Copy command
-        </Button>
-      </CardFooter>
     </Card>
   );
 }
 
 function InventoryBadge({
   loading,
+  refresh,
   run,
 }: {
   loading: boolean;
+  refresh: InventoryRefreshSummary | undefined;
   run: InventoryRunSummary | undefined;
 }) {
   if (loading) {
     return <Badge variant="outline">Loading</Badge>;
+  }
+  if (refresh) {
+    return <Badge variant="secondary">{refresh.status}</Badge>;
   }
   if (!run) {
     return <Badge variant="outline">Not run</Badge>;
@@ -134,6 +142,18 @@ function InventoryBadge({
     <Badge variant={run.status === "completed" ? "secondary" : "outline"}>
       {run.status}
     </Badge>
+  );
+}
+
+function RefreshProgress({ refresh }: { refresh: InventoryRefreshSummary }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-muted/30 p-3 text-sm">
+      <span>
+        {refresh.mode === "full" ? "Full reconciliation" : "Latest refresh"} ·{" "}
+        {refresh.boards.length > 0 ? refresh.boards.join(", ") : "all boards"}
+      </span>
+      <Badge variant="outline">{refresh.status}</Badge>
+    </div>
   );
 }
 

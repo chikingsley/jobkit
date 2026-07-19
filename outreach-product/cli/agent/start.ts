@@ -3,12 +3,15 @@ import { createHash } from "node:crypto";
 import { parseArgs } from "node:util";
 import { AgentTaskEnvelopeSchema } from "../../src/features/agents/schema";
 import { runStructuredAgent } from "../lib/structured-agent";
+import { createAgentClient } from "./client";
 import { readAgentConfig } from "./config";
+import { claimAndRunInventoryOperation } from "./inventory-operations";
 
 const { values: args } = parseArgs({
   options: { once: { default: false, type: "boolean" } },
 });
 const config = await readAgentConfig();
+const client = createAgentClient(config);
 const codexVersion = await codexVersionText();
 
 await main();
@@ -16,49 +19,63 @@ await main();
 async function main() {
   do {
     // biome-ignore lint/performance/noAwaitInLoops: Each claim depends on the prior leased task reaching a terminal state.
-    const response = await api("/api/agent-tasks/claim", {
+    const response = await client.post("/api/agent-tasks/claim", {
       runnerVersion: codexVersion,
     });
     const task = AgentTaskEnvelopeSchema.nullable().parse(response.task);
-    if (!task) {
+    if (task) {
+      await runAgentTask(task);
       if (args.once) {
-        console.log("No compatible agent work is queued.");
         return;
       }
-      await sleep(15_000);
       continue;
     }
-
-    console.log(`Running ${task.taskType} with ${task.model}`);
-    try {
-      const artifacts = await Promise.all(
-        task.artifacts.map(async (artifact) => ({
-          bytes: await downloadArtifact(artifact),
-          contentType: artifact.contentType,
-          filename: artifact.filename,
-        }))
-      );
-      const output = await runStructuredAgent({
-        artifacts,
-        effort: task.reasoningEffort,
-        model: task.model,
-        outputSchema: task.outputSchema,
-        prompt: task.prompt,
-        timeoutMs: 900_000,
-        webSearch: task.webSearch,
-      });
-      await api(`/api/agent-tasks/${task.runId}/complete`, {
-        output: JSON.parse(output) as unknown,
-      });
-      console.log(`Completed ${task.taskType}`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      await api(`/api/agent-tasks/${task.runId}/fail`, {
-        error: message.slice(0, 4000),
-      });
-      console.error(`Failed ${task.taskType}: ${message}`);
+    if (await claimAndRunInventoryOperation(client, config)) {
+      if (args.once) {
+        return;
+      }
+      continue;
     }
+    if (args.once) {
+      console.log("No compatible agent or inventory work is queued.");
+      return;
+    }
+    await sleep(15_000);
   } while (!args.once);
+}
+
+async function runAgentTask(
+  task: ReturnType<typeof AgentTaskEnvelopeSchema.parse>
+) {
+  console.log(`Running ${task.taskType} with ${task.model}`);
+  try {
+    const artifacts = await Promise.all(
+      task.artifacts.map(async (artifact) => ({
+        bytes: await downloadArtifact(artifact),
+        contentType: artifact.contentType,
+        filename: artifact.filename,
+      }))
+    );
+    const output = await runStructuredAgent({
+      artifacts,
+      effort: task.reasoningEffort,
+      model: task.model,
+      outputSchema: task.outputSchema,
+      prompt: task.prompt,
+      timeoutMs: 900_000,
+      webSearch: task.webSearch,
+    });
+    await client.post(`/api/agent-tasks/${task.runId}/complete`, {
+      output: JSON.parse(output) as unknown,
+    });
+    console.log(`Completed ${task.taskType}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await client.post(`/api/agent-tasks/${task.runId}/fail`, {
+      error: message.slice(0, 4000),
+    });
+    console.error(`Failed ${task.taskType}: ${message}`);
+  }
 }
 
 async function downloadArtifact(artifact: {
@@ -88,24 +105,6 @@ async function downloadArtifact(artifact: {
     throw new Error(`Artifact hash changed for ${artifact.filename}`);
   }
   return bytes;
-}
-
-async function api(path: string, body: Record<string, unknown>) {
-  const response = await fetch(`${config.baseUrl}${path}`, {
-    body: JSON.stringify(body),
-    headers: {
-      authorization: `Bearer ${config.token}`,
-      "content-type": "application/json",
-    },
-    method: "POST",
-  });
-  const payload: unknown = await response.json();
-  if (!response.ok) {
-    throw new Error(
-      `JobKit API ${response.status}: ${JSON.stringify(payload)}`
-    );
-  }
-  return payload as { task?: unknown };
 }
 
 function codexVersionText() {

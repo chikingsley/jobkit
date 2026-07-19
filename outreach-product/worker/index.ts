@@ -46,6 +46,7 @@ import { DocumentConversionError } from "./services/document-text";
 import { EmailAttemptError } from "./services/email-attempts";
 import { GmailIntegrationError } from "./services/gmail-errors";
 import { renewExpiringGmailWatches } from "./services/gmail-integration";
+import { queueDueInventoryRefreshes } from "./services/inventory-refreshes";
 import { InventoryRunError } from "./services/inventory-runs";
 import { JobAnalysisRecordError } from "./services/job-analysis-records";
 import { approveAndSubmitApplication } from "./services/job-submission";
@@ -153,6 +154,9 @@ const AGENT_TASK_CLAIM_PATH = "/api/agent-tasks/claim";
 const INVENTORY_RUN_CREATE_PATH = "/api/inventory/runs";
 const INVENTORY_RUN_MUTATION_PATH =
   /^\/api\/inventory\/runs\/[^/]+\/(batches|complete|fail)$/u;
+const INVENTORY_OPERATION_CLAIM_PATH = "/api/inventory/operations/claim";
+const INVENTORY_OPERATION_MUTATION_PATH =
+  /^\/api\/inventory\/operations\/[^/]+\/(heartbeat|complete|fail)$/u;
 
 function runnerRequestAllowed(method: string, path: string) {
   if (method === "GET") {
@@ -162,8 +166,10 @@ function runnerRequestAllowed(method: string, path: string) {
     method === "POST" &&
     (path === AGENT_TASK_CLAIM_PATH ||
       path === INVENTORY_RUN_CREATE_PATH ||
+      path === INVENTORY_OPERATION_CLAIM_PATH ||
       AGENT_TASK_RESULT_PATH.test(path) ||
-      INVENTORY_RUN_MUTATION_PATH.test(path))
+      INVENTORY_RUN_MUTATION_PATH.test(path) ||
+      INVENTORY_OPERATION_MUTATION_PATH.test(path))
   );
 }
 
@@ -370,12 +376,14 @@ export default {
         renewExpiringGmailWatches(env),
         runCampaignMatchingPass(env.DB),
         runCampaignScheduler(env),
-      ]).then(([gmail, matching, campaigns]) => {
+        queueDueInventoryRefreshes(env.DB),
+      ]).then(([gmail, matching, campaigns, inventory]) => {
         console.log(
           JSON.stringify({
             campaigns,
             event: "scheduled_maintenance",
             gmail,
+            inventory,
             matching,
           })
         );

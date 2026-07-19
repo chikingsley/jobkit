@@ -29,6 +29,7 @@ interface InventoryRunRow {
   failed_count: number;
   id: string;
   processed_count: number;
+  refresh_request_id: string | null;
   runner_id: string | null;
   source_active_count: number;
   source_id: string;
@@ -64,9 +65,17 @@ export async function beginInventoryRun(
   input: InventoryRunStart
 ) {
   const source = await readInventorySource(db, input.sourceId);
+  if (input.operationId) {
+    await assertRefreshOperationLease(
+      db,
+      runner,
+      input.operationId,
+      input.sourceId
+    );
+  }
   const existing = await db
     .prepare(
-      `SELECT id,source_id,started_by_user_id,runner_id,status,
+      `SELECT id,source_id,started_by_user_id,runner_id,status,refresh_request_id,
               source_total_count,source_active_count,processed_count,
               upserted_count,unchanged_count,failed_count
          FROM inventory_runs
@@ -77,6 +86,12 @@ export async function beginInventoryRun(
   if (existing) {
     assertRunOwner(existing, runner);
     assertRunCounts(existing, input);
+    if (existing.refresh_request_id !== (input.operationId ?? null)) {
+      throw new InventoryRunError(
+        "Inventory snapshot key belongs to a different refresh operation",
+        409
+      );
+    }
     return toInventoryRun(existing);
   }
 
@@ -86,10 +101,10 @@ export async function beginInventoryRun(
     db
       .prepare(
         `INSERT INTO inventory_runs
-          (id,source_id,snapshot_key,started_by_user_id,runner_id,status,
+          (id,source_id,snapshot_key,started_by_user_id,runner_id,refresh_request_id,status,
            source_total_count,source_active_count,source_closed_count,
            started_at,updated_at)
-         VALUES (?,?,?,?,?,'ingesting',?,?,?,?,?)`
+         VALUES (?,?,?,?,?,?,'ingesting',?,?,?,?,?)`
       )
       .bind(
         id,
@@ -97,6 +112,7 @@ export async function beginInventoryRun(
         input.snapshotKey,
         runner.user.id,
         runner.id,
+        input.operationId ?? null,
         input.sourceTotalCount,
         input.sourceActiveCount,
         input.sourceClosedCount,
@@ -326,15 +342,22 @@ export async function failInventoryRun(
   return toInventoryRun(await readOwnedRun(db, runner, run.id));
 }
 
-export async function listInventoryStatus(db: D1Database) {
-  const [sources, runs] = await db.batch<Record<string, unknown>>([
-    db.prepare(
-      `SELECT id,name,completeness_policy,status,refresh_interval_minutes,
+export async function listInventoryStatus(db: D1Database, userId: string) {
+  const [sources, runs, refreshes] = await db.batch<Record<string, unknown>>([
+    db
+      .prepare(
+        `SELECT source.id,source.name,source.completeness_policy,source.status,
+              source.refresh_interval_minutes,
               next_refresh_at,last_started_at,last_completed_at,last_success_at,
-              last_error,updated_at
-         FROM inventory_sources
-        ORDER BY name,id`
-    ),
+              last_error,source.updated_at,
+              EXISTS (
+                SELECT 1 FROM inventory_source_operators operator
+                 WHERE operator.source_id=source.id AND operator.user_id=?
+              ) can_operate
+         FROM inventory_sources source
+        ORDER BY source.name,source.id`
+      )
+      .bind(userId),
     db.prepare(
       `SELECT id,source_id,snapshot_key,status,source_total_count,
               source_active_count,source_closed_count,processed_count,
@@ -343,8 +366,28 @@ export async function listInventoryStatus(db: D1Database) {
          FROM inventory_runs
         ORDER BY started_at DESC LIMIT 20`
     ),
+    db.prepare(
+      `SELECT id,source_id,mode,boards_json,status,inventory_run_id,error_detail,
+              requested_at,claimed_at,started_at,completed_at,updated_at
+         FROM inventory_refresh_requests
+        ORDER BY requested_at DESC LIMIT 20`
+    ),
   ]);
   return {
+    refreshes: (refreshes?.results ?? []).map((row) => ({
+      boards: JSON.parse(String(row.boards_json)) as unknown,
+      claimedAt: nullableString(row.claimed_at),
+      completedAt: nullableString(row.completed_at),
+      error: String(row.error_detail),
+      id: String(row.id),
+      inventoryRunId: nullableString(row.inventory_run_id),
+      mode: String(row.mode),
+      requestedAt: String(row.requested_at),
+      sourceId: String(row.source_id),
+      startedAt: nullableString(row.started_at),
+      status: String(row.status),
+      updatedAt: String(row.updated_at),
+    })),
     runs: (runs?.results ?? []).map((row) => ({
       closedCount: Number(row.closed_count),
       completedAt: nullableString(row.completed_at),
@@ -364,6 +407,7 @@ export async function listInventoryStatus(db: D1Database) {
       upsertedCount: Number(row.upserted_count),
     })),
     sources: (sources?.results ?? []).map((row) => ({
+      canOperate: Number(row.can_operate) === 1,
       completenessPolicy: String(row.completeness_policy),
       id: String(row.id),
       lastCompletedAt: nullableString(row.last_completed_at),
@@ -855,7 +899,7 @@ async function readOwnedRun(
 ) {
   const row = await db
     .prepare(
-      `SELECT id,source_id,started_by_user_id,runner_id,status,
+      `SELECT id,source_id,started_by_user_id,runner_id,status,refresh_request_id,
               source_total_count,source_active_count,processed_count,
               upserted_count,unchanged_count,failed_count
          FROM inventory_runs WHERE id=?`
@@ -866,7 +910,37 @@ async function readOwnedRun(
     throw new InventoryRunError("Inventory run was not found", 404);
   }
   assertRunOwner(row, runner);
+  if (row.refresh_request_id) {
+    await assertRefreshOperationLease(
+      db,
+      runner,
+      row.refresh_request_id,
+      row.source_id
+    );
+  }
   return row;
+}
+
+async function assertRefreshOperationLease(
+  db: D1Database,
+  runner: AgentRunnerContext,
+  operationId: string,
+  sourceId: string
+) {
+  const operation = await db
+    .prepare(
+      `SELECT 1 present FROM inventory_refresh_requests
+        WHERE id=? AND source_id=? AND runner_id=?
+          AND status IN ('claimed','crawling','publishing')`
+    )
+    .bind(operationId, sourceId, runner.id)
+    .first();
+  if (!operation) {
+    throw new InventoryRunError(
+      "Inventory refresh operation is not leased by this runner",
+      409
+    );
+  }
 }
 
 function readRunItem(db: D1Database, runId: string, sourceJobId: string) {

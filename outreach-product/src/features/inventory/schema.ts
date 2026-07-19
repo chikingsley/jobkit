@@ -47,6 +47,7 @@ export const InventoryJobSchema = z
 
 export const InventoryRunStartSchema = z
   .object({
+    operationId: z.string().min(1).optional(),
     snapshotKey: z.string().min(1).max(128),
     sourceActiveCount: z.number().int().nonnegative(),
     sourceClosedCount: z.number().int().nonnegative(),
@@ -78,4 +79,48 @@ export const InventoryRunFailureSchema = z
   .object({ error: z.string().trim().min(1).max(4000) })
   .strict();
 
+export const InventoryBoardSchema = z.enum([
+  "ajarn",
+  "anesl",
+  "eslcafe-modern",
+  "seriousteachers",
+  "tefl",
+]);
+
+export const InventoryRefreshRequestSchema = z
+  .object({
+    boards: z
+      .array(InventoryBoardSchema)
+      .max(InventoryBoardSchema.options.length),
+    mode: z.enum(["latest", "full"]),
+    sourceId: z.string().regex(/^[a-z0-9][a-z0-9-]{1,79}$/u),
+  })
+  .strict();
+
+export const InventorySourceScheduleSchema = z
+  .object({ refreshIntervalMinutes: z.number().int().positive().nullable() })
+  .strict();
+
+export const InventoryOperationEnvelopeSchema = z
+  .object({
+    boards: z.array(InventoryBoardSchema),
+    id: z.string().min(1),
+    leaseExpiresAt: z.iso.datetime(),
+    mode: z.enum(["latest", "full"]),
+    sourceId: z.string().min(1),
+    type: z.literal("inventory.refresh"),
+  })
+  .strict();
+
+export const InventoryOperationCompletionSchema = z
+  .object({ inventoryRunId: z.string().min(1) })
+  .strict();
+
+export const InventoryOperationHeartbeatSchema = z
+  .object({ status: z.enum(["crawling", "publishing"]) })
+  .strict();
+
 export type InventoryJob = z.infer<typeof InventoryJobSchema>;
+export type InventoryOperationEnvelope = z.infer<
+  typeof InventoryOperationEnvelopeSchema
+>;
