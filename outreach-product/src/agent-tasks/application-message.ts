@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { APPLICATION_MESSAGE_INSTRUCTIONS } from "../../worker/ai/application-message-policy";
+import { codexOutputJsonSchema } from "./json-schema";
 
 export const APPLICATION_MESSAGE_TASK_TYPE = "application.message";
 
@@ -10,9 +11,8 @@ export const ApplicationMessageTaskOutputSchema = z
   })
   .strict();
 
-export const APPLICATION_MESSAGE_OUTPUT_JSON_SCHEMA = z.toJSONSchema(
-  ApplicationMessageTaskOutputSchema,
-  { target: "draft-2020-12" }
+export const APPLICATION_MESSAGE_OUTPUT_JSON_SCHEMA = codexOutputJsonSchema(
+  ApplicationMessageTaskOutputSchema
 );
 
 export type ApplicationMessageTaskMode = "generate" | "revise";
@@ -40,6 +40,13 @@ export const ApplicationMessageRequestInputSchema = z.discriminatedUnion(
           });
         }
       }),
+    z
+      .object({
+        followUpId: z.string().min(1),
+        kind: z.literal("follow_up"),
+        mode: z.literal("follow_up"),
+      })
+      .strict(),
     z
       .object({
         dispatchId: z.string().min(1),
@@ -97,13 +104,10 @@ export type ApplicationMessageRequestInput = z.infer<
 >;
 
 export function applicationMessagePrompt(
-  mode: ApplicationMessageTaskMode,
+  mode: ApplicationMessageTaskMode | "follow_up",
   input: Record<string, unknown>
 ) {
-  const action =
-    mode === "revise"
-      ? "Revise currentMessage according to revisionInstruction."
-      : "Write a new application message.";
+  const action = messageAction(mode);
   return `Create one truthful JobKit application message and a short factual summary of its tailoring.
 
 ${APPLICATION_MESSAGE_INSTRUCTIONS}
@@ -120,16 +124,35 @@ ${JSON.stringify(input)}
 </application-data>`;
 }
 
-export function applicationMessageTaskConfig(mode: ApplicationMessageTaskMode) {
+function messageAction(mode: ApplicationMessageTaskMode | "follow_up") {
+  if (mode === "follow_up") {
+    return "Write a brief in-thread follow-up to the prior sent message.";
+  }
+  if (mode === "revise") {
+    return "Revise currentMessage according to revisionInstruction.";
+  }
+  return "Write a new application message.";
+}
+
+export function applicationMessageTaskConfig(
+  mode: ApplicationMessageTaskMode | "follow_up"
+) {
+  if (mode === "follow_up") {
+    return {
+      model: "gpt-5.6-luna",
+      promptVersion: "application-message-follow-up-v1",
+      reasoningEffort: "low" as const,
+    };
+  }
   return mode === "revise"
     ? {
         model: "gpt-5.6-terra",
-        promptVersion: "application-message-revise-v1",
+        promptVersion: "application-message-revise-v2",
         reasoningEffort: "medium" as const,
       }
     : {
         model: "gpt-5.6-luna",
-        promptVersion: "application-message-generate-v1",
+        promptVersion: "application-message-generate-v2",
         reasoningEffort: "medium" as const,
       };
 }

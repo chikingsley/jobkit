@@ -4,6 +4,7 @@ import { hostname } from "node:os";
 import { dirname } from "node:path";
 import { parseArgs } from "node:util";
 import { z } from "zod";
+import { AgentCapabilitySchema } from "../../src/features/agents/schema";
 import { agentConfigPath } from "./config";
 
 const { values: args } = parseArgs({
@@ -42,6 +43,7 @@ if (!response.ok) {
 const result = z
   .object({
     runner: z.object({
+      capabilities: z.array(AgentCapabilitySchema),
       runnerId: z.string().min(1),
       token: z.string().startsWith("jobkit_agent_"),
     }),
@@ -52,7 +54,12 @@ await mkdir(dirname(agentConfigPath), { recursive: true });
 await writeFile(
   agentConfigPath,
   `${JSON.stringify(
-    { baseUrl, runnerId: result.runner.runnerId, token: result.runner.token },
+    {
+      baseUrl,
+      capabilities: result.runner.capabilities,
+      runnerId: result.runner.runnerId,
+      token: result.runner.token,
+    },
     null,
     2
   )}\n`,

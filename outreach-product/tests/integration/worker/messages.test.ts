@@ -1,6 +1,8 @@
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
+import { writeAutomationPolicy } from "../../../worker/repositories/automation-policy";
+import { queueDueFollowUps } from "../../../worker/services/followups";
 import { recordInboundMessage } from "../../../worker/services/messages";
 import { createAuthenticatedUser } from "./auth";
 
@@ -117,6 +119,91 @@ const inboundPayload = {
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("inbound message sync", () => {
+  it("does not queue follow-ups while the user's automation policy is paused", async () => {
+    const { userId } = await createAuthenticatedUser(
+      "messages-paused-follow-up@example.test"
+    );
+    await seedSentAttempt(userId, "follow-up-paused");
+    await writeAutomationPolicy(env.DB, userId, {
+      allowedBoards: [],
+      boardForm: { dailyLimit: 10, mode: "review" },
+      email: { dailyLimit: 20, mode: "review" },
+      excludedMarketSegments: [],
+      followUpDelaysDays: [1],
+      minimumFit: "strong",
+      paused: true,
+      requireKnownCompensation: false,
+      routeFreshnessDays: 30,
+    });
+
+    await expect(queueDueFollowUps(testEnv)).resolves.toEqual({
+      considered: 0,
+      queued: 0,
+    });
+  });
+
+  it("cancels a queued follow-up when a human reply arrives", async () => {
+    const { userId } = await createAuthenticatedUser(
+      "messages-follow-up@example.test"
+    );
+    await seedSentAttempt(userId, "follow-up-human-reply");
+    await writeAutomationPolicy(env.DB, userId, {
+      allowedBoards: [],
+      boardForm: { dailyLimit: 10, mode: "review" },
+      email: { dailyLimit: 20, mode: "review" },
+      excludedMarketSegments: [],
+      followUpDelaysDays: [1],
+      minimumFit: "strong",
+      paused: false,
+      requireKnownCompensation: false,
+      routeFreshnessDays: 30,
+    });
+    await expect(queueDueFollowUps(testEnv)).resolves.toEqual({
+      considered: 1,
+      queued: 1,
+    });
+    await recordInboundMessage(env.DB, userId, inboundPayload);
+    await expect(
+      env.DB.prepare("SELECT status FROM outreach_followups WHERE user_id=?")
+        .bind(userId)
+        .first<{ status: string }>()
+    ).resolves.toEqual({ status: "canceled" });
+    await expect(queueDueFollowUps(testEnv)).resolves.toEqual({
+      considered: 0,
+      queued: 0,
+    });
+  });
+
+  it("cancels a queued follow-up when Gmail records a bounce", async () => {
+    const { userId } = await createAuthenticatedUser(
+      "messages-bounced-follow-up@example.test"
+    );
+    await seedSentAttempt(userId, "follow-up-bounce");
+    await writeAutomationPolicy(env.DB, userId, {
+      allowedBoards: [],
+      boardForm: { dailyLimit: 10, mode: "review" },
+      email: { dailyLimit: 20, mode: "review" },
+      excludedMarketSegments: [],
+      followUpDelaysDays: [1],
+      minimumFit: "strong",
+      paused: false,
+      requireKnownCompensation: false,
+      routeFreshnessDays: 30,
+    });
+    await queueDueFollowUps(testEnv);
+    await recordInboundMessage(env.DB, userId, {
+      ...inboundPayload,
+      classification: "bounce",
+      gmailMessageId: "gm-bounce-1",
+    });
+
+    await expect(
+      env.DB.prepare("SELECT status FROM outreach_followups WHERE user_id=?")
+        .bind(userId)
+        .first<{ status: string }>()
+    ).resolves.toEqual({ status: "canceled" });
+  });
+
   it("stitches recorded replies into the sent thread with unread tracking", async () => {
     const { cookie, userId } = await createAuthenticatedUser(
       "messages@example.test"
@@ -173,6 +260,29 @@ describe("inbound message sync", () => {
     expect(inbound).toMatchObject({
       direction: "inbound",
       from: "Recruiter <school@example.test>",
+    });
+
+    const outcome = await request(
+      `/api/messages/threads/${gmailThreadId}/outcome`,
+      cookie,
+      {
+        body: { note: "Offer received by email", outcome: "offer" },
+        method: "PUT",
+      }
+    );
+    expect(await outcome.json()).toMatchObject({
+      ok: true,
+      outcome: {
+        note: "Offer received by email",
+        value: "offer",
+      },
+    });
+    const detailWithOutcome = await request(
+      `/api/messages/threads/${gmailThreadId}`,
+      cookie
+    );
+    await expect(detailWithOutcome.json()).resolves.toMatchObject({
+      thread: { outcome: { value: "offer" } },
     });
 
     const read = await request(

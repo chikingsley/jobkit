@@ -50,7 +50,7 @@ export function DocumentLab({
   request: ApiRequest;
 }) {
   const { data: documentsData } = useSWR(
-    "/api/documents",
+    "/api/documents?scope=all",
     async (path) =>
       (await (await request(path)).json()) as {
         documents: DocumentSummary[];
@@ -103,14 +103,14 @@ export function DocumentLab({
       <Card>
         <CardHeader>
           <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">no production fallback</Badge>
+            <Badge variant="secondary">explicit benchmark runs</Badge>
             <Badge variant="outline">page-level output</Badge>
           </div>
           <CardTitle>Document benchmark</CardTitle>
           <CardDescription>
             Compare each extractor explicitly on the same immutable document
-            version. JobKit tries deterministic PDF or DOCX extraction first;
-            Codex vision and Mistral OCR are recorded alternatives.
+            version. Production uses deterministic extraction first, Mistral OCR
+            for unreadable scans, and Codex vision only as an audit comparator.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">

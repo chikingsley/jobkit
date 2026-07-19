@@ -161,7 +161,7 @@ export function messageRouteFor(job: JobImport): ApplicationMessageRoute {
     : job.messageRoute;
 }
 
-function messageProfile(profile: Profile) {
+export function messageProfile(profile: Profile) {
   return {
     availability: profile.availability,
     citizenship: profile.citizenship,

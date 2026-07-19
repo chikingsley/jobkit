@@ -1,4 +1,5 @@
 export interface AppEnv extends Env {
+  FX_RATES_JSON?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
   GOOGLE_PUBSUB_AUDIENCE?: string;

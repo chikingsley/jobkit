@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { CountrySweepTaskOutputSchema } from "../features/countries/schema";
+import { codexOutputJsonSchema } from "./json-schema";
 
 export type CountrySweepPhase = "coverage_audit" | "discovery" | "verification";
 
@@ -11,10 +11,9 @@ export interface CountrySweepAgentInput {
   scopeKey: string;
 }
 
-export const COUNTRY_SWEEP_PROMPT_VERSION = "country-sweep-v2";
-export const COUNTRY_SWEEP_OUTPUT_JSON_SCHEMA = z.toJSONSchema(
-  CountrySweepTaskOutputSchema,
-  { target: "draft-2020-12" }
+export const COUNTRY_SWEEP_PROMPT_VERSION = "country-sweep-v3";
+export const COUNTRY_SWEEP_OUTPUT_JSON_SCHEMA = codexOutputJsonSchema(
+  CountrySweepTaskOutputSchema
 );
 
 export function countrySweepTaskType(phase: CountrySweepPhase) {

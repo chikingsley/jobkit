@@ -8,6 +8,7 @@ import { JobQueueGroup } from "@/features/jobs/job-queue-group";
 import { type JobSort, sortJobs } from "@/features/jobs/sorting";
 import type { DraftMutationResult, FxData, Job } from "@/features/jobs/types";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
+import { useWorkspaceQueryState } from "@/features/workspace/query-state";
 import { SplitWorkspace } from "@/features/workspace/split-workspace";
 import type { JobMatch, Preferences, Profile } from "@/profile-types";
 
@@ -54,7 +55,7 @@ export function JobsWorkspace({
   selected?: Job;
   sort: JobSort;
 }) {
-  const [showQueue, setShowQueue] = useState(true);
+  const { detailOpen, setDetailOpen } = useWorkspaceQueryState();
   const [visibleLimit, setVisibleLimit] = useState(INITIAL_VISIBLE_JOBS);
   const sortedJobs = useMemo(() => sortJobs(jobs, fx, sort), [fx, jobs, sort]);
   const queueJobs = sortedJobs.slice(0, visibleLimit);
@@ -72,7 +73,7 @@ export function JobsWorkspace({
           {selected ? (
             <>
               <div className="split-workspace-back border-b bg-background px-4 py-2">
-                <Button onClick={() => setShowQueue(true)} variant="ghost">
+                <Button onClick={() => setDetailOpen(false)} variant="ghost">
                   <ChevronLeft /> Review queue
                 </Button>
               </div>
@@ -103,7 +104,7 @@ export function JobsWorkspace({
           )}
         </ScrollArea>
       }
-      detailOpen={!showQueue}
+      detailOpen={detailOpen}
       list={
         <>
           <div className="border-b px-4 py-3">
@@ -125,7 +126,7 @@ export function JobsWorkspace({
                   matches={matches}
                   onSelect={(jobId) => {
                     onSelect(jobId);
-                    setShowQueue(false);
+                    setDetailOpen(true);
                   }}
                   selectedId={selected?.id}
                 />

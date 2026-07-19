@@ -271,4 +271,5 @@ INSERT INTO organization_contact_points (
    'website','Organization website','https://tajikistan.americancouncils.org/menu',
    'active','https://tajikistan.americancouncils.org/menu',
    '2026-05-11T00:00:00.000Z','2026-05-11T00:00:00.000Z',
-   '2026-05-11T00:00:00.000Z');
+   '2026-05-11T00:00:00.000Z')
+ON CONFLICT(organization_id,kind,value) DO NOTHING;

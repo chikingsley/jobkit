@@ -28,7 +28,7 @@ export interface TestLabCase {
   version: string;
 }
 
-export const TEST_LAB_CORPUS_VERSION = "jobkit-eval-2026-07-18-v1";
+export const TEST_LAB_CORPUS_VERSION = "jobkit-eval-2026-07-19-v2";
 
 const syntheticSource = {
   kind: "synthetic" as const,
@@ -95,7 +95,7 @@ const classificationSeeds = [
     "unclear",
   ],
   [
-    "A school in Asia is hiring qualified candidates for the new term.",
+    "Una escuela en Asia busca candidatos cualificados para el nuevo semestre; no se indican la asignatura ni las edades.",
     "unclear",
   ],
   [
@@ -220,10 +220,10 @@ const rerankingSeeds = [
     "History teacher with paid leave",
   ],
   [
-    "academic writing support",
-    "Writing-center English tutor for university students",
-    "Kindergarten art teacher",
-    "Corporate payroll specialist",
+    "profesor de inglés para adultos",
+    "Clases de inglés de negocios para profesionales adultos",
+    "Maestra de arte para jardín de infancia",
+    "Especialista en nóminas corporativas",
   ],
 ] as const;
 
@@ -290,7 +290,11 @@ const deduplicationSeeds = [
     "Jane Li at Dalian Kids School",
     "Jane Liu at Qingdao Kids School",
   ],
-  ["jobs@sample.edu.cn", "mailto:jobs@sample.edu.cn", "jobs@sample.edu"],
+  [
+    "Международная школа Душанбе",
+    "International School Dushanbe",
+    "International School Tbilisi",
+  ],
 ] as const;
 
 const extractionSeeds = [
@@ -432,7 +436,7 @@ const matchingSeeds = [
   [
     "US citizen; bachelor's degree; TEFL; English teaching experience",
     "English teacher; bachelor's and TEFL required; US passport accepted",
-    "match",
+    "review",
   ],
   [
     "Bachelor's in biology; English teaching experience",
@@ -470,8 +474,8 @@ const matchingSeeds = [
     "review",
   ],
   [
-    "English and biology teaching experience",
-    "Middle-school science teacher; subject expertise accepted; license preferred",
+    "Experiencia enseñando inglés y biología",
+    "Profesor de ciencias de secundaria; se acepta experiencia en la materia; licencia preferida",
     "match",
   ],
   [
@@ -577,6 +581,7 @@ const classificationCases = classificationSeeds.map(([text, label], index) => ({
     "listing",
     "zero-shot",
     label,
+    ...(index === 18 ? ["multilingual"] : []),
     ...(index === 19 ? ["prompt-injection"] : []),
   ],
 }));
@@ -602,6 +607,7 @@ const rerankingCases = rerankingSeeds.map(
       tags: [
         "ranking",
         "multilingual-ready",
+        ...(index === 19 ? ["multilingual"] : []),
         ...(index === 17 ? ["prompt-injection"] : []),
       ],
     };
@@ -626,7 +632,11 @@ const deduplicationCases = deduplicationSeeds.map(
     },
     source: syntheticSource,
     supportedVariants: ["codex", "jina", "hybrid"] as TestLabVariant[],
-    tags: ["contacts", "deduplication"],
+    tags: [
+      "contacts",
+      "deduplication",
+      ...(index === 14 ? ["multilingual"] : []),
+    ],
   })
 );
 
@@ -660,7 +670,12 @@ const matchingCases = matchingSeeds.map(
     input: { candidate, listing },
     source: syntheticSource,
     supportedVariants: ["codex", "jina", "hybrid"] as TestLabVariant[],
-    tags: ["matching", decision, ...(index === 9 ? ["prompt-injection"] : [])],
+    tags: [
+      "matching",
+      decision,
+      ...(index === 8 ? ["multilingual"] : []),
+      ...(index === 9 ? ["prompt-injection"] : []),
+    ],
   })
 );
 
@@ -783,10 +798,10 @@ const researchCases: TestLabCase[] = [
       "Search for current official Codex command-line documentation."
     ),
     expected: { requiredDomains: ["developers.openai.com"] },
-    input: { query: "OpenAI Codex CLI official documentation" },
+    input: { query: "documentación oficial del CLI Codex de OpenAI" },
     source: syntheticSource,
     supportedVariants: ["codex", "jina", "hybrid"],
-    tags: ["web", "search", "source-quality"],
+    tags: ["web", "search", "source-quality", "multilingual"],
   },
   {
     ...caseBase(
@@ -842,11 +857,11 @@ const researchCases: TestLabCase[] = [
     input: {
       goodDomains: ["jina.ai"],
       question:
-        "What two classification modes are supported by Jina's official Classifier API?",
+        "¿Qué dos modos de clasificación admite la API oficial Classifier de Jina?",
     },
     source: syntheticSource,
     supportedVariants: ["codex", "jina", "hybrid"],
-    tags: ["web", "deep-search", "current-docs"],
+    tags: ["web", "deep-search", "current-docs", "multilingual"],
   },
 ];
 

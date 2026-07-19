@@ -26,6 +26,11 @@ import {
   prepareCampaignDispatchTask,
 } from "../campaign-messages";
 import {
+  buildFollowUpTaskCompletion,
+  markFollowUpTaskFailed,
+  prepareFollowUpTask,
+} from "../followups";
+import {
   completeMessagePreviewTask,
   prepareMessagePreviewTask,
 } from "../message-preview";
@@ -163,6 +168,9 @@ async function buildApplicationMessageCompletionPlan(
   rawOutput: unknown,
   modelId: string
 ) {
+  if (input.kind === "follow_up") {
+    return buildFollowUpTaskCompletion(env, userId, input, rawOutput, modelId);
+  }
   if (input.kind === "job_draft") {
     return buildJobDraftTaskCompletion(env, userId, input, rawOutput, modelId);
   }
@@ -201,6 +209,9 @@ async function prepareApplicationMessageRequest(
   userId: string,
   input: ReturnType<typeof ApplicationMessageRequestInputSchema.parse>
 ) {
+  if (input.kind === "follow_up") {
+    return prepareFollowUpTask(env, userId, input);
+  }
   if (input.kind === "job_draft") {
     return (await prepareJobDraftTask(env, userId, input)).prepared;
   }
@@ -221,6 +232,7 @@ export async function failApplicationMessageTask(
   error: string
 ) {
   const request = await requireClaimedRequest(env.DB, runner, requestId);
+  const input = ApplicationMessageRequestInputSchema.safeParse(request.input);
   const timestamp = new Date().toISOString();
   const results = await env.DB.batch([
     env.DB.prepare(
@@ -245,6 +257,14 @@ export async function failApplicationMessageTask(
     throw new AgentTaskError(
       "Application message task could not be failed",
       409
+    );
+  }
+  if (input.success && input.data.kind === "follow_up") {
+    await markFollowUpTaskFailed(
+      env.DB,
+      runner.user.id,
+      input.data.followUpId,
+      error
     );
   }
 }

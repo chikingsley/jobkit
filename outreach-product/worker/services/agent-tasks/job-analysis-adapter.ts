@@ -21,7 +21,9 @@ import {
   jobSourceHash,
   validateProviderJobMatchFacts,
 } from "../../ai/job-fact-extraction";
+import { canonicalizeJobPositionEvidence } from "../../ai/job-position-extraction";
 import type { AgentRunnerContext } from "../../app-types";
+import type { AppEnv } from "../../env";
 import { agentRunnerHasCapability } from "../agent-runners";
 import { refreshCampaignMatchesForJob } from "../campaign-matching";
 import {
@@ -37,6 +39,13 @@ import {
 } from "./run-store";
 
 const CLAIM_CANDIDATE_LIMIT = 12;
+// A malformed model response may be retried, while a consistently invalid
+// response must eventually leave a visible terminal failure. This bounds task
+// execution attempts only; it does not limit inventory breadth or analysis.
+const JOB_ANALYSIS_MAX_ATTEMPTS_PER_VERSION = 3;
+const JOB_ANALYSIS_RETRY_GUIDANCE = `
+
+A prior attempt for this exact source and task contract failed deterministic validation. Correct the response instead of repeating it. In particular, copy every evidence value directly from the listing with identical case, punctuation, and spacing. Never paraphrase, repair, or combine source fragments in an evidence field.`;
 
 interface JobAnalysisCandidate extends JobAnalysisTaskSource {
   id: string;
@@ -119,13 +128,22 @@ export async function claimJobMatchFactsTask(
 }
 
 export async function completeJobPositionTask(
-  db: D1Database,
+  env: AppEnv,
   runner: AgentRunnerContext,
   run: AgentTaskRunRow,
   runId: string,
   rawOutput: unknown
 ) {
-  const analysis = JobPositionAnalysisSchema.parse(rawOutput);
+  const { DB: db } = env;
+  const source = await readOwnedJobSource(
+    db,
+    runner.user.id,
+    run.source_task_id
+  );
+  const analysis = canonicalizeJobPositionEvidence(
+    JobPositionAnalysisSchema.parse(rawOutput),
+    jobFactSource(source)
+  );
   const domainResult = await recordJobPositionAnalysis(db, runner.user.id, {
     analysis,
     jobId: run.source_task_id,
@@ -133,18 +151,19 @@ export async function completeJobPositionTask(
     provider: "codex",
     sourceHash: run.source_hash,
   });
-  await refreshCampaignMatchesForJob(db, runner.user.id, run.source_task_id);
+  await refreshCampaignMatchesForJob(env, runner.user.id, run.source_task_id);
   await completeAgentTaskRun(db, runner.id, runId, analysis);
   return domainResult;
 }
 
 export async function completeJobMatchFactsTask(
-  db: D1Database,
+  env: AppEnv,
   runner: AgentRunnerContext,
   run: AgentTaskRunRow,
   runId: string,
   rawOutput: unknown
 ) {
+  const { DB: db } = env;
   const source = await readOwnedJobSource(
     db,
     runner.user.id,
@@ -159,7 +178,7 @@ export async function completeJobMatchFactsTask(
     provider: "codex",
     sourceHash: run.source_hash,
   });
-  await refreshCampaignMatchesForJob(db, runner.user.id, run.source_task_id);
+  await refreshCampaignMatchesForJob(env, runner.user.id, run.source_task_id);
   await completeAgentTaskRun(db, runner.id, runId, facts);
   return domainResult;
 }
@@ -176,26 +195,27 @@ async function claimJobCandidate(
   }
 ) {
   const sourceHash = await jobSourceHash(candidate);
-  const previous = await db
+  const history = await db
     .prepare(
       `SELECT status,error_detail FROM agent_task_runs
         WHERE user_id=? AND task_type=? AND source_task_id=?
           AND prompt_version=? AND source_hash=?
-        ORDER BY started_at DESC LIMIT 1`
+        ORDER BY started_at DESC LIMIT ?`
     )
     .bind(
       runner.user.id,
       task.taskType,
       candidate.id,
       task.promptVersion,
-      sourceHash
+      sourceHash,
+      JOB_ANALYSIS_MAX_ATTEMPTS_PER_VERSION
     )
-    .first<{ error_detail: string; status: string }>();
-  if (
-    previous &&
-    previous.status !== "running" &&
-    previous.error_detail !== "Runner lease expired"
-  ) {
+    .all<{ error_detail: string; status: string }>();
+  const previous = history.results.at(0);
+  if (previous?.status === "completed" || previous?.status === "running") {
+    return null;
+  }
+  if (history.results.length >= JOB_ANALYSIS_MAX_ATTEMPTS_PER_VERSION) {
     return null;
   }
   try {
@@ -203,7 +223,9 @@ async function claimJobCandidate(
       leaseExpiresAt: new Date(Date.now() + AGENT_TASK_LEASE_MS).toISOString(),
       model: JOB_ANALYSIS_MODEL.model,
       outputSchema: task.outputSchema,
-      prompt: task.prompt,
+      prompt: previous
+        ? `${task.prompt}${JOB_ANALYSIS_RETRY_GUIDANCE}`
+        : task.prompt,
       promptVersion: task.promptVersion,
       reasoningEffort: JOB_ANALYSIS_MODEL.reasoningEffort,
       sourceHash,

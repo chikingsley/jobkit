@@ -2,7 +2,6 @@ import {
   ChevronLeft,
   CirclePause,
   CirclePlay,
-  ExternalLink,
   MailCheck,
   Plus,
   RefreshCw,
@@ -21,25 +20,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
 import { CampaignActivity } from "@/features/campaigns/activity";
+import { CampaignDispatchCard } from "@/features/campaigns/dispatch-card";
 import type {
   CampaignDetail,
-  CampaignDispatch,
   CampaignSummary,
   CampaignTarget,
   CampaignTargetPage,
 } from "@/features/campaigns/types";
-import { MessageChanges, MessageText } from "@/features/jobs/message-diff";
 import { SplitWorkspace } from "@/features/workspace/split-workspace";
 import type { ApiRequest } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -47,7 +36,6 @@ import { cn } from "@/lib/utils";
 export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
   const { campaignId = "" } = useParams();
   const navigate = useNavigate();
-  const [showList, setShowList] = useState(!campaignId);
   const {
     data: campaigns,
     isLoading,
@@ -60,11 +48,6 @@ export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
   });
 
   const selectedId = campaignId || campaigns?.[0]?.id || "";
-  useEffect(() => {
-    if (campaignId) {
-      setShowList(false);
-    }
-  }, [campaignId]);
 
   return (
     <SplitWorkspace
@@ -72,7 +55,7 @@ export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
         selectedId ? (
           <CampaignDetailView
             campaignId={selectedId}
-            onBack={() => setShowList(true)}
+            onBack={() => navigate("/campaigns")}
             onChanged={() => mutateCampaigns()}
             request={request}
           />
@@ -80,7 +63,7 @@ export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
           <EmptyCampaigns onCreate={() => navigate("/campaigns/new")} />
         )
       }
-      detailOpen={!showList && Boolean(selectedId)}
+      detailOpen={Boolean(campaignId)}
       list={
         <>
           <div className="flex items-center justify-between border-b px-4 py-3">
@@ -107,10 +90,7 @@ export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
                   active={campaign.id === selectedId}
                   campaign={campaign}
                   key={campaign.id}
-                  onSelect={() => {
-                    navigate(`/campaigns/${campaign.id}`);
-                    setShowList(false);
-                  }}
+                  onSelect={() => navigate(`/campaigns/${campaign.id}`)}
                 />
               ))}
               {isLoading ? (
@@ -402,7 +382,7 @@ function CampaignDetailView({
                 </p>
               </div>
               {campaign.dispatches.map((dispatch, index) => (
-                <DispatchCard
+                <CampaignDispatchCard
                   campaignId={campaign.id}
                   dispatch={dispatch}
                   index={index}
@@ -517,183 +497,6 @@ function CampaignActions({
     );
   }
   return null;
-}
-
-function DispatchCard({
-  campaignId,
-  dispatch,
-  index,
-  onChanged,
-  request,
-}: {
-  campaignId: string;
-  dispatch: CampaignDispatch;
-  index: number;
-  onChanged: (campaign?: CampaignDetail) => Promise<void>;
-  request: ApiRequest;
-}) {
-  const [instruction, setInstruction] = useState("");
-  const [scope, setScope] = useState<"campaign" | "future" | "message">(
-    "message"
-  );
-  const [busy, setBusy] = useState("");
-
-  async function revise() {
-    setBusy("revise");
-    try {
-      const response = await request(
-        `/api/campaigns/${campaignId}/dispatches/${dispatch.id}/revisions`,
-        {
-          body: JSON.stringify({
-            dispatchId: dispatch.id,
-            instruction,
-            scope,
-          }),
-          headers: { "content-type": "application/json" },
-          method: "POST",
-        }
-      );
-      const payload = (await response.json()) as { message: string };
-      setInstruction("");
-      await onChanged();
-      toast.success(payload.message);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Revision could not be queued"
-      );
-    } finally {
-      setBusy("");
-    }
-  }
-
-  async function approve() {
-    setBusy("approve");
-    try {
-      const response = await request(
-        `/api/campaigns/${campaignId}/dispatches/${dispatch.id}/approve`,
-        { method: "POST" }
-      );
-      const payload = (await response.json()) as {
-        campaign: CampaignDetail;
-        message: string;
-      };
-      await onChanged(payload.campaign);
-      toast.success(payload.message);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Message could not be approved"
-      );
-    } finally {
-      setBusy("");
-    }
-  }
-
-  return (
-    <Card>
-      <CardHeader className="gap-2">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <CardTitle>Message {index + 1}</CardTitle>
-            <CardDescription>
-              {dispatch.targets.map((target) => target.label).join(" · ")}
-            </CardDescription>
-          </div>
-          <div className="flex gap-2">
-            {dispatch.routeStrategy === "anesl_bundle" ? (
-              <Badge variant="secondary">ANESL bundle</Badge>
-            ) : null}
-            <Badge variant="outline">{humanize(dispatch.status)}</Badge>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="grid gap-3">
-        {dispatch.message ? (
-          <>
-            <MessageText
-              highlightChanges={Boolean(dispatch.message.previousMessage)}
-              message={dispatch.message.message}
-              previousMessage={dispatch.message.previousMessage}
-            />
-            <MessageChanges
-              message={dispatch.message.message}
-              previousMessage={dispatch.message.previousMessage}
-            />
-            {dispatch.message.changeSummary ? (
-              <div className="rounded-lg bg-muted/60 p-3 text-sm">
-                <div className="font-medium">What changed</div>
-                <p className="mt-1 text-muted-foreground">
-                  {dispatch.message.changeSummary}
-                </p>
-              </div>
-            ) : null}
-          </>
-        ) : (
-          <div className="rounded-lg border border-dashed px-4 py-6 text-center text-muted-foreground text-sm">
-            Waiting for the paired Codex runner to prepare this message.
-          </div>
-        )}
-        <div className="flex flex-wrap gap-2">
-          {dispatch.targets.map((target) =>
-            target.sourceUrl ? (
-              <Button
-                key={target.id}
-                render={
-                  <a href={target.sourceUrl} rel="noreferrer" target="_blank" />
-                }
-                size="sm"
-                variant="outline"
-              >
-                <ExternalLink /> Open source
-              </Button>
-            ) : null
-          )}
-        </div>
-        {dispatch.message && dispatch.status === "review" ? (
-          <div className="grid gap-3 rounded-lg border p-3">
-            <Textarea
-              aria-label={`Revision instruction for message ${index + 1}`}
-              className="min-h-20"
-              onChange={(event) => setInstruction(event.target.value)}
-              placeholder="Describe one change. The revised message will replace this one in place."
-              value={instruction}
-            />
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <Select
-                onValueChange={(value) =>
-                  setScope(value as "campaign" | "future" | "message")
-                }
-                value={scope}
-              >
-                <SelectTrigger aria-label="Revision scope">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="message">This message</SelectItem>
-                    <SelectItem value="campaign">Remaining campaign</SelectItem>
-                    <SelectItem value="future">Future campaigns</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              <div className="flex gap-2">
-                <Button
-                  disabled={Boolean(busy) || !instruction.trim()}
-                  onClick={() => void revise()}
-                  variant="secondary"
-                >
-                  {busy === "revise" ? "Revising…" : "Revise"}
-                </Button>
-                <Button disabled={Boolean(busy)} onClick={() => void approve()}>
-                  <MailCheck />
-                  {busy === "approve" ? "Approving…" : "Approve"}
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : null}
-      </CardContent>
-    </Card>
-  );
 }
 
 function TargetRow({ target }: { target: CampaignTarget }) {

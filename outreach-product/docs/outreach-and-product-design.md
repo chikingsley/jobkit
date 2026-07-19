@@ -1,112 +1,78 @@
-# Outreach tracking and product design
+# Outreach runtime and state ownership
 
-Status: Design history. The local-CLI sections document the system JobKit grew from; the hosted
-Cloudflare sections describe the current direction. See [`../README.md`](../README.md) for current
-commands and implemented behavior.
+Status: Current architecture.
 
-Notes on how follow-up tracking works, where the state should live (local now, Cloudflare later),
-and what this could become as a product. See [`job-search-playbook.md`](job-search-playbook.md)
-for the strategy this implements and
-[`../../job-search/job-data/outreach-sent/review.md`](../../job-search/job-data/outreach-sent/review.md)
-for the data that motivates it.
+JobKit has one outreach runtime: the hosted React, Worker, D1, R2, Gmail, and
+paired-Codex application in this repository. The sibling `job-search` package
+keeps source inventory, resumes, historical correspondence, and the
+evidence-backed playbook. It no longer has a second drafting, Gmail, or
+follow-up implementation.
 
-## 1. Follow-up tracking: who owns what
+## Ownership
 
-Gmail does **not** give us follow-up tracking we can build on:
-
-- **Nudges** = a soft UI reminder ("Sent 3 days ago, follow up?"). No cadence rules, no API, not programmable.
-- No concept of "this is outreach thread #N, follow-up #2 is due Thursday."
-
-What Gmail *is* the source of truth for: **did they reply?** A thread either has an inbound message
-from someone other than us after our send, or it doesn't. The hosted Worker reads that through the
-Gmail API after an authenticated Pub/Sub notification.
-
-So the model is **both**, with a clean split of ownership:
-
-| Fact | Owner | How |
-|---|---|---|
-| What we sent, to whom, when, subject | **our store** | recorded at draft/sync time |
-| Did they reply yet | **Gmail** (truth) → cached in our store | thread has an inbound msg |
-| When is the next nudge due, how many sent | **our store** | cadence rules (#1 ≥4d, #2 ≥10d, max 2) |
-| The drafted nudge itself | **Gmail** (as a draft) | `drafts.create` with `threadId` |
-
-The store is just a cache + scheduler over Gmail-as-truth. Because the module is **draft-first**,
-the mailbox is authoritative for "what actually went out" — so a `sync` step scans SENT, detects
-replies, and updates the store; `follow-ups` reads the store and drafts in-thread nudges. Nothing
-sends; a human reviews and hits send.
-
-### Optional visibility layer: Gmail labels
-
-A nice touch (not required): mirror state into Gmail labels — `outreach/awaiting-reply`,
-`outreach/followup-due`, `outreach/replied` — so the campaign is visible in the inbox itself, not
-just in our DB. One-way push from the store; cheap, and it makes the system legible without a UI.
-
-## 2. Where the state lives
-
-**Now (personal CLI):** a local **SQLite** file under
-`~/github/jobkit/job-search/.cache/outreach/track.db`.
-Zero infra, perfect for one user on one machine, and consistent with the repo's local SQLite
-source of truth in `job-search/job-data/jobs.sqlite`.
-This is what the current build uses. It's the right call until one of these becomes true:
-
-- you want follow-ups to fire **without your laptop on** (autonomous cadence),
-- you want it on **multiple devices**, or
-- it becomes a **product** with more than one user.
-
-**Hosted JobKit:** the application and reply state now lives in Cloudflare:
-
-| Need | Cloudflare primitive |
+| Fact or action | Authoritative owner |
 |---|---|
-| The tracking DB (threads, cadence, outcomes), multi-device | **D1** (SQLite at the edge) — near drop-in for the local schema |
-| "Every morning: re-check replies, draft due nudges" with no laptop | **Workers + Cron Triggers** |
-| Rate-limited fan-out (compose/draft N schools politely) | **Queues** |
-| Per-user stateful campaign agent | **Durable Objects** / **Agents SDK** |
-| Tailoring emails / parsing postings | **Workers AI** or Anthropic from a Worker |
-| Resume PDFs, attachments | **R2** |
-| Config / feature flags / cached OAuth tokens | **KV** / **Secrets Store** |
-| Dashboard UI | **Pages / Workers static assets** |
+| Candidate profile, preferences, documents, and explicit claims | D1 and R2 |
+| Current jobs, organizations, routes, and canonical contacts | D1 |
+| Matching decision shown in Jobs and used by Campaigns | Versioned hosted matching engine |
+| Message policy, calibrated examples, drafts, revisions, and follow-ups | D1 plus paired Codex tasks |
+| Recipient claims, attempts, campaign runs, and deduplication | D1 transactions |
+| Mailbox identity, actual sent state, threads, and replies | Gmail, reconciled into D1 |
+| Local discovery and inventory compute | Paired Codex runner, publishing versioned results to D1 |
 
-The hosted Worker uses per-user Gmail OAuth, writes verified send/thread state to D1, accepts
-authenticated Gmail Pub/Sub pushes, and renews mailbox watches with a Cron Trigger. The local
-SQLite tracker remains historical tooling for the separate draft-only outreach CLI.
+The Worker owns authentication, scheduling, deterministic validation,
+idempotency, and audit state. The paired Codex runner receives a versioned task
+and strict output schema over outbound HTTPS. It never receives Gmail tokens or
+direct database access.
 
-## 3. The product angle — "what if I built Ben's thing, but software"
+## Initial delivery
 
-You paid Ben for: a codified ESL job-search **playbook**, a tailored **resume**, and **coaching**.
-jobkit already automates the first two and has the data to prove the third. As a product it's
-basically **"Ben-as-software for ESL job-seekers"**:
+1. A reviewed application message and immutable document packet become an
+   approved attempt or campaign dispatch.
+2. A recipient claim prevents another route, job, or campaign from contacting
+   the same canonical recipient concurrently.
+3. Gmail creates the exact MIME draft, sends it only through the explicit
+   delivery action or authorized campaign policy, and returns message and
+   thread identifiers.
+4. JobKit verifies the Gmail message has the `SENT` label before recording a
+   successful delivery. An ambiguous send becomes `uncertain`, never silently
+   successful.
 
-**What it does** (the funnel you've already built, generalized):
+## Replies and follow-ups
 
-1. Aggregate live ESL jobs across boards (the `jobs/` pipeline) → normalized + LLM-enriched.
-2. Build/tailor a resume to the proven ESL rules (the `resume/` side + the playbook critique).
-3. Compose outreach that *enforces the playbook by construction* (open-ended question, targeted
-   subject, market focus) and **schedules the follow-ups** — the single biggest lever the data found.
-4. Track replies/offers, learn which templates/markets convert, feed that back into the templates.
+Gmail Pub/Sub identifies mailbox history changes. JobKit retrieves the message,
+attributes it to a known attempt, and classifies it as human, automated,
+vacation, or bounce. Every person-authored reply counts toward a campaign's
+configured pause rule regardless of wording or length.
 
-**The moat is the playbook + the outcomes data.** Anyone can call an LLM; the value is the
-hard-won rules from a real practitioner (Ben) *plus* a growing dataset of which emails actually got
-offers — so the product gets measurably better at "what to send, to whom, when."
+Follow-up timing is user-configured. An empty sequence means follow-ups are
+off. Each configured number is the wait after the previous verified sent
+message. When a wait is due and no human reply exists, the Worker queues a
+paired Codex task. The reviewed result appears in Messages; creating the Gmail
+draft is a separate explicit action, and sending that draft requires another
+explicit action. JobKit verifies the resulting message in the original Gmail
+thread before the next configured wait begins. The draft includes the original
+Gmail thread ID plus `In-Reply-To` and `References` headers. A human reply or
+bounce cancels pending follow-ups. There is no product-wide 4/10-day cadence or
+hidden maximum.
 
-**Stack:** Cloudflare end-to-end (table above) + per-user Gmail OAuth send-as. Workers AI/Agents SDK
-for the tailoring; D1 for state; Cron for cadence; R2 for documents; Pages for the dashboard.
+## Local and hosted boundary
 
-**Monetization, Ben-style tiers:**
+The local machine provides replaceable compute for source discovery,
+classification, extraction, and drafting through the paired Codex runner. The
+application remains usable across desktop and iPad because all product state
+lives in hosted services. Stopping the local runner pauses queued compute; it
+does not lose campaigns, messages, documents, or Gmail history.
 
-- *Free* — board aggregation + 1 resume build.
-- *Plus* — AI outreach + follow-up automation + tracking dashboard.
-- *Coaching* — human-in-the-loop review / contract-math / "run away from this offer" calls (the part
-  Ben did personally; could be you, or a vetted coach marketplace).
+The canonical operator surface is:
 
-**Real risks to design around early:**
+```bash
+bun run jobkit -- agent connect
+bun run jobkit -- agent start
+bun run jobkit -- inventory sync
+```
 
-- **Deliverability & compliance** — automated cold email at scale invites spam filtering, sender-
-  reputation damage, and CAN-SPAM/GDPR obligations. Keep it **draft-first / human-in-the-loop** and
-  per-user send-as (their own Gmail, their own reputation) rather than blasting from a shared domain.
-- **Board ToS** — scraping aggregation has the usual gray-area risk; prefer official APIs where they
-  exist (e.g. the ESL Cafe / TEFL JSON we already use) and stay polite.
-- **Gmail API quotas & OAuth verification** — sending/large mailbox scans hit quotas; OAuth for a
-  public app needs Google verification.
-
-None of this blocks the personal tool — it's draft-first, single-user, local. It's the checklist for
-*if* you decide to turn it into the product.
+Historical message evidence remains under
+`../job-search/job-data/outreach-sent/`, and the current writing rules remain in
+`../job-search/docs/job-search-playbook.md` plus the versioned message policy in
+the Worker.

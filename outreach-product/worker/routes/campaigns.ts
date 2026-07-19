@@ -33,7 +33,7 @@ export function registerCampaignRoutes(app: JobKitApp) {
 
   app.post("/api/campaigns", async (c) => {
     const input = CampaignCreateSchema.parse(await c.req.json());
-    const campaign = await createCampaign(c.env.DB, c.get("user").id, input);
+    const campaign = await createCampaign(c.env, c.get("user").id, input);
     return c.json(
       {
         campaign,

@@ -13,6 +13,7 @@ export default defineConfig({
         bindings: {
           APP_ORIGIN: "https://outreach.test",
           BETTER_AUTH_SECRET: "integration-test-secret-at-least-32-characters",
+          FX_RATES_JSON: JSON.stringify({ CNY: 7.2, EUR: 0.9, USD: 1 }),
           GOOGLE_CLIENT_ID: "test-google-client-id",
           GOOGLE_CLIENT_SECRET: "test-google-client-secret",
           GOOGLE_PUBSUB_AUDIENCE:

@@ -126,9 +126,10 @@ decision, failed, or still eligible.
 
 ### Current implementation boundary
 
-Campaign creation, policy snapshots, research task state, target inspection,
-individual review decisions, and decision audit events exist. The current
-standalone ANESL workspace and review-every-target campaign UI predate this
-campaign model. Live-pool admission, cross-campaign claims, first-five
-calibration, paced execution, automatic ANESL routing, and human-reply stopping
-remain linked roadmap work.
+The production Campaigns workspace implements the master-detail and resumable
+new-campaign routes, full eligible-pool admission, cross-campaign recipient
+claims, first-five calibration, user-configured pacing, automatic ANESL
+bundling, human-reply stopping, and campaign activity history. Country and city
+discovery feed reusable inventory through resumable hosted runs. The scheduler
+is active, while external campaign delivery remains locked until the operator
+explicitly authorizes real sending.

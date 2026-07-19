@@ -1,5 +1,15 @@
 PRAGMA foreign_keys = ON;
 
+DELETE FROM outbound_recipient_claims
+WHERE source_kind='campaign_dispatch'
+  AND user_id=(
+    SELECT id FROM users WHERE email='maestro.local@jobkit.test'
+  );
+DELETE FROM campaigns
+WHERE user_id=(
+  SELECT id FROM users WHERE email='maestro.local@jobkit.test'
+);
+
 INSERT INTO jobs (
   id, board, title, company, country, location, salary, description, source_url,
   apply_url, employer_id, first_seen_at, updated_at, compensation_display,

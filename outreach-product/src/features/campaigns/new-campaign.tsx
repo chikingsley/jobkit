@@ -61,6 +61,8 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
   const selectedMarkets = (setup?.markets ?? []).filter((market) =>
     selected.includes(market.countryCode)
   );
+  const selectionComplete = selected.length === 3;
+  const visibleMarkets = selectionComplete ? selectedMarkets : markets;
   const pool = selectedMarkets.reduce(
     (total, market) =>
       total + market.openPositionCount + market.verifiedContactCount,
@@ -134,31 +136,35 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
         </div>
       </header>
 
-      <div className="grid min-h-0 gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <Card>
+      <div className="grid min-h-0 gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <Card className="self-start">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <CardTitle>Target markets</CardTitle>
                 <CardDescription>
-                  {selected.length} of 3 selected
+                  {selectionComplete
+                    ? "3 of 3 selected. Remove one to change markets."
+                    : `${selected.length} of 3 selected`}
                 </CardDescription>
               </div>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute top-2 left-2.5 size-4 text-muted-foreground" />
-                <Input
-                  aria-label="Search countries"
-                  className="pl-8"
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search countries"
-                  value={query}
-                />
-              </div>
+              {selectionComplete ? null : (
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute top-2 left-2.5 size-4 text-muted-foreground" />
+                  <Input
+                    aria-label="Search countries"
+                    className="pl-8"
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search countries"
+                    value={query}
+                  />
+                </div>
+              )}
             </div>
           </CardHeader>
           <CardContent>
             <div className="grid gap-2 md:grid-cols-2">
-              {markets.map((market) => (
+              {visibleMarkets.map((market) => (
                 <MarketChoice
                   checked={selected.includes(market.countryCode)}
                   disabled={
@@ -171,7 +177,7 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
                 />
               ))}
             </div>
-            {setup && markets.length === 0 ? (
+            {setup && !selectionComplete && markets.length === 0 ? (
               <p className="py-10 text-center text-muted-foreground text-sm">
                 No stored market matches that search. Country discovery can add
                 coverage after a market exists in the catalog.
@@ -183,10 +189,22 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
         <div className="grid content-start gap-4">
           <Card>
             <CardHeader>
-              <CardTitle>Campaign plan</CardTitle>
-              <CardDescription>
-                Every value remains visible and editable before launch.
-              </CardDescription>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <CardTitle>Campaign plan</CardTitle>
+                  <CardDescription>
+                    Every value remains visible and editable before launch.
+                  </CardDescription>
+                </div>
+                <Button
+                  disabled={busy || selected.length === 0}
+                  id="create-campaign"
+                  onClick={() => void create()}
+                  size="sm"
+                >
+                  <Check /> {busy ? "Creating…" : "Create campaign"}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="grid gap-4">
               <div className="grid gap-2">
@@ -287,13 +305,6 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
                   0
                 )}
               />
-              <Button
-                className="mt-2 w-full"
-                disabled={busy || selected.length === 0}
-                onClick={() => void create()}
-              >
-                <Check /> {busy ? "Creating…" : "Create campaign"}
-              </Button>
             </CardContent>
           </Card>
         </div>

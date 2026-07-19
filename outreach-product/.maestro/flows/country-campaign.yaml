@@ -1,5 +1,5 @@
 url: ${JOBKIT_URL}
-name: Create and review a local country campaign
+name: Create a multi-country campaign from the full local pool
 tags:
   - safe
   - campaigns
@@ -7,15 +7,18 @@ tags:
 - runFlow: ../sign-in.yaml
 - openLink: ${JOBKIT_URL}/countries/PL
 - assertVisible: "Poland"
+- tapOn: "Start campaign"
+- assertVisible: "Choose target markets"
+- assertVisible: "1 of 3 selected"
+- tapOn: "China"
+- tapOn: "Tajikistan"
+- assertVisible: "3 of 3 selected. Remove one to change markets."
+- assertVisible: "Campaign plan"
+- assertVisible: "Approve the first five messages"
 - tapOn:
-    id: "open-country-campaign"
-- assertVisible: "Review every message"
-- tapOn:
-    id: "create-country-campaign"
-- assertVisible: "Review target set"
-- assertVisible: "Maestro English Teacher"
+    id: "create-campaign"
+- assertVisible: "Live delivery is locked"
+- assertVisible: "Ready for calibration"
+- assertVisible: "Campaign pool"
+- assertVisible: "Maestro University English Lecturer"
 - assertVisible: "Maestro International School"
-- tapOn:
-    id: "approve-campaign-target-.*"
-    index: 0
-- assertVisible: "Approved 1"

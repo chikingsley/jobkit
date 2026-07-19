@@ -94,3 +94,56 @@ export function unsupportedPositionEvidence(
   ]);
   return evidence.filter((quote) => !source.includes(quote.trim()));
 }
+
+export function canonicalizeJobPositionEvidence(
+  analysis: JobPositionAnalysis,
+  source: string
+): JobPositionAnalysis {
+  const canonicalize = (evidence: string) =>
+    canonicalEvidenceQuote(source, evidence);
+  return {
+    ...analysis,
+    positions: analysis.positions.map((position) => ({
+      ...position,
+      audiences: position.audiences.map((audience) => ({
+        ...audience,
+        evidence: canonicalize(audience.evidence),
+      })),
+      compensationEvidence: position.compensationEvidence.map(canonicalize),
+      employmentTypes: position.employmentTypes.map((employmentType) => ({
+        ...employmentType,
+        evidence: canonicalize(employmentType.evidence),
+      })),
+      evidence: position.evidence.map(canonicalize),
+      locations: position.locations.map((location) => ({
+        ...location,
+        evidence: canonicalize(location.evidence),
+      })),
+      requirements: position.requirements.map((requirement) => ({
+        ...requirement,
+        evidence: canonicalize(requirement.evidence),
+      })),
+      subjects: position.subjects.map((subject) => ({
+        ...subject,
+        evidence: canonicalize(subject.evidence),
+      })),
+    })),
+  };
+}
+
+function canonicalEvidenceQuote(source: string, evidence: string) {
+  const quote = evidence.trim();
+  if (source.includes(quote)) {
+    return quote;
+  }
+  const normalizedSource = source.toLocaleLowerCase("en");
+  const normalizedQuote = quote.toLocaleLowerCase("en");
+  if (
+    normalizedSource.length !== source.length ||
+    normalizedQuote.length !== quote.length
+  ) {
+    return quote;
+  }
+  const index = normalizedSource.indexOf(normalizedQuote);
+  return index < 0 ? quote : source.slice(index, index + quote.length);
+}

@@ -1,6 +1,7 @@
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
+import { COUNTRY_SWEEP_PROMPT_VERSION } from "../../../src/agent-tasks/country-sweep";
 import {
   claimCountrySweepTask,
   completeCountrySweepTask,
@@ -458,7 +459,7 @@ describe("country markets and campaigns", () => {
         .first()
     ).toMatchObject({
       model: "gpt-5.6-terra",
-      prompt_version: "country-sweep-v2",
+      prompt_version: COUNTRY_SWEEP_PROMPT_VERSION,
       status: "completed",
     });
   });

@@ -132,6 +132,9 @@ async function deterministicPdfText(input: {
         .filter(Boolean)
         .join("\n\n")
     );
+    if (!text) {
+      return null;
+    }
     return { detail: "unpdf", pages, provider: "deterministic", text };
   } catch (error) {
     logDeterministicFailure(input.filename, "unpdf", error);
@@ -148,6 +151,9 @@ async function deterministicDocxText(input: {
     const mammoth = await import("mammoth");
     const result = await mammoth.extractRawText({ arrayBuffer: input.bytes });
     const text = readableText(result.value);
+    if (!text) {
+      return null;
+    }
     return {
       detail: "mammoth",
       pages: [{ index: 0, markdown: text }],

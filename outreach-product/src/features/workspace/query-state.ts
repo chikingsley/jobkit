@@ -41,11 +41,16 @@ export function useWorkspaceQueryState() {
   const requestedSort = searchParams.get("sort") as JobSort | null;
   const setCountryFilter = useCallback(
     (value: string) =>
-      update("country", value, DEFAULT_COUNTRY_FILTER, ["job"]),
+      update("country", value, DEFAULT_COUNTRY_FILTER, ["detail", "job"]),
     [update]
   );
   const setFitFilter = useCallback(
-    (value: string) => update("fit", value, DEFAULT_FIT_FILTER, ["job"]),
+    (value: string) =>
+      update("fit", value, DEFAULT_FIT_FILTER, ["detail", "job"]),
+    [update]
+  );
+  const setDetailOpen = useCallback(
+    (value: boolean) => update("detail", value ? "1" : ""),
     [update]
   );
   const setSelectedJobId = useCallback(
@@ -57,7 +62,8 @@ export function useWorkspaceQueryState() {
     [update]
   );
   const setShowExcluded = useCallback(
-    (value: boolean) => update("excluded", value ? "1" : "", "", ["job"]),
+    (value: boolean) =>
+      update("excluded", value ? "1" : "", "", ["detail", "job"]),
     [update]
   );
   const setSort = useCallback(
@@ -67,10 +73,12 @@ export function useWorkspaceQueryState() {
 
   return {
     countryFilter: searchParams.get("country") || DEFAULT_COUNTRY_FILTER,
+    detailOpen: searchParams.get("detail") === "1",
     fitFilter: searchParams.get("fit") || DEFAULT_FIT_FILTER,
     selectedJobId: searchParams.get("job") ?? "",
     selectedThreadId: searchParams.get("thread") ?? "",
     setCountryFilter,
+    setDetailOpen,
     setFitFilter,
     setSelectedJobId,
     setSelectedThreadId,

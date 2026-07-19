@@ -30,7 +30,10 @@ async function main() {
       }
       continue;
     }
-    if (await claimAndRunInventoryOperation(client, config)) {
+    if (
+      config.capabilities.includes("operations") &&
+      (await claimAndRunInventoryOperation(client, config))
+    ) {
       if (args.once) {
         return;
       }

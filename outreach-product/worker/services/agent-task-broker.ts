@@ -135,7 +135,7 @@ export async function completeAgentTask(
     );
   } else if (run.task_type === JOB_POSITION_TASK_TYPE) {
     domainResult = await completeJobPositionTask(
-      env.DB,
+      env,
       runner,
       run,
       runId,
@@ -143,7 +143,7 @@ export async function completeAgentTask(
     );
   } else if (run.task_type === JOB_MATCH_FACTS_TASK_TYPE) {
     domainResult = await completeJobMatchFactsTask(
-      env.DB,
+      env,
       runner,
       run,
       runId,

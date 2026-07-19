@@ -481,6 +481,25 @@ describe("Test Lab", () => {
       provider.mockRestore();
     }
   });
+
+  it("keeps Test Lab documents out of the application packet inventory", async () => {
+    const { cookie } = await createAuthenticatedUser(
+      "test-lab-document-isolation@example.test"
+    );
+    const filename = "isolated-ocr-fixture.png";
+    const documentId = await uploadPng(cookie, filename);
+    const standardDocuments = await sessionRequest("/api/documents", cookie);
+    const allDocuments = await sessionRequest(
+      "/api/documents?scope=all",
+      cookie
+    );
+    await expect(standardDocuments.json()).resolves.toMatchObject({
+      documents: [],
+    });
+    await expect(allDocuments.json()).resolves.toMatchObject({
+      documents: [{ filename, id: documentId }],
+    });
+  });
 });
 
 function decodeTextPlainBody(mime: string) {
@@ -526,7 +545,7 @@ async function uploadPng(cookie: string, filename: string) {
         "content-length": String(bytes.byteLength),
         "content-type": "image/png",
         cookie,
-        "x-jobkit-category": "other",
+        "x-jobkit-category": "test_lab",
         "x-jobkit-filename": encodeURIComponent(filename),
       },
       method: "PUT",
@@ -535,7 +554,7 @@ async function uploadPng(cookie: string, filename: string) {
   if (!upload.ok) {
     throw new Error(`Test document upload failed (${upload.status})`);
   }
-  const documents = await sessionRequest("/api/documents", cookie);
+  const documents = await sessionRequest("/api/documents?scope=all", cookie);
   const payload = (await documents.json()) as {
     documents: Array<{ filename: string; id: string }>;
   };

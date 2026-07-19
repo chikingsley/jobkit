@@ -25,6 +25,7 @@ import type {
   CampaignTarget,
   CampaignTargetPage,
 } from "../../src/features/campaigns/types";
+import type { AppEnv } from "../env";
 import { readAutomationPolicy } from "../repositories/automation-policy";
 import { campaignDeliveryEnabled } from "../repositories/campaign-delivery-authorization";
 import { buildAgentTaskRequestCreation } from "./agent-task-requests";
@@ -60,6 +61,7 @@ interface TargetSeedRow {
   country_code: string;
   dedup_key: string;
   id: string;
+  match_score: number | null;
   route_strategy: "anesl_bundle" | "single";
   source_kind: "advertised" | "school";
 }
@@ -112,10 +114,11 @@ export async function readCampaignSetup(
 }
 
 export async function createCampaign(
-  db: D1Database,
+  env: AppEnv,
   userId: string,
   input: CampaignCreate
 ) {
+  const { DB: db } = env;
   const markets = input.countryCodes.map((countryCode) => ({
     countryCode,
     countryName: countryNameForCode(countryCode),
@@ -162,7 +165,7 @@ export async function createCampaign(
       materializeCountryTargets(db, id, market.countryCode, policy, timestamp)
     )
   );
-  await matchCampaignTargets(db, userId, id);
+  await matchCampaignTargets(env, userId, id);
   return readCampaign(db, userId, id);
 }
 
@@ -340,10 +343,11 @@ export async function beginCampaignCalibration(
   }
   const seeds = await db
     .prepare(
-      `SELECT id,country_code,source_kind,dedup_key,route_strategy,channel
+      `SELECT id,country_code,source_kind,dedup_key,route_strategy,channel,
+              match_score
          FROM campaign_targets
         WHERE campaign_id=? AND status='eligible'
-        ORDER BY admitted_at,id`
+        ORDER BY COALESCE(match_score,-1) DESC,admitted_at,id`
     )
     .bind(campaignId)
     .all<TargetSeedRow>();

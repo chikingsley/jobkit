@@ -58,14 +58,27 @@ describe("campaign lifecycle", () => {
 
     await seedStrongEnglishMatch(testEnv.DB, job.id, timestamp);
     await expect(
-      refreshCampaignMatchesForJob(testEnv.DB, userId, job.id)
+      refreshCampaignMatchesForJob(testEnv, userId, job.id)
     ).resolves.toEqual([{ campaignId: payload.campaign.id, matched: 1 }]);
-    await expect(
-      readOnlyCampaignTarget(payload.campaign.id)
-    ).resolves.toMatchObject({
+    const target = await readOnlyCampaignTarget(payload.campaign.id);
+    expect(target).toMatchObject({
       hold_reason: "",
       match_label: "Strong match",
       status: "eligible",
+    });
+    const jobsResponse = await sessionGet("/api/jobs", cookie);
+    const jobsPayload = (await jobsResponse.json()) as {
+      matches: Record<string, { label: string; score: number }>;
+      matchingEngineVersion: number;
+    };
+    expect(jobsPayload.matchingEngineVersion).toBe(1);
+    expect(jobsPayload.matches[job.id]).toMatchObject({
+      label: target?.match_label,
+      score: target?.match_score,
+    });
+    expect(JSON.parse(String(target?.match_snapshot_json))).toMatchObject({
+      fxUpdatedAt: "configured",
+      matchingEngineVersion: 1,
     });
   });
 
@@ -314,6 +327,92 @@ describe("campaign lifecycle", () => {
       status: "paused",
     });
   });
+
+  it("routes the five highest-ranked ANESL positions through one campaign dispatch", async () => {
+    const { cookie, userId } = await createAuthenticatedUser(
+      "campaign-anesl@example.test"
+    );
+    const jobs = await seedAneslCampaignJobs(userId);
+    const created = await sessionPost("/api/campaigns", cookie, {
+      countryCodes: ["CN"],
+      dailyPace: 1,
+      firstFiveRequired: false,
+      postedTargetPercent: 100,
+      stopAfterHumanReplies: 3,
+    });
+    expect(created.status).toBe(201);
+    const createdPayload = (await created.json()) as {
+      campaign: { id: string };
+    };
+    const campaignId = createdPayload.campaign.id;
+    await testEnv.DB.batch(
+      jobs.map((job, index) =>
+        testEnv.DB.prepare(
+          `UPDATE campaign_targets SET match_score=?
+            WHERE campaign_id=? AND job_id=?`
+        ).bind(index + 1, campaignId, job.id)
+      )
+    );
+
+    const prepared = await sessionPost(
+      `/api/campaigns/${campaignId}/actions`,
+      cookie,
+      { action: "begin_calibration", reason: "" }
+    );
+    expect(prepared.status).toBe(200);
+    await enableSyntheticDelivery(userId);
+    const started = await sessionPost(
+      `/api/campaigns/${campaignId}/actions`,
+      cookie,
+      { action: "start", reason: "" }
+    );
+    expect(started.status).toBe(200);
+
+    await expect(planDueCampaignRuns(testEnv)).resolves.toEqual([
+      { campaignId, planned: 1, status: "planned" },
+    ]);
+    const dispatch = await testEnv.DB.prepare(
+      `SELECT id,route_strategy,status
+         FROM campaign_dispatches WHERE campaign_id=?`
+    )
+      .bind(campaignId)
+      .first<{ id: string; route_strategy: string; status: string }>();
+    expect(dispatch).toMatchObject({
+      route_strategy: "anesl_bundle",
+      status: "queued",
+    });
+    if (!dispatch) {
+      throw new Error("The ANESL campaign dispatch was not created");
+    }
+    const selected = await testEnv.DB.prepare(
+      `SELECT t.job_id
+         FROM campaign_dispatch_targets dt
+         JOIN campaign_targets t ON t.id=dt.target_id
+        WHERE dt.dispatch_id=? ORDER BY dt.ordinal`
+    )
+      .bind(dispatch.id)
+      .all<{ job_id: string }>();
+    expect(selected.results.map((row) => row.job_id)).toEqual(
+      jobs
+        .slice(-5)
+        .reverse()
+        .map((job) => job.id)
+    );
+    const skipped = await testEnv.DB.prepare(
+      `SELECT status,hold_reason,COUNT(*) count
+         FROM campaign_targets
+        WHERE campaign_id=? AND status='skipped'
+        GROUP BY status,hold_reason`
+    )
+      .bind(campaignId)
+      .first<{ count: number; hold_reason: string; status: string }>();
+    expect(skipped).toEqual({
+      count: 2,
+      hold_reason:
+        "Excluded from this ANESL email after selecting its five highest-ranked positions",
+      status: "skipped",
+    });
+  });
 });
 
 function readOnlyCampaignTarget(campaignId: string) {
@@ -341,6 +440,27 @@ async function seedCampaignJobs(userId: string) {
   await Promise.all(
     jobs.map((job) => seedStrongEnglishMatch(testEnv.DB, job.id, timestamp))
   );
+}
+
+async function seedAneslCampaignJobs(userId: string) {
+  const jobs = Array.from({ length: 7 }, (_, index) =>
+    JobImportSchema.parse({
+      applyEmail: "hr@anesl.com",
+      applyUrl: `https://example.test/anesl/${index + 1}`,
+      board: "anesl",
+      company: "ANESL",
+      country: "China",
+      description: "A posted full-time English teaching role for adults.",
+      id: `campaign-anesl-job-${index + 1}`,
+      sourceReference: `ANESL-${index + 1}`,
+      title: `English teacher ${index + 1}`,
+    })
+  );
+  await importJobs(testEnv, userId, jobs);
+  await Promise.all(
+    jobs.map((job) => seedStrongEnglishMatch(testEnv.DB, job.id, timestamp))
+  );
+  return jobs;
 }
 
 function seedMessageFoundation(userId: string) {
@@ -481,6 +601,12 @@ function sessionPost(
     body: JSON.stringify(body),
     headers: { "content-type": "application/json", cookie },
     method: "POST",
+  });
+}
+
+function sessionGet(path: string, cookie: string) {
+  return exports.default.fetch(`https://outreach.test${path}`, {
+    headers: { cookie },
   });
 }
 

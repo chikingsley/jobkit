@@ -6,6 +6,7 @@ import type {
 } from "../../src/features/messages/types";
 import type { AppEnv } from "../env";
 import type { CampaignReplyClassification } from "./campaign-replies";
+import { listThreadFollowUps } from "./followups";
 
 // Hosted Gmail replies land keyed by gmail_thread_id and stitch into the same
 // thread. Statuses represent attempts that produced a real outbound message:
@@ -73,6 +74,10 @@ export interface InboundMessageInput {
   testSendId?: string;
   toAddress: string;
 }
+
+export type MessageThreadOutcome = NonNullable<
+  MessageThreadDetail["outcome"]
+>["value"];
 
 interface ThreadMessageRow {
   application_bundle_id: string | null;
@@ -323,9 +328,11 @@ export async function getMessageThread(
   return {
     applicationTargets,
     company: applicationTargets.length > 0 ? "ANESL" : first.company,
+    followUps: await listThreadFollowUps(db, userId, first.gmail_thread_id),
     gmailThreadId: first.gmail_thread_id,
     jobId: first.job_id,
     messages,
+    outcome: await readThreadOutcome(db, userId, first.gmail_thread_id),
     recipient: first.recipient,
     subject: first.subject,
     threadId,
@@ -405,9 +412,11 @@ async function getCampaignMessageThread(
   return {
     applicationTargets: await loadCampaignTargets(db, first.id),
     company: first.company,
+    followUps: await listThreadFollowUps(db, userId, first.gmail_thread_id),
     gmailThreadId: first.gmail_thread_id,
     jobId: first.job_id,
     messages,
+    outcome: await readThreadOutcome(db, userId, first.gmail_thread_id),
     recipient: first.recipient,
     subject: first.subject,
     threadId,
@@ -502,6 +511,7 @@ export async function recordInboundMessage(
       "No sent application matches that Gmail thread"
     );
   }
+  const recordedAt = new Date().toISOString();
   const result = await db
     .prepare(
       `INSERT INTO application_thread_messages
@@ -521,10 +531,31 @@ export async function recordInboundMessage(
       input.subject,
       input.bodyText,
       input.sentAt,
-      new Date().toISOString(),
+      recordedAt,
       input.classification ?? "human"
     )
     .run();
+  const replyClassification = input.classification ?? "human";
+  if (replyClassification === "human" || replyClassification === "bounce") {
+    await db
+      .prepare(
+        `UPDATE outreach_followups
+            SET status='canceled',
+                error_detail=?,
+                updated_at=?
+          WHERE user_id=? AND gmail_thread_id=?
+            AND status IN ('scheduled','drafting','review','drafted')`
+      )
+      .bind(
+        replyClassification === "bounce"
+          ? "Canceled after Gmail recorded a bounce"
+          : "Canceled after a human reply was recorded",
+        recordedAt,
+        userId,
+        input.gmailThreadId
+      )
+      .run();
+  }
   if (input.testSendId) {
     await db
       .prepare(
@@ -543,31 +574,7 @@ export async function markThreadRead(
   userId: string,
   threadId: string
 ): Promise<number> {
-  let gmailThreadId = threadId;
-  if (threadId.startsWith(ATTEMPT_THREAD_PREFIX)) {
-    const row = await db
-      .prepare(
-        `SELECT a.gmail_thread_id FROM application_attempts a
-           JOIN user_jobs uj ON uj.id=a.user_job_id
-          WHERE uj.user_id=? AND a.id=?`
-      )
-      .bind(userId, threadId.slice(ATTEMPT_THREAD_PREFIX.length))
-      .first<{ gmail_thread_id: string }>();
-    gmailThreadId = row?.gmail_thread_id ?? "";
-  } else if (threadId.startsWith(CAMPAIGN_ATTEMPT_THREAD_PREFIX)) {
-    const row = await db
-      .prepare(
-        `SELECT attempt.gmail_thread_id
-           FROM campaign_email_attempts attempt
-           JOIN campaign_dispatches dispatch
-             ON dispatch.id=attempt.dispatch_id
-           JOIN campaigns campaign ON campaign.id=dispatch.campaign_id
-          WHERE campaign.user_id=? AND attempt.id=?`
-      )
-      .bind(userId, threadId.slice(CAMPAIGN_ATTEMPT_THREAD_PREFIX.length))
-      .first<{ gmail_thread_id: string }>();
-    gmailThreadId = row?.gmail_thread_id ?? "";
-  }
+  const gmailThreadId = await resolveOwnedGmailThreadId(db, userId, threadId);
   if (!gmailThreadId) {
     return 0;
   }
@@ -579,6 +586,120 @@ export async function markThreadRead(
     .bind(new Date().toISOString(), userId, gmailThreadId)
     .run();
   return result.meta.changes ?? 0;
+}
+
+export async function writeThreadOutcome(
+  db: D1Database,
+  userId: string,
+  threadId: string,
+  outcome: MessageThreadOutcome | null,
+  note: string
+) {
+  const gmailThreadId = await resolveOwnedGmailThreadId(db, userId, threadId);
+  if (!gmailThreadId) {
+    throw new MessageThreadError(
+      "A verified Gmail thread is required before recording an outcome",
+      409
+    );
+  }
+  if (!outcome) {
+    await db
+      .prepare(
+        "DELETE FROM message_thread_outcomes WHERE user_id=? AND gmail_thread_id=?"
+      )
+      .bind(userId, gmailThreadId)
+      .run();
+    return null;
+  }
+  const timestamp = new Date().toISOString();
+  await db
+    .prepare(
+      `INSERT INTO message_thread_outcomes
+        (id,user_id,gmail_thread_id,outcome,note,recorded_at,updated_at)
+       VALUES (?,?,?,?,?,?,?)
+       ON CONFLICT(user_id,gmail_thread_id) DO UPDATE SET
+         outcome=excluded.outcome,note=excluded.note,
+         recorded_at=excluded.recorded_at,updated_at=excluded.updated_at`
+    )
+    .bind(
+      crypto.randomUUID(),
+      userId,
+      gmailThreadId,
+      outcome,
+      note.trim(),
+      timestamp,
+      timestamp
+    )
+    .run();
+  return readThreadOutcome(db, userId, gmailThreadId);
+}
+
+async function readThreadOutcome(
+  db: D1Database,
+  userId: string,
+  gmailThreadId: string
+) {
+  if (!gmailThreadId) {
+    return null;
+  }
+  const row = await db
+    .prepare(
+      `SELECT outcome,note,recorded_at FROM message_thread_outcomes
+        WHERE user_id=? AND gmail_thread_id=?`
+    )
+    .bind(userId, gmailThreadId)
+    .first<{
+      note: string;
+      outcome: MessageThreadOutcome;
+      recorded_at: string;
+    }>();
+  return row
+    ? { note: row.note, recordedAt: row.recorded_at, value: row.outcome }
+    : null;
+}
+
+async function resolveOwnedGmailThreadId(
+  db: D1Database,
+  userId: string,
+  threadId: string
+) {
+  const applicationAttemptId = threadId.startsWith(ATTEMPT_THREAD_PREFIX)
+    ? threadId.slice(ATTEMPT_THREAD_PREFIX.length)
+    : "";
+  const campaignAttemptId = threadId.startsWith(CAMPAIGN_ATTEMPT_THREAD_PREFIX)
+    ? threadId.slice(CAMPAIGN_ATTEMPT_THREAD_PREFIX.length)
+    : "";
+  const gmailThreadId =
+    applicationAttemptId || campaignAttemptId ? "" : threadId;
+  const row = await db
+    .prepare(
+      `SELECT gmail_thread_id FROM (
+        SELECT a.gmail_thread_id FROM application_attempts a
+        JOIN user_jobs uj ON uj.id=a.user_job_id
+         WHERE uj.user_id=?
+           AND ((?<>'' AND a.id=?) OR (?<>'' AND a.gmail_thread_id=?))
+        UNION ALL
+        SELECT attempt.gmail_thread_id FROM campaign_email_attempts attempt
+        JOIN campaign_dispatches dispatch ON dispatch.id=attempt.dispatch_id
+        JOIN campaigns campaign ON campaign.id=dispatch.campaign_id
+         WHERE campaign.user_id=?
+           AND ((?<>'' AND attempt.id=?) OR (?<>'' AND attempt.gmail_thread_id=?))
+      ) owned WHERE gmail_thread_id<>'' LIMIT 1`
+    )
+    .bind(
+      userId,
+      applicationAttemptId,
+      applicationAttemptId,
+      gmailThreadId,
+      gmailThreadId,
+      userId,
+      campaignAttemptId,
+      campaignAttemptId,
+      gmailThreadId,
+      gmailThreadId
+    )
+    .first<{ gmail_thread_id: string }>();
+  return row?.gmail_thread_id ?? "";
 }
 
 export async function getThreadAttachment(

@@ -1,4 +1,4 @@
-import { Copy, Pause, Save, Terminal, Trash2 } from "lucide-react";
+import { Copy, Pause, Plus, Save, Terminal, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
@@ -153,6 +153,13 @@ export function AutomationView({ request }: { request: ApiRequest }) {
         />
       </div>
 
+      <FollowUpPolicyCard
+        delays={draft.followUpDelaysDays}
+        onChange={(followUpDelaysDays) =>
+          update({ ...draft, followUpDelaysDays })
+        }
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>Automatic-send requirements</CardTitle>
@@ -250,6 +257,75 @@ export function AutomationView({ request }: { request: ApiRequest }) {
       <InventoryStatusCard request={request} />
       <AgentTaskHistory request={request} />
     </SettingsPage>
+  );
+}
+
+function FollowUpPolicyCard({
+  delays,
+  onChange,
+}: {
+  delays: number[];
+  onChange: (delays: number[]) => void;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Follow-up drafts</CardTitle>
+        <CardDescription>
+          Choose each wait after the last sent message. When a wait is due and
+          no person has replied, Codex prepares an in-thread draft for review.
+          Leave the list empty to keep follow-ups off.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {delays.map((delay, index) => (
+          <div
+            className="flex items-end gap-3"
+            key={`follow-up-${index.toString()}`}
+          >
+            <Field className="max-w-xs">
+              <FieldLabel htmlFor={`follow-up-delay-${index.toString()}`}>
+                Follow-up {index + 1}
+              </FieldLabel>
+              <div className="flex items-center gap-2">
+                <Input
+                  id={`follow-up-delay-${index.toString()}`}
+                  min={1}
+                  onChange={(event) => {
+                    const next = [...delays];
+                    next[index] = Number(event.target.value);
+                    onChange(next);
+                  }}
+                  type="number"
+                  value={delay}
+                />
+                <span className="shrink-0 text-muted-foreground text-sm">
+                  days later
+                </span>
+              </div>
+            </Field>
+            <Button
+              aria-label={`Remove follow-up ${index + 1}`}
+              onClick={() =>
+                onChange(delays.filter((_, position) => position !== index))
+              }
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <X />
+            </Button>
+          </div>
+        ))}
+        <Button
+          onClick={() => onChange([...delays, 1])}
+          type="button"
+          variant="outline"
+        >
+          <Plus /> Add follow-up
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 

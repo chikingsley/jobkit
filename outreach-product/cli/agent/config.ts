@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { z } from "zod";
+import { AgentCapabilitySchema } from "../../src/features/agents/schema";
 
 export const agentConfigPath = resolve(
   import.meta.dir,
@@ -10,6 +11,16 @@ export const agentConfigPath = resolve(
 const AgentConfigSchema = z
   .object({
     baseUrl: z.url(),
+    capabilities: z
+      .array(AgentCapabilitySchema)
+      .min(1)
+      .default([
+        "research",
+        "extraction",
+        "drafting",
+        "evaluation",
+        "operations",
+      ]),
     runnerId: z.string().min(1),
     token: z.string().startsWith("jobkit_agent_"),
   })

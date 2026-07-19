@@ -44,17 +44,15 @@ import { CampaignError } from "./services/campaigns";
 import { CountryMarketError } from "./services/country-markets";
 import { DocumentConversionError } from "./services/document-text";
 import { EmailAttemptError } from "./services/email-attempts";
+import { FollowUpError, queueDueFollowUps } from "./services/followups";
 import { GmailIntegrationError } from "./services/gmail-errors";
 import { renewExpiringGmailWatches } from "./services/gmail-integration";
 import { queueDueInventoryRefreshes } from "./services/inventory-refreshes";
 import { InventoryRunError } from "./services/inventory-runs/contracts";
 import { JobAnalysisRecordError } from "./services/job-analysis-records";
 import { approveAndSubmitApplication } from "./services/job-submission";
-import {
-  fetchExchangeRates,
-  searchLocations,
-  searchUniversities,
-} from "./services/lookups";
+import { searchLocations, searchUniversities } from "./services/lookups";
+import { currentFxData } from "./services/matching-engine";
 import { ResumeUploadError } from "./services/profile-imports";
 import { TestLabError } from "./services/test-lab/errors";
 
@@ -105,6 +103,9 @@ app.onError((error, c) => {
     return c.json({ message: error.message, ok: false }, error.status);
   }
   if (error instanceof GmailIntegrationError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
+  if (error instanceof FollowUpError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
   if (error instanceof OnboardingIncompleteError) {
@@ -243,7 +244,7 @@ registerMessagePreviewRoutes(app);
 registerTestLabRoutes(app);
 registerUserSettingsRoutes(app);
 
-app.get("/api/fx", async (c) => c.json(await fetchExchangeRates()));
+app.get("/api/fx", async (c) => c.json(await currentFxData(c.env)));
 
 app.get("/api/universities", async (c) => {
   const query = (c.req.query("q") ?? "").trim().slice(0, 100);
@@ -374,14 +375,16 @@ export default {
     ctx.waitUntil(
       Promise.all([
         renewExpiringGmailWatches(env),
-        runCampaignMatchingPass(env.DB),
+        queueDueFollowUps(env),
+        runCampaignMatchingPass(env),
         runCampaignScheduler(env),
         queueDueInventoryRefreshes(env.DB),
-      ]).then(([gmail, matching, campaigns, inventory]) => {
+      ]).then(([gmail, followUps, matching, campaigns, inventory]) => {
         console.log(
           JSON.stringify({
             campaigns,
             event: "scheduled_maintenance",
+            followUps,
             gmail,
             inventory,
             matching,

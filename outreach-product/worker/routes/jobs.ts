@@ -3,11 +3,15 @@ import {
   type JobPositionAnalysis,
   JobPositionAnalysisSchema,
 } from "../../src/features/jobs/position-variants";
+import type { Job } from "../../src/features/jobs/types";
 import {
   type JobMatchFacts,
   JobMatchFactsSchema,
 } from "../../src/features/matching/schema";
-import { JOB_MATCH_FACTS_SCHEMA_VERSION } from "../../src/features/matching/version";
+import {
+  JOB_MATCH_FACTS_SCHEMA_VERSION,
+  MATCHING_ENGINE_VERSION,
+} from "../../src/features/matching/version";
 import type { JobKitApp } from "../app-types";
 import {
   readAutomationPolicy,
@@ -15,6 +19,10 @@ import {
 } from "../repositories/automation-policy";
 import { compensationFromRow } from "../repositories/jobs";
 import { queueJobDraftGeneration } from "../services/application-drafts";
+import {
+  evaluateJobWithContext,
+  readMatchingContext,
+} from "../services/matching-engine";
 
 export function registerJobRoutes(app: JobKitApp) {
   app.post("/api/jobs/:id/generate", async (c) => {
@@ -153,7 +161,16 @@ export function registerJobRoutes(app: JobKitApp) {
     )
       .bind(userId, userId)
       .all();
-    return c.json({ jobs: rows.results.map(toReviewJob) });
+    const jobs = rows.results.map(toReviewJob) as Job[];
+    const context = await readMatchingContext(c.env, userId);
+    return c.json({
+      fx: context.fx,
+      jobs,
+      matches: Object.fromEntries(
+        jobs.map((job) => [job.id, evaluateJobWithContext(job, context)])
+      ),
+      matchingEngineVersion: MATCHING_ENGINE_VERSION,
+    });
   });
 
   app.get("/api/automation-policy", async (c) => {

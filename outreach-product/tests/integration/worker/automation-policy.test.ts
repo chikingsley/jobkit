@@ -26,6 +26,7 @@ describe("automation policy", () => {
       boardForm: { dailyLimit: 2, mode: "review" },
       email: { dailyLimit: 4, mode: "auto" },
       excludedMarketSegments: ["language_center", "training_center"],
+      followUpDelaysDays: [3, 7],
       minimumFit: "strong",
       paused: false,
       requireKnownCompensation: true,
@@ -50,7 +51,8 @@ describe("automation policy", () => {
     expect(
       await testEnv.DB.prepare(
         `SELECT email_mode,email_daily_limit,board_form_mode,
-                board_form_daily_limit,route_freshness_days
+                board_form_daily_limit,follow_up_delays_json,
+                route_freshness_days
            FROM user_automation_policies WHERE user_id=?`
       )
         .bind(userId)
@@ -60,6 +62,7 @@ describe("automation policy", () => {
       board_form_mode: "review",
       email_daily_limit: 4,
       email_mode: "auto",
+      follow_up_delays_json: "[3,7]",
       route_freshness_days: 14,
     });
   });
@@ -73,6 +76,7 @@ describe("automation policy", () => {
       boardForm: { dailyLimit: 180, mode: "review" },
       email: { dailyLimit: 250, mode: "auto" },
       excludedMarketSegments: [],
+      followUpDelaysDays: [],
       minimumFit: "strong",
       paused: false,
       requireKnownCompensation: false,

@@ -1,8 +1,12 @@
 import { z } from "zod";
 import type { TestLabCase } from "../test-lab/corpus";
+import {
+  codexOutputJsonSchema,
+  normalizeCodexOutputJsonSchema,
+} from "./json-schema";
 
 export const TEST_LAB_TASK_TYPE = "test_lab.evaluate";
-export const TEST_LAB_PROMPT_VERSION = "test-lab-eval-v1";
+export const TEST_LAB_PROMPT_VERSION = "test-lab-eval-v2";
 export const TEST_LAB_DOCUMENT_OCR_TASK_TYPE = "test_lab.document_ocr";
 export const TEST_LAB_DOCUMENT_OCR_PROMPT_VERSION = "document-ocr-v1";
 
@@ -37,9 +41,7 @@ const researchOutputSchema = z
   .strict();
 
 export function documentOcrOutputJsonSchema() {
-  return z.toJSONSchema(documentOcrOutputSchema, {
-    target: "draft-2020-12",
-  });
+  return codexOutputJsonSchema(documentOcrOutputSchema);
 }
 
 export function documentOcrPrompt(input: {
@@ -123,9 +125,29 @@ export function testLabOutputSchema(testCase: TestLabCase) {
 }
 
 export function testLabOutputJsonSchema(testCase: TestLabCase) {
-  return z.toJSONSchema(testLabOutputSchema(testCase), {
-    target: "draft-2020-12",
-  });
+  if (testCase.capability === "extraction") {
+    const fields = stringArray(testCase.input.fields);
+    return normalizeCodexOutputJsonSchema({
+      $schema: "https://json-schema.org/draft/2020-12/schema",
+      additionalProperties: false,
+      properties: {
+        values: {
+          additionalProperties: false,
+          properties: Object.fromEntries(
+            fields.map((field) => [
+              field,
+              { anyOf: [{ type: "string" }, { type: "null" }] },
+            ])
+          ),
+          required: fields,
+          type: "object",
+        },
+      },
+      required: ["values"],
+      type: "object",
+    });
+  }
+  return codexOutputJsonSchema(testLabOutputSchema(testCase));
 }
 
 export function parseTestLabOutput(testCase: TestLabCase, output: unknown) {
@@ -184,7 +206,7 @@ function outputGuidanceFor(testCase: TestLabCase) {
     case "deduplication":
       return `Return nearestId as one of: ${candidateIds(testCase).join(", ")}.`;
     case "reranking":
-      return `Return every candidate exactly once in orderedIds: ${candidateIds(testCase).join(", ")}.`;
+      return `Order every candidate from most relevant to least relevant for the query. Do not preserve input order unless relevance justifies it. Return every candidate exactly once in orderedIds: ${candidateIds(testCase).join(", ")}.`;
     case "extraction":
       return `Return exactly these keys in values: ${stringArray(testCase.input.fields).join(", ")}. Preserve source wording; use null when a field is explicitly absent or not stated.`;
     case "revision":

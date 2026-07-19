@@ -70,6 +70,13 @@ human preference. A Jina capability is promoted independently only when the
 measured product result justifies the additional dependency. JobKit discloses
 the active provider for any promoted capability.
 
+The completed v2 matrix approves Jina embeddings only for non-destructive
+duplicate-candidate generation. Deterministic identity rules or a reviewed
+decision remain authoritative for every merge, suppression, and recipient
+claim. Reranking, Reader, Search, classification, matching, DeepSearch, and
+hybrid execution remain evaluation-only. See
+[`../benchmarks/codex-jina-spike-2026-07-19.md`](../benchmarks/codex-jina-spike-2026-07-19.md).
+
 ## Document extraction contract
 
 Born-digital PDF and DOCX documents use deterministic extraction first. Scanned
@@ -78,10 +85,11 @@ or layout-heavy pages enter a recorded comparison between:
 1. Codex vision using rendered page images and a strict extraction schema; and
 2. Mistral OCR using its page, layout, table, and confidence output.
 
-The comparison evaluates field accuracy, reading order, tables, evidence
-location, multilingual text, latency, cost or usage, and failure recovery.
-Mistral remains isolated behind this benchmark and is removed if it does not win
-a promoted OCR role.
+The recorded comparison promotes deterministic extraction for born-digital
+documents and Mistral OCR for images or scans whose deterministic result is
+empty. Codex vision remains an explicit audit comparator. Mistral has no
+reasoning, matching, research, classification, or drafting role. See
+[`../benchmarks/document-ocr-spike-2026-07-19.md`](../benchmarks/document-ocr-spike-2026-07-19.md).
 
 ## Failure behavior
 

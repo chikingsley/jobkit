@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, RefreshCwIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,8 +16,8 @@ import type { ApiRequest } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export function MessagesWorkspace({ request }: { request: ApiRequest }) {
-  const { selectedThreadId, setSelectedThreadId } = useWorkspaceQueryState();
-  const [showThread, setShowThread] = useState(false);
+  const { detailOpen, selectedThreadId, setDetailOpen, setSelectedThreadId } =
+    useWorkspaceQueryState();
 
   const {
     data: threads,
@@ -43,7 +43,11 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
     }
   }, [selectedThreadId, setSelectedThreadId, threads]);
 
-  const { data: detail, isLoading: detailLoading } = useSWR(
+  const {
+    data: detail,
+    isLoading: detailLoading,
+    mutate: mutateDetail,
+  } = useSWR(
     activeThreadId
       ? `/api/messages/threads/${encodeURIComponent(activeThreadId)}`
       : null,
@@ -73,7 +77,7 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
       detail={
         <>
           <div className="split-workspace-back flex items-center gap-2 border-b bg-background px-4 py-2">
-            <Button onClick={() => setShowThread(false)} variant="ghost">
+            <Button onClick={() => setDetailOpen(false)} variant="ghost">
               <ChevronLeftIcon /> Messages
             </Button>
           </div>
@@ -87,7 +91,11 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
                   {detail.title} · {detail.recipient}
                 </p>
               </div>
-              <MessageThread detail={detail} />
+              <MessageThread
+                detail={detail}
+                onUpdated={() => mutateDetail()}
+                request={request}
+              />
             </>
           ) : (
             <div className="grid min-h-[24rem] flex-1 place-items-center p-8 text-center">
@@ -100,7 +108,7 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
           )}
         </>
       }
-      detailOpen={showThread}
+      detailOpen={detailOpen}
       list={
         <>
           <div className="flex items-center justify-between px-4 py-3">
@@ -130,7 +138,7 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
                   key={thread.threadId}
                   onSelect={() => {
                     setSelectedThreadId(thread.threadId);
-                    setShowThread(true);
+                    setDetailOpen(true);
                   }}
                   thread={thread}
                 />

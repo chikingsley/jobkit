@@ -17,10 +17,17 @@ const DefaultPacketSchema = z.object({ packetId: z.string().min(1) }).strict();
 
 export function registerDocumentRoutes(app: JobKitApp) {
   app.get("/api/documents", async (c) => {
+    const scope = c.req.query("scope");
+    let categoryFilter = "AND category<>'test_lab'";
+    if (scope === "all") {
+      categoryFilter = "";
+    } else if (scope === "test_lab") {
+      categoryFilter = "AND category='test_lab'";
+    }
     const rows = await c.env.DB.prepare(
       `SELECT id,category,filename,content_type,size_bytes,is_default,created_at
          FROM user_documents
-        WHERE user_id=? AND archived_at IS NULL
+        WHERE user_id=? AND archived_at IS NULL ${categoryFilter}
         ORDER BY category,created_at DESC`
     )
       .bind(c.get("user").id)
@@ -88,7 +95,9 @@ export function registerDocumentRoutes(app: JobKitApp) {
       await c.env.DOCUMENTS.delete(objectKey);
       throw error;
     }
-    await addDocumentToPacketVacancies(c.env.DB, userId, { category, id });
+    if (category !== "test_lab") {
+      await addDocumentToPacketVacancies(c.env.DB, userId, { category, id });
+    }
     return c.json({ message: "Document uploaded", ok: true });
   });
 

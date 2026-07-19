@@ -52,11 +52,11 @@ describe("Codex job analysis tasks", () => {
               certainty: "explicit",
               compensationEvidence: ["Salary is 25,000 CNY monthly"],
               employmentTypes: [],
-              evidence: ["English teacher"],
+              evidence: ["English Teacher"],
               locations: [],
               requirements: [],
               roleFamily: "english_language",
-              subjects: [{ evidence: "English teacher", value: "english" }],
+              subjects: [{ evidence: "English Teacher", value: "english" }],
               title: "English teacher",
             },
           ],
@@ -66,6 +66,15 @@ describe("Codex job analysis tasks", () => {
       }
     );
     expect(positionComplete.status).toBe(200);
+    await expect(
+      testEnv.DB.prepare(
+        `SELECT evidence_json,subjects_json FROM job_position_variants
+          WHERE job_id='agent-analysis-job'`
+      ).first()
+    ).resolves.toEqual({
+      evidence_json: '["English teacher"]',
+      subjects_json: '[{"evidence":"English teacher","value":"english"}]',
+    });
 
     const factsClaim = await agentPost("/api/agent-tasks/claim", token, {
       runnerVersion: "codex-cli test",
@@ -129,6 +138,116 @@ describe("Codex job analysis tasks", () => {
       model_id: "gpt-5.6-luna",
       model_provider: "codex",
     });
+  });
+
+  it("retries a deterministically rejected analysis with correction guidance", async () => {
+    const { cookie, userId } = await createAuthenticatedUser(
+      "agent-analysis-retry@example.test"
+    );
+    const timestamp = "2026-07-18T00:00:00.000Z";
+    await testEnv.DB.batch([
+      testEnv.DB.prepare(
+        `INSERT INTO jobs
+          (id,title,salary,description,apply_url,first_seen_at,updated_at)
+         VALUES ('agent-analysis-retry-job','English teacher','25,000 CNY monthly',
+                 'We need an English teacher. Salary is 25,000 CNY monthly.',
+                 'https://example.test/apply',?,?)`
+      ).bind(timestamp, timestamp),
+      testEnv.DB.prepare(
+        `INSERT INTO user_jobs
+          (id,user_id,job_id,created_at,updated_at)
+         VALUES ('agent-analysis-retry-user-job',?,'agent-analysis-retry-job',?,?)`
+      ).bind(userId, timestamp, timestamp),
+    ]);
+    const token = await pairAgent(cookie);
+
+    const firstClaim = await agentPost("/api/agent-tasks/claim", token, {
+      runnerVersion: "codex-cli test",
+    });
+    const firstTask = (await firstClaim.json()) as {
+      task: { runId: string; taskType: string };
+    };
+    expect(firstTask.task.taskType).toBe("job.position_analysis");
+    const rejected = await agentPost(
+      `/api/agent-tasks/${firstTask.task.runId}/complete`,
+      token,
+      {
+        output: {
+          positions: [
+            {
+              audiences: [],
+              certainty: "explicit",
+              compensationEvidence: [],
+              employmentTypes: [],
+              evidence: ["Paraphrased English role"],
+              locations: [],
+              requirements: [],
+              roleFamily: "english_language",
+              subjects: [],
+              title: "English teacher",
+            },
+          ],
+          reviewNotes: [],
+          scope: "direct",
+        },
+      }
+    );
+    expect(rejected.status).toBe(422);
+    await expect(rejected.json()).resolves.toMatchObject({
+      rejectedEvidence: ["Paraphrased English role"],
+    });
+    const failed = await agentPost(
+      `/api/agent-tasks/${firstTask.task.runId}/fail`,
+      token,
+      { error: "1 evidence quote is not present in the stored listing" }
+    );
+    expect(failed.status).toBe(200);
+
+    const factsClaim = await agentPost("/api/agent-tasks/claim", token, {
+      runnerVersion: "codex-cli test",
+    });
+    const factsTask = (await factsClaim.json()) as {
+      task: { runId: string; taskType: string };
+    };
+    expect(factsTask.task.taskType).toBe("job.match_facts");
+    const factsComplete = await agentPost(
+      `/api/agent-tasks/${factsTask.task.runId}/complete`,
+      token,
+      {
+        output: {
+          audiences: [],
+          benefits: [],
+          economics: {
+            compensation: {
+              amountMaximum: null,
+              amountMinimum: null,
+              currency: null,
+              evidence: [],
+              kind: "unstated",
+              period: null,
+              qualifier: null,
+              taxBasis: "unspecified",
+            },
+            workload: null,
+          },
+          employmentTypes: [],
+          requirements: [],
+          reviewNotes: [],
+        },
+      }
+    );
+    expect(factsComplete.status).toBe(200);
+
+    const retryClaim = await agentPost("/api/agent-tasks/claim", token, {
+      runnerVersion: "codex-cli test",
+    });
+    const retryTask = (await retryClaim.json()) as {
+      task: { prompt: string; taskType: string };
+    };
+    expect(retryTask.task.taskType).toBe("job.position_analysis");
+    expect(retryTask.task.prompt).toContain(
+      "A prior attempt for this exact source and task contract failed deterministic validation"
+    );
   });
 });
 

@@ -1,15 +1,18 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { monthlyCompensationUsd } from "@/features/jobs/compensation";
 import type { DraftMutationResult, FxData, Job } from "@/features/jobs/types";
 import type {
   QualificationClaim,
   QualificationClaimAnswer,
   QualificationClaims,
 } from "@/features/matching/claims";
-import { evaluateJob } from "@/features/matching/evaluate";
 import { apiRequest } from "@/lib/api";
-import type { Preferences, Profile, StoredDocument } from "@/profile-types";
+import type {
+  JobMatch,
+  Preferences,
+  Profile,
+  StoredDocument,
+} from "@/profile-types";
 
 interface QualificationClaimInput {
   answer: QualificationClaimAnswer | null;
@@ -22,6 +25,7 @@ const AGENT_TASK_REFRESH_MS = 1500;
 
 export function useWorkspaceData() {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [matches, setMatches] = useState<Map<string, JobMatch>>(new Map());
   const [refreshing, setRefreshing] = useState(false);
   const [fx, setFx] = useState<FxData>({ rates: {}, updatedAt: null });
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -37,8 +41,14 @@ export function useWorkspaceData() {
     }
     try {
       const response = await apiRequest("/api/jobs");
-      const data = (await response.json()) as { jobs: Job[] };
+      const data = (await response.json()) as {
+        fx: FxData;
+        jobs: Job[];
+        matches: Record<string, JobMatch>;
+      };
       setJobs(data.jobs);
+      setFx(data.fx);
+      setMatches(new Map(Object.entries(data.matches)));
     } finally {
       if (!options.quiet) {
         setRefreshing(false);
@@ -88,17 +98,6 @@ export function useWorkspaceData() {
   }, []);
 
   useEffect(() => {
-    void apiRequest("/api/fx")
-      .then((response) => response.json())
-      .then((data) => setFx(data as FxData))
-      .catch((error) =>
-        toast.error(
-          error instanceof Error ? error.message : "Exchange rates unavailable"
-        )
-      );
-  }, []);
-
-  useEffect(() => {
     void Promise.all([
       apiRequest("/api/profile").then(async (response) => {
         setProfile(((await response.json()) as { profile: Profile }).profile);
@@ -121,26 +120,6 @@ export function useWorkspaceData() {
     );
   }, [loadDocuments]);
 
-  const matches = useMemo(
-    () =>
-      new Map(
-        profile && preferences
-          ? jobs.map((job) => [
-              job.id,
-              evaluateJob(
-                job,
-                profile,
-                preferences,
-                monthlyCompensationUsd(job.compensation, fx),
-                documents,
-                qualificationClaims
-              ),
-            ])
-          : []
-      ),
-    [documents, fx, jobs, preferences, profile, qualificationClaims]
-  );
-
   async function saveQualificationClaim(input: QualificationClaimInput) {
     setBusyClaimKey(input.claimKey);
     try {
@@ -161,6 +140,7 @@ export function useWorkspaceData() {
         }
         return next;
       });
+      await loadJobs({ quiet: true });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Qualification answer failed"

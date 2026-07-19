@@ -1,11 +1,10 @@
-import { z } from "zod";
 import { ProfileImportProposalSchema } from "../features/onboarding/schema";
+import { codexOutputJsonSchema } from "./json-schema";
 
 export const PROFILE_IMPORT_TASK_TYPE = "profile.import";
-export const PROFILE_IMPORT_PROMPT_VERSION = "profile-import-v1";
-export const PROFILE_IMPORT_OUTPUT_JSON_SCHEMA = z.toJSONSchema(
-  ProfileImportProposalSchema,
-  { target: "draft-2020-12" }
+export const PROFILE_IMPORT_PROMPT_VERSION = "profile-import-v2";
+export const PROFILE_IMPORT_OUTPUT_JSON_SCHEMA = codexOutputJsonSchema(
+  ProfileImportProposalSchema
 );
 export const PROFILE_IMPORT_MODEL = {
   model: "gpt-5.6-luna",

@@ -119,11 +119,19 @@ async function classify(env: AppEnv, testCase: TestLabCase, resultKey: string) {
     testCase.input.labels,
     "classification labels"
   );
+  const providerLabels = labels.map((label) => ({
+    canonical: label,
+    provider: `${label}: ${classificationLabelDescription(label)}`,
+  }));
   const model = "jina-embeddings-v5-text-small";
   const response = await jinaJson(
     env,
     `${JINA_API_BASE}/classify`,
-    { input: [text], labels, model },
+    {
+      input: [text],
+      labels: providerLabels.map((label) => label.provider),
+      model,
+    },
     ClassifierResponseSchema,
     30_000
   );
@@ -134,12 +142,40 @@ async function classify(env: AppEnv, testCase: TestLabCase, resultKey: string) {
       502
     );
   }
+  const canonicalPrediction =
+    providerLabels.find(
+      (label) =>
+        label.provider === prediction.prediction ||
+        label.canonical === prediction.prediction
+    )?.canonical ?? "";
+  if (!canonicalPrediction) {
+    throw new TestLabError("Jina returned an unknown classifier label", 502);
+  }
   return {
     model,
-    output: { [resultKey]: prediction.prediction, score: prediction.score },
-    provenance: { endpoint: `${JINA_API_BASE}/classify`, provider: "jina" },
+    output: { [resultKey]: canonicalPrediction, score: prediction.score },
+    provenance: {
+      endpoint: `${JINA_API_BASE}/classify`,
+      labelMode: "descriptive-v1",
+      provider: "jina",
+    },
     usage: response.usage,
   } satisfies JinaExecutionResult;
+}
+
+function classificationLabelDescription(label: string) {
+  const descriptions: Record<string, string> = {
+    english_teaching:
+      "a role teaching English language, English literacy, EAP, IELTS, or conversational English",
+    exclude: "an explicit required fact conflicts with the candidate facts",
+    match: "all explicit required facts are satisfied by the candidate facts",
+    non_teaching: "an education-sector role without classroom teaching duties",
+    review: "one or more explicit required facts remain unresolved",
+    subject_teaching:
+      "a classroom role teaching a subject other than English language",
+    unclear: "a listing whose teaching subject or actual role is not stated",
+  };
+  return descriptions[label] ?? label.replaceAll("_", " ");
 }
 
 function matchingClassifierCase(testCase: TestLabCase): TestLabCase {

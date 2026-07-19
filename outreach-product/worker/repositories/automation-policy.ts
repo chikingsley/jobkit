@@ -11,6 +11,7 @@ interface AutomationPolicyRow {
   email_daily_limit: number;
   email_mode: string;
   excluded_market_segments_json: string;
+  follow_up_delays_json: string;
   minimum_fit: string;
   paused: number;
   require_known_compensation: number;
@@ -22,7 +23,8 @@ export async function readAutomationPolicy(db: D1Database, userId: string) {
   const row = await db
     .prepare(
       `SELECT email_mode,email_daily_limit,board_form_mode,board_form_daily_limit,
-              allowed_boards_json,excluded_market_segments_json,minimum_fit,
+              allowed_boards_json,excluded_market_segments_json,
+              follow_up_delays_json,minimum_fit,
               require_known_compensation,route_freshness_days,paused,updated_at
        FROM user_automation_policies WHERE user_id=?`
     )
@@ -39,6 +41,7 @@ export async function readAutomationPolicy(db: D1Database, userId: string) {
     },
     email: { dailyLimit: row.email_daily_limit, mode: row.email_mode },
     excludedMarketSegments: JSON.parse(row.excluded_market_segments_json),
+    followUpDelaysDays: JSON.parse(row.follow_up_delays_json),
     minimumFit: row.minimum_fit,
     paused: Boolean(row.paused),
     requireKnownCompensation: Boolean(row.require_known_compensation),
@@ -59,9 +62,10 @@ export async function writeAutomationPolicy(
       `INSERT INTO user_automation_policies
         (user_id,email_mode,email_daily_limit,board_form_mode,
          board_form_daily_limit,allowed_boards_json,
-         excluded_market_segments_json,minimum_fit,require_known_compensation,
-         route_freshness_days,paused,created_at,updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+         excluded_market_segments_json,follow_up_delays_json,minimum_fit,
+         require_known_compensation,route_freshness_days,paused,created_at,
+         updated_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
        ON CONFLICT(user_id) DO UPDATE SET
          email_mode=excluded.email_mode,
          email_daily_limit=excluded.email_daily_limit,
@@ -69,6 +73,7 @@ export async function writeAutomationPolicy(
          board_form_daily_limit=excluded.board_form_daily_limit,
          allowed_boards_json=excluded.allowed_boards_json,
          excluded_market_segments_json=excluded.excluded_market_segments_json,
+         follow_up_delays_json=excluded.follow_up_delays_json,
          minimum_fit=excluded.minimum_fit,
          require_known_compensation=excluded.require_known_compensation,
          route_freshness_days=excluded.route_freshness_days,
@@ -83,6 +88,7 @@ export async function writeAutomationPolicy(
       policy.boardForm.dailyLimit,
       JSON.stringify(policy.allowedBoards),
       JSON.stringify(policy.excludedMarketSegments),
+      JSON.stringify(policy.followUpDelaysDays),
       policy.minimumFit,
       Number(policy.requireKnownCompensation),
       policy.routeFreshnessDays,

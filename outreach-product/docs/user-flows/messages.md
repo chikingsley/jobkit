@@ -16,10 +16,13 @@
    job, bundle, campaign target, contact, and attempt.
 4. The candidate opens the thread and sees the message with Gmail-equivalent
    paragraph and signature formatting.
-5. The candidate replies from JobKit or continues in Gmail.
+5. The candidate continues the conversation in Gmail; JobKit keeps the hosted
+   thread synchronized through Gmail push notifications.
 6. JobKit records a useful outcome such as interested, interview, offer,
    declined, withdrawn, bounced, or no response after the configured window.
-7. A follow-up remains attached to the same contact and attempt history.
+7. If the user configured follow-up waits and no human reply exists, Codex
+   prepares the next in-thread message for review. Creating the Gmail draft and
+   sending that reviewed draft are separate explicit actions.
 8. When the campaign reaches its human-reply threshold, JobKit pauses future
    execution and directs the candidate to the conversations.
 

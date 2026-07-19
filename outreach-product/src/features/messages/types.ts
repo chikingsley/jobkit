@@ -51,9 +51,30 @@ export interface MessageThreadDetail {
     title: string;
   }>;
   company: string;
+  followUps: Array<{
+    changeSummary: string;
+    dueAt: string;
+    gmailDraftId: string;
+    id: string;
+    message: string;
+    ordinal: number;
+    status: string;
+  }>;
   gmailThreadId: string;
   jobId: string;
   messages: ThreadMessage[];
+  outcome: {
+    note: string;
+    recordedAt: string;
+    value:
+      | "bounced"
+      | "declined"
+      | "interested"
+      | "interview"
+      | "no_response"
+      | "offer"
+      | "withdrawn";
+  } | null;
   recipient: string;
   subject: string;
   threadId: string;

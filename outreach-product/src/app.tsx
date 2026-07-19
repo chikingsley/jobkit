@@ -135,12 +135,15 @@ export function App() {
     [countryFilter, fitFilter, matches, nonAneslJobs, showExcluded]
   );
   useEffect(() => {
+    if (activeView !== "jobs") {
+      return;
+    }
     const selectedIsVisible = visibleJobs.some((job) => job.id === selectedId);
     const [firstJob] = visibleJobs;
     if (!selectedIsVisible && firstJob) {
       setSelectedId(firstJob.id);
     }
-  }, [selectedId, setSelectedId, visibleJobs]);
+  }, [activeView, selectedId, setSelectedId, visibleJobs]);
   const selected = selectVisibleJob(visibleJobs, selectedId);
 
   async function action(path: string, body?: object) {

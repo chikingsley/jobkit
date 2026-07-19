@@ -54,9 +54,15 @@ export class GmailApiError extends Error {
   }
 }
 
-export function createGmailDraft(accessToken: string, raw: string) {
+export function createGmailDraft(
+  accessToken: string,
+  raw: string,
+  threadId?: string
+) {
   return gmailRequest<GmailDraftResult>(accessToken, "/users/me/drafts", {
-    body: JSON.stringify({ message: { raw } }),
+    body: JSON.stringify({
+      message: { raw, ...(threadId ? { threadId } : {}) },
+    }),
     method: "POST",
   });
 }

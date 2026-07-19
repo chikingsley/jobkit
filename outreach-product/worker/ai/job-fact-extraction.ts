@@ -20,8 +20,8 @@ import {
 const ProviderEvidenceFactSchema = <Schema extends z.ZodType>(value: Schema) =>
   z.object({ evidence: z.string(), value }).strict();
 
-// Cerebras rejects JSON Schema length constraints. This provider-facing schema
-// describes shape only; JobMatchFactsSchema enforces every persisted limit.
+// The companion-facing schema describes shape only; JobMatchFactsSchema
+// enforces every persisted limit after the paired Codex result returns.
 export const ProviderJobMatchFactsSchema = z
   .object({
     audiences: z.array(ProviderEvidenceFactSchema(JobAudienceSchema)),

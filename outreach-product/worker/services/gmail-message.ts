@@ -6,6 +6,7 @@ const MAX_RAW_ATTACHMENT_BYTES = 18 * 1024 * 1024;
 const ASCII_HEADER_PATTERN = /^[\x20-\x7E]*$/u;
 const BASE64_PADDING_PATTERN = /[=]+$/u;
 const HEADER_NEWLINE_PATTERN = /[\r\n]/u;
+const HEADER_NAME_PATTERN = /^[A-Za-z0-9-]+$/u;
 
 interface DraftAttachmentRow {
   category: string;
@@ -207,7 +208,8 @@ export function buildRawMimeMessage(
   envelope: GmailEnvelope,
   message: string,
   attachments: MimeAttachment[],
-  fixedBoundary?: string
+  fixedBoundary?: string,
+  extraHeaders: Readonly<Record<string, string>> = {}
 ): string {
   const totalAttachmentBytes = attachments.reduce(
     (total, attachment) => total + attachment.bytes.byteLength,
@@ -223,6 +225,9 @@ export function buildRawMimeMessage(
     `From: ${safeHeader(envelope.from)}`,
     `To: ${safeHeader(envelope.to)}`,
     `Subject: ${encodedHeader(envelope.subject)}`,
+    ...Object.entries(extraHeaders).map(
+      ([name, value]) => `${safeHeaderName(name)}: ${safeHeader(value)}`
+    ),
     "MIME-Version: 1.0",
     `Content-Type: multipart/mixed; boundary="${boundary}"`,
   ];
@@ -248,6 +253,10 @@ export function buildRawMimeMessage(
   return [...headers, "", ...parts].join(CRLF);
 }
 
+export function gmailRaw(message: string) {
+  return base64Url(new TextEncoder().encode(message));
+}
+
 function encodedHeader(value: string): string {
   const safe = safeHeader(value);
   return ASCII_HEADER_PATTERN.test(safe)
@@ -260,6 +269,13 @@ function safeHeader(value: string): string {
     throw new GmailMessagePayloadError("Email headers cannot contain newlines");
   }
   return value.trim();
+}
+
+function safeHeaderName(value: string) {
+  if (!HEADER_NAME_PATTERN.test(value)) {
+    throw new GmailMessagePayloadError("Email header name is invalid");
+  }
+  return value;
 }
 
 function safeFilename(value: string): string {

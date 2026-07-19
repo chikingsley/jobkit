@@ -156,14 +156,14 @@ export async function listTestLab(env: AppEnv, userId: string) {
   const [runs, preferences] = await Promise.all([
     env.DB.prepare(
       `SELECT * FROM test_lab_runs
-        WHERE user_id=? ORDER BY created_at DESC LIMIT 200`
+        WHERE user_id=? ORDER BY created_at DESC`
     )
       .bind(userId)
       .all<TestLabRunRow>(),
     env.DB.prepare(
       `SELECT id,left_run_id,right_run_id,preference,notes,created_at
          FROM test_lab_preferences
-        WHERE user_id=? ORDER BY created_at DESC LIMIT 100`
+        WHERE user_id=? ORDER BY created_at DESC`
     )
       .bind(userId)
       .all<Record<string, unknown>>(),

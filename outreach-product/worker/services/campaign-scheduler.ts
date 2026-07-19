@@ -29,6 +29,7 @@ interface DispatchSeed {
   dedup_key: string;
   dispatch_id?: string;
   id: string;
+  match_score?: number | null;
   route_strategy: "anesl_bundle" | "single";
   source_kind: "advertised" | "school";
 }
@@ -157,6 +158,7 @@ async function planCampaignRun(
             campaign.id,
             group.dedupKey,
             dispatchId,
+            group.routeStrategy,
             now.toISOString()
           )
         );
@@ -211,6 +213,7 @@ async function planCampaignRun(
           campaign.id,
           group.dedupKey,
           dispatchId,
+          group.routeStrategy,
           now.toISOString()
         )
       );
@@ -315,13 +318,18 @@ function skipDuplicateTargetsStatement(
   campaignId: string,
   dedupKey: string,
   dispatchId: string,
+  routeStrategy: DispatchGroup["routeStrategy"],
   timestamp: string
 ) {
+  const reason =
+    routeStrategy === "anesl_bundle"
+      ? "Excluded from this ANESL email after selecting its five highest-ranked positions"
+      : "Recipient represented by another target in this dispatch";
   return db
     .prepare(
       `UPDATE campaign_targets
           SET status='skipped',
-              hold_reason='Recipient represented by another target in this dispatch',
+              hold_reason=?,
               updated_at=?
         WHERE campaign_id=? AND dedup_key=? AND status='eligible'
           AND id NOT IN (
@@ -329,7 +337,7 @@ function skipDuplicateTargetsStatement(
              WHERE dispatch_id=?
           )`
     )
-    .bind(timestamp, campaignId, dedupKey, dispatchId);
+    .bind(reason, timestamp, campaignId, dedupKey, dispatchId);
 }
 
 async function readyDispatchGroups(db: D1Database, campaignId: string) {
@@ -365,14 +373,14 @@ async function eligibleDispatchGroups(db: D1Database, campaignId: string) {
   const rows = await db
     .prepare(
       `SELECT t.id,t.country_code,t.source_kind,t.dedup_key,t.route_strategy,
-              t.channel
+              t.channel,t.match_score
          FROM campaign_targets t
         WHERE t.campaign_id=? AND t.status='eligible' AND t.channel='email'
           AND NOT EXISTS (
             SELECT 1 FROM campaign_dispatches d
              WHERE d.campaign_id=t.campaign_id AND d.dedup_key=t.dedup_key
           )
-        ORDER BY t.admitted_at,t.id`
+        ORDER BY COALESCE(t.match_score,-1) DESC,t.admitted_at,t.id`
     )
     .bind(campaignId)
     .all<DispatchSeed>();

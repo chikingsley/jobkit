@@ -1,21 +1,21 @@
-import { monthlyCompensationUsd } from "../../src/features/jobs/compensation";
 import { compensationFromEconomics } from "../../src/features/jobs/economics";
 import {
   type JobPositionAnalysis,
   JobPositionAnalysisSchema,
 } from "../../src/features/jobs/position-variants";
 import type { Job } from "../../src/features/jobs/types";
-import { evaluateJob } from "../../src/features/matching/evaluate";
 import {
   type JobMatchFacts,
   JobMatchFactsSchema,
 } from "../../src/features/matching/schema";
-import { JOB_MATCH_FACTS_SCHEMA_VERSION } from "../../src/features/matching/version";
-import type { StoredDocument } from "../../src/profile-types";
+import {
+  JOB_MATCH_FACTS_SCHEMA_VERSION,
+  MATCHING_ENGINE_VERSION,
+} from "../../src/features/matching/version";
+import type { AppEnv } from "../env";
 import { readAutomationPolicy } from "../repositories/automation-policy";
 import { compensationFromRow } from "../repositories/jobs";
-import { readQualificationClaims } from "../repositories/qualification-claims";
-import { readPreferences, readProfile } from "../repositories/user-settings";
+import { evaluateJobWithContext, readMatchingContext } from "./matching-engine";
 
 interface CampaignMatchingRow extends Record<string, unknown> {
   campaign_id: string;
@@ -35,49 +35,33 @@ interface MatchUpdate {
 const D1_MAX_ROW_BYTES = 2_000_000;
 const MATCH_UPDATE_PAYLOAD_BYTES = D1_MAX_ROW_BYTES / 2;
 
-export async function runCampaignMatchingPass(db: D1Database) {
-  const campaign = await db
-    .prepare(
-      `SELECT c.id campaign_id,c.user_id
+export async function runCampaignMatchingPass(env: AppEnv) {
+  const campaign = await env.DB.prepare(
+    `SELECT c.id campaign_id,c.user_id
          FROM campaigns c
         WHERE c.status='preparing'
         ORDER BY c.created_at LIMIT 1`
-    )
-    .first<{ campaign_id: string; user_id: string }>();
+  ).first<{ campaign_id: string; user_id: string }>();
   if (!campaign) {
     return { campaignId: null, matched: 0 };
   }
-  return matchCampaignTargets(db, campaign.user_id, campaign.campaign_id);
+  return matchCampaignTargets(env, campaign.user_id, campaign.campaign_id);
 }
 
 export async function matchCampaignTargets(
-  db: D1Database,
+  env: AppEnv,
   userId: string,
   campaignId: string,
   jobId?: string
 ) {
-  const [rows, profile, preferences, documents, claims, policy] =
-    await Promise.all([
-      readCampaignMatchingRows(db, userId, campaignId, jobId),
-      readProfile(db, userId),
-      readPreferences(db, userId),
-      readDocuments(db, userId),
-      readQualificationClaims(db, userId),
-      readAutomationPolicy(db, userId),
-    ]);
+  const [rows, context, policy] = await Promise.all([
+    readCampaignMatchingRows(env.DB, userId, campaignId, jobId),
+    readMatchingContext(env, userId),
+    readAutomationPolicy(env.DB, userId),
+  ]);
   const updates = rows.map((row): MatchUpdate => {
     const job = matchingJobFromRow(row);
-    const match = evaluateJob(
-      job,
-      profile.value,
-      preferences.value,
-      monthlyCompensationUsd(job.compensation, {
-        rates: { USD: 1 },
-        updatedAt: null,
-      }),
-      documents,
-      claims
-    );
+    const match = evaluateJobWithContext(job, context);
     const eligible =
       match.label === "Strong match" ||
       (match.label === "Likely match" && policy.value.minimumFit === "likely");
@@ -89,33 +73,37 @@ export async function matchCampaignTargets(
       snapshot: {
         criteria: match.criteria,
         evaluatedAt: new Date().toISOString(),
+        fxUpdatedAt: context.fx.updatedAt,
+        matchingEngineVersion: MATCHING_ENGINE_VERSION,
         minimumFit: policy.value.minimumFit,
       },
       status: eligible ? "eligible" : "held",
     };
   });
   const timestamp = new Date().toISOString();
-  const statements = matchUpdateStatements(db, campaignId, updates, timestamp);
-  statements.push(
-    db
-      .prepare(
-        `UPDATE campaigns SET status='draft',updated_at=?
-          WHERE id=? AND user_id=? AND status='preparing'`
-      )
-      .bind(timestamp, campaignId, userId)
+  const statements = matchUpdateStatements(
+    env.DB,
+    campaignId,
+    updates,
+    timestamp
   );
-  await db.batch(statements);
+  statements.push(
+    env.DB.prepare(
+      `UPDATE campaigns SET status='draft',updated_at=?
+          WHERE id=? AND user_id=? AND status='preparing'`
+    ).bind(timestamp, campaignId, userId)
+  );
+  await env.DB.batch(statements);
   return { campaignId, matched: updates.length };
 }
 
 export async function refreshCampaignMatchesForJob(
-  db: D1Database,
+  env: AppEnv,
   userId: string,
   jobId: string
 ) {
-  const campaigns = await db
-    .prepare(
-      `SELECT DISTINCT c.id
+  const campaigns = await env.DB.prepare(
+    `SELECT DISTINCT c.id
          FROM campaigns c
          JOIN campaign_targets t ON t.campaign_id=c.id
         WHERE c.user_id=? AND t.job_id=?
@@ -128,13 +116,13 @@ export async function refreshCampaignMatchesForJob(
             )
           )
         ORDER BY c.created_at`
-    )
+  )
     .bind(userId, jobId)
     .all<{ id: string }>();
   const results: Array<{ campaignId: string; matched: number }> = [];
   for (const campaign of campaigns.results) {
     // biome-ignore lint/performance/noAwaitInLoops: One job update must serialize D1 batches across every campaign that owns it.
-    results.push(await matchCampaignTargets(db, userId, campaign.id, jobId));
+    results.push(await matchCampaignTargets(env, userId, campaign.id, jobId));
   }
   return results;
 }
@@ -198,18 +186,6 @@ function readCampaignMatchingRows(
   )
     .all<CampaignMatchingRow>()
     .then((result) => result.results);
-}
-
-async function readDocuments(db: D1Database, userId: string) {
-  const rows = await db
-    .prepare(
-      `SELECT id,category,filename,content_type,size_bytes,is_default,created_at
-         FROM user_documents
-        WHERE user_id=? AND archived_at IS NULL ORDER BY created_at`
-    )
-    .bind(userId)
-    .all<StoredDocument>();
-  return rows.results;
 }
 
 function matchingJobFromRow(row: CampaignMatchingRow): Job {

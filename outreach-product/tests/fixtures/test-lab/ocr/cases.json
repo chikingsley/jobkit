@@ -1,0 +1,26 @@
+[
+  {
+    "contentType": "application/pdf",
+    "expectedText": "JOBKIT OCR BENCHMARK A Position English Teacher Location Tbilisi, Georgia Salary GEL 4,500 monthly Teaching hours 18 weekly Housing Furnished apartment included Contact benchmark@example.test Reference SYNTH-A-2026",
+    "generatedFilename": "born-digital.pdf",
+    "sourceFilename": "born-digital.html"
+  },
+  {
+    "contentType": "image/png",
+    "expectedText": "JOBKIT OCR BENCHMARK B Role Adult English Instructor City Budapest, Hungary Schedule Monday to Thursday evenings Compensation HUF 680,000 monthly Visa Sponsorship available Apply with Resume and TEFL certificate Reference SYNTH-B-2026",
+    "generatedFilename": "scanned-page.png",
+    "sourceFilename": "scanned-page.html"
+  },
+  {
+    "contentType": "application/pdf",
+    "expectedText": "JOBKIT OCR BENCHMARK B Role Adult English Instructor City Budapest, Hungary Schedule Monday to Thursday evenings Compensation HUF 680,000 monthly Visa Sponsorship available Apply with Resume and TEFL certificate Reference SYNTH-B-2026",
+    "generatedFilename": "scanned-page.pdf",
+    "sourceFilename": "scanned-page.html"
+  },
+  {
+    "contentType": "application/pdf",
+    "expectedText": "JOBKIT OCR BENCHMARK C University EAP Lecturer Krakow, Poland Position details Teach academic writing and presentation skills. Fourteen teaching hours each week. Start date: 1 September 2026. Requirements Bachelor's degree required. TEFL certificate required. Two years of classroom experience preferred. Benefit Terms Salary PLN 8,500 monthly Leave Twenty-five paid days Airfare EUR 500 annual allowance Reference SYNTH-C-2026",
+    "generatedFilename": "layout-heavy.pdf",
+    "sourceFilename": "layout-heavy.html"
+  }
+]
