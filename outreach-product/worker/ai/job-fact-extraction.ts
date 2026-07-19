@@ -1,4 +1,3 @@
-import { generateText, Output } from "ai";
 import { z } from "zod";
 import {
   JobAudienceSchema,
@@ -13,18 +12,10 @@ import {
 import { DegreeLevelSchema } from "../../src/features/profile/schema";
 import type { JobImport } from "../schemas";
 import {
-  extractJobEconomics,
   JOB_ECONOMICS_INSTRUCTIONS,
   normalizeExtractedEconomics,
   ProviderJobEconomicsSchema,
 } from "./job-economics-extraction";
-import {
-  type AiModelProvider,
-  type AiModelSelection,
-  type AiProviderEnv,
-  createAiModel,
-  jobFactExtractionFallback,
-} from "./model-catalog";
 
 const ProviderEvidenceFactSchema = <Schema extends z.ZodType>(value: Schema) =>
   z.object({ evidence: z.string(), value }).strict();
@@ -86,163 +77,6 @@ Rules:
 - Do not turn duties or employer marketing into candidate requirements.
 - Do not omit an explicit requirement because it does not map neatly. Use other and preserve the exact quote for human verification.
 - Put genuine ambiguity or contradictions in reviewNotes. Do not resolve them by guessing. Do not add a review note merely because an optional schema field or an unstated detail is null.${JOB_ECONOMICS_INSTRUCTIONS}`;
-
-export interface GeneratedJobMatchFacts {
-  facts: JobMatchFacts;
-  modelId: string;
-  provider: AiModelProvider;
-  sourceHash: string;
-}
-
-export class JobFactExtractionError extends Error {}
-
-export async function extractJobMatchFacts(
-  env: AiProviderEnv,
-  selection: AiModelSelection,
-  job: JobImport
-): Promise<GeneratedJobMatchFacts> {
-  const source = jobFactSource(job);
-  try {
-    const result = await generateText({
-      instructions: JOB_FACT_EXTRACTION_INSTRUCTIONS,
-      maxOutputTokens: 5000,
-      maxRetries: 2,
-      model: createAiModel(env, selection),
-      output: Output.object({
-        description: "Evidence-backed facts used to match a job and candidate",
-        name: "job_match_facts",
-        schema: ProviderJobMatchFactsSchema,
-      }),
-      prompt: `<job-listing>\n${source}\n</job-listing>`,
-      providerOptions:
-        selection.provider === "cerebras" && selection.modelId === "zai-glm-4.7"
-          ? { cerebras: { reasoningEffort: "none" } }
-          : undefined,
-      temperature: 0,
-      timeout: { totalMs: 30_000 },
-    });
-    return {
-      facts: validateProviderJobMatchFacts(result.output, source),
-      modelId: selection.modelId,
-      provider: selection.provider,
-      sourceHash: await hashSource(source),
-    };
-  } catch (error) {
-    console.error(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : String(error),
-        event: "job_fact_extraction_failed",
-        jobId: job.id,
-        model: selection.modelId,
-        provider: selection.provider,
-      })
-    );
-    throw new JobFactExtractionError(
-      `Job analysis failed using ${selection.provider}/${selection.modelId}`,
-      { cause: error }
-    );
-  }
-}
-
-export async function extractJobMatchFactsWithFallback(
-  env: AiProviderEnv,
-  selection: AiModelSelection,
-  job: JobImport
-) {
-  const fallback = jobFactExtractionFallback(selection);
-  let primary: GeneratedJobMatchFacts;
-  try {
-    primary = await extractJobMatchFacts(env, selection, job);
-  } catch (error) {
-    if (
-      !(error instanceof JobFactExtractionError) ||
-      (selection.provider === fallback.provider &&
-        selection.modelId === fallback.modelId)
-    ) {
-      throw error;
-    }
-    return extractJobMatchFacts(env, fallback, job);
-  }
-  if (
-    !needsEconomicsReview(primary.facts.economics, job.salary) ||
-    (selection.provider === fallback.provider &&
-      selection.modelId === fallback.modelId)
-  ) {
-    return primary;
-  }
-  try {
-    const source = jobFactSource(job);
-    const reviewed = await extractJobEconomics(env, fallback, source);
-    if (
-      economicsCompleteness(reviewed.economics) <=
-      economicsCompleteness(primary.facts.economics)
-    ) {
-      return primary;
-    }
-    return {
-      ...primary,
-      facts: {
-        ...primary.facts,
-        economics: reviewed.economics,
-        reviewNotes: [
-          ...primary.facts.reviewNotes,
-          ...reviewed.reviewNotes,
-        ].slice(0, 20),
-      },
-      modelId: `${primary.modelId}+${reviewed.modelId}:economics`,
-    };
-  } catch (error) {
-    if (!(error instanceof Error)) {
-      console.error(String(error));
-    }
-    return primary;
-  }
-}
-
-function needsEconomicsReview(
-  economics: JobMatchFacts["economics"],
-  salaryField: string
-) {
-  const { compensation } = economics;
-  if (compensation.kind === "conflict") {
-    return true;
-  }
-  if (
-    compensation.kind === "negotiable" &&
-    [...salaryField].some(isAsciiDigit)
-  ) {
-    return true;
-  }
-  if (compensation.kind === "unstated") {
-    return salaryField.trim().length > 0;
-  }
-  return (
-    compensation.kind === "amount" &&
-    (compensation.currency === null || compensation.period === null)
-  );
-}
-
-function isAsciiDigit(value: string) {
-  return value >= "0" && value <= "9";
-}
-
-function economicsCompleteness(economics: JobMatchFacts["economics"]) {
-  const { compensation, workload } = economics;
-  let score = 0;
-  if (compensation.kind === "amount") {
-    score += 4;
-    score += Number(
-      compensation.amountMinimum !== null || compensation.amountMaximum !== null
-    );
-    score += Number(compensation.currency !== null);
-    score += Number(compensation.period !== null);
-  } else if (compensation.kind === "negotiable") {
-    score += 3;
-  } else if (compensation.kind === "conflict") {
-    score += 1;
-  }
-  return score + Number(workload !== null) / 2;
-}
 
 export function jobSourceHash(job: JobFactSourceFields) {
   return hashSource(jobFactSource(job));

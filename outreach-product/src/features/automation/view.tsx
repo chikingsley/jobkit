@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { SettingsPage } from "@/components/settings-page";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { AgentTaskHistory } from "@/features/agents/task-history";
 import {
   type AutomationPolicy,
   defaultAutomationPolicy,
@@ -245,6 +247,7 @@ export function AutomationView({ request }: { request: ApiRequest }) {
       </Card>
 
       <AgentRunnerCard request={request} />
+      <AgentTaskHistory request={request} />
     </SettingsPage>
   );
 }
@@ -355,7 +358,7 @@ function AgentRunnerCard({ request }: { request: ApiRequest }) {
             </Button>
           </div>
         ) : null}
-        {activeRunners.map((runner) => (
+        {(data?.runners ?? []).map((runner) => (
           <div
             className="flex items-center justify-between gap-3 rounded-lg border p-3"
             key={runner.id}
@@ -363,6 +366,9 @@ function AgentRunnerCard({ request }: { request: ApiRequest }) {
             <div>
               <div className="flex items-center gap-2 font-medium">
                 <Terminal className="size-4" /> {runner.name}
+                <Badge variant={runner.revokedAt ? "outline" : "secondary"}>
+                  {runner.revokedAt ? "Revoked" : "Active"}
+                </Badge>
               </div>
               <div className="mt-1 text-muted-foreground text-xs">
                 {runner.lastSeenAt
@@ -371,14 +377,16 @@ function AgentRunnerCard({ request }: { request: ApiRequest }) {
                 {runner.codexVersion ? ` · ${runner.codexVersion}` : ""}
               </div>
             </div>
-            <Button
-              aria-label={`Revoke ${runner.name}`}
-              onClick={() => void revoke(runner.id)}
-              size="icon-sm"
-              variant="ghost"
-            >
-              <Trash2 />
-            </Button>
+            {runner.revokedAt ? null : (
+              <Button
+                aria-label={`Revoke ${runner.name}`}
+                onClick={() => void revoke(runner.id)}
+                size="icon-sm"
+                variant="ghost"
+              >
+                <Trash2 />
+              </Button>
+            )}
           </div>
         ))}
         {activeRunners.length === 0 && !pairing ? (

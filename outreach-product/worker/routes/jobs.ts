@@ -15,7 +15,6 @@ import {
 } from "../repositories/automation-policy";
 import { compensationFromRow } from "../repositories/jobs";
 import { queueJobDraftGeneration } from "../services/application-drafts";
-import { analyzeUserJobs } from "../services/job-analysis";
 
 export function registerJobRoutes(app: JobKitApp) {
   app.post("/api/jobs/:id/generate", async (c) => {
@@ -154,17 +153,6 @@ export function registerJobRoutes(app: JobKitApp) {
       .bind(c.get("user").id)
       .all();
     return c.json({ jobs: rows.results.map(toReviewJob) });
-  });
-
-  app.post("/api/jobs/analyze", async (c) => {
-    const analyzed = await analyzeUserJobs(c.env, c.get("user").id);
-    return c.json({
-      message:
-        analyzed === 0
-          ? "All job analyses were current"
-          : `Analyzed ${analyzed} ${analyzed === 1 ? "job" : "jobs"}`,
-      ok: true,
-    });
   });
 
   app.get("/api/automation-policy", async (c) => {

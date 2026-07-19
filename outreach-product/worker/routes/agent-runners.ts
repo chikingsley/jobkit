@@ -18,10 +18,22 @@ import {
   completeAgentTask,
   failAgentTask,
 } from "../services/agent-task-broker";
-import { readAgentTaskRequest } from "../services/agent-task-requests";
+import {
+  cancelAgentTaskRequest,
+  listRecentAgentTasks,
+  readAgentTaskRequest,
+  retryAgentTaskRequest,
+} from "../services/agent-task-requests";
 import { AgentTaskError } from "../services/agent-tasks/contracts";
 
 export function registerAgentRunnerRoutes(app: JobKitApp) {
+  app.get("/api/agent-tasks", async (c) =>
+    c.json({
+      ...(await listRecentAgentTasks(c.env.DB, c.get("user").id)),
+      ok: true as const,
+    })
+  );
+
   app.get("/api/agent-task-requests/:requestId", async (c) => {
     const taskRequest = await readAgentTaskRequest(c.env.DB, {
       requestId: c.req.param("requestId"),
@@ -40,6 +52,33 @@ export function registerAgentRunnerRoutes(app: JobKitApp) {
     const runners = await listAgentRunners(c.env.DB, c.get("user").id);
     return c.json({ runners });
   });
+
+  app.delete("/api/agent-task-requests/:requestId", async (c) =>
+    c.json({
+      message: "Agent task cancelled",
+      ok: true as const,
+      taskRequest: await cancelAgentTaskRequest(
+        c.env.DB,
+        c.get("user").id,
+        c.req.param("requestId")
+      ),
+    })
+  );
+
+  app.post("/api/agent-task-requests/:requestId/retry", async (c) =>
+    c.json(
+      {
+        message: "Agent task queued again",
+        ok: true as const,
+        taskRequest: await retryAgentTaskRequest(
+          c.env.DB,
+          c.get("user").id,
+          c.req.param("requestId")
+        ),
+      },
+      202
+    )
+  );
 
   app.post("/api/agent-runner-pairings", async (c) => {
     const { capabilities } = AgentPairingCreateSchema.parse(await c.req.json());

@@ -5,16 +5,6 @@ belongs in Git history, not in this file.
 
 ## Codex companion and task migration
 
-- [ ] Replace synchronous Worker model calls for profile import, message
-  generation, revision, ANESL bundles, and preview calibration with durable,
-  versioned Codex tasks. Each UI action needs pending, completed, failed, retry,
-  and cancellation states without holding a Worker request open.
-- [ ] Remove the general-purpose Cerebras, Google, Mistral, llama.cpp, and AI SDK
-  model catalog after every production call site uses the paired Codex task
-  protocol. Keep Mistral isolated to the OCR benchmark until that benchmark is
-  resolved.
-- [ ] Add runner task history, current work, failure detail, explicit retry, and
-  revocation status to the authenticated operator surface.
 - [ ] Add task-specific image artifacts for Codex document vision without
   granting the companion access to the checkout, unrelated files, or provider
   secrets.

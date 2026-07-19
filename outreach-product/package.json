@@ -17,10 +17,6 @@
     "types:worker": "wrangler types"
   },
   "dependencies": {
-    "@ai-sdk/cerebras": "^3.0.9",
-    "@ai-sdk/google": "^4.0.17",
-    "@ai-sdk/mistral": "^4.0.10",
-    "@ai-sdk/openai-compatible": "^3.0.9",
     "@base-ui/react": "^1.6.0",
     "@cloudflare/vite-plugin": "1.45.1",
     "@fontsource-variable/geist": "^5.2.9",
@@ -28,7 +24,6 @@
     "@hookform/resolvers": "^5.4.0",
     "@shadcn/react": "^0.2.1",
     "@vitejs/plugin-react": "^6.0.3",
-    "ai": "^7.0.26",
     "better-auth": "^1.6.23",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

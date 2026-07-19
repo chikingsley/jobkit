@@ -1,7 +1,5 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
-import { JobFactExtractionError } from "./ai/job-fact-extraction";
-import { ProfileExtractionError } from "./ai/profile-extraction";
 import type { AgentRunnerContext, AuthUser, JobKitApp } from "./app-types";
 import { createAuth } from "./auth";
 import type { AppEnv } from "./env";
@@ -72,17 +70,11 @@ app.onError((error, c) => {
       path: c.req.path,
     })
   );
-  if (error instanceof JobFactExtractionError) {
-    return c.json({ message: error.message, ok: false }, 502);
-  }
   if (error instanceof ResumeUploadError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
   if (error instanceof DocumentConversionError) {
     return c.json({ message: error.message, ok: false }, 422);
-  }
-  if (error instanceof ProfileExtractionError) {
-    return c.json({ message: error.message, ok: false }, 502);
   }
   if (error instanceof DraftProfileRequiredError) {
     return c.json({ message: error.message, ok: false }, 409);

@@ -158,14 +158,32 @@ export async function revokeAgentRunner(
   runnerId: string
 ) {
   const timestamp = new Date().toISOString();
-  const result = await db
-    .prepare(
-      `UPDATE agent_runners SET revoked_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND revoked_at IS NULL`
-    )
-    .bind(timestamp, timestamp, runnerId, userId)
-    .run();
-  return (result.meta.changes ?? 0) === 1;
+  const [runnerResult] = await db.batch([
+    db
+      .prepare(
+        `UPDATE agent_runners SET revoked_at=?,updated_at=?
+          WHERE id=? AND user_id=? AND revoked_at IS NULL`
+      )
+      .bind(timestamp, timestamp, runnerId, userId),
+    db
+      .prepare(
+        `UPDATE agent_task_runs
+            SET status='failed',error_detail='Runner revoked',
+                completed_at=?,updated_at=?
+          WHERE runner_id=? AND user_id=? AND status='running'`
+      )
+      .bind(timestamp, timestamp, runnerId, userId),
+    db
+      .prepare(
+        `UPDATE agent_task_requests
+            SET status='queued',runner_id=NULL,claimed_at=NULL,
+                lease_expires_at=NULL,error_detail='Runner revoked; task requeued',
+                updated_at=?
+          WHERE runner_id=? AND user_id=? AND status='claimed'`
+      )
+      .bind(timestamp, runnerId, userId),
+  ]);
+  return (runnerResult?.meta.changes ?? 0) === 1;
 }
 
 export async function updateAgentRunnerVersion(

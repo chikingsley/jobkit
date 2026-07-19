@@ -87,6 +87,39 @@ describe("Codex agent pairing", () => {
       ],
     });
 
+    const timestamp = new Date().toISOString();
+    await testEnv.DB.batch([
+      testEnv.DB.prepare(
+        `INSERT INTO agent_task_requests
+          (id,user_id,task_type,subject_type,subject_id,input_json,status,
+           runner_id,claimed_at,lease_expires_at,created_at,updated_at)
+         SELECT 'revoked-request',user_id,'application.message','job','job-1',
+                '{}','claimed',id,?,?,?,?
+           FROM agent_runners WHERE id=?`
+      ).bind(
+        timestamp,
+        "2099-01-01T00:00:00.000Z",
+        timestamp,
+        timestamp,
+        exchangePayload.runner.runnerId
+      ),
+      testEnv.DB.prepare(
+        `INSERT INTO agent_task_runs
+          (id,user_id,runner_id,task_type,source_task_id,prompt_version,model,
+           reasoning_effort,source_hash,prompt_hash,status,started_at,
+           lease_expires_at,updated_at)
+         SELECT 'revoked-run',user_id,id,'application.message',
+                'revoked-request','test-v1','gpt-5.6-luna','medium','source',
+                'prompt','running',?,?,?
+           FROM agent_runners WHERE id=?`
+      ).bind(
+        timestamp,
+        "2099-01-01T00:00:00.000Z",
+        timestamp,
+        exchangePayload.runner.runnerId
+      ),
+    ]);
+
     const revoked = await sessionRequest(
       `/api/agent-runners/${exchangePayload.runner.runnerId}`,
       cookie,
@@ -99,6 +132,67 @@ describe("Codex agent pairing", () => {
     );
     expect(revoked.status).toBe(200);
     expect(afterRevoke.status).toBe(401);
+    await expect(
+      testEnv.DB.prepare(
+        "SELECT status,runner_id,error_detail FROM agent_task_requests WHERE id='revoked-request'"
+      ).first()
+    ).resolves.toEqual({
+      error_detail: "Runner revoked; task requeued",
+      runner_id: null,
+      status: "queued",
+    });
+    await expect(
+      testEnv.DB.prepare(
+        "SELECT status,error_detail FROM agent_task_runs WHERE id='revoked-run'"
+      ).first()
+    ).resolves.toEqual({ error_detail: "Runner revoked", status: "failed" });
+  });
+
+  it("lists, cancels, and explicitly retries durable task requests", async () => {
+    const { cookie, userId } = await createAuthenticatedUser(
+      "task-controls@example.test"
+    );
+    const timestamp = new Date().toISOString();
+    await testEnv.DB.prepare(
+      `INSERT INTO agent_task_requests
+        (id,user_id,task_type,subject_type,subject_id,input_json,status,
+         created_at,updated_at)
+       VALUES ('cancel-me',?,'application.message','job','job-1',
+               '{"kind":"job_draft","mode":"generate","jobId":"job-1"}',
+               'queued',?,?)`
+    )
+      .bind(userId, timestamp, timestamp)
+      .run();
+
+    const cancelled = await sessionRequest(
+      "/api/agent-task-requests/cancel-me",
+      cookie,
+      "DELETE"
+    );
+    expect(cancelled.status).toBe(200);
+    await expect(cancelled.json()).resolves.toMatchObject({
+      taskRequest: { id: "cancel-me", status: "cancelled" },
+    });
+
+    const retried = await sessionRequest(
+      "/api/agent-task-requests/cancel-me/retry",
+      cookie,
+      "POST"
+    );
+    expect(retried.status).toBe(202);
+    const retryPayload = (await retried.json()) as {
+      taskRequest: { id: string; status: string };
+    };
+    expect(retryPayload.taskRequest).toMatchObject({ status: "queued" });
+    expect(retryPayload.taskRequest.id).not.toBe("cancel-me");
+
+    const history = await sessionRequest("/api/agent-tasks", cookie);
+    await expect(history.json()).resolves.toMatchObject({
+      requests: [
+        { id: retryPayload.taskRequest.id, status: "queued" },
+        { id: "cancel-me", status: "cancelled" },
+      ],
+    });
   });
 
   it("rejects an expired pairing code", async () => {
