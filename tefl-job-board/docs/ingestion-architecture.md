@@ -1,205 +1,105 @@
 # Ingestion Architecture
 
-Status: draft  
-Last updated: 2026-06-24
+Status: implemented local ingestion contract
+Last updated: 2026-07-18
 
-## Why This Exists
+## Purpose
 
-The ANESL refresh failure exposed a design problem, not just a slow website. Current ingestion lets
-each board adapter build a full in-memory `list[JobPosting]` before the database is updated. For a
-small board that is fine. For ANESL, it means thousands of remote detail-page requests can happen
-before the first durable write. A timeout then discards all progress.
+The inventory must survive long board crawls, prove when a source was fully traversed, and expose
+its state without parsing terminal output. The local Python/SQLite engine therefore uses explicit
+discovery and hydration phases. The hosted outreach product consumes published inventory; it does
+not treat an opaque, all-in-memory scraper command as authoritative.
 
-That is the wrong shape for the product described in
-[`../../outreach-product/docs/jobkit-product-prd.md`](../../outreach-product/docs/jobkit-product-prd.md).
-The product needs a visible, resumable job inventory, not a long opaque scraper command.
+The source and platform research behind this decision remains in
+[ingestion-research.md](ingestion-research.md). Product integration is described in the outreach
+product documentation.
 
-See [ingestion-research.md](ingestion-research.md) for the deeper source-backed research. The
-current decision is to keep refresh execution local in Python/SQLite until the ingestion engine is
-checkpointed. Cloudflare is a later publishing or hosted-execution target, not the immediate fix.
+## Implemented Contract
 
-## Evidence
+Each registered board provides:
 
-Local evidence:
+1. `discover_latest()` for a non-destructive newest-listing sample.
+2. `discover_full()` for a source-complete traversal with explicit completeness evidence.
+3. `hydrate(discovered_job)` for one detail page.
+4. Optional run-scoped hydration setup for authenticated or stateful sources.
 
-- `../job-search/job-data/jobs.sqlite` has only 502 active ANESL rows, while the board notes describe a much larger
-  historical database exposed through the WebForms pager.
-- Failed full refreshes died inside ANESL detail-page reads before `db.refresh_postings(...)` ran,
-  leaving `../job-search/job-data/jobs.sqlite` unchanged.
-- The existing schema already has `scan_runs` and `scan_items`, but adapter fetch and DB write are
-  still separated by one large in-memory posting list.
+Both discovery methods return a `DiscoveryResult` containing stable items, an explicit `complete`
+flag, and source evidence. A full refresh refuses reconciliation unless `complete` is true.
 
-External prior art and platform guidance:
+Completeness comes from the source shape rather than a configured job-count threshold:
 
-- Airbyte's incremental-sync docs define incremental sync as pulling only data changed since the
-  previous sync, and call out the exact reason it matters: full syncs become too slow or expensive
-  when there are many records or request limits. ANESL has no real timestamp cursor, but it does
-  have stable listing IDs; those IDs can act as the presence cursor for discovery.
-- Scrapy AutoThrottle treats politeness as a concurrency-and-delay problem, not as "one request at a
-  time forever." Its design uses target concurrency, response latency, and hard limits. Jobkit
-  should copy the principle, not necessarily the framework.
-- Python's `ThreadPoolExecutor` is standard-library prior art for overlapping I/O-bound URL fetches.
-  ANESL detail pages are independent once listing IDs are known, so bounded detail concurrency is
-  justified.
-- SQLite WAL mode supports readers and writers proceeding concurrently. Jobkit already enables WAL,
-  so small committed batches are a better fit than one giant transaction after a full crawl.
-- The product PRD already points toward Cloudflare Workers, D1, Cron, and Queues. The research
-  decision is narrower: D1 can hold this inventory, but a plain Cron Worker is not a safe home for
-  the current full refresh. If refresh execution ever moves to Cloudflare, it should map to Cron as
-  a trigger plus Queues or Workflows as durable work units. The local CLI should evolve toward that
-  same phase-based model first.
+- ANESL validates every WebForms page against its reported record count, page count, and current
+  page, then verifies that the number of unique IDs equals the reported total.
+- ESL Cafe validates API `page`, `lastPage`, and `total` metadata for each of its three boards and
+  verifies each board's stable-ID count.
+- SeriousTeachers traverses the finite country-by-subject matrix exposed by its homepage. Explicit
+  404/410 pages are empty; transport failures abort the run.
+- TEFL.com follows pagination until the source returns no new IDs.
+- Ajarn verifies the first live listing page and follows its repeated-page behavior to exhaustion.
 
-## Principles
+If a parser or pagination contract breaks, the run stays in discovery with an error. Existing jobs
+remain active.
 
-1. Discovery and hydration are different jobs.
-   Discovery answers "which job IDs are present now?" Hydration answers "what are the latest details
-   for this job?" Mixing them makes closure unsafe and refreshes slow.
+## Durable Database Flow
 
-2. Incremental is the default; full reconciliation is explicit.
-   For ANESL, routine refresh should discover IDs and hydrate only new or stale rows. Full detail
-   rehydration should be a deliberate maintenance command.
+`crawl_runs` stores one board/mode execution, the source-completeness flag, and the source evidence.
+`crawl_items` stores the complete discovered ID ledger plus per-ID attempts, status, outcome, and
+errors.
 
-3. Every expensive external unit gets checkpointed.
-   A detail page fetch should be committed soon after it succeeds. A failure after 3,000 successful
-   detail pages should not throw away 3,000 pages of work.
+The refresh sequence is:
 
-4. Completeness is proven per phase.
-   A board should only close missing rows after discovery succeeds for a complete source. Hydration
-   failures should not close rows.
+1. Reuse an unfinished run for the same board and mode, unless `--restart` explicitly cancels it.
+2. Run discovery and validate its completeness contract.
+3. Commit the whole discovered-ID ledger.
+4. Mark discovered existing rows present. Close absent rows only for a proven-complete full run.
+5. Hydrate every pending or failed ID.
+6. Commit each success or failure immediately.
+7. Mark the crawl and its linked `scan_runs` record complete only when no failed details remain.
 
-5. Concurrency is bounded and board-specific.
-   Some board steps are inherently sequential, such as ANESL WebForms pagination with carried
-   `__VIEWSTATE`. Independent detail pages can use a small worker pool. SeriousTeachers and logged-in
-   flows may need stricter limits.
+This makes a detail failure resumable. A second invocation retries failed IDs and does not refetch
+already hydrated IDs from the same crawl.
 
-6. The CLI should expose product-shaped state.
-   Users should see active refresh runs, per-board phase, seen IDs, hydrated rows, failures, retries,
-   and last successful completion. The future UI needs the same facts.
+Run state is inspectable directly from SQLite:
 
-7. Application state is never overwritten by scrape state.
-   Existing `ignored` and `applied` preservation is correct. The next model should extend this with
-   event history, not regress to destructive refresh behavior.
-
-## Target Local Design
-
-### Adapter Protocol
-
-Each board should implement capabilities instead of only `fetch_all()`.
-
-```python
-class BoardAdapter(Protocol):
-    name: str
-    complete_discovery: bool
-
-    def discover(self) -> DiscoveryResult:
-        """Return stable job IDs currently visible on the board."""
-
-    def hydrate(self, job_id: str) -> JobPosting:
-        """Return detail data for one job ID."""
+```bash
+uv run jobs runs
+uv run jobs runs --board anesl
 ```
 
-`DiscoveryResult` should include:
+The output includes board, mode, status, discovered, hydrated, failed, attempts, closed rows, audit
+timestamps, and the current error. There is no display-only progress file or stdout-derived state.
 
-- `job_ids`
-- `complete`
-- `source_metadata`
-- `errors`
+## Board-Specific Execution
 
-### Database Flow
+Concurrency and session behavior belong to the board policy:
 
-1. Start a `scan_run` with board and phase metadata.
-2. Run discovery.
-3. Commit `scan_items` and update `last_checked_at` / `last_present_at` from discovered IDs.
-4. If discovery is complete, close missing active rows for that board.
-5. Select hydration candidates:
-   - IDs not in `jobs`
-   - rows with stale `last_hydrated_at`
-   - rows explicitly requested with `--rehydrate`
-6. Hydrate in small batches with retry counts.
-7. Commit each batch.
-8. Finish the scan run with counts and errors.
+- ANESL listing discovery is sequential because WebForms carries `__VIEWSTATE`; its independent
+  detail pages use a small worker pool.
+- SeriousTeachers hydrates serially and reuses one optional authenticated client across the run.
+  A failed login disables apply-link enrichment without discarding public job details. Individual
+  gated-route failures retain the original route and remain visible in diagnostics.
+- Other boards hydrate serially with their configured polite delay.
 
-This means the DB can truthfully say "ANESL discovery completed but 23 details failed and are queued
-for retry." That is more useful than "the command died and nothing changed."
+Concurrency is an I/O strategy, not a substitute for durability.
 
-### Schema Changes
+## Safety Invariants
 
-Keep the current tables, but add the missing phase-level fields.
+- A latest refresh never closes unseen inventory.
+- A full refresh closes unseen inventory only after source completeness is proven.
+- Hydration failure never causes an unrelated job to close.
+- `applied` and `ignored` product states survive scrape reconciliation.
+- `BaseException` classes such as interrupts escape; adapter exceptions are recorded per item.
+- Restarting unfinished work is explicit through `--restart`.
+- Production full discovery does not depend on arbitrary page or listing caps.
 
-```sql
-ALTER TABLE jobs ADD COLUMN last_hydrated_at TEXT NOT NULL DEFAULT '';
-ALTER TABLE jobs ADD COLUMN detail_error TEXT NOT NULL DEFAULT '';
-ALTER TABLE jobs ADD COLUMN detail_retry_count INTEGER NOT NULL DEFAULT 0;
+## Remaining Boundary
 
-ALTER TABLE scan_runs ADD COLUMN board TEXT NOT NULL DEFAULT '';
-ALTER TABLE scan_runs ADD COLUMN phase TEXT NOT NULL DEFAULT '';
-ALTER TABLE scan_runs ADD COLUMN error_json TEXT NOT NULL DEFAULT '[]';
-```
+The expensive detail phase is fully resumable. Discovery itself is persisted after its complete
+source traversal, not after every listing page. This is acceptable for the current local engine
+because discovery requests are the smaller phase and closure requires an all-or-nothing proof. If
+listing-page traversal becomes the dominant failure mode, add board-specific page cursors to
+`crawl_runs` without weakening the completeness gate.
 
-Longer term, add a dedicated table if failures need richer history:
-
-```sql
-CREATE TABLE job_fetch_attempts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    board TEXT NOT NULL,
-    job_id TEXT NOT NULL,
-    phase TEXT NOT NULL,
-    started_at TEXT NOT NULL,
-    finished_at TEXT NOT NULL DEFAULT '',
-    status TEXT NOT NULL,
-    error TEXT NOT NULL DEFAULT '',
-    run_id INTEGER REFERENCES scan_runs(id)
-);
-```
-
-## ANESL-Specific Plan
-
-ANESL should change from "full detail crawl before DB write" to:
-
-1. `discover()`
-   - Walk the WebForms pager.
-   - Collect IDs.
-   - Commit presence immediately.
-
-2. `hydrate(job_id)`
-   - Fetch one detail page.
-   - Parse the label/value table.
-   - Commit the row.
-
-3. Routine command
-   - `uv run jobs refresh anesl` means discover + hydrate new/stale rows.
-
-4. Maintenance command
-   - `uv run jobs refresh anesl --rehydrate-all` means intentionally revisit every detail page.
-
-5. Politeness controls
-   - Keep `DETAIL_WORKERS` small.
-   - Add board-level config for worker count, retries, and timeout.
-   - Slow down or pause on repeated timeout / non-200 patterns.
-
-## What Not To Do
-
-- Do not make every board use the same crawl strategy. Board capabilities differ too much.
-- Do not close rows when discovery did not complete.
-- Do not tie product refresh state to stdout parsing.
-- Do not use concurrency as a substitute for checkpoints.
-- Do not move complicated authenticated workflows to Cloudflare Workers until they are safe and
-  observable locally.
-
-## Implementation Order
-
-1. Add discovery/hydration protocol while keeping current board modules.
-2. Convert ANESL first because it is the clearest failure mode.
-3. Add DB checkpoint helpers for discovered IDs and hydrated batches.
-4. Add CLI status output from DB state, not just prints.
-5. Convert TEFL/Ajarn/ESL Cafe where straightforward.
-6. Treat SeriousTeachers separately because login-gated apply resolution and country×subject crawling
-   have different risk and rate limits.
-7. Add local scheduling only after refreshes are resumable.
-8. Publish static/SQLite artifacts or add D1 sync only after local ingestion semantics are correct.
-
-## Decision
-
-The bounded ANESL detail worker pool is a tactical improvement, but it is not the architecture. The
-architecture is resumable, phase-based ingestion with durable checkpointing. That is the standard
-shape that matches both data-engineering prior art and the product roadmap.
+Hosted scheduling should preserve these semantics. A future Cloudflare implementation should use a
+scheduled trigger plus durable Queue or Workflow units, D1 claims, and idempotent publication. A
+plain scheduled Worker that performs an entire crawl inside one request is not equivalent.

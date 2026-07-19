@@ -11,7 +11,7 @@ export interface CountrySweepAgentInput {
   scopeKey: string;
 }
 
-export const COUNTRY_SWEEP_PROMPT_VERSION = "country-sweep-v1";
+export const COUNTRY_SWEEP_PROMPT_VERSION = "country-sweep-v2";
 export const COUNTRY_SWEEP_OUTPUT_JSON_SCHEMA = z.toJSONSchema(
   CountrySweepTaskOutputSchema,
   { target: "draft-2020-12" }
@@ -43,12 +43,12 @@ Research the live web. Return only facts supported by the URLs you actually chec
 
 Classify language centers and training centers accurately; do not hide them by relabeling. They may be stored but should normally use outreachEligibility "excluded". A real school, kindergarten, university, public school, or international school with a current official contact route may be "eligible". Use "review" when identity or suitability is unclear.
 
-Every active email, phone number, form, or careers page must include the exact evidence URL where it was found. Prefer official organization sites over directories. coverageSummary must include citiesChecked, gaps, needsAnotherPass, queriesChecked, resultCount, and sourcesChecked. The final response must follow the supplied JSON schema.`;
+Every active email, phone number, form, or careers page must include the exact evidence URL where it was found. Prefer official organization sites over directories. Report every query, city, and source actually checked in coverageSummary. nextScopes is an actionable list of novel follow-up discovery work: give each scope a source plus an optional city and query. Set needsAnotherPass only when nextScopes contains concrete work. Do not repeat the current scope or invent a numerical stopping target. The final response must follow the supplied JSON schema.`;
 
   if (task.phase === "discovery") {
     return `${common}
 
-Discover organizations through the assigned source class. Aim for breadth without duplicates. Record current vacancies when they help establish that the organization is active, but the output is an organization and contact catalog, not prose. Use coverageSummary to report queries or directories checked and useful counts.`;
+Discover organizations through the assigned source class and any supplied city or query scope. Aim for breadth without duplicates. Record current vacancies when they help establish that the organization is active, but the output is an organization and contact catalog, not prose. Use coverageSummary to report queries or directories checked and useful counts.`;
   }
   if (task.phase === "verification") {
     return `${common}
@@ -57,5 +57,5 @@ Verify the single supplied organization against its official current web presenc
   }
   return `${common}
 
-Audit coverage for the country sweep described by the input. Search for important directories, cities, school categories, or organizations that a broad sweep could miss. Return newly found supported organizations when applicable. In coverageSummary, describe the coverage checked, material gaps, and whether another discovery pass is warranted.`;
+Audit coverage for the country sweep described by the input. Search for important directories, cities, school categories, or organizations that a broad sweep could miss. Return newly found supported organizations when applicable. When a material gap can be researched, add a concrete novel source, city, and query to nextScopes; otherwise leave nextScopes empty and explain any unresolved gap.`;
 }

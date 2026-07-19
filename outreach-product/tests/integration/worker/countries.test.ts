@@ -1,6 +1,10 @@
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
+import {
+  claimCountrySweepTask,
+  completeCountrySweepTask,
+} from "../../../worker/services/country-sweep-tasks";
 import { createAuthenticatedUser } from "./auth";
 import { seedStrongEnglishMatch } from "./campaign-match-fixtures";
 
@@ -14,6 +18,149 @@ const timestamp = "2026-07-15T00:00:00.000Z";
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("country markets and campaigns", () => {
+  it("creates distinct city-scoped discovery work without duplicating cities", async () => {
+    const { cookie } = await createAuthenticatedUser(
+      "country-city-sweep@example.test"
+    );
+    const response = await request("/api/countries/TJ/sweeps", cookie, "POST", {
+      cities: ["Dushanbe", "Khujand", "Dushanbe"],
+      includeDirectories: false,
+      includeKnownSources: false,
+      includeMaps: false,
+      includeSearch: true,
+    });
+
+    expect(response.status).toBe(200);
+    const tasks = await testEnv.DB.prepare(
+      `SELECT scope_key,input_json FROM country_sweep_tasks
+        WHERE phase='discovery' ORDER BY scope_key`
+    ).all<{ input_json: string; scope_key: string }>();
+    expect(tasks.results.map((task) => task.scope_key)).toEqual([
+      "search:city:dushanbe",
+      "search:city:khujand",
+    ]);
+    expect(tasks.results.map((task) => JSON.parse(task.input_json))).toEqual([
+      expect.objectContaining({ city: "Dushanbe", source: "search" }),
+      expect.objectContaining({ city: "Khujand", source: "search" }),
+    ]);
+
+    const detail = await request("/api/countries/TJ", cookie);
+    const payload = (await detail.json()) as {
+      country: { sweeps: Array<{ cities: string[] }> };
+    };
+    expect(payload.country.sweeps.at(0)?.cities).toEqual([
+      "Dushanbe",
+      "Khujand",
+    ]);
+  });
+
+  it("continues a coverage audit through novel scopes and stops when no new scope remains", async () => {
+    const { cookie, userId } = await createAuthenticatedUser(
+      "country-coverage@example.test"
+    );
+    await request("/api/countries/TJ/sweeps", cookie, "POST", {
+      includeDirectories: false,
+      includeKnownSources: false,
+      includeMaps: false,
+      includeSearch: true,
+    });
+
+    const discovery = await claimCountrySweepTask(
+      testEnv.DB,
+      userId,
+      "coverage-runner"
+    );
+    if (!discovery) {
+      throw new Error("Initial discovery task was not queued");
+    }
+    await completeCountrySweepTask(
+      testEnv.DB,
+      userId,
+      discovery.id,
+      "coverage-runner",
+      emptySweepOutput()
+    );
+
+    const firstAudit = await claimCountrySweepTask(
+      testEnv.DB,
+      userId,
+      "coverage-runner"
+    );
+    expect(firstAudit?.phase).toBe("coverage_audit");
+    if (!firstAudit) {
+      throw new Error("Coverage audit task was not queued");
+    }
+    const followUp = {
+      ...emptySweepOutput(),
+      coverageSummary: {
+        ...emptySweepOutput().coverageSummary,
+        gaps: ["Khorog has not been checked"],
+        needsAnotherPass: true,
+        nextScopes: [
+          {
+            city: "Khorog",
+            query: "schools Khorog",
+            source: "search" as const,
+          },
+        ],
+      },
+    };
+    await completeCountrySweepTask(
+      testEnv.DB,
+      userId,
+      firstAudit.id,
+      "coverage-runner",
+      followUp
+    );
+
+    const secondDiscovery = await claimCountrySweepTask(
+      testEnv.DB,
+      userId,
+      "coverage-runner"
+    );
+    expect(secondDiscovery).toMatchObject({
+      phase: "discovery",
+      scopeKey: "search:khorog:schools-khorog",
+    });
+    if (!secondDiscovery) {
+      throw new Error("Follow-up discovery task was not queued");
+    }
+    await completeCountrySweepTask(
+      testEnv.DB,
+      userId,
+      secondDiscovery.id,
+      "coverage-runner",
+      emptySweepOutput()
+    );
+
+    const secondAudit = await claimCountrySweepTask(
+      testEnv.DB,
+      userId,
+      "coverage-runner"
+    );
+    expect(secondAudit?.phase).toBe("coverage_audit");
+    if (!secondAudit) {
+      throw new Error("Second coverage audit task was not queued");
+    }
+    await completeCountrySweepTask(
+      testEnv.DB,
+      userId,
+      secondAudit.id,
+      "coverage-runner",
+      followUp
+    );
+
+    await expect(
+      testEnv.DB.prepare("SELECT status FROM country_sweeps").first("status")
+    ).resolves.toBe("completed");
+    await expect(
+      testEnv.DB.prepare(
+        `SELECT COUNT(*) count FROM country_sweep_tasks
+          WHERE phase='discovery' AND scope_key='search:khorog:schools-khorog'`
+      ).first<number>("count")
+    ).resolves.toBe(1);
+  });
+
   it("imports historical Tajikistan research without presenting stale rows as open jobs", async () => {
     const { cookie } = await createAuthenticatedUser(
       "country-history@example.test"
@@ -228,7 +375,15 @@ describe("country markets and campaigns", () => {
       runnerPayload.runner.token,
       {
         output: {
-          coverageSummary: { source: "search" },
+          coverageSummary: {
+            citiesChecked: ["Dushanbe"],
+            gaps: [],
+            needsAnotherPass: false,
+            nextScopes: [],
+            queriesChecked: ["schools Dushanbe Tajikistan"],
+            resultCount: 1,
+            sourcesChecked: ["https://example-school.tj"],
+          },
           notes: [],
           organizations: [
             {
@@ -303,11 +458,27 @@ describe("country markets and campaigns", () => {
         .first()
     ).toMatchObject({
       model: "gpt-5.6-terra",
-      prompt_version: "country-sweep-v1",
+      prompt_version: "country-sweep-v2",
       status: "completed",
     });
   });
 });
+
+function emptySweepOutput() {
+  return {
+    coverageSummary: {
+      citiesChecked: [],
+      gaps: [],
+      needsAnotherPass: false,
+      nextScopes: [],
+      queriesChecked: [],
+      resultCount: 0,
+      sourcesChecked: [],
+    },
+    notes: [],
+    organizations: [],
+  };
+}
 
 async function seedPolandJob() {
   await testEnv.DB.batch([

@@ -251,21 +251,21 @@ export async function readCountryDetail(
         .bind(userId, countryCode),
       db
         .prepare(
-          `SELECT id,status,requested_at,completed_at
+          `SELECT id,status,requested_scope_json,requested_at,completed_at
              FROM country_sweeps
-            WHERE country_code=?
+            WHERE country_code=? AND requested_by_user_id=?
             ORDER BY requested_at DESC`
         )
-        .bind(countryCode),
+        .bind(countryCode, userId),
       db
         .prepare(
           `SELECT t.sweep_id,t.status,COUNT(*) count
              FROM country_sweep_tasks t
              JOIN country_sweeps s ON s.id=t.sweep_id
-            WHERE s.country_code=?
+            WHERE s.country_code=? AND s.requested_by_user_id=?
             GROUP BY t.sweep_id,t.status`
         )
-        .bind(countryCode),
+        .bind(countryCode, userId),
     ]);
   if (!(opportunities && organizations && campaigns && sweeps && taskCounts)) {
     throw new Error("Country detail could not be loaded");
@@ -330,6 +330,7 @@ export async function readCountryDetail(
       const row = D1_ROW_SCHEMA.parse(rawRow);
       const id = String(row.id);
       return {
+        cities: requestedCities(row.requested_scope_json),
         completedAt: nullableString(row.completed_at),
         id,
         requestedAt: String(row.requested_at),
@@ -347,14 +348,17 @@ export async function createCountrySweep(
   request: CountrySweepRequest
 ) {
   const countryName = countryNameForCode(countryCode);
+  const normalizedRequest = normalizeSweepRequest(request);
+  const requestedScopeJson = JSON.stringify(normalizedRequest);
   const active = await db
     .prepare(
       `SELECT id,status,requested_at,completed_at
          FROM country_sweeps
-        WHERE country_code=? AND status IN ('queued','claimed','running')
+        WHERE country_code=? AND requested_by_user_id=? AND requested_scope_json=?
+          AND status IN ('queued','claimed','running')
         ORDER BY requested_at DESC LIMIT 1`
     )
-    .bind(countryCode)
+    .bind(countryCode, userId, requestedScopeJson)
     .first<SweepRow>();
   if (active) {
     return {
@@ -369,14 +373,19 @@ export async function createCountrySweep(
   const sweepId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
   const sources = [
-    ["directories", request.includeDirectories],
-    ["known_sources", request.includeKnownSources],
-    ["maps", request.includeMaps],
-    ["search", request.includeSearch],
+    ["directories", normalizedRequest.includeDirectories],
+    ["known_sources", normalizedRequest.includeKnownSources],
+    ["maps", normalizedRequest.includeMaps],
+    ["search", normalizedRequest.includeSearch],
   ] as const;
   const enabledSources = sources
     .filter(([, enabled]) => enabled)
     .map(([source]) => source);
+  const discoveryScopes = enabledSources.flatMap((source) =>
+    normalizedRequest.cities.length > 0
+      ? normalizedRequest.cities.map((city) => ({ city, source }))
+      : [{ city: "", source }]
+  );
   await db.batch([
     db
       .prepare(
@@ -390,11 +399,11 @@ export async function createCountrySweep(
         countryCode,
         countryName,
         userId,
-        JSON.stringify(request),
+        requestedScopeJson,
         timestamp,
         timestamp
       ),
-    ...enabledSources.map((source) =>
+    ...discoveryScopes.map(({ city, source }) =>
       db
         .prepare(
           `INSERT INTO country_sweep_tasks
@@ -404,8 +413,9 @@ export async function createCountrySweep(
         .bind(
           crypto.randomUUID(),
           sweepId,
-          source,
+          discoveryScopeKey(source, city),
           JSON.stringify({
+            city,
             countryCode,
             countryName,
             phase: "discovery",
@@ -423,4 +433,36 @@ export async function createCountrySweep(
     reused: false,
     status: "queued",
   };
+}
+
+function normalizeSweepRequest(request: CountrySweepRequest) {
+  return {
+    ...request,
+    cities: [...new Set(request.cities.map((city) => city.trim()))].sort(
+      (a, b) => a.localeCompare(b)
+    ),
+  };
+}
+
+function discoveryScopeKey(source: string, city: string) {
+  if (!city) {
+    return source;
+  }
+  const normalizedCity = city
+    .toLowerCase()
+    .normalize("NFKD")
+    .replaceAll(/[^\p{Letter}\p{Number}]+/gu, "-")
+    .replaceAll(/^-|-$/gu, "");
+  return `${source}:city:${normalizedCity}`;
+}
+
+function requestedCities(value: unknown) {
+  try {
+    const parsed = JSON.parse(String(value)) as { cities?: unknown };
+    return Array.isArray(parsed.cities)
+      ? parsed.cities.filter((city): city is string => typeof city === "string")
+      : [];
+  } catch {
+    return [];
+  }
 }

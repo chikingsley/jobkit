@@ -83,10 +83,54 @@ CREATE TABLE IF NOT EXISTS scan_items (
     PRIMARY KEY (run_id, board, job_id)
 );
 
+CREATE TABLE IF NOT EXISTS crawl_runs (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    scan_run_id         INTEGER NOT NULL REFERENCES scan_runs(id) ON DELETE CASCADE,
+    board               TEXT NOT NULL,
+    mode                TEXT NOT NULL CHECK(mode IN ('latest', 'full')),
+    status              TEXT NOT NULL
+                        CHECK(status IN (
+                            'discovering', 'hydrating', 'partial', 'completed', 'canceled'
+                        )),
+    discovery_complete  INTEGER NOT NULL DEFAULT 0,
+    source_complete     INTEGER NOT NULL DEFAULT 0,
+    discovery_evidence_json TEXT NOT NULL DEFAULT '{}',
+    discovered_count    INTEGER NOT NULL DEFAULT 0,
+    hydrated_count      INTEGER NOT NULL DEFAULT 0,
+    failed_count        INTEGER NOT NULL DEFAULT 0,
+    closed_count        INTEGER NOT NULL DEFAULT 0,
+    error_detail        TEXT NOT NULL DEFAULT '',
+    started_at          TEXT NOT NULL,
+    finished_at         TEXT NOT NULL DEFAULT '',
+    updated_at          TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS crawl_items (
+    run_id          INTEGER NOT NULL REFERENCES crawl_runs(id) ON DELETE CASCADE,
+    board           TEXT NOT NULL,
+    job_id          TEXT NOT NULL,
+    ordinal         INTEGER NOT NULL,
+    metadata_json   TEXT NOT NULL DEFAULT '{}',
+    status          TEXT NOT NULL DEFAULT 'discovered'
+                    CHECK(status IN ('discovered', 'hydrated', 'failed')),
+    attempts        INTEGER NOT NULL DEFAULT 0,
+    outcome         TEXT NOT NULL DEFAULT '',
+    error_detail    TEXT NOT NULL DEFAULT '',
+    discovered_at   TEXT NOT NULL,
+    last_attempt_at TEXT NOT NULL DEFAULT '',
+    hydrated_at     TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY (run_id, board, job_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
 CREATE INDEX IF NOT EXISTS idx_jobs_board_status ON jobs(board, status);
 CREATE INDEX IF NOT EXISTS idx_jobs_country ON jobs(country);
 CREATE INDEX IF NOT EXISTS idx_scan_items_board_job ON scan_items(board, job_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_crawl_runs_active
+    ON crawl_runs(board, mode)
+    WHERE status IN ('discovering', 'hydrating', 'partial');
+CREATE INDEX IF NOT EXISTS idx_crawl_items_pending
+    ON crawl_items(run_id, status, ordinal);
 """
 
 _UPSERT_SQL = """
@@ -230,6 +274,103 @@ def refresh_postings(  # noqa: PLR0913 - explicit DB refresh controls are cleare
     return result
 
 
+def start_scan(
+    conn: sqlite3.Connection,
+    *,
+    board: str,
+    mode: str,
+    close_missing: bool,
+    started_at: str,
+) -> int:
+    """Start the scan record owned by one resumable board crawl."""
+    return _start_scan(
+        conn,
+        boards=(board,),
+        mode=mode,
+        close_missing=close_missing,
+        source="resumable-crawl",
+        started_at=started_at,
+    )
+
+
+def upsert_posting(
+    conn: sqlite3.Connection,
+    posting: JobPosting,
+    *,
+    run_id: int,
+    seen_at: str,
+    extractor: Extractor = enrich.DEFAULT_EXTRACTOR,
+) -> str:
+    """Enrich and persist one hydrated posting inside an existing scan."""
+    row = enrich.enrich_all((posting,), extractor=extractor)[0]
+    return _upsert_row(
+        conn,
+        row=row,
+        raw_json=json.dumps(posting.as_dict(), ensure_ascii=False),
+        status="active",
+        run_id=run_id,
+        seen_at=seen_at,
+    )
+
+
+def reconcile_discovered_ids(
+    conn: sqlite3.Connection,
+    *,
+    crawl_run_id: int,
+    board: str,
+    checked_at: str,
+    close_missing: bool,
+) -> int:
+    """Mark discovered IDs present and close only IDs absent from a complete discovery."""
+    conn.execute(
+        """
+        UPDATE jobs
+        SET last_present_at = ?,
+            last_checked_at = ?
+        WHERE board = ?
+          AND EXISTS (
+              SELECT 1
+              FROM crawl_items
+              WHERE crawl_items.run_id = ?
+                AND crawl_items.board = jobs.board
+                AND crawl_items.job_id = jobs.job_id
+          )
+        """,
+        (checked_at, checked_at, board, crawl_run_id),
+    )
+    if not close_missing:
+        return 0
+    result = conn.execute(
+        """
+        UPDATE jobs
+        SET status = 'closed',
+            closed_at = ?,
+            last_checked_at = ?
+        WHERE board = ?
+          AND status NOT IN ('closed', 'applied', 'ignored')
+          AND NOT EXISTS (
+              SELECT 1
+              FROM crawl_items
+              WHERE crawl_items.run_id = ?
+                AND crawl_items.board = jobs.board
+                AND crawl_items.job_id = jobs.job_id
+          )
+        """,
+        (checked_at, checked_at, board, crawl_run_id),
+    )
+    return result.rowcount
+
+
+def finish_scan(conn: sqlite3.Connection, result: RefreshResult, *, finished_at: str) -> None:
+    """Finalize the shared scan summary after its resumable crawl completes."""
+    _finish_scan(conn, result, finished_at=finished_at)
+
+
+def database_path(conn: sqlite3.Connection) -> Path:
+    """Return the path backing an inventory connection."""
+    return _database_path(conn)
+
+
 def stats_by_board(conn: sqlite3.Connection) -> list[sqlite3.Row]:
     """Return inventory counts by board and status."""
     return conn.execute(
@@ -253,6 +394,35 @@ def stats_by_country(conn: sqlite3.Connection, *, status: str = "active") -> lis
         ORDER BY count DESC, country
         """,
         (status,),
+    ).fetchall()
+
+
+def crawl_run_history(conn: sqlite3.Connection, *, board: str = "") -> list[sqlite3.Row]:
+    """Return every durable crawl run with live item progress, newest first."""
+    return conn.execute(
+        """
+        SELECT crawl_runs.id,
+               crawl_runs.board,
+               crawl_runs.mode,
+               crawl_runs.status,
+               crawl_runs.source_complete,
+               crawl_runs.discovery_evidence_json,
+               COUNT(crawl_items.job_id) AS discovered,
+               COALESCE(SUM(crawl_items.status = 'hydrated'), 0) AS hydrated,
+               COALESCE(SUM(crawl_items.status = 'failed'), 0) AS failed,
+               COALESCE(SUM(crawl_items.attempts), 0) AS attempts,
+               crawl_runs.closed_count AS closed,
+               crawl_runs.started_at,
+               crawl_runs.updated_at,
+               crawl_runs.finished_at,
+               crawl_runs.error_detail
+        FROM crawl_runs
+        LEFT JOIN crawl_items ON crawl_items.run_id = crawl_runs.id
+        WHERE (? = '' OR crawl_runs.board = ?)
+        GROUP BY crawl_runs.id
+        ORDER BY crawl_runs.id DESC
+        """,
+        (board, board),
     ).fetchall()
 
 

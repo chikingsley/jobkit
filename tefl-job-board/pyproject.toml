@@ -56,3 +56,4 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "src/jobkit/jobs/db_cli.py" = ["T201"]
+"tests/**/*.py" = ["PLR2004", "S101"]

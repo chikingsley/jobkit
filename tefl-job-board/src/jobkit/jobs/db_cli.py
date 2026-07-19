@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from typing import TYPE_CHECKING
 
-from jobkit.jobs import db, enrich
+from jobkit.jobs import db, refresh
 from jobkit.jobs.registry import BOARD_NAMES, BOARD_POLICIES
 
 if TYPE_CHECKING:
@@ -20,12 +20,15 @@ def main() -> None:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     _add_refresh_parser(subparsers)
+    _add_runs_parser(subparsers)
     _add_stats_parser(subparsers)
     _add_countries_parser(subparsers)
     args = parser.parse_args()
 
     if args.command == "refresh":
         _run_refresh(args)
+    elif args.command == "runs":
+        _run_runs(args)
     elif args.command == "stats":
         _run_stats()
     else:
@@ -40,12 +43,22 @@ def _add_refresh_parser(subparsers: argparse._SubParsersAction[argparse.Argument
         help="fetch each board's newest listings without closing unseen inventory",
     )
     parser.add_argument(
+        "--restart",
+        action="store_true",
+        help="cancel an unfinished crawl and run discovery again instead of resuming it",
+    )
+    parser.add_argument(
         "boards", nargs="*", help=f"board names (default: all of {', '.join(BOARD_NAMES)})"
     )
 
 
 def _add_stats_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     subparsers.add_parser("stats", help="show inventory counts")
+
+
+def _add_runs_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    parser = subparsers.add_parser("runs", help="show durable crawl run state")
+    parser.add_argument("--board", choices=BOARD_NAMES, default="", help="filter by board")
 
 
 def _add_countries_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -55,22 +68,27 @@ def _add_countries_parser(subparsers: argparse._SubParsersAction[argparse.Argume
 def _run_refresh(args: argparse.Namespace) -> None:
     names = _board_names(args.boards)
     conn = db.connect()
+    partial: list[str] = []
     try:
         for name in names:
             policy = BOARD_POLICIES[name]
             print(f"refreshing {name}...", flush=True)
-            postings = policy.fetch_latest() if args.latest else policy.fetch_full()
-            result = db.refresh_postings(
+            result = refresh.refresh_board(
                 conn,
-                postings,
-                boards=(name,),
                 mode="latest" if args.latest else "full",
-                close_missing=not args.latest,
-                extractor=enrich.DEFAULT_EXTRACTOR,
+                policy=policy,
+                report=lambda message, board=name: print(f"{board}: {message}", flush=True),
+                restart=args.restart,
             )
-            _print_result("refresh", result)
+            _print_result(result)
+            if result.status == "partial":
+                partial.append(name)
     finally:
         conn.close()
+    if partial:
+        names = ", ".join(partial)
+        msg = f"unfinished detail pages remain for: {names}; rerun to resume"
+        raise SystemExit(msg)
 
 
 def _run_stats() -> None:
@@ -82,6 +100,32 @@ def _run_stats() -> None:
     print("by board/status")
     for row in rows:
         print(f"  {row['board']}\t{row['status']}\t{row['count']}")
+
+
+def _run_runs(args: argparse.Namespace) -> None:
+    conn = db.connect()
+    try:
+        rows = db.crawl_run_history(conn, board=args.board)
+    finally:
+        conn.close()
+    if not rows:
+        print("no crawl runs")
+        return
+    for row in rows:
+        print(
+            f"{row['id']}\t{row['board']}\t{row['mode']}\t{row['status']}\t"
+            f"source_complete={'yes' if row['source_complete'] else 'no'}\t"
+            f"discovered={row['discovered']}\thydrated={row['hydrated']}\t"
+            f"failed={row['failed']}\tattempts={row['attempts']}\tclosed={row['closed']}"
+        )
+        print(
+            f"  started={row['started_at']} updated={row['updated_at']} "
+            f"finished={row['finished_at'] or '-'}"
+        )
+        if row["error_detail"]:
+            print(f"  error={row['error_detail']}")
+        if row["discovery_evidence_json"] != "{}":
+            print(f"  evidence={row['discovery_evidence_json']}")
 
 
 def _run_countries() -> None:
@@ -104,14 +148,15 @@ def _board_names(requested: Sequence[str]) -> list[str]:
     return names
 
 
-def _print_result(label: str, result: db.RefreshResult) -> None:
+def _print_result(result: refresh.ResumableRefreshResult) -> None:
     print(
-        f"{label} run {result.run_id}: seen={result.seen}, "
+        f"crawl {result.run_id} ({result.status}): discovered={result.discovered}, "
+        f"hydrated={result.hydrated}, failed={result.failed}, "
         f"new={result.inserted}, updated={result.updated}, reopened={result.reopened}, "
         f"closed={result.closed}, skipped={result.skipped}",
         flush=True,
     )
-    print(f"DB: {result.db_path}", flush=True)
+    print(f"DB: {db.DB_PATH}", flush=True)
 
 
 if __name__ == "__main__":

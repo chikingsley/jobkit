@@ -33,7 +33,7 @@ import time
 from bs4 import BeautifulSoup, Tag
 
 from jobkit.jobs.http import fetch
-from jobkit.jobs.models import JobPosting
+from jobkit.jobs.models import DiscoveredJob, DiscoveryResult, JobPosting
 
 BOARD = "ajarn"
 BASE = "https://www.ajarn.com"
@@ -43,7 +43,6 @@ JOB_RE = re.compile(r"/recruitment/jobs/(\d+)/")
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 
 DEFAULT_LIMIT = 15
-DEFAULT_MAX_PAGES = 5
 DESCRIPTION_MAX = 1500
 SLEEP_SECONDS = 1.0
 
@@ -206,6 +205,58 @@ def _collect(jobs: list[tuple[str, str]], limit: int | None) -> list[JobPosting]
     return out
 
 
+def discover_latest(limit: int = DEFAULT_LIMIT) -> DiscoveryResult:
+    """Discover newest Ajarn IDs and their cosmetic slugs."""
+    jobs = _list_jobs(fetch(_list_url()))
+    if not jobs:
+        msg = "Ajarn first listing page exposed no stable job IDs"
+        raise RuntimeError(msg)
+    items = tuple(
+        DiscoveredJob(job_id=job_id, metadata={"slug": slug}) for job_id, slug in jobs[:limit]
+    )
+    return DiscoveryResult(
+        items=items,
+        complete=False,
+        evidence={"sample": str(len(items))},
+    )
+
+
+def discover_full() -> DiscoveryResult:
+    """Discover until the source returns no new IDs; Ajarn currently exhausts on page two."""
+    jobs: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    page = 1
+    while True:
+        if page > 1:
+            time.sleep(SLEEP_SECONDS)
+        page_jobs = _list_jobs(fetch(_list_url(page)))
+        if page == 1 and not page_jobs:
+            msg = "Ajarn first listing page exposed no stable job IDs"
+            raise RuntimeError(msg)
+        fresh = [(job_id, slug) for job_id, slug in page_jobs if job_id not in seen]
+        if not fresh:
+            break
+        for job_id, slug in fresh:
+            seen.add(job_id)
+            jobs.append((job_id, slug))
+        page += 1
+    return DiscoveryResult(
+        items=tuple(DiscoveredJob(job_id=job_id, metadata={"slug": slug}) for job_id, slug in jobs),
+        complete=True,
+        evidence={"pages_checked": str(page), "source_exhausted": "true"},
+    )
+
+
+def hydrate(discovered: DiscoveredJob) -> JobPosting:
+    """Hydrate one Ajarn detail page."""
+    slug = discovered.metadata.get("slug", "")
+    return _parse_detail(
+        discovered.job_id,
+        slug,
+        fetch(_detail_url(discovered.job_id, slug)),
+    )
+
+
 def fetch_listings(limit: int = DEFAULT_LIMIT) -> list[JobPosting]:
     """Fetch up to ``limit`` of the newest Ajarn postings (one detail fetch per job).
 
@@ -216,7 +267,7 @@ def fetch_listings(limit: int = DEFAULT_LIMIT) -> list[JobPosting]:
     return _collect(jobs, limit)
 
 
-def fetch_all(*, max_pages: int = DEFAULT_MAX_PAGES, limit: int | None = None) -> list[JobPosting]:
+def fetch_all(*, max_pages: int | None = None, limit: int | None = None) -> list[JobPosting]:
     """Walk ``?page=N`` up to ``max_pages``, fetching every detail page (polite sleeps).
 
     Stops early when a page yields no new job ids. Ajarn serves the full live board on every page
@@ -225,7 +276,8 @@ def fetch_all(*, max_pages: int = DEFAULT_MAX_PAGES, limit: int | None = None) -
     """
     jobs: list[tuple[str, str]] = []
     seen: set[str] = set()
-    for page in range(1, max_pages + 1):
+    page = 1
+    while max_pages is None or page <= max_pages:
         if page > 1:
             time.sleep(SLEEP_SECONDS)
         page_jobs = _list_jobs(fetch(_list_url(page)))
@@ -237,6 +289,7 @@ def fetch_all(*, max_pages: int = DEFAULT_MAX_PAGES, limit: int | None = None) -
             jobs.append((jid, slug))
         if limit is not None and len(jobs) >= limit:
             break
+        page += 1
     return _collect(jobs, limit)
 
 

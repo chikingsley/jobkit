@@ -46,7 +46,7 @@ from urllib.parse import quote, urlencode
 from bs4 import BeautifulSoup, NavigableString, Tag
 
 from jobkit.jobs.http import fetch
-from jobkit.jobs.models import JobPosting
+from jobkit.jobs.models import DiscoveredJob, DiscoveryResult, JobPosting
 
 BOARD = "eslcafe-modern"
 BASE = "https://www.eslcafe.com"
@@ -62,7 +62,6 @@ BOARD_SLUGS: dict[str, str] = {
 DEFAULT_BOARD = "international"
 
 PAGE_SIZE = 60  # what the site itself requests
-DEFAULT_MAX_PAGES = 5  # bounded crawl default; raise deliberately for a bigger pull.
 JOB_TYPE_REGULAR = 1  # 1 = regular listings; 2 = paid/premium ads.
 
 CRAWL_SLEEP_SECONDS = 1.0  # be polite between every request
@@ -97,6 +96,37 @@ def _list_page(board_slug: str, page: int, size: int) -> dict[str, Any]:
     )
     payload: dict[str, Any] = json.loads(fetch(f"{LIST_API}?{query}"))
     return payload
+
+
+def _page_inventory(
+    payload: dict[str, Any], *, expected_page: int
+) -> tuple[list[dict[str, Any]], int, int]:
+    """Validate API pagination and return typed items, last page, and total."""
+    raw_items = payload.get("data")
+    paging = payload.get("paging")
+    if raw_items is None or paging is None:
+        msg = "ESL Cafe listing API omitted data or paging"
+        raise RuntimeError(msg)
+    if not isinstance(raw_items, list) or not isinstance(paging, dict):
+        msg = "ESL Cafe listing API returned invalid data or paging types"
+        raise TypeError(msg)
+    if any(not isinstance(item, dict) for item in raw_items):
+        msg = "ESL Cafe listing API returned a non-object item"
+        raise RuntimeError(msg)
+    try:
+        current_page = int(paging["page"])
+        last_page = int(paging["lastPage"])
+        total = int(paging["total"])
+    except (KeyError, TypeError, ValueError) as exc:
+        msg = "ESL Cafe listing API returned invalid pagination metadata"
+        raise RuntimeError(msg) from exc
+    if current_page != expected_page or last_page < current_page or total < 0:
+        msg = (
+            "ESL Cafe listing API returned inconsistent pagination "
+            f"(page={current_page}, last={last_page}, total={total})"
+        )
+        raise RuntimeError(msg)
+    return raw_items, last_page, total
 
 
 def _format_posted(raw: str) -> str:
@@ -243,6 +273,101 @@ def _resolve_board(board: str) -> str:
     return slug
 
 
+def _discovered(board_slug: str, item: dict[str, Any]) -> DiscoveredJob | None:
+    slug = str(item.get("slug", "")).strip()
+    if not slug:
+        return None
+    return DiscoveredJob(
+        job_id=slug,
+        metadata={
+            "board_slug": board_slug,
+            "item_json": json.dumps(item, ensure_ascii=False),
+        },
+    )
+
+
+def discover_latest(limit: int = 15) -> DiscoveryResult:
+    """Discover the newest international-board listing metadata."""
+    payload = _list_page(_resolve_board(DEFAULT_BOARD), page=1, size=PAGE_SIZE)
+    items, _, total = _page_inventory(payload, expected_page=1)
+    discovered = [
+        candidate for item in items if (candidate := _discovered(DEFAULT_BOARD, item)) is not None
+    ]
+    if len(discovered) != len(items):
+        msg = "ESL Cafe latest page contained a listing without a stable slug"
+        raise RuntimeError(msg)
+    return DiscoveryResult(
+        items=tuple(discovered[:limit]),
+        complete=False,
+        evidence={"sample": str(len(discovered[:limit])), "source_total": str(total)},
+    )
+
+
+def discover_full() -> DiscoveryResult:
+    """Discover every source-reported page across all three ESL Cafe boards."""
+    discovered: dict[str, DiscoveredJob] = {}
+    pages_checked = 0
+    source_total = 0
+    for name in BOARD_SLUGS:
+        board_slug = _resolve_board(name)
+        page = 1
+        board_ids: set[str] = set()
+        reported_total: int | None = None
+        while True:
+            time.sleep(CRAWL_SLEEP_SECONDS)
+            payload = _list_page(board_slug, page=page, size=PAGE_SIZE)
+            items, last_page, total = _page_inventory(payload, expected_page=page)
+            pages_checked += 1
+            if reported_total is None:
+                reported_total = total
+            elif reported_total != total:
+                msg = f"ESL Cafe {name} total changed during discovery"
+                raise RuntimeError(msg)
+            for item in items:
+                candidate = _discovered(board_slug, item)
+                if candidate is None:
+                    msg = f"ESL Cafe {name} returned a listing without a stable slug"
+                    raise RuntimeError(msg)
+                board_ids.add(candidate.job_id)
+                discovered.setdefault(candidate.job_id, candidate)
+            if page >= last_page:
+                break
+            page += 1
+        if reported_total is None:
+            msg = f"ESL Cafe {name} discovery returned no pagination result"
+            raise RuntimeError(msg)
+        if len(board_ids) != reported_total:
+            msg = (
+                f"ESL Cafe {name} reported {reported_total} records "
+                f"but discovery found {len(board_ids)} IDs"
+            )
+            raise RuntimeError(msg)
+        source_total += reported_total
+    return DiscoveryResult(
+        items=tuple(discovered.values()),
+        complete=True,
+        evidence={
+            "boards_checked": str(len(BOARD_SLUGS)),
+            "pages_checked": str(pages_checked),
+            "source_total": str(source_total),
+        },
+    )
+
+
+def hydrate(discovered: DiscoveredJob) -> JobPosting:
+    """Hydrate one ESL Cafe detail page using its recorded listing metadata."""
+    item = json.loads(discovered.metadata.get("item_json", "{}"))
+    if not isinstance(item, dict):
+        msg = f"invalid listing metadata for {discovered.job_id}"
+        raise TypeError(msg)
+    board_slug = discovered.metadata.get("board_slug", DEFAULT_BOARD)
+    return _parse_detail(
+        board_slug,
+        item,
+        fetch(f"{DETAIL_BASE}/{quote(discovered.job_id)}"),
+    )
+
+
 def fetch_listings(limit: int = 15, board: str = DEFAULT_BOARD) -> list[JobPosting]:
     """Newest postings from one board (default international), with detail pages.
 
@@ -266,7 +391,7 @@ def fetch_listings(limit: int = 15, board: str = DEFAULT_BOARD) -> list[JobPosti
 def fetch_all(
     *,
     boards: list[str] | None = None,
-    max_pages: int = DEFAULT_MAX_PAGES,
+    max_pages: int | None = None,
     limit: int | None = None,
 ) -> list[JobPosting]:
     """Crawl all three boards (or a subset), bounded, fetching every detail page.
@@ -280,7 +405,7 @@ def fetch_all(
     for name in names:
         board_slug = _resolve_board(name)
         page = 1
-        while page <= max_pages:
+        while max_pages is None or page <= max_pages:
             time.sleep(CRAWL_SLEEP_SECONDS)
             payload = _list_page(board_slug, page=page, size=PAGE_SIZE)
             items = payload.get("data", [])

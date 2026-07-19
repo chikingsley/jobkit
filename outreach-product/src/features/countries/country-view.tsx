@@ -1,4 +1,5 @@
 import { ArrowLeft, ChevronRight, ExternalLink, RefreshCw } from "lucide-react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import useSWR from "swr";
@@ -12,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
   CountryCampaignReference,
@@ -25,6 +27,7 @@ import type { ApiRequest } from "@/lib/api";
 export function CountryView({ request }: { request: ApiRequest }) {
   const { countryCode = "" } = useParams();
   const navigate = useNavigate();
+  const [cityInput, setCityInput] = useState("");
   const { data, isLoading, mutate } = useSWR(
     countryCode ? `/api/countries/${countryCode}` : null,
     async (path) =>
@@ -33,9 +36,18 @@ export function CountryView({ request }: { request: ApiRequest }) {
   );
 
   async function refresh() {
+    const cities = [
+      ...new Set(
+        cityInput
+          .split(",")
+          .map((city) => city.trim())
+          .filter(Boolean)
+      ),
+    ];
     try {
       const response = await request(`/api/countries/${countryCode}/sweeps`, {
         body: JSON.stringify({
+          cities,
           includeDirectories: true,
           includeKnownSources: true,
           includeMaps: true,
@@ -79,8 +91,16 @@ export function CountryView({ request }: { request: ApiRequest }) {
           <ArrowLeft /> Countries
         </Button>
         <div className="flex gap-2">
+          <Input
+            aria-label="Optional city focus"
+            className="w-64"
+            onChange={(event) => setCityInput(event.target.value)}
+            placeholder="City focus (optional)"
+            value={cityInput}
+          />
           <Button onClick={() => void refresh()} variant="outline">
-            <RefreshCw /> Refresh country
+            <RefreshCw />
+            {cityInput.trim() ? "Refresh city" : "Refresh country"}
           </Button>
           <Button
             onClick={() =>
@@ -304,6 +324,9 @@ function ActivitySection({
                   <Badge variant="outline">{sweep.status}</Badge>
                 </div>
                 <div className="mt-1 text-muted-foreground text-sm">
+                  {sweep.cities.length > 0
+                    ? `City focus: ${sweep.cities.join(", ")} · `
+                    : "Country-wide · "}
                   {Object.entries(sweep.taskCounts)
                     .map(([status, count]) => `${count} ${status}`)
                     .join(" · ") || "Preparing tasks"}

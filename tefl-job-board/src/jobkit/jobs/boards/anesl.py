@@ -16,7 +16,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from bs4 import BeautifulSoup
 
 from jobkit.jobs.http import USER_AGENT, fetch
-from jobkit.jobs.models import JobPosting
+from jobkit.jobs.models import DiscoveredJob, DiscoveryResult, JobPosting
 
 BASE = "https://cafe.anesl.com"
 LIST_URL = f"{BASE}/joblist.aspx"
@@ -40,7 +40,6 @@ PAGESIZE_FIELD = "ctl00$ContentPlaceHolder1$dppagesize"
 PAGE_SIZE = 100  # largest page size the dppagesize dropdown offers (fewer requests)
 CRAWL_SLEEP_SECONDS = 1.0  # be polite between postbacks
 POST_TIMEOUT_SECONDS = 60  # postbacks carry a large __VIEWSTATE and can be slow to render
-DEFAULT_MAX_PAGES = 50  # safety cap; 4005 records / 100 ≈ 41 pages covers the whole DB
 DETAIL_WORKERS = 4
 PROGRESS_EVERY = 50
 
@@ -110,12 +109,13 @@ def _post_list(fields: dict[str, str]) -> str:
         return response.read().decode("utf-8", "replace")
 
 
-def list_page_ids(*, max_pages: int = DEFAULT_MAX_PAGES) -> list[str]:
+def _discover_page_ids(*, max_pages: int | None = None) -> tuple[list[str], int, int, int]:
     """Walk the joblist.aspx pager and return every distinct job id (newest set first).
 
     Emulates the `__doPostBack` pagination: fetch page 1, bump the page size to 100, then
     POST the carried-forward hidden fields for each subsequent page until the pager reports
-    the last page or `max_pages` is reached. Stops early if a page yields no ids.
+    the last page. ``max_pages`` is an explicit diagnostic override; a production full
+    discovery leaves it unset and follows the board-reported last page.
     """
     html = fetch(LIST_URL)
     fields = _hidden_fields(html)
@@ -127,16 +127,35 @@ def list_page_ids(*, max_pages: int = DEFAULT_MAX_PAGES) -> list[str]:
 
     ids: list[str] = []
     seen: set[str] = set()
-    for page in range(1, max_pages + 1):
+    page = 1
+    total_records = 0
+    total_pages = 0
+    while True:
+        match = TOTAL_RE.search(html)
+        if match is None:
+            msg = f"ANESL page {page} did not expose its record/page totals"
+            raise RuntimeError(msg)
+        page_total_records = int(match.group(1))
+        page_total_pages = int(match.group(2))
+        current_page = int(match.group(3))
+        if current_page != page:
+            msg = f"ANESL pager returned page {current_page} while page {page} was requested"
+            raise RuntimeError(msg)
+        if page == 1:
+            total_records = page_total_records
+            total_pages = page_total_pages
+        elif (page_total_records, page_total_pages) != (total_records, total_pages):
+            msg = "ANESL pager totals changed during discovery"
+            raise RuntimeError(msg)
+
         page_ids = [i for i in dict.fromkeys(ID_RE.findall(html)) if i not in seen]
-        if not page_ids:
-            break
+        if not page_ids and total_records > 0:
+            msg = f"ANESL page {page} exposed no listing IDs"
+            raise RuntimeError(msg)
         ids.extend(page_ids)
         seen.update(page_ids)
 
-        match = TOTAL_RE.search(html)
-        total_pages = int(match.group(2)) if match else page
-        if page >= total_pages or page >= max_pages:
+        if page >= total_pages or (max_pages is not None and page >= max_pages):
             break
 
         fields = _hidden_fields(html)
@@ -145,15 +164,59 @@ def list_page_ids(*, max_pages: int = DEFAULT_MAX_PAGES) -> list[str]:
         fields["__EVENTARGUMENT"] = str(page + 1)
         time.sleep(CRAWL_SLEEP_SECONDS)
         html = _post_list(fields)
+        page += 1
+    return ids, total_records, total_pages, page
+
+
+def list_page_ids(*, max_pages: int | None = None) -> list[str]:
+    """Compatibility helper returning IDs from the validated WebForms traversal."""
+    ids, _, _, _ = _discover_page_ids(max_pages=max_pages)
     return ids
 
 
-def fetch_all(*, max_pages: int = DEFAULT_MAX_PAGES, limit: int | None = None) -> list[JobPosting]:
-    """Crawl the full joblist.aspx pager and return parsed postings (bounded by `max_pages`).
+def discover_latest(limit: int = 15) -> DiscoveryResult:
+    """Discover stable IDs from the newest ANESL listing page without hydrating details."""
+    html = fetch(LIST_URL)
+    ids = list(dict.fromkeys(ID_RE.findall(html)))
+    match = TOTAL_RE.search(html)
+    if match is None or (int(match.group(1)) > 0 and not ids):
+        msg = "ANESL latest page did not expose a valid listing inventory"
+        raise RuntimeError(msg)
+    return DiscoveryResult(
+        items=tuple(DiscoveredJob(job_id=job_id) for job_id in ids[:limit]),
+        complete=False,
+        evidence={"sample": str(len(ids[:limit])), "source_total": match.group(1)},
+    )
+
+
+def discover_full() -> DiscoveryResult:
+    """Discover every ID reported by the complete WebForms pager."""
+    ids, total_records, total_pages, pages_checked = _discover_page_ids()
+    if len(ids) != total_records:
+        msg = f"ANESL reported {total_records} records but discovery found {len(ids)} IDs"
+        raise RuntimeError(msg)
+    return DiscoveryResult(
+        items=tuple(DiscoveredJob(job_id=job_id) for job_id in ids),
+        complete=True,
+        evidence={
+            "pages_checked": str(pages_checked),
+            "source_pages": str(total_pages),
+            "source_total": str(total_records),
+        },
+    )
+
+
+def hydrate(discovered: DiscoveredJob) -> JobPosting:
+    """Hydrate one discovered ANESL ID."""
+    return _fetch_detail(discovered.job_id)
+
+
+def fetch_all(*, max_pages: int | None = None, limit: int | None = None) -> list[JobPosting]:
+    """Crawl the full joblist.aspx pager and return parsed postings.
 
     Set `limit` to cap how many detail pages are fetched (useful for probing); leave it None
-    to fetch every job found across the crawled pages. With the default settings this covers
-    the entire ANESL job database (~4000 listings across ~41 pages of 100).
+    to fetch every job found across the crawled pages. ``max_pages`` is only an explicit probe
+    override; the default follows the source-reported last page.
     """
     ids = list_page_ids(max_pages=max_pages)
     if limit is not None:

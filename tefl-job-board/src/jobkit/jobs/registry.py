@@ -9,8 +9,12 @@ from jobkit.jobs.boards import ajarn, anesl, eslcafe_modern, seriousteachers, te
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from contextlib import AbstractContextManager
 
-    from jobkit.jobs.models import JobPosting
+    from jobkit.jobs.models import DiscoveredJob, DiscoveryResult, JobPosting
+
+    Hydrator = Callable[[DiscoveredJob], JobPosting]
+    HydrationSession = Callable[[], AbstractContextManager[Hydrator]]
 
 
 @dataclass(frozen=True)
@@ -18,41 +22,48 @@ class BoardPolicy:
     """How a board should be refreshed for the durable inventory."""
 
     name: str
-    fetch_full: Callable[[], list[JobPosting]]
-    fetch_latest: Callable[[], list[JobPosting]]
-
-
-def _fetch_anesl() -> list[JobPosting]:
-    return anesl.fetch_all()
-
-
-def _fetch_ajarn() -> list[JobPosting]:
-    return ajarn.fetch_all()
-
-
-def _fetch_eslcafe_modern() -> list[JobPosting]:
-    return eslcafe_modern.fetch_all(max_pages=10)
-
-
-def _fetch_tefl() -> list[JobPosting]:
-    return tefl.fetch_all(max_pages=30)
-
-
-def _fetch_seriousteachers() -> list[JobPosting]:
-    # Full coverage is the country x subject crawl: ~500 list pages plus detail pages.
-    return seriousteachers.fetch_all(max_pages=520)
+    discover_full: Callable[[], DiscoveryResult]
+    discover_latest: Callable[[], DiscoveryResult]
+    hydrate: Hydrator
+    hydrate_delay_seconds: float = 1.0
+    hydrate_workers: int = 1
+    hydration_session: HydrationSession | None = None
 
 
 BOARD_POLICIES: dict[str, BoardPolicy] = {
-    "anesl": BoardPolicy("anesl", _fetch_anesl, anesl.fetch_listings),
+    "anesl": BoardPolicy(
+        "anesl",
+        anesl.discover_full,
+        anesl.discover_latest,
+        anesl.hydrate,
+        hydrate_delay_seconds=0,
+        hydrate_workers=anesl.DETAIL_WORKERS,
+    ),
     "seriousteachers": BoardPolicy(
-        "seriousteachers", _fetch_seriousteachers, seriousteachers.fetch_listings
+        "seriousteachers",
+        seriousteachers.discover_full,
+        seriousteachers.discover_latest,
+        seriousteachers.hydrate,
+        hydration_session=seriousteachers.hydration_session,
     ),
     "eslcafe-modern": BoardPolicy(
-        "eslcafe-modern", _fetch_eslcafe_modern, eslcafe_modern.fetch_listings
+        "eslcafe-modern",
+        eslcafe_modern.discover_full,
+        eslcafe_modern.discover_latest,
+        eslcafe_modern.hydrate,
     ),
-    "ajarn": BoardPolicy("ajarn", _fetch_ajarn, ajarn.fetch_listings),
-    "tefl": BoardPolicy("tefl", _fetch_tefl, tefl.fetch_listings),
+    "ajarn": BoardPolicy(
+        "ajarn",
+        ajarn.discover_full,
+        ajarn.discover_latest,
+        ajarn.hydrate,
+    ),
+    "tefl": BoardPolicy(
+        "tefl",
+        tefl.discover_full,
+        tefl.discover_latest,
+        tefl.hydrate,
+    ),
 }
 
 BOARD_NAMES: tuple[str, ...] = tuple(BOARD_POLICIES)

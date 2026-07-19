@@ -15,7 +15,7 @@ Browse structure (all GET, jQuery only, no SPA):
 There is no pagination ("Next"/"Previous" are carousel controls), so every list page is capped
 at ~10 postings. The ONLY way to enumerate the complete live set is the country x subject cross
 (36 x 14 = 504 list requests) plus one detail fetch per unique job. ``fetch_listings`` therefore
-returns the newest/featured subset cheaply; ``fetch_all`` does the bounded full crawl.
+returns the newest/featured subset cheaply; durable discovery exhausts the finite source matrix.
 
 Applications are gated behind a login form (``/te2/login/<jobId>/<employerId>``); employer emails
 are Cloudflare-obfuscated and not exposed, so ``apply_email`` is left blank and the apply URL is
@@ -35,8 +35,10 @@ import re
 import sys
 import time
 import urllib.error
+from contextlib import contextmanager
 from http import HTTPStatus
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import urljoin
 
 import httpx
@@ -44,7 +46,10 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 from jobkit.jobs.http import USER_AGENT, fetch
-from jobkit.jobs.models import JobPosting
+from jobkit.jobs.models import DiscoveredJob, DiscoveryResult, JobPosting
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator
 
 BOARD = "seriousteachers"
 BASE = "https://www.seriousteachers.com"
@@ -56,7 +61,6 @@ APPLY_RE = re.compile(r"/te2/login/(\d+)/(\d+)", re.IGNORECASE)
 SUBJECT_IDS = tuple(range(1, 15))
 
 DEFAULT_LIMIT = 15
-DEFAULT_MAX_PAGES = 50
 DESCRIPTION_MAX = 1200
 MAX_FIELD_LABEL_LEN = 40
 SLEEP_SECONDS = 1.0
@@ -147,14 +151,12 @@ def _warn(message: str) -> None:
 
 
 def _fetch_page(url: str) -> str:
-    """``fetch`` that tolerates dead pages during crawls: warn and return "" instead of raising.
-
-    Some country x subject list pages and stale detail pages 404; a single dead page
-    must not abort a ~500-request crawl.
-    """
+    """Fetch a page, treating only explicit not-found responses as an empty source page."""
     try:
         return fetch(url)
-    except urllib.error.URLError as exc:
+    except urllib.error.HTTPError as exc:
+        if exc.code not in (HTTPStatus.NOT_FOUND, HTTPStatus.GONE):
+            raise
         _warn(f"skipping {url} ({exc})")
         return ""
 
@@ -305,6 +307,99 @@ def _collect(job_ids: list[str], limit: int) -> list[JobPosting]:
     return postings
 
 
+def discover_latest(limit: int = DEFAULT_LIMIT) -> DiscoveryResult:
+    """Discover the newest/featured IDs without fetching their detail pages."""
+    home = fetch(BASE)
+    ids = _job_ids(home)
+    countries = _country_ids(home)
+    if not countries:
+        msg = "SeriousTeachers homepage did not expose its Jobs by Country inventory"
+        raise RuntimeError(msg)
+    subject_id = 0
+    while len(ids) < limit and subject_id < len(SUBJECT_IDS):
+        more = _job_ids(fetch(_list_url(subject_id=SUBJECT_IDS[subject_id])))
+        ids.extend(job_id for job_id in more if job_id not in ids)
+        subject_id += 1
+    if not ids:
+        msg = "SeriousTeachers latest discovery found no listing IDs"
+        raise RuntimeError(msg)
+    return DiscoveryResult(
+        items=tuple(DiscoveredJob(job_id=job_id) for job_id in ids[:limit]),
+        complete=False,
+        evidence={"countries_exposed": str(len(countries)), "sample": str(len(ids[:limit]))},
+    )
+
+
+def discover_full() -> DiscoveryResult:
+    """Discover the complete country-by-subject live set exposed by the board."""
+    home = fetch(BASE)
+    ids: list[str] = _job_ids(home)
+    country_ids = _country_ids(home)
+    if not country_ids:
+        msg = "SeriousTeachers homepage did not expose its Jobs by Country inventory"
+        raise RuntimeError(msg)
+    pages_checked = 1
+    for country_id in country_ids:
+        time.sleep(SLEEP_SECONDS)
+        ids.extend(
+            job_id for job_id in _job_ids(_fetch_page(_list_url(country_id))) if job_id not in ids
+        )
+        pages_checked += 1
+        for subject_id in SUBJECT_IDS:
+            time.sleep(SLEEP_SECONDS)
+            more = _job_ids(_fetch_page(_list_url(country_id, subject_id)))
+            ids.extend(job_id for job_id in more if job_id not in ids)
+            pages_checked += 1
+    if not ids:
+        msg = "SeriousTeachers full discovery found no listing IDs"
+        raise RuntimeError(msg)
+    return DiscoveryResult(
+        items=tuple(DiscoveredJob(job_id=job_id) for job_id in ids),
+        complete=True,
+        evidence={
+            "countries_checked": str(len(country_ids)),
+            "pages_checked": str(pages_checked),
+        },
+    )
+
+
+def hydrate(discovered: DiscoveredJob) -> JobPosting:
+    """Hydrate one public SeriousTeachers detail page."""
+    html = _fetch_page(f"{BASE}/job_details/{discovered.job_id}/0/")
+    if not html:
+        msg = f"detail page unavailable for {discovered.job_id}"
+        raise RuntimeError(msg)
+    return _parse_detail(discovered.job_id, html)
+
+
+@contextmanager
+def hydration_session() -> Iterator[Callable[[DiscoveredJob], JobPosting]]:
+    """Reuse one optional login while hydrating and resolving gated apply routes."""
+    try:
+        client = login()
+    except (RuntimeError, httpx.HTTPError) as exc:
+        _warn(f"skipping apply-link resolution ({exc})")
+        client = None
+
+    def hydrate_with_session(discovered: DiscoveredJob) -> JobPosting:
+        posting = hydrate(discovered)
+        gated = posting.fields.get("apply_url", "")
+        if client is None or not APPLY_RE.search(gated):
+            return posting
+        time.sleep(SLEEP_SECONDS)
+        try:
+            posting.fields["apply_url"] = resolve_apply(client, gated)
+        except (RuntimeError, httpx.HTTPError) as exc:
+            _warn(f"could not resolve {gated} ({exc})")
+        return posting
+
+    try:
+        yield hydrate_with_session
+    finally:
+        if client is not None:
+            client.close()
+
+
 def fetch_listings(limit: int = DEFAULT_LIMIT) -> list[JobPosting]:
     """Fetch up to ``limit`` of the newest/featured SeriousTeachers postings.
 
@@ -320,25 +415,23 @@ def fetch_listings(limit: int = DEFAULT_LIMIT) -> list[JobPosting]:
     return _collect(ids, limit)
 
 
-def fetch_all(max_pages: int = DEFAULT_MAX_PAGES, limit: int | None = None) -> list[JobPosting]:
-    """Crawl the country x subject cross to enumerate the broad live set (bounded).
+def fetch_all(max_pages: int | None = None, limit: int | None = None) -> list[JobPosting]:
+    """Crawl the country x subject cross to enumerate the broad live set.
 
-    Visits at most ``max_pages`` list pages: each country's bare page first, then its subject
-    sub-pages, collecting every unique ``/job_details`` id, then fetches one detail page per job
-    (capped at ``limit`` if given). A complete crawl is ~504 list pages plus the detail fetches;
-    raise ``max_pages``/leave ``limit`` unset for the full set.
+    ``max_pages`` remains an explicit diagnostic override. A production full crawl leaves it
+    unset and visits the finite country-by-subject matrix exposed by the source.
     """
     home = fetch(BASE)
     ids: list[str] = _job_ids(home)
     pages_used = 0
     for country_id in _country_ids(home):
-        if pages_used >= max_pages:
+        if max_pages is not None and pages_used >= max_pages:
             break
         time.sleep(SLEEP_SECONDS)
         ids.extend(jid for jid in _job_ids(_fetch_page(_list_url(country_id))) if jid not in ids)
         pages_used += 1
         for subject_id in SUBJECT_IDS:
-            if pages_used >= max_pages:
+            if max_pages is not None and pages_used >= max_pages:
                 break
             time.sleep(SLEEP_SECONDS)
             more = _job_ids(_fetch_page(_list_url(country_id, subject_id)))

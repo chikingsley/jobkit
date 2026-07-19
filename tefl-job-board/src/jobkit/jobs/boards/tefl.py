@@ -39,7 +39,7 @@ from typing import Any
 from bs4 import BeautifulSoup, Tag
 
 from jobkit.jobs.http import fetch
-from jobkit.jobs.models import JobPosting
+from jobkit.jobs.models import DiscoveredJob, DiscoveryResult, JobPosting
 
 BOARD = "tefl"
 BASE = "https://www.tefl.com"
@@ -51,7 +51,6 @@ EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 SALARY_RE = re.compile(r"Salary and Benefits\s*(.+?)$", re.IGNORECASE)
 
 DEFAULT_LIMIT = 15
-DEFAULT_MAX_PAGES = 5
 BODY_EXCERPT_CHARS = 1500
 SALARY_MAX_CHARS = 200
 SLEEP_SECONDS = 1.0
@@ -206,6 +205,64 @@ def _collect(job_ids: list[str], limit: int | None) -> list[JobPosting]:
     return out
 
 
+def discover_latest(limit: int = DEFAULT_LIMIT) -> DiscoveryResult:
+    """Discover enough newest list pages to satisfy the explicit latest sample."""
+    ids: list[str] = []
+    seen: set[str] = set()
+    page = 1
+    pages_checked = 0
+    while len(ids) < limit:
+        if page > 1:
+            time.sleep(SLEEP_SECONDS)
+        page_ids = _job_ids(fetch(_list_url(page)))
+        pages_checked += 1
+        if page == 1 and not page_ids:
+            msg = "TEFL.com first listing page exposed no stable job IDs"
+            raise RuntimeError(msg)
+        fresh = [job_id for job_id in page_ids if job_id not in seen]
+        if not fresh:
+            break
+        seen.update(fresh)
+        ids.extend(fresh)
+        page += 1
+    items = tuple(DiscoveredJob(job_id=job_id) for job_id in ids[:limit])
+    return DiscoveryResult(
+        items=items,
+        complete=False,
+        evidence={"pages_checked": str(pages_checked), "sample": str(len(items))},
+    )
+
+
+def discover_full() -> DiscoveryResult:
+    """Discover list pages until the source returns no new IDs."""
+    ids: list[str] = []
+    seen: set[str] = set()
+    page = 1
+    while True:
+        if page > 1:
+            time.sleep(SLEEP_SECONDS)
+        page_ids = _job_ids(fetch(_list_url(page)))
+        if page == 1 and not page_ids:
+            msg = "TEFL.com first listing page exposed no stable job IDs"
+            raise RuntimeError(msg)
+        fresh = [job_id for job_id in page_ids if job_id not in seen]
+        if not fresh:
+            break
+        seen.update(fresh)
+        ids.extend(fresh)
+        page += 1
+    return DiscoveryResult(
+        items=tuple(DiscoveredJob(job_id=job_id) for job_id in ids),
+        complete=True,
+        evidence={"pages_checked": str(page), "source_exhausted": "true"},
+    )
+
+
+def hydrate(discovered: DiscoveredJob) -> JobPosting:
+    """Hydrate one TEFL.com detail page."""
+    return _parse_detail(discovered.job_id, fetch(_detail_url(discovered.job_id)))
+
+
 def fetch_listings(limit: int = DEFAULT_LIMIT) -> list[JobPosting]:
     """Fetch up to ``limit`` of the newest TEFL.com postings (one detail fetch per job).
 
@@ -215,7 +272,7 @@ def fetch_listings(limit: int = DEFAULT_LIMIT) -> list[JobPosting]:
     ids: list[str] = []
     seen: set[str] = set()
     page = 1
-    while len(ids) < limit and page <= DEFAULT_MAX_PAGES:
+    while len(ids) < limit:
         if page > 1:
             time.sleep(SLEEP_SECONDS)
         fresh = [jid for jid in _job_ids(fetch(_list_url(page))) if jid not in seen]
@@ -227,7 +284,7 @@ def fetch_listings(limit: int = DEFAULT_LIMIT) -> list[JobPosting]:
     return _collect(ids, limit)
 
 
-def fetch_all(*, max_pages: int = DEFAULT_MAX_PAGES, limit: int | None = None) -> list[JobPosting]:
+def fetch_all(*, max_pages: int | None = None, limit: int | None = None) -> list[JobPosting]:
     """Walk ``?pageNo=N`` up to ``max_pages``, fetching every detail page (polite sleeps).
 
     Each landing page exposes ~10 fresh jobs (newest first); the crawl stops early when a page
@@ -237,7 +294,8 @@ def fetch_all(*, max_pages: int = DEFAULT_MAX_PAGES, limit: int | None = None) -
     """
     ids: list[str] = []
     seen: set[str] = set()
-    for page in range(1, max_pages + 1):
+    page = 1
+    while max_pages is None or page <= max_pages:
         if page > 1:
             time.sleep(SLEEP_SECONDS)
         fresh = [jid for jid in _job_ids(fetch(_list_url(page))) if jid not in seen]
@@ -247,6 +305,7 @@ def fetch_all(*, max_pages: int = DEFAULT_MAX_PAGES, limit: int | None = None) -
         ids.extend(fresh)
         if limit is not None and len(ids) >= limit:
             break
+        page += 1
     return _collect(ids, limit)
 
 

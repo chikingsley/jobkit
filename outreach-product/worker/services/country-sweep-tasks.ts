@@ -2,6 +2,9 @@ import type { CountrySweepTaskOutput } from "../../src/features/countries/schema
 import { CountryMarketError } from "./country-markets";
 
 const WWW_PREFIX_PATTERN = /^www\./u;
+// This limits transient execution retries for one durable task. It does not cap
+// discovery breadth, organizations, cities, or campaign targets.
+const COUNTRY_SWEEP_TASK_MAX_ATTEMPTS = 3;
 
 interface ClaimedTaskRow {
   country_code: string;
@@ -145,7 +148,13 @@ export async function completeCountrySweepTask(
     organizationIds,
     timestamp
   );
-  await advanceSweep(db, task, output.coverageSummary, timestamp);
+  await advanceSweep(
+    db,
+    task,
+    organizationIds,
+    output.coverageSummary,
+    timestamp
+  );
   return {
     organizationCount: organizationIds.length,
     phase: task.phase,
@@ -178,7 +187,7 @@ export async function failCountrySweepTask(
       409
     );
   }
-  const requeued = task.attempt_count < 3;
+  const requeued = task.attempt_count < COUNTRY_SWEEP_TASK_MAX_ATTEMPTS;
   const result = await db
     .prepare(
       `UPDATE country_sweep_tasks
@@ -214,7 +223,7 @@ export async function failCountrySweepTask(
       .bind(error, timestamp, timestamp, task.sweep_id)
       .run();
   } else {
-    await advanceSweep(db, task, {}, timestamp);
+    await advanceSweep(db, task, [], emptyCoverageSummary(), timestamp);
   }
   return { requeued: false, taskId };
 }
@@ -383,10 +392,29 @@ function organizationEvidenceStatus(status: string) {
 async function advanceSweep(
   db: D1Database,
   task: OwnedTaskRow,
-  coverageSummary: Record<string, unknown>,
+  organizationIds: string[],
+  coverageSummary: CountrySweepTaskOutput["coverageSummary"],
   timestamp: string
 ) {
   if (task.phase === "coverage_audit") {
+    const verificationCount = await createVerificationTasks(
+      db,
+      task,
+      timestamp,
+      organizationIds
+    );
+    if (verificationCount > 0) {
+      return;
+    }
+    const discoveryCount = await createDiscoveryTasks(
+      db,
+      task,
+      coverageSummary.nextScopes,
+      timestamp
+    );
+    if (discoveryCount > 0) {
+      return;
+    }
     await db
       .prepare(
         `UPDATE country_sweeps
@@ -416,51 +444,12 @@ async function advanceSweep(
   }
 
   if (task.phase === "discovery") {
-    const organizations = await db
-      .prepare(
-        `SELECT id,name,city,region,website_url,canonical_domain,market_segment,
-                status,outreach_eligibility,evidence_url
-           FROM organizations WHERE source_sweep_id=?
-           ORDER BY name`
-      )
-      .bind(task.sweep_id)
-      .all<OrganizationRow>();
-    if (organizations.results.length > 0) {
-      await db.batch(
-        organizations.results.map((organization) =>
-          db
-            .prepare(
-              `INSERT INTO country_sweep_tasks
-                (id,sweep_id,phase,scope_key,status,input_json,created_at,updated_at)
-               VALUES (?,?,'verification',?,'queued',?,?,?)
-               ON CONFLICT(sweep_id,phase,scope_key) DO NOTHING`
-            )
-            .bind(
-              crypto.randomUUID(),
-              task.sweep_id,
-              organization.id,
-              JSON.stringify({
-                countryCode: task.country_code,
-                countryName: task.country_name,
-                organization: {
-                  canonicalDomain: organization.canonical_domain,
-                  city: organization.city,
-                  evidenceUrl: organization.evidence_url,
-                  id: organization.id,
-                  marketSegment: organization.market_segment,
-                  name: organization.name,
-                  outreachEligibility: organization.outreach_eligibility,
-                  region: organization.region,
-                  status: organization.status,
-                  websiteUrl: organization.website_url,
-                },
-                phase: "verification",
-              }),
-              timestamp,
-              timestamp
-            )
-        )
-      );
+    const verificationCount = await createVerificationTasks(
+      db,
+      task,
+      timestamp
+    );
+    if (verificationCount > 0) {
       return;
     }
   }
@@ -468,30 +457,180 @@ async function advanceSweep(
   await createCoverageAuditTask(db, task, timestamp);
 }
 
-function createCoverageAuditTask(
+async function createCoverageAuditTask(
   db: D1Database,
   task: OwnedTaskRow,
   timestamp: string
 ) {
+  const progress = await countSweepProgress(db, task.sweep_id);
   return db
     .prepare(
       `INSERT INTO country_sweep_tasks
         (id,sweep_id,phase,scope_key,status,input_json,created_at,updated_at)
-       VALUES (?,?,'coverage_audit','country','queued',?,?,?)
+       VALUES (?,?,'coverage_audit',?,'queued',?,?,?)
        ON CONFLICT(sweep_id,phase,scope_key) DO NOTHING`
     )
     .bind(
       crypto.randomUUID(),
       task.sweep_id,
+      `coverage:${progress.discoveryCount}:${progress.coverageCount}`,
       JSON.stringify({
         countryCode: task.country_code,
         countryName: task.country_name,
         phase: "coverage_audit",
+        progress,
       }),
       timestamp,
       timestamp
     )
     .run();
+}
+
+async function createVerificationTasks(
+  db: D1Database,
+  task: OwnedTaskRow,
+  timestamp: string,
+  organizationIds: string[] = []
+) {
+  const idFilter =
+    organizationIds.length > 0
+      ? ` AND id IN (${organizationIds.map(() => "?").join(",")})`
+      : "";
+  const organizations = await db
+    .prepare(
+      `SELECT id,name,city,region,website_url,canonical_domain,market_segment,
+              status,outreach_eligibility,evidence_url
+         FROM organizations WHERE source_sweep_id=?${idFilter}
+         ORDER BY name`
+    )
+    .bind(task.sweep_id, ...organizationIds)
+    .all<OrganizationRow>();
+  if (organizations.results.length === 0) {
+    return 0;
+  }
+  const results = await db.batch(
+    organizations.results.map((organization) =>
+      db
+        .prepare(
+          `INSERT INTO country_sweep_tasks
+            (id,sweep_id,phase,scope_key,status,input_json,created_at,updated_at)
+           VALUES (?,?,'verification',?,'queued',?,?,?)
+           ON CONFLICT(sweep_id,phase,scope_key) DO NOTHING`
+        )
+        .bind(
+          crypto.randomUUID(),
+          task.sweep_id,
+          organization.id,
+          JSON.stringify({
+            countryCode: task.country_code,
+            countryName: task.country_name,
+            organization: {
+              canonicalDomain: organization.canonical_domain,
+              city: organization.city,
+              evidenceUrl: organization.evidence_url,
+              id: organization.id,
+              marketSegment: organization.market_segment,
+              name: organization.name,
+              outreachEligibility: organization.outreach_eligibility,
+              region: organization.region,
+              status: organization.status,
+              websiteUrl: organization.website_url,
+            },
+            phase: "verification",
+          }),
+          timestamp,
+          timestamp
+        )
+    )
+  );
+  return results.reduce(
+    (count, result) => count + Number(result.meta.changes ?? 0),
+    0
+  );
+}
+
+async function createDiscoveryTasks(
+  db: D1Database,
+  task: OwnedTaskRow,
+  scopes: CountrySweepTaskOutput["coverageSummary"]["nextScopes"],
+  timestamp: string
+) {
+  if (scopes.length === 0) {
+    return 0;
+  }
+  const uniqueScopes = new Map(
+    scopes.map((scope) => [discoveryScopeKey(scope), scope])
+  );
+  const results = await db.batch(
+    [...uniqueScopes].map(([scopeKey, scope]) =>
+      db
+        .prepare(
+          `INSERT INTO country_sweep_tasks
+            (id,sweep_id,phase,scope_key,status,input_json,created_at,updated_at)
+           VALUES (?,?,'discovery',?,'queued',?,?,?)
+           ON CONFLICT(sweep_id,phase,scope_key) DO NOTHING`
+        )
+        .bind(
+          crypto.randomUUID(),
+          task.sweep_id,
+          scopeKey,
+          JSON.stringify({
+            city: scope.city,
+            countryCode: task.country_code,
+            countryName: task.country_name,
+            phase: "discovery",
+            query: scope.query,
+            source: scope.source,
+          }),
+          timestamp,
+          timestamp
+        )
+    )
+  );
+  return results.reduce(
+    (count, result) => count + Number(result.meta.changes ?? 0),
+    0
+  );
+}
+
+async function countSweepProgress(db: D1Database, sweepId: string) {
+  const counts = await db
+    .prepare(
+      `SELECT
+         SUM(phase='discovery' AND status='completed') discovery_count,
+         SUM(phase='coverage_audit' AND status='completed') coverage_count
+       FROM country_sweep_tasks WHERE sweep_id=?`
+    )
+    .bind(sweepId)
+    .first<{ coverage_count: number; discovery_count: number }>();
+  return {
+    coverageCount: Number(counts?.coverage_count ?? 0),
+    discoveryCount: Number(counts?.discovery_count ?? 0),
+  };
+}
+
+function discoveryScopeKey(
+  scope: CountrySweepTaskOutput["coverageSummary"]["nextScopes"][number]
+) {
+  return [
+    scope.source,
+    normalizeIdentity(scope.city),
+    normalizeIdentity(scope.query),
+  ]
+    .filter(Boolean)
+    .join(":");
+}
+
+function emptyCoverageSummary(): CountrySweepTaskOutput["coverageSummary"] {
+  return {
+    citiesChecked: [],
+    gaps: [],
+    needsAnotherPass: false,
+    nextScopes: [],
+    queriesChecked: [],
+    resultCount: 0,
+    sourcesChecked: [],
+  };
 }
 
 async function materializeCampaignOrganizations(

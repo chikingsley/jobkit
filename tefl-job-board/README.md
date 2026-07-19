@@ -7,9 +7,11 @@ Standalone `uv` project for pulling TEFL/ESL job boards into the local SQLite in
 ```bash
 uv run jobs stats
 uv run jobs countries
+uv run jobs runs
 uv run jobs refresh tefl ajarn
 uv run jobs refresh
 uv run jobs refresh --latest seriousteachers anesl
+uv run jobs refresh --restart anesl
 ```
 
 The database is intentionally outside this project at `../job-search/job-data/jobs.sqlite`, because
@@ -25,4 +27,10 @@ docs/                board notes, board coverage, and ingestion architecture
 
 Implemented adapters include ANESL, SeriousTeachers, ESL Cafe modern, Ajarn, and TEFL.com.
 Use `--latest` for a quick newest-listings pass that preserves unseen inventory. Omit it for a
-complete board crawl that reconciles and closes missing listings.
+complete board crawl that reconciles and closes missing listings. Full reconciliation only runs
+after the adapter proves source completeness from pagination or source-exhaustion evidence.
+
+Discovery IDs are persisted before detail hydration begins. Each detail success or failure is then
+committed individually, so rerunning the same command resumes unfinished work instead of repeating
+completed detail fetches. `jobs runs` reads that state directly from SQLite. Use `--restart` only
+when you intentionally want to cancel an unfinished crawl and repeat discovery.

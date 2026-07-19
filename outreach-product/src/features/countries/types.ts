@@ -43,6 +43,7 @@ export interface CountryCampaignReference {
 }
 
 export interface CountrySweepSummary {
+  cities: string[];
   completedAt: string | null;
   id: string;
   requestedAt: string;
