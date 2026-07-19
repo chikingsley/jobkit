@@ -16,11 +16,11 @@
     "question": "Why does the unit say that production follows comprehension in first language acquisition, rather than the other way around?",
     "options": [
       "Because children are taught to listen before they are allowed to speak",
-      "Because children spend months listening and making sense of input before producing a recognizable word",
+      "Because comprehension develops through months of listening before the first word",
       "Because vocabulary lists must be memorized before speech is possible",
       "Because physical actions replace the need for spoken language in early childhood"
     ],
-    "answer": "Because children spend months listening and making sense of input before producing a recognizable word — Children spend months listening and making sense of input before producing a single recognizable word; comprehension comes first and production follows naturally.",
+    "answer": "Because comprehension develops through months of listening before the first word",
     "anchor": "spending months listening and making sense of that input before producing a single recognizable word"
   },
   {
@@ -40,6 +40,6 @@
     "question": "The unit describes integrated language skills activities as serving the same principle as contextualization. Using an example from the unit, explain what makes an integrated skills activity more effective for older learners than repeating decontextualized sentences.",
     "options": null,
     "answer": "An integrated skills activity combines listening, speaking, reading, and writing within a single meaningful task. The unit's example of Carlos listening to a song, raising signs when he hears target vocabulary, and then discussing the lyrics with a partner shows that he is using language across multiple channels simultaneously, the way it functions in the real world. Older learners' developed reasoning minds can actively sort and connect this richer input to existing knowledge, leaving a more durable memory trace than mechanical repetition of isolated sentences can produce.",
-    "anchor": "a learner named Carlos is using language the way it functions in the world, where meaning is built across multiple channels at once"
+    "anchor": "Carlos is using language the way it functions in the world, where meaning is built across multiple channels at once"
   }
 ]

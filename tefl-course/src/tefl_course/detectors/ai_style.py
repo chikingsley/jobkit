@@ -55,7 +55,10 @@ _PATTERNS: tuple[tuple[str, str, int], ...] = (
     ("stock-transition", r"\b(plays a crucial role|serves as a foundation)\b", 4),
     ("ai-lexicon", r"\b(delves?|tapestry|realm|landscape|robust|holistic)\b", 3),
     ("ai-lexicon", r"\b(leverage|utilize|seamless|comprehensive|multifaceted)\b", 3),
-    ("ai-lexicon", r"\b(nuanced|dynamic|pivotal|transformative)\b", 2),
+    # "dynamic" is AI-lexicon EXCEPT as the grammar term "dynamic verb(s)" (paired with
+    # "stative"), which the M2/M3 grammar units use as standard terminology.
+    ("ai-lexicon", r"\b(nuanced|pivotal|transformative)\b", 2),
+    ("ai-lexicon", r"\bdynamic\b(?!\s+verb)", 2),
     ("stock-contrast", r"\bnot (?:only|just|merely) .{0,80}\bbut (?:also|rather)\b", 5),
     ("stock-contrast", r"\bit'?s not (?:just|only|merely)\b", 5),
 )

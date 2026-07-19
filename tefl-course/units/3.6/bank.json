@@ -3,36 +3,36 @@
     "type": "mc",
     "question": "According to the unit, what is the primary reason a learner cannot deduce the meaning of 'Guess what!' by analyzing its verb and object separately?",
     "options": [
-      "a. The phrase is always spoken with a rising intonation that changes its grammatical category.",
-      "b. The phrase functions as a frame that prepares the listener before news arrives, not as a genuine imperative asking the listener to guess.",
-      "c. The word 'guess' is an irregular verb whose base form signals a fixed expression.",
-      "d. The phrase is borrowed from informal speech and therefore falls outside standard grammatical rules."
+      "The phrase is always spoken with a rising intonation that changes its grammatical category.",
+      "It frames upcoming news rather than literally demanding a guess.",
+      "The word 'guess' is an irregular verb whose base form signals a fixed expression.",
+      "The phrase is borrowed from informal speech and therefore falls outside standard grammatical rules."
     ],
-    "answer": "The phrase functions as a frame that prepares the listener before news arrives, not as a genuine imperative asking the listener to guess.",
+    "answer": "It frames upcoming news rather than literally demanding a guess.",
     "anchor": "it is a frame that prepares the listener before the news arrives"
   },
   {
     "type": "mc",
     "question": "The unit argues that presenting a situational dialog in full before introducing any terminology mirrors a real-life process. What is that process?",
     "options": [
-      "a. Memorizing fixed expressions before encountering them in conversation.",
-      "b. Using grammatical rules to predict the meaning of unfamiliar phrases.",
-      "c. Relying on the situation to provide the frame that makes individual expressions interpretable.",
-      "d. Listening to audio recordings repeatedly until pronunciation becomes automatic."
+      "Memorizing fixed expressions before encountering them in conversation.",
+      "Using grammatical rules to predict the meaning of unfamiliar phrases.",
+      "Using situational context to interpret individual expressions",
+      "Listening to audio recordings repeatedly until pronunciation becomes automatic."
     ],
-    "answer": "Relying on the situation to provide the frame that makes individual expressions interpretable.",
+    "answer": "Using situational context to interpret individual expressions",
     "anchor": "the situation provides the frame that makes individual expressions interpretable"
   },
   {
     "type": "mc",
     "question": "The unit explains that 'They'd like' and 'they want' are both grammatically correct and both express desire, yet the Language Note distinguishes them. On what basis does the note make this distinction?",
     "options": [
-      "a. 'They'd like' is a conditional form and therefore more grammatically complex than 'they want'.",
-      "b. 'They want' is restricted to informal registers, while 'They'd like' is used only in writing.",
-      "c. 'They'd like' is a little softer and a little less positive than 'they want', placing them differently on a scale of directness.",
-      "d. The contraction in 'They'd like' signals past tense, making it less immediate than 'they want'."
+      "'They'd like' is a conditional form and therefore more grammatically complex than 'they want'.",
+      "'They want' is restricted to informal registers, while 'They'd like' is used only in writing.",
+      "'They'd like' is softer and less direct than 'they want'.",
+      "The contraction in 'They'd like' signals past tense, making it less immediate than 'they want'."
     ],
-    "answer": "'They'd like' is a little softer and a little less positive than 'they want', placing them differently on a scale of directness.",
+    "answer": "'They'd like' is softer and less direct than 'they want'.",
     "anchor": "'They'd like' as 'a little softer, a little less positive, than they want'"
   },
   {

@@ -3,36 +3,36 @@
     "type": "mc",
     "question": "According to the unit, what was the original and legitimate purpose of grammar-translation when applied to classical languages such as Latin and Ancient Greek?",
     "options": [
-      "A. To develop all four language skills simultaneously through integrated activities",
-      "B. To give learners access to literary and philosophical texts rather than spoken communication",
-      "C. To prepare learners for rapid spoken fluency in military contexts",
-      "D. To build habit formation through repetitive oral drill"
+      "To develop all four language skills simultaneously through integrated activities",
+      "To access classical literary and philosophical texts",
+      "To prepare learners for rapid spoken fluency in military contexts",
+      "To build habit formation through repetitive oral drill"
     ],
-    "answer": "B. To give learners access to literary and philosophical texts rather than spoken communication",
+    "answer": "To access classical literary and philosophical texts",
     "anchor": "the goal was access to literary and philosophical texts, not conversation with native speakers"
   },
   {
     "type": "mc",
     "question": "The unit describes the standard historical account of language teaching methods as resembling a relay race. What is the unit's main objection to that narrative?",
     "options": [
-      "A. It incorrectly places audiolingualism before grammar-translation in the chronological sequence",
-      "B. It exaggerates the role of Stephen Krashen while ignoring behaviorist contributions",
-      "C. It is misleading because methods rarely disappear and classrooms rarely conform to a single approach",
-      "D. It focuses too heavily on practitioner materials rather than theoretical frameworks"
+      "It incorrectly places audiolingualism before grammar-translation in the chronological sequence",
+      "It exaggerates the role of Stephen Krashen while ignoring behaviorist contributions",
+      "It is misleading because methods rarely disappear and classrooms rarely conform to a single approach",
+      "It focuses too heavily on practitioner materials rather than theoretical frameworks"
     ],
-    "answer": "C. It is misleading because methods rarely disappear and classrooms rarely conform to a single approach",
+    "answer": "It is misleading because methods rarely disappear and classrooms rarely conform to a single approach",
     "anchor": "Methods rarely disappear when theorists declare them obsolete, classrooms rarely conform to a single approach"
   },
   {
     "type": "mc",
     "question": "According to the unit, what is the underlying pedagogical logic of Total Physical Response (TPR)?",
     "options": [
-      "A. It organizes language learning around subject-matter content to make grammar incidental",
-      "B. It requires learners to produce written output before attempting spoken language",
-      "C. It reduces anxiety and builds a receptive foundation before demanding verbal output",
-      "D. It uses pattern substitution drills to automate high-frequency structures"
+      "It organizes language learning around subject-matter content to make grammar incidental",
+      "It requires learners to produce written output before attempting spoken language",
+      "It reduces anxiety and builds a receptive foundation before demanding verbal output",
+      "It uses pattern substitution drills to automate high-frequency structures"
     ],
-    "answer": "C. It reduces anxiety and builds a receptive foundation before demanding verbal output",
+    "answer": "It reduces anxiety and builds a receptive foundation before demanding verbal output",
     "anchor": "physical response reduces anxiety and builds a receptive foundation, much as a child understands speech before producing it"
   },
   {

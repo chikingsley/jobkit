@@ -5,10 +5,10 @@
     "options": [
       "Words that appear most frequently across all English texts",
       "Words that are entirely unfamiliar to every learner in the class",
-      "Words that can occur as more than one part of speech or as part of a phrasal verb or idiom",
+      "Words with multiple grammatical or multiword uses",
       "Words that follow regular grammatical rules and can be easily defined"
     ],
-    "answer": "Words that can occur as more than one part of speech or as part of a phrasal verb or idiom",
+    "answer": "Words with multiple grammatical or multiword uses",
     "anchor": "can occur as more than one part of speech in the text (verb, noun, etc.) or as part of a phrasal verb or idiom"
   },
   {
@@ -16,11 +16,11 @@
     "question": "How does the unit distinguish language awareness from a return to traditional grammar drills?",
     "options": [
       "Language awareness focuses exclusively on spoken language, whereas grammar drills address written forms",
-      "Language awareness centres on the learner's own deliberate thinking and reflection, whereas grammar drills do not require this analytical step",
+      "Language awareness requires deliberate learner analysis; drills do not",
       "Language awareness is teacher-delivered and rule-based, whereas grammar drills are learner-driven",
       "Language awareness avoids any attention to form, whereas grammar drills focus entirely on structure"
     ],
-    "answer": "Language awareness centres on the learner's own deliberate thinking and reflection, whereas grammar drills do not require this analytical step",
+    "answer": "Language awareness requires deliberate learner analysis; drills do not",
     "anchor": "What separates language awareness from a return to grammar drills is the role of the learner's own thinking"
   },
   {
@@ -28,11 +28,11 @@
     "question": "In the unit's description of the travel-planning poster task, what specific feature of travel brochures makes them suitable as authentic source material?",
     "options": [
       "They are written at a controlled vocabulary level matched to learner proficiency",
-      "They contain photographs alongside text, allowing learners at different reading levels to access meaning",
+      "Their images make meaning accessible across reading levels",
       "They present grammar rules inductively through real-world examples",
       "They are produced by language teachers for use in communicative classrooms"
     ],
-    "answer": "They contain photographs alongside text, allowing learners at different reading levels to access meaning",
+    "answer": "Their images make meaning accessible across reading levels",
     "anchor": "those brochures were chosen because they contained photographs alongside text"
   },
   {

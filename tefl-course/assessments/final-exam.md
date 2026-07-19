@@ -52,7 +52,7 @@ Comprehensive: one question from every unit of the course, plus three scenario q
 
 **20. The unit describes the teacher's role during the task cycle as being the 'guide on the side.' What does this mean in practice, and how does the exchange between the teacher and Wei's group illustrate it?**
 
-**21. The unit describes a student named Fatima who scores well on a fill-in-the-blank grammar test but still omits the target inflection during a role-play activity. What does this example illustrate about the relationship between test type and conclusions drawn from research on explicit instruction?**
+**21. The unit describes a student named Fatima, who scores well on a fill-in-the-blank grammar test but still omits the target inflection during a role-play. What does this example show about classroom assessment?**
 
 ### Module 5 — Vocabulary
 
@@ -60,7 +60,7 @@ Comprehensive: one question from every unit of the course, plus three scenario q
 
 **23. The unit argues that introducing vocabulary well on the first day is necessary but not sufficient. What, according to the unit, actually determines how much vocabulary survives into long-term use?**
 
-**24. Explain what a collocation is and why the unit argues that including function word bricks in the Word Bricks collection helps students practice collocational patterns.**
+**24. The unit distinguishes lexical collocation from the grammatical patterning that function word bricks support. Explain the difference, and describe how a Word Bricks collection can give students practice with each.**
 
 **25. The unit's four-step action plan for trainee teachers begins with a specific starting point rather than a syllabus item. What is that starting point, and why does the unit present it as the correct place to begin planning?**
 
@@ -70,7 +70,7 @@ Comprehensive: one question from every unit of the course, plus three scenario q
 
 **27. What distinguishes a diphthong from a monophthong, and what problem arises for a learner who holds the starting position of a diphthong without completing the glide?**
 
-**28. The unit describes a student named Fatima producing 'I want to go to the shops' with six syllables of nearly equal length. Identify the three natural stress beats a native English speaker would place in that sentence, and explain what happens to the unstressed words between those beats.**
+**28. The unit describes a student named Wei producing 'I want to go to the store' with seven syllables of nearly equal length. Identify the three natural stress beats a native English speaker would place in that sentence, and explain what happens to the unstressed words between those beats.**
 
 **29. Explain why the unit presents minimal pairs as particularly useful for learners whose first language does not contain a sound contrast found in English, and what sequence of activities does the unit recommend for teaching with minimal pairs?**
 
@@ -150,7 +150,7 @@ Comprehensive: one question from every unit of the course, plus three scenario q
 
 ### Module 14 — Specializations
 
-**60. The unit describes several types of learning stations observed in the source's video segment. Name at least three station types mentioned and explain what the unit says about how children move among them.**
+**60. The unit describes several types of learning stations observed in the module's video segment. Name at least three station types mentioned and explain what the unit says about how children move among them.**
 
 **61. The unit describes three specific signs a teacher should watch for that indicate a learner may be experiencing fatigue or disengagement during a one-to-one lesson. Name all three.**
 
@@ -162,6 +162,6 @@ Comprehensive: one question from every unit of the course, plus three scenario q
 
 **64. Mr. Osei is reviewing a writing task completed by his intermediate class. He notices that Carlos has written 'She must to finish the report before Friday,' Wei has written 'Do you must attend the meeting?', and Fatima has written 'She musts arrive early.' Before giving feedback, Mr. Osei wants to diagnose each error precisely so his responses are targeted rather than vague. What should Mr. Osei identify as the specific grammatical problem in each student's sentence, and how should this diagnosis shape the feedback he gives to each learner?**
 
-**65. Mr. Osei is running a speaking activity in which Carlos, Daniel, Wei, Fatima, Yuki, and Priya are role-playing a debate about city planning. The activity has been introduced as a fluency task, and students are engaged and speaking at length. Midway through the debate, Fatima produces a clear subject-verb agreement error: 'Everyone in my neighbourhood want a new park.' Mr. Osei notices the error immediately. What should he do, and why?**
+**65. Ms. Reyes is planning a two-week unit that introduces about forty new words for food and cooking. She wants her students to still know the words at the end of the term, not only at the end of the week. Her draft plan presents all forty words in the first two lessons through picture-and-translation slides, then moves on to other content and expects students to review the lists at home. Drawing on what the course teaches about how vocabulary is learned and how lessons are planned, what should Ms. Reyes change about her plan, and why?**
 
-**66. Ms. Reyes has just finished a four-week speaking unit with her class of 58 students, including Carlos, Daniel, Wei, Fatima, Yuki, and Priya. The unit focused on developing students' ability to express and defend opinions in small-group discussions. At the end of the unit, Ms. Reyes wants to assess whether her students have met this goal. Her colleague Mr. Osei suggests she save time by giving everyone a written multiple-choice grammar quiz, since grading 58 individual speaking tasks feels unmanageable. What should Ms. Reyes do, and why?**
+**66. Mr. Osei has a new intermediate class and wants to teach it well. He gives every student an online questionnaire that sorts them into visual, auditory, and kinesthetic learners, and he plans to prepare three separate versions of each lesson so that each student receives instruction matched to their diagnosed style. A colleague asks whether this is the best use of his planning time. Drawing on what the course teaches about learner differences and about lesson planning, what should Mr. Osei do instead, and why?**

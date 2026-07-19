@@ -16,11 +16,11 @@
     "question": "The unit explains that concept-checking questions serve a different function from comprehension-checking questions. What specifically do concept-checking questions verify?",
     "options": [
       "Whether students have processed a procedural instruction before an activity begins",
-      "Whether students have understood the meaning of a word or phrase, not merely whether they can repeat it back",
+      "Whether learners understand meaning rather than merely repeat the form",
       "Whether students are ready to move from pair work to whole-class discussion",
       "Whether students have memorized the correct spelling of new vocabulary items"
     ],
-    "answer": "Whether students have understood the meaning of a word or phrase, not merely whether they can repeat it back",
+    "answer": "Whether learners understand meaning rather than merely repeat the form",
     "anchor": "They verify whether students have understood the meaning of a word or phrase, not merely whether they can repeat it back"
   },
   {
@@ -29,11 +29,11 @@
     "options": [
       "The corrected student is likely to become more disruptive afterward",
       "The teacher loses the opportunity to use proximity as a management tool",
-      "The teacher has handed Carlos's inattention to every other student in the room",
+      "It spreads one student's inattention across the class",
       "The lesson objective becomes unclear to the rest of the class"
     ],
-    "answer": "The teacher has handed Carlos's inattention to every other student in the room",
-    "anchor": "she has handed Carlos's inattention to every other student in the room"
+    "answer": "It spreads one student's inattention across the class",
+    "anchor": "she has handed that child's inattention to every other student in the room"
   },
   {
     "type": "short",

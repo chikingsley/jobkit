@@ -4,11 +4,11 @@
     "question": "According to the unit, why can a learner who pronounces every individual sound correctly still sound unnatural or be misunderstood?",
     "options": [
       "Because their vocabulary range is too limited for the context",
-      "Because suprasegmental errors affect intelligibility more than segmental errors do",
+      "Because suprasegmentals influence intelligibility more strongly",
       "Because native speakers expect a foreign accent at the word level",
       "Because grammar mistakes distract listeners from the sounds"
     ],
-    "answer": "Because suprasegmental errors affect intelligibility more than segmental errors do",
+    "answer": "Because suprasegmentals influence intelligibility more strongly",
     "anchor": "Errors at the suprasegmental level tend to affect intelligibility more than segmental errors do"
   },
   {
@@ -27,19 +27,19 @@
     "type": "mc",
     "question": "What is the purpose of the back-chaining technique described in the unit?",
     "options": [
-      "To help learners memorise vocabulary by repeating words from front to back",
-      "To anchor the tail of a sentence in muscle memory before the full sentence is attempted",
+      "To help learners memorize vocabulary by repeating words from front to back",
+      "To motorize the sentence ending before attempting the whole",
       "To train learners to identify weak forms by isolating function words",
-      "To correct intonation errors by modelling the whole sentence first"
+      "To correct intonation errors by modeling the whole sentence first"
     ],
-    "answer": "To anchor the tail of a sentence in muscle memory before the full sentence is attempted",
+    "answer": "To motorize the sentence ending before attempting the whole",
     "anchor": "Because learners always end on the same syllable, the tail of the sentence becomes anchored in their muscle memory before the full sentence is attempted"
   },
   {
     "type": "short",
-    "question": "The unit describes a student named Fatima producing 'I want to go to the shops' with six syllables of nearly equal length. Identify the three natural stress beats a native English speaker would place in that sentence, and explain what happens to the unstressed words between those beats.",
+    "question": "The unit describes a student named Wei producing 'I want to go to the store' with seven syllables of nearly equal length. Identify the three natural stress beats a native English speaker would place in that sentence, and explain what happens to the unstressed words between those beats.",
     "options": null,
-    "answer": "The three natural stress beats are WANT, GO, and SHOPS. The unstressed function words 'to' and 'the' are compressed and reduced between those beats, keeping the rhythmic pulse steady rather than lengthening the overall utterance.",
-    "anchor": "The sentence has three natural stress beats: WANT, GO, and SHOPS. The words 'to' and 'the' shrink almost to nothing between those beats"
+    "answer": "The three natural stress beats are WANT, GO, and STORE. The unstressed function words 'to' and 'the' are compressed and reduced between those beats, keeping the rhythmic pulse steady rather than lengthening the overall utterance.",
+    "anchor": "The sentence has three natural stress beats: WANT, GO, and STORE. The words 'to' and 'the' shrink almost to nothing between those beats"
   }
 ]

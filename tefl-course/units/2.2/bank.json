@@ -28,12 +28,12 @@
     "question": "A student writes 'He seems tiredness.' What has the student misunderstood about the slot following a linking verb?",
     "options": [
       "They have used an intransitive verb where a transitive one is required.",
-      "They have treated the complement slot as though it requires a noun the way an object does.",
+      "They wrongly treat the complement as an object-like noun slot.",
       "They have placed an adverbial between the verb and its object.",
       "They have confused a subordinate clause with a main clause."
     ],
-    "answer": "They have treated the complement slot as though it requires a noun the way an object does.",
-    "anchor": "Carlos who writes 'He seems tiredness' has treated the complement slot as though it requires a noun in the same way an object does"
+    "answer": "They wrongly treat the complement as an object-like noun slot.",
+    "anchor": "Carlos, who writes 'He seems tiredness' has treated the complement slot as though it requires a noun in the same way an object does"
   },
   {
     "type": "short",

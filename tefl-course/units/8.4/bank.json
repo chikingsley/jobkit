@@ -1,43 +1,44 @@
 [
   {
     "type": "mc",
-    "question": "According to the unit, what is the main challenge for teachers who provide feedback on drafts before assigning a grade?",
+    "question": "Which errors does the unit recommend prioritizing when a teacher uses correction codes selectively?",
     "options": [
-      "Students tend to ignore written comments on early drafts",
-      "Extra time and effort are required to provide feedback and then read and score the revised papers",
-      "Peer feedback makes the teacher's comments redundant",
-      "Grading criteria become inconsistent across multiple drafts"
+      "Every error the teacher can identify, so the draft becomes a complete diagnostic record",
+      "Only spelling and punctuation errors, because students can repair these without explanation",
+      "Errors in target language, errors that obscure meaning, and patterns that recur",
+      "Only errors that peers have already noticed during the station-based review"
     ],
-    "answer": "Extra time and effort are required to provide feedback and then read and score the revised papers — The unit states directly that extra time and effort are required for teachers to provide feedback on drafts and then read and score the revised papers.",
-    "anchor": "extra time and effort are required for teachers to provide feedback on drafts and then read and score the revised papers"
+    "answer": "Errors in target language, errors that obscure meaning, and patterns that recur — Selective coding focuses attention on errors that matter to the lesson, meaning, or a repeated pattern.",
+    "anchor": "code the errors that touch the lesson's target language, the errors that obscure meaning, and the patterns that recur"
   },
   {
     "type": "mc",
-    "question": "What is the specific purpose of using a different colored highlighter pen at each editing station?",
+    "question": "How does the unit recommend introducing a correction code to a class?",
     "options": [
-      "To help students memorize the order of the ten checklist elements",
-      "To allow the teacher to grade each element separately using a color-coded rubric",
-      "To create a visible record showing which elements have been examined and where changes were made",
-      "To signal to peers which sections of the essay still need revision"
+      "Distribute the complete code at once and require students to memorize it before revising",
+      "Begin with three or four frequent symbols, model them, and add more gradually",
+      "Write the corrected forms beside every symbol until students stop making those errors",
+      "Let each student invent personal symbols and explain them only when submitting a final draft"
     ],
-    "answer": "To create a visible record showing which elements have been examined and where changes were made — The color coding creates a visible record of the review, showing which elements have been examined and where changes were made.",
-    "anchor": "The color coding creates a visible record of the review: by the time a student has worked through all ten stations"
+    "answer": "Begin with three or four frequent symbols, model them, and add more gradually — A small initial code is taught with worked examples before new symbols are introduced.",
+    "anchor": "Begin with three or four symbols that cover the class's most frequent error types"
   },
   {
     "type": "mc",
-    "question": "According to the unit, how does peer editing benefit a student who notices a missing introduction in a classmate's essay?",
+    "question": "According to the unit, what does a correction code's marginal symbol deliberately NOT do?",
     "options": [
-      "It allows the student to earn extra credit by correcting the classmate's work",
-      "It prompts the student to return to their own essay and check whether the same element is present",
-      "It gives the student a model introduction to copy into their own draft",
-      "It replaces the need for the teacher to explain structural requirements"
+      "Locate the line in which an error occurs",
+      "Classify the kind of error the line contains",
+      "Fix the error by supplying the correct form",
+      "Signal which errors relate to the lesson's target language"
     ],
-    "answer": "It prompts the student to return to their own essay and check whether the same element is present — Noticing the gap in a peer's essay prompts a return to the student's own essay to check whether the same element is present.",
-    "anchor": "that observation prompts a return to their own essay to check whether the same element is present"
+    "answer": "Fix the error by supplying the correct form — Each mark locates and classifies the problem, but what the mark deliberately does not do is fix anything; the repair stays with the writer.",
+    "anchor": "What the mark deliberately does not do is fix anything"
   },
   {
     "type": "short",
     "question": "According to the unit, why does a student with weaker writing skills benefit in a particular way from noticing their own errors during peer review, rather than being told about them by the teacher?",
+    "options": null,
     "answer": "When a weaker student notices an error themselves, they are doing the cognitive work of diagnosis, and that act of noticing is what strengthens the skill. The improvement comes from their own experience of the process rather than from an external correction handed down to them, moving them toward greater autonomy.",
     "anchor": "the improvement comes from their own experience of the process rather than from an external correction handed down to them"
   }

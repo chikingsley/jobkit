@@ -4,11 +4,11 @@
     "question": "According to the unit, what specific language structures does drawing provide a context for practicing, based on the example dialogue between a teacher and Daniel?",
     "options": [
       "Past simple tense and superlative adjectives",
-      "Present continuous forms and comparative adjectives",
+      "Present continuous and comparative adjectives",
       "Future tense and possessive pronouns",
       "Modal verbs and relative clauses"
     ],
-    "answer": "Present continuous forms and comparative adjectives",
+    "answer": "Present continuous and comparative adjectives",
     "anchor": "practicing grammatical structures, for instance when students describe what they have drawn using present continuous forms or comparative adjectives"
   },
   {
@@ -17,10 +17,10 @@
     "options": [
       "Drawing from observation uses colored materials while drawing from imagination uses only pencil",
       "Drawing from observation is done individually while drawing from imagination is always a group task",
-      "Drawing from observation requires students to look directly at a subject, while drawing from imagination draws on memory and invention",
+      "Observation uses a visible subject; imagination uses memory and invention",
       "Drawing from observation is recommended for older learners while drawing from imagination suits younger students"
     ],
-    "answer": "Drawing from observation requires students to look directly at a subject, while drawing from imagination draws on memory and invention",
+    "answer": "Observation uses a visible subject; imagination uses memory and invention",
     "anchor": "drawing from observation, in which students look directly at a subject and reproduce what they see"
   },
   {

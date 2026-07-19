@@ -23,6 +23,7 @@ import sys
 import time
 from typing import TYPE_CHECKING, cast
 
+from tefl_course.audit import audit_file, check_bank_anchors
 from tefl_course.checks import find_doubled_option_labels, strip_duplicate_option_label
 from tefl_course.detectors.ai_style import analyze_text
 from tefl_course.llm import SuperwhisperClient
@@ -328,16 +329,20 @@ def gate(unit: Unit) -> bool:
     """Run the deterministic gate on a drafted unit; write gate-report.txt; return pass/fail."""
     path = UNITS_DIR / unit.uid / "unit.md"
     text = path.read_text(encoding="utf-8")
-    dslop = _run_dslop(_dslop_prose(text))
+    dslop_prose = _dslop_prose(text)
+    dslop = _run_dslop(dslop_prose)
     detector = analyze_text(text)
     option_label_issues = find_doubled_option_labels(text, path)
     # The sentence-length-kurtosis metric is an OPEN OWNER DECISION (see the pilot): dialogue-
     # heavy teaching prose legitimately depresses it. A unit whose only dslop finding is that
     # file-level metric passes the gate with a rhythm flag rather than failing outright.
+    # Hits on quoted tokens (source citations, named vocabulary items) are likewise not
+    # authored-prose failures and are filtered out.
     dslop_report = dslop.stdout + dslop.stderr  # dslop writes its report to stderr.
+    effective_hits = _dslop_hits_outside_quotes(dslop_prose, dslop_report)
     rhythm_only = (
         dslop.returncode != 0
-        and not _DSLOP_HIT_RE.search(dslop_report)
+        and not effective_hits
         and "sentence-length-kurtosis" in dslop_report
     )
     style_ok = detector.score < STYLE_DETECTOR_MAX_SCORE
@@ -345,8 +350,15 @@ def gate(unit: Unit) -> bool:
     quiz_warn = UNITS_DIR / unit.uid / "quiz-warnings.txt"
     quiz_ok = not quiz_warn.exists()
     option_labels_ok = not option_label_issues
-    dslop_ok = dslop.returncode == 0 or rhythm_only
-    passed = dslop_ok and style_ok and quiz_ok and option_labels_ok
+    dslop_ok = dslop.returncode == 0 or rhythm_only or not effective_hits
+    # Truth-level audit (cast, anchors, references, spelling, punctuation): errors block.
+    audit_issues = [
+        issue
+        for issue in (*audit_file(path), *check_bank_anchors(path))
+        if issue.severity == "error"
+    ]
+    audit_ok = not audit_issues
+    passed = dslop_ok and style_ok and quiz_ok and option_labels_ok and audit_ok
     if passed and rhythm_only:
         status = "PASS (rhythm metric flagged — owner review)"
     elif passed:
@@ -361,6 +373,8 @@ def gate(unit: Unit) -> bool:
             failures.append("quiz warnings")
         if not option_labels_ok:
             failures.append("option labels")
+        if not audit_ok:
+            failures.append(f"audit ({len(audit_issues)} errors)")
         status = f"FAIL ({', '.join(failures)})"
 
     report = UNITS_DIR / unit.uid / "gate-report.txt"
@@ -376,7 +390,13 @@ def gate(unit: Unit) -> bool:
         f"== dslop (prose body, exit {dslop.returncode}) ==\n{dslop.stdout}{dslop.stderr}\n"
         f"== style detector (full file) ==\n{detector.to_json()}\n"
         f"== quiz: {'clean' if quiz_ok else 'WARNINGS (see quiz-warnings.txt)'} ==\n"
-        f"== option labels ==\n{option_label_text}\n",
+        f"== option labels ==\n{option_label_text}\n"
+        f"== audit ==\n"
+        + ("clean" if audit_ok else "\n".join(
+            f"{issue.path}:{issue.line}: {issue.check}: {issue.message}"
+            for issue in audit_issues
+        ))
+        + "\n",
         encoding="utf-8",
     )
     _log(f"[{unit.uid}] gate: {status} (style score {detector.score})")
@@ -385,6 +405,38 @@ def gate(unit: Unit) -> bool:
 
 _DSLOP_HIT_RE = re.compile(r"<stdin>:(\d+):(\d+) ([a-z-]+)")
 _MAX_REVISE_ROUNDS = 3
+_DOUBLE_QUOTES = '"“”'
+
+
+def _inside_double_quote(line: str, idx: int) -> bool:
+    """Report whether character `idx` in `line` sits within a double-quoted span.
+
+    Counts double-quote characters (straight or curly) before the position; an odd
+    count means the position is inside an open quotation. Apostrophes are ignored,
+    so single-quote spans are not detected, which is deliberate: the tokens this
+    guards (quoted vocabulary items and source citations) are double-quoted in the
+    corpus.
+    """
+    before = sum(1 for ch in line[:idx] if ch in _DOUBLE_QUOTES)
+    return before % 2 == 1
+
+
+def _dslop_hits_outside_quotes(prose: str, report: str) -> list[tuple[int, int, str]]:
+    """Return dslop line:col hits whose flagged token is not inside a quotation.
+
+    The anti-slop gate judges the course's authored prose. A word quoted from a
+    source or named as a vocabulary item (the rejoinder "Really?" in unit 3.6, say)
+    is a citation, not authored filler, so it must not fail the gate.
+    """
+    lines = prose.splitlines()
+    hits: list[tuple[int, int, str]] = []
+    for match in _DSLOP_HIT_RE.finditer(report):
+        line_no, col, rule = int(match.group(1)), int(match.group(2)), match.group(3)
+        line = lines[line_no - 1] if 0 < line_no <= len(lines) else ""
+        if _inside_double_quote(line, col - 1):
+            continue
+        hits.append((line_no, col, rule))
+    return hits
 
 _REVISE_BRIEF = (
     "A section of a TEFL course unit failed an automated prose gate. Rewrite it so the listed "
@@ -395,7 +447,14 @@ _REVISE_BRIEF = (
 )
 
 
-_DIALOGUE_LINE_RE = re.compile(r"^\s*[TS]\d*:\s")
+# Dialogue-turn labels blanked before dslop lints the body: T:/S: plus the named
+# speakers the course uses for peer-observation and trainee/mentor exchanges, where
+# T:/S: cannot apply (two teachers, or a trainee and a mentor). Verbatim speech
+# legitimately runs three short sentences together and must not be linted as prose.
+_DIALOGUE_LINE_RE = re.compile(
+    r"^\s*(?:[TS]\d*|Mr\. Osei|Ms\. Reyes|Trainee|Mentor|Observer|Colleague|"
+    r"Head of department)\s*:\s"
+)
 
 
 def _dslop_prose(text: str) -> str:

@@ -30,7 +30,8 @@ Verified research facts (the ONLY effectiveness claims you may make; cite as (Au
   of 15 classroom studies, 827 learners in total. Findings: oral corrective feedback has significant
   effects on second language development and the effects last; prompts (feedback that pushes the
   student to correct themselves) produce larger effects than recasts (the teacher simply saying the
-  correct form); longer feedback treatments produce larger effects than short ones.
+  correct form). Treatment-length results are non-monotonic; do not infer a simple duration
+  advantage.
 - Li (2010), Language Learning 60(2), pages 309-365. Meta-analysis of 33 studies. Corroborates that
   corrective feedback helps second language acquisition. Do NOT state a numeric effect size for it.
 Do not invent, extend, or round these findings. Every other claim in the unit must come from the

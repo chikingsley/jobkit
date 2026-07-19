@@ -6,52 +6,52 @@ Covers units 9.1 to 9.3. 16 points total; pass mark 70%. Section B re-asks quest
 
 **1. According to the unit, feedback operates across which three domains simultaneously?**
 
-   a. Oral, written, and peer domains
-   b. Linguistic, communicative, and affective domains
+   a. Linguistic, communicative, and affective domains
+   b. Oral, written, and peer domains
    c. Fluency, accuracy, and pronunciation domains
    d. Immediate, delayed, and self-assessment domains
 
-   *Answer: b. Linguistic, communicative, and affective domains*
+   *Answer: a. Linguistic, communicative, and affective domains*
    *Anchor: "Feedback operates across linguistic, communicative, and affective domains simultaneously."*
 
 **2. The unit describes praise as most useful when it does which of the following?**
 
    a. Uses a warm tone to encourage the student to keep trying
-   b. Is delivered immediately after every correct student response
-   c. Names the specific thing the student did correctly rather than offering a general approval word
+   b. It names the specific success, not general approval
+   c. Is delivered immediately after every correct student response
    d. Is reserved for written work so the student can refer back to it
 
-   *Answer: c. Names the specific thing the student did correctly rather than offering a general approval word*
+   *Answer: b. It names the specific success, not general approval*
    *Anchor: "Praise is most useful when it names the specific thing the student did correctly rather than offering a general approval word."*
 
 **3. According to the unit, what should determine whether a teacher uses a recast or a prompt at a given moment?**
 
    a. The teacher's personal preference and habitual correction style
    b. The student's first language background and proficiency level
-   c. The channel through which the feedback is delivered
-   d. The task at hand, specifically whether communication or accuracy is the primary goal
+   c. Whether the task prioritizes communication or accuracy
+   d. The channel through which the feedback is delivered
 
-   *Answer: d. The task at hand, specifically whether communication or accuracy is the primary goal*
+   *Answer: c. Whether the task prioritizes communication or accuracy*
    *Anchor: "Neither technique is universally superior in every classroom moment, and a teacher's choice should reflect the task at hand."*
 
 **4. A student tells a shop assistant, 'Give me the bread,' in a context that calls for a polite request. According to the unit, what kind of error is this, and what is the risk of misidentifying it?**
 
    a. A grammatical error; the risk is that the student will be asked to repeat the sentence unnecessarily.
-   b. A pragmatic error; treating it as a grammar problem would send the student in the wrong direction entirely.
+   b. A fluency error; interrupting to correct it would break the communicative flow of the task.
    c. A vocabulary error; the student needs to learn more formal synonyms for common nouns.
-   d. A fluency error; interrupting to correct it would break the communicative flow of the task.
+   d. A pragmatic error; treating it as a grammar problem would send the student in the wrong direction entirely.
 
-   *Answer: b. A pragmatic error; treating it as a grammar problem would send the student in the wrong direction entirely.*
+   *Answer: d. A pragmatic error; treating it as a grammar problem would send the student in the wrong direction entirely.*
    *Anchor: "The form is grammatically correct, but the pragmatic register is wrong. Treating that as a grammar problem would send Daniel in the wrong direction entirely."*
 
 **5. In the story-retelling lesson described in the unit, what served as natural confirmation that a student's message had been understood?**
 
-   a. The teacher repeated the student's sentence correctly to the whole class.
+   a. The actors' physical responses showed whether the message had landed.
    b. The teacher wrote the correct form on the board after the activity ended.
-   c. The actors' physical responses showed whether the message had landed.
+   c. The teacher repeated the student's sentence correctly to the whole class.
    d. A peer in the audience raised a hand to signal that the meaning was clear.
 
-   *Answer: c. The actors' physical responses showed whether the message had landed.*
+   *Answer: a. The actors' physical responses showed whether the message had landed.*
    *Anchor: "the actors' physical responses served as natural confirmation: if they acted correctly, the speaker knew the message had landed"*
 
 **6. According to the unit, what is the recommended feedback technique for an accuracy-focused writing task such as copying a text?**
@@ -67,44 +67,54 @@ Covers units 9.1 to 9.3. 16 points total; pass mark 70%. Section B re-asks quest
 **7. According to the unit, what is the teacher's FIRST obligation when encountering an incorrect form in a student's production?**
 
    a. Immediately provide the correct form so the student can move on
-   b. Understand why the incorrect form occurred and determine whether it reflects missing knowledge or a careless slip
-   c. Record the error and address it only if it recurs in a second piece of work
+   b. Record the error and address it only if it recurs in a second piece of work
+   c. Diagnose its cause and decide whether it shows missing knowledge or a slip
    d. Ask the whole class whether they can identify what went wrong
 
-   *Answer: b. Understand why the incorrect form occurred and determine whether it reflects missing knowledge or a careless slip*
+   *Answer: c. Diagnose its cause and decide whether it shows missing knowledge or a slip*
    *Anchor: "understand why the incorrect form occurred, and determine whether the student lacked the knowledge to produce the correct form"*
 
-**8. The unit describes a student named Carlos who attempts a complex conditional sentence and gets it wrong, contrasting him with a student who avoids the structure entirely. What point does this contrast illustrate?**
+**8. The unit describes a student named Carlos, who attempts a complex conditional sentence and gets it wrong, contrasting him with a student who avoids the structure entirely. What point does this contrast illustrate?**
 
    a. Avoiding difficult structures is a sign of strong metalinguistic awareness
    b. Attempting a structure and failing is less productive than staying within known language
-   c. A failed attempt generates useful data about the learner's developing system, making it more productive than avoidance
-   d. Teachers should discourage risk-taking until foundational structures are fully mastered
+   c. Teachers should discourage risk-taking until foundational structures are fully mastered
+   d. Failure reveals developing knowledge; avoidance does not
 
-   *Answer: c. A failed attempt generates useful data about the learner's developing system, making it more productive than avoidance*
+   *Answer: d. Failure reveals developing knowledge; avoidance does not*
    *Anchor: "the attempt generates data, both for the learner and for the teacher, about where the interlanguage system currently stands"*
 
 **9. When the unit discusses a pragmatic error, which of the following examples best fits its definition?**
 
-   a. A student writes 'she go to school' instead of 'she goes to school'
+   a. Using peer-level register with a new teacher: 'Hey, tell me the answer.'
    b. A student says 'I am very boring' when meaning to say 'I am very bored'
-   c. A student addresses a new teacher with 'Hey, tell me the answer,' using a register suited to a peer
+   c. A student writes 'she go to school' instead of 'she goes to school'
    d. A student omits the past-tense marker, saying 'yesterday I go to the market'
 
-   *Answer: c. A student addresses a new teacher with 'Hey, tell me the answer,' using a register suited to a peer*
+   *Answer: a. Using peer-level register with a new teacher: 'Hey, tell me the answer.'*
    *Anchor: "a pragmatic error occurs when a student produces language that is grammatically correct but socially or culturally inappropriate for the situation"*
 
 ## Section B — Review (2 points, 1 each)
 
-**10. Explain how predicting difficulty before a lesson begins can make pronunciation work more efficient, using the unit's own example to support your answer.**
+**10. According to the unit, what is the teacher's central responsibility during the discussion phase of an information-gap task?**
 
-   *Answer: A teacher who anticipates which sounds will cause trouble can build a brief pronunciation moment into vocabulary pre-teaching, so that students have already heard and attempted the sounds before encountering them in the main activity, such as a reading text.*
-   *Anchor: "unit 6.4 quiz"*
+   a. Providing corrective feedback on every grammatical error students produce during the exchange.
+   b. Introducing a new activity once students have finished gathering their survey data.
+   c. Ensuring that all students have an equal opportunity to contribute.
+   d. Demonstrating the correct answers so students can check their recorded responses.
 
-**11. The unit describes a two-stage design for information-gap tasks. What different kind of speaking demand does each stage create?**
-
-   *Answer: In the first stage, students need to ask questions clearly and listen carefully enough to write accurate answers. In the second stage, they need to interpret and compare, drawing on critical thinking.*
+   *Answer: The teacher ensures that all students have an equal opportunity to contribute, a central responsibility in a student-centered classroom.*
    *Anchor: "unit 8.1 quiz"*
+
+**11. In the genetic testing classroom described in the unit, what does the source identify as the reason students were more motivated to learn and listen to one another?**
+
+   a. The teacher had scripted the presentations in advance to ensure accuracy
+   b. Students were awarded grades based on how well their classmates evaluated their presentations
+   c. The students had genuine opinions about the topic and were sharing real-world information with each other
+   d. The overhead transparencies provided visual support that reduced anxiety during speaking tasks
+
+   *Answer: c. The students had genuine opinions about the topic and were sharing real-world information with each other*
+   *Anchor: "unit 4.2 quiz"*
 
 ## Section C — Scenario (5 points)
 
@@ -112,3 +122,4 @@ Covers units 9.1 to 9.3. 16 points total; pass mark 70%. Section B re-asks quest
 
    *Answer: Mr. Osei should treat Yuki's single lapse and Daniel's consistent pattern as fundamentally different problems requiring different responses. During the fluency activity itself, he should avoid interrupting either student, since stopping mid-conversation would undermine the communicative momentum and affective confidence the task is designed to build. After the activity, however, his responses should diverge. For Yuki, a brief individual note or quiet mention is sufficient—her accurate use of past-tense forms throughout the rest of her turn strongly suggests she already possesses the rule and simply lost attention for a moment. This is a mistake, not an error, and over-correcting it risks damaging her confidence without addressing any real gap in her knowledge. For Daniel, the consistent absence of past-tense marking across multiple verbs and subjects signals an error: the rule has not been internalized. Mr. Osei should plan targeted follow-up, such as a structured exchange in which he asks Daniel to identify the rule, prompts self-correction ('Think about what we add when the subject is I in the past'), and directs him to review his own output—mirroring the diagnostic classroom exchange described in the module. This prompt-based approach is preferable to simply recasting Daniel's sentences, since prompts that push learners toward self-correction produce more durable effects than recasts. Throughout both responses, Mr. Osei should attend to all three feedback domains: acknowledging what each student communicated successfully (communicative), addressing the linguistic gap only where a genuine gap exists, and maintaining the affective safety that encourages both students to keep taking risks in the target language.*
    *Anchor: "treating one as the other wastes instructional time"*
+   *Rubric (5 points): distinguishes Yuki's single slip (a mistake) from Daniel's consistent absence of past-tense forms (an error) (2); avoids interrupting either learner during the fluency task (1); gives a differentiated follow-up appropriate to each (2).*

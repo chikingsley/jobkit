@@ -13,7 +13,7 @@
   },
   {
     "type": "mc",
-    "question": "The unit warns that the six traditional proficiency band labels are not perfectly standardised. Which of the following best reflects this point?",
+    "question": "The unit warns that the six traditional proficiency band labels are not perfectly standardized. Which of the following best reflects this point?",
     "options": [
       "Schools always use the CEFR instead of traditional band labels.",
       "One school may call a level 'pre-intermediate' where another uses 'elementary plus.'",
@@ -29,10 +29,10 @@
     "options": [
       "To allow the teacher to focus exclusively on weaker learners while stronger ones work alone.",
       "To ensure stronger learners always present to the group while weaker learners take notes.",
-      "To distribute cognitive load productively, giving the weaker learner a model and the stronger learner consolidation through explaining.",
+      "To give one learner a model and the other consolidation through explanation",
       "To prevent stronger learners from completing tasks too quickly by assigning them extra writing."
     ],
-    "answer": "To distribute cognitive load productively, giving the weaker learner a model and the stronger learner consolidation through explaining.",
+    "answer": "To give one learner a model and the other consolidation through explanation",
     "anchor": "gives the weaker learner access to a model and gives the stronger learner the consolidation that comes from explaining and reformulating"
   },
   {

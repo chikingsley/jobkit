@@ -4,23 +4,23 @@
     "question": "Why does the unit argue that learning-styles theory carries a 'moral weight' that makes it difficult for teachers to abandon?",
     "options": [
       "Because it is endorsed by peer-reviewed neuroscience journals",
-      "Because sorting students into types feels like attending to them as individuals, reflecting a genuinely valuable instinct",
+      "Because categorizing students feels like individual attention",
       "Because it reduces the workload of lesson planning by simplifying differentiation",
       "Because government training standards legally require teachers to identify student styles"
     ],
-    "answer": "Because sorting students into types feels like attending to them as individuals, reflecting a genuinely valuable instinct — Sorting students into types feels like paying attention to them as individuals, and that instinct reflects something genuinely valuable about good teaching.",
+    "answer": "Because categorizing students feels like individual attention",
     "anchor": "Sorting students into types feels like paying attention to them as individuals"
   },
   {
     "type": "mc",
-    "question": "According to the unit, what is the key problem with how the source glossary defines 'visual learner' and 'kinesthetic learner'?",
+    "question": "According to the unit, what is the key problem with how the module glossary defines 'visual learner' and 'kinesthetic learner'?",
     "options": [
       "The definitions use outdated terminology that modern neuroscience has replaced",
-      "The definitions conflate preferring a format with benefiting from it by placing the two verbs side by side without comment",
+      "They treat preference and learning benefit as equivalent",
       "The definitions exclude important style categories such as logical and solitary learners",
       "The definitions are too technical for practicing teachers to apply in the classroom"
     ],
-    "answer": "The definitions conflate preferring a format with benefiting from it by placing the two verbs side by side without comment — Those two verbs are doing very different work, and placing them side by side without comment treats them as equivalent.",
+    "answer": "They treat preference and learning benefit as equivalent",
     "anchor": "Those two verbs are doing very different work, and placing them side by side without comment"
   },
   {
@@ -28,11 +28,11 @@
     "question": "The unit describes Willingham, Hughes, and Dobolyi (2015) as going 'a step further' than simply confirming the lack of evidence for learning styles. What additional position did they take?",
     "options": [
       "They proposed a revised taxonomy of learning styles based on neuroimaging data",
-      "They argued that learning-styles theories should be presented to teachers as a popular but scientifically debunked idea rather than as a basis for planning",
-      "They recommended that style inventories be replaced with standardised aptitude tests",
+      "Teach it as a popular but scientifically debunked planning idea.",
+      "They recommended that style inventories be replaced with standardized aptitude tests",
       "They called for learning styles to be removed from all national curriculum frameworks"
     ],
-    "answer": "They argued that learning-styles theories should be presented to teachers as a popular but scientifically debunked idea rather than as a basis for planning — They argued that learning-styles theories should be presented to teachers and trainee teachers as a popular but scientifically debunked idea.",
+    "answer": "Teach it as a popular but scientifically debunked planning idea.",
     "anchor": "learning-styles theories should be presented to teachers and trainee teachers as a popular but scientifically debunked idea"
   },
   {

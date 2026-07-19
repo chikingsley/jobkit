@@ -4,11 +4,11 @@
     "question": "According to the unit, what distinguishes receptive skills from productive skills?",
     "options": [
       "Receptive skills require grammar knowledge, while productive skills require only vocabulary.",
-      "Receptive skills involve taking in language produced by others, while productive skills involve generating language for others.",
+      "Receptive skills take in others' language; productive skills generate it",
       "Receptive skills are assessed through written tests, while productive skills are assessed through spoken performance.",
       "Receptive skills develop before productive skills in all language learners regardless of context."
     ],
-    "answer": "Receptive skills involve taking in language produced by others, while productive skills involve generating language for others.",
+    "answer": "Receptive skills take in others' language; productive skills generate it",
     "anchor": "Listening and reading are the receptive skills, meaning the learner takes in language produced by others; speaking and writing are the productive skills"
   },
   {
@@ -16,11 +16,11 @@
     "question": "In the 'Good Deeds' iEARN project, what was the purpose of dividing students into two groups to read different sources in jigsaw style?",
     "options": [
       "To allow faster readers to finish early and help slower readers with comprehension.",
-      "To ensure that the subsequent discussion required genuine listening because no single student held the complete picture.",
+      "To create an information gap that makes listening necessary",
       "To reduce the number of library books needed by splitting the reading load equally.",
       "To give the teacher time to assess individual reading skills while the other group worked independently."
     ],
-    "answer": "To ensure that the subsequent discussion required genuine listening because no single student held the complete picture.",
+    "answer": "To create an information gap that makes listening necessary",
     "anchor": "Because each group had read different material, the subsequent discussion required genuine listening, since no single student held the complete picture."
   },
   {
@@ -33,7 +33,7 @@
       "It gives students advance notice of which skill will be graded so they can prepare accordingly."
     ],
     "answer": "It helps the teacher shorten a supporting stage without abandoning the lesson's primary purpose.",
-    "anchor": "If Mateus needs another five minutes to finish his paragraph, the teacher can shorten the read-aloud stage without abandoning the lesson's purpose"
+    "anchor": "If Daniel needs another five minutes to finish his paragraph, the teacher can shorten the read-aloud stage without abandoning the lesson's purpose"
   },
   {
     "type": "short",

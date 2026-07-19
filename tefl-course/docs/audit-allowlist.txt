@@ -1,0 +1,32 @@
+# Audit allowlist — lines of <path-suffix>|<check>|<substring> (see src/tefl_course/audit.py).
+# Every entry is a reviewed false positive with a justification; this is not a place
+# to hide real defects.
+
+# "Helen" is a real character in Dialog 30 of Dobson's public-domain *Dialogs for
+# Everyday Use* (U.S. Dept. of State). Unit 3.6 quotes that source accurately, so the
+# name is a verbatim citation, not an out-of-cast example learner.
+units/3.6/unit.md|cast-outsider|Helen
+
+# The cast-pronoun heuristic splits a sentence and flags any opposite-gender pronoun
+# after a cast name. It cannot tell that the pronoun belongs to a second person, or
+# that it sits inside a quoted L2-error example. Each entry below is one of those two
+# cases, verified by reading the full sentence.
+
+# 4.4: "he'd"/"he" refer to the new classmate being recommended events to, not Priya.
+units/4.4/unit.md|cast-pronoun|Which one do you think he
+
+# Reported-speech examples: "she" is Yuki (correct); "him" is the person she calls.
+module-03-test.md|cast-pronoun|said she will call him
+module-03-test.md|cast-pronoun|said she would call him
+module-03-test-key.md|cast-pronoun|said she will call him
+module-03-test-key.md|cast-pronoun|said she would call him
+
+# Error-correction example: "she come" is Daniel's quoted L2 error; "his" is Daniel's.
+module-09-test.md|cast-pronoun|she come
+module-09-test-key.md|cast-pronoun|she come
+
+# Modal-diagnosis scenario: "She must to finish" is Carlos's quoted written error;
+# the feedback pronouns for Carlos himself are not gendered.
+final-exam.md|cast-pronoun|must to finish the report
+final-exam-key.md|cast-pronoun|must to finish the report
+final-exam-key.md|cast-pronoun|modal verbs never take

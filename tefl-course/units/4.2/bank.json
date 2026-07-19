@@ -4,11 +4,11 @@
     "question": "According to the unit, what distinguishes a contextualized classroom activity from a standard grammar exercise in terms of what it gives students?",
     "options": [
       "A longer list of vocabulary items to memorize before speaking",
-      "A reason to speak, a setting that shapes how they speak, and a social relationship that determines what is appropriate",
+      "A purpose, setting, and social relationship for speaking",
       "A model dialogue to rehearse until it can be reproduced accurately",
       "A written rubric explaining which grammatical forms will be assessed"
     ],
-    "answer": "A reason to speak, a setting that shapes how they speak, and a social relationship that determines what is appropriate",
+    "answer": "A purpose, setting, and social relationship for speaking",
     "anchor": "A contextualized classroom activity changes this by giving students a reason to speak, a setting that shapes how they speak, and a social relationship that determines what is appropriate to say."
   },
   {
@@ -25,7 +25,7 @@
   },
   {
     "type": "mc",
-    "question": "The unit recommends that a teacher designing a first contextualized lesson segment aim for a specific duration. What length does the source suggest?",
+    "question": "The unit recommends that a teacher designing a first contextualized lesson segment aim for a specific duration. What length does the module suggest?",
     "options": [
       "Five minutes, to keep the activity low-stakes and easy to manage",
       "Thirty minutes, so that all integrated skills can be covered within the segment",
@@ -33,7 +33,7 @@
       "A full class period, so the theme can be introduced and consolidated in one session"
     ],
     "answer": "Roughly fifteen minutes, as a manageable scope for a first attempt",
-    "anchor": "The source suggests working with a segment of roughly fifteen minutes, which is a manageable scope for a first attempt."
+    "anchor": "The source suggests working with a segment of roughly fifteen minutes"
   },
   {
     "type": "short",
