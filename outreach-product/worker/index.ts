@@ -23,6 +23,7 @@ import { registerJobRoutes } from "./routes/jobs";
 import { registerMessagePreviewRoutes } from "./routes/message-preview";
 import { registerMessageRoutes } from "./routes/messages";
 import { registerOnboardingRoutes } from "./routes/onboarding";
+import { registerTestLabRoutes } from "./routes/test-lab";
 import { registerUserSettingsRoutes } from "./routes/user-settings";
 import { ImportSchema, SubmitSchema } from "./schemas";
 import { authenticateAgentRunner } from "./services/agent-runners";
@@ -47,6 +48,7 @@ import {
   searchUniversities,
 } from "./services/lookups";
 import { ResumeUploadError } from "./services/profile-imports";
+import { TestLabError } from "./services/test-lab/errors";
 
 const app: JobKitApp = new OpenAPIHono<{
   Bindings: AppEnv;
@@ -115,6 +117,9 @@ app.onError((error, c) => {
       error.status
     );
   }
+  if (error instanceof TestLabError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
   return c.json({ message: "Internal server error", ok: false }, 500);
 });
 
@@ -126,13 +131,18 @@ app.on(["GET", "POST"], "/api/auth/*", (c) =>
 
 const AGENT_PAIRING_EXCHANGE_PATH = "/api/agent-runner-pairings/exchange";
 const AGENT_TASK_RESULT_PATH = /^\/api\/agent-tasks\/[^/]+\/(complete|fail)$/u;
+const AGENT_TASK_ARTIFACT_PATH =
+  /^\/api\/agent-tasks\/[^/]+\/artifacts\/[^/]+$/u;
 const AGENT_TASK_CLAIM_PATH = "/api/agent-tasks/claim";
 
 function runnerRequestAllowed(method: string, path: string) {
-  if (method !== "POST") {
-    return false;
+  if (method === "GET") {
+    return AGENT_TASK_ARTIFACT_PATH.test(path);
   }
-  return path === AGENT_TASK_CLAIM_PATH || AGENT_TASK_RESULT_PATH.test(path);
+  return (
+    method === "POST" &&
+    (path === AGENT_TASK_CLAIM_PATH || AGENT_TASK_RESULT_PATH.test(path))
+  );
 }
 
 app.use("/api/*", async (c, next) => {
@@ -200,6 +210,7 @@ registerEmailAttemptRoutes(app);
 registerGmailRoutes(app);
 registerMessageRoutes(app);
 registerMessagePreviewRoutes(app);
+registerTestLabRoutes(app);
 registerUserSettingsRoutes(app);
 
 app.get("/api/fx", async (c) => c.json(await fetchExchangeRates()));

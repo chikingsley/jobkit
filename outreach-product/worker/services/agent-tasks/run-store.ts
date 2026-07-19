@@ -41,6 +41,7 @@ export async function createAgentTaskRun(
     )
     .run();
   return {
+    artifacts: task.artifacts ?? [],
     leaseExpiresAt: task.leaseExpiresAt,
     model: task.model,
     outputSchema: task.outputSchema,

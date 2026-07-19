@@ -9,6 +9,7 @@ export interface AgentTaskRunRow {
 }
 
 export interface PreparedAgentTask {
+  artifacts?: PreparedAgentTaskArtifact[];
   leaseExpiresAt: string;
   model: string;
   outputSchema: Record<string, unknown>;
@@ -20,12 +21,23 @@ export interface PreparedAgentTask {
   webSearch: "disabled" | "live";
 }
 
+export interface PreparedAgentTaskArtifact {
+  contentType: string;
+  filename: string;
+  id: string;
+  purpose: string;
+  sha256: string;
+  sizeBytes: number;
+  url: string;
+}
+
 export type AgentTaskFamily =
   | "application_message"
   | "country_sweep"
   | "job_match_facts"
   | "job_position"
-  | "profile_import";
+  | "profile_import"
+  | "test_lab";
 
 export class AgentTaskError extends Error {
   readonly status: 401 | 404 | 409;

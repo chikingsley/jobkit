@@ -175,6 +175,17 @@ export async function revokeAgentRunner(
       .bind(timestamp, timestamp, runnerId, userId),
     db
       .prepare(
+        `UPDATE test_lab_runs
+            SET status='queued',started_at=NULL,
+                error_detail='Runner revoked; task requeued',updated_at=?
+          WHERE user_id=? AND status='running' AND agent_task_request_id IN (
+            SELECT id FROM agent_task_requests
+             WHERE runner_id=? AND user_id=? AND status='claimed'
+          )`
+      )
+      .bind(timestamp, userId, runnerId, userId),
+    db
+      .prepare(
         `UPDATE agent_task_requests
             SET status='queued',runner_id=NULL,claimed_at=NULL,
                 lease_expires_at=NULL,error_detail='Runner revoked; task requeued',

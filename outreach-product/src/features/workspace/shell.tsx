@@ -3,6 +3,7 @@ import {
   BriefcaseBusiness,
   ChevronsUpDown,
   Files,
+  FlaskConical,
   Globe2,
   Layers3,
   LogOut,
@@ -55,6 +56,7 @@ const navigation = [
   { icon: SlidersHorizontal, id: "preferences", label: "Preferences" },
   { icon: Files, id: "documents", label: "Documents" },
   { icon: MessageSquareText, id: "messageStyle", label: "Writing style" },
+  { icon: FlaskConical, id: "testLab", label: "Test Lab" },
 ] as const;
 
 export function ViewLoading() {
@@ -230,6 +232,9 @@ function NavUser({
               <DropdownMenuItem onClick={() => go("messageStyle")}>
                 <MessageSquareText /> Writing style
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => go("testLab")}>
+                <FlaskConical /> Test Lab
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => void onSignOut()}>
@@ -260,6 +265,7 @@ export function WorkspaceHeader({
     messages: "Messages",
     preferences: "Preferences",
     profile: "Profile",
+    testLab: "Test Lab",
   }[activeView];
   return (
     <header className="flex h-14 min-w-0 shrink-0 items-center gap-3 border-b bg-background px-4">

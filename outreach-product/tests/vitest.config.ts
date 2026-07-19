@@ -19,6 +19,7 @@ export default defineConfig({
             "https://outreach.test/api/webhooks/google/gmail",
           GOOGLE_PUBSUB_SERVICE_ACCOUNT: "pubsub@example.test",
           GOOGLE_PUBSUB_TOPIC: "projects/test-project/topics/jobkit-gmail",
+          JINA_API_KEY: "test-jina-key",
           SERIOUSTEACHERS_EMAIL: "teacher@example.test",
           SERIOUSTEACHERS_PASSWORD: "test-password",
           TEST_MIGRATIONS: migrations,

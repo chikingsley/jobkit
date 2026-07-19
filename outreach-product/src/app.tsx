@@ -70,6 +70,9 @@ const JobsWorkspace = lazy(async () => ({
 const AneslWorkspace = lazy(async () => ({
   default: (await import("@/features/anesl/workspace")).AneslWorkspace,
 }));
+const TestLabView = lazy(async () => ({
+  default: (await import("@/features/test-lab/view")).TestLabView,
+}));
 
 function WorkspacePage({ children }: PropsWithChildren) {
   return (
@@ -243,6 +246,14 @@ export function App() {
           }
         />
         <Routes>
+          <Route
+            element={
+              <WorkspacePage>
+                <TestLabView request={apiRequest} />
+              </WorkspacePage>
+            }
+            path={workspacePaths.testLab}
+          />
           <Route
             element={
               <Suspense fallback={<ViewLoading />}>

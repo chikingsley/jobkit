@@ -46,66 +46,93 @@ export interface DocumentTextConversion {
   text: string;
 }
 
+export interface DocumentTextPage {
+  index: number;
+  markdown: string;
+}
+
+export interface DocumentTextBenchmark extends DocumentTextConversion {
+  pages: DocumentTextPage[];
+}
+
 export async function convertResumeToText(
   env: AppEnv,
   input: { bytes: ArrayBuffer; contentType: string; filename: string }
 ) {
+  const deterministic = await extractDocumentDeterministically(input);
+  if (deterministic) {
+    return deterministic;
+  }
+  const mistral = await runMistralDocumentOcr(env, input);
+  return { ...mistral, text: readableText(mistral.text) };
+}
+
+export async function extractDocumentDeterministically(input: {
+  bytes: ArrayBuffer;
+  contentType: string;
+  filename: string;
+}): Promise<DocumentTextBenchmark | null> {
   assertFileSignature(input.bytes, input.contentType);
   if (TEXT_CONTENT_TYPES.has(input.contentType)) {
+    const text = readableText(new TextDecoder().decode(input.bytes));
     return {
       detail: "plain-text",
-      provider: "deterministic" as const,
-      text: readableText(new TextDecoder().decode(input.bytes)),
+      pages: [{ index: 0, markdown: text }],
+      provider: "deterministic",
+      text,
     };
   }
-
   if (input.contentType === "application/pdf") {
-    const text = await deterministicPdfText(input);
-    if (text) {
-      return { detail: "unpdf", provider: "deterministic" as const, text };
-    }
-  } else if (input.contentType === DOCX_CONTENT_TYPE) {
-    const text = await deterministicDocxText(input);
-    if (text) {
-      return { detail: "mammoth", provider: "deterministic" as const, text };
-    }
+    return await deterministicPdfText(input);
   }
+  if (input.contentType === DOCX_CONTENT_TYPE) {
+    return await deterministicDocxText(input);
+  }
+  return null;
+}
 
+export async function runMistralDocumentOcr(
+  env: AppEnv,
+  input: { bytes: ArrayBuffer; contentType: string; filename: string }
+): Promise<DocumentTextBenchmark> {
+  assertFileSignature(input.bytes, input.contentType);
   if (
     input.contentType === DOCX_CONTENT_TYPE ||
     input.contentType === PPTX_CONTENT_TYPE
   ) {
-    return {
-      detail: "mistral-ocr-latest",
-      provider: "mistral" as const,
-      text: await convertUploadedDocument(env, input),
-    };
+    return await convertUploadedDocument(env, input);
   }
-
   const type = input.contentType.startsWith("image/")
     ? "image_url"
     : "document_url";
-  return {
-    detail: "mistral-ocr-latest",
-    provider: "mistral" as const,
-    text: await convertDocumentUrl(
-      env,
-      input,
-      type,
-      `data:${input.contentType};base64,${Buffer.from(input.bytes).toString("base64")}`
-    ),
-  };
+  return await convertDocumentUrl(
+    env,
+    input,
+    type,
+    `data:${input.contentType};base64,${Buffer.from(input.bytes).toString("base64")}`
+  );
 }
 
 async function deterministicPdfText(input: {
   bytes: ArrayBuffer;
+  contentType: string;
   filename: string;
-}) {
+}): Promise<DocumentTextBenchmark | null> {
   try {
     const { extractText, getDocumentProxy } = await import("unpdf");
     const document = await getDocumentProxy(new Uint8Array(input.bytes));
-    const result = await extractText(document, { mergePages: true });
-    return readableText(result.text);
+    const result = await extractText(document, { mergePages: false });
+    const pages = result.text.map((pageText, index) => ({
+      index,
+      markdown: pageText.trim(),
+    }));
+    const text = readableText(
+      pages
+        .map((page) => page.markdown)
+        .filter(Boolean)
+        .join("\n\n")
+    );
+    return { detail: "unpdf", pages, provider: "deterministic", text };
   } catch (error) {
     logDeterministicFailure(input.filename, "unpdf", error);
     return null;
@@ -114,12 +141,19 @@ async function deterministicPdfText(input: {
 
 async function deterministicDocxText(input: {
   bytes: ArrayBuffer;
+  contentType: string;
   filename: string;
-}) {
+}): Promise<DocumentTextBenchmark | null> {
   try {
     const mammoth = await import("mammoth");
     const result = await mammoth.extractRawText({ arrayBuffer: input.bytes });
-    return readableText(result.value);
+    const text = readableText(result.value);
+    return {
+      detail: "mammoth",
+      pages: [{ index: 0, markdown: text }],
+      provider: "deterministic",
+      text,
+    };
   } catch (error) {
     logDeterministicFailure(input.filename, "mammoth", error);
     return null;
@@ -211,13 +245,21 @@ async function convertDocumentUrl(
     input,
     "ocr"
   );
-  return readableText(
-    result.pages
-      .toSorted((left, right) => left.index - right.index)
-      .map((page) => page.markdown.trim())
+  const pages = result.pages
+    .toSorted((left, right) => left.index - right.index)
+    .map((page) => ({ index: page.index, markdown: page.markdown.trim() }));
+  const text = boundedText(
+    pages
+      .map((page) => page.markdown)
       .filter(Boolean)
       .join("\n\n")
   );
+  return {
+    detail: result.model,
+    pages,
+    provider: "mistral" as const,
+    text,
+  };
 }
 
 async function parseMistralResponse<T>(
@@ -303,12 +345,17 @@ function mistralHeaders(env: AppEnv, json = false) {
 }
 
 function readableText(value: string) {
-  const text = value.trim();
+  const text = boundedText(value);
   if (text.length < 80) {
     throw new DocumentConversionError(
       "The resume did not contain enough readable text"
     );
   }
+  return text;
+}
+
+function boundedText(value: string) {
+  const text = value.trim();
   if (text.length > MAX_RESUME_TEXT_CHARACTERS) {
     throw new DocumentConversionError(
       "The resume contained more readable text than expected"

@@ -4,6 +4,10 @@ import {
   JOB_POSITION_TASK_TYPE,
 } from "../../src/agent-tasks/job-analysis";
 import { PROFILE_IMPORT_TASK_TYPE } from "../../src/agent-tasks/profile-import";
+import {
+  TEST_LAB_DOCUMENT_OCR_TASK_TYPE,
+  TEST_LAB_TASK_TYPE,
+} from "../../src/agent-tasks/test-lab";
 import type { AgentRunnerContext } from "../app-types";
 import type { AppEnv } from "../env";
 import {
@@ -38,6 +42,11 @@ import {
   readLastAgentTaskType,
   readOwnedRunningAgentTask,
 } from "./agent-tasks/run-store";
+import {
+  claimTestLabTask,
+  completeTestLabTask,
+  failTestLabTask,
+} from "./agent-tasks/test-lab-adapter";
 
 export async function claimAgentTask(env: AppEnv, runner: AgentRunnerContext) {
   await expireStaleAgentTaskRuns(env.DB, runner.user.id);
@@ -52,6 +61,10 @@ export async function claimAgentTask(env: AppEnv, runner: AgentRunnerContext) {
     {
       claim: () => claimApplicationMessageTask(env, runner),
       family: "application_message",
+    },
+    {
+      claim: () => claimTestLabTask(env, runner),
+      family: "test_lab",
     },
     {
       claim: () => claimCountryTask(env.DB, runner),
@@ -136,6 +149,17 @@ export async function completeAgentTask(
       runId,
       rawOutput
     );
+  } else if (
+    run.task_type === TEST_LAB_TASK_TYPE ||
+    run.task_type === TEST_LAB_DOCUMENT_OCR_TASK_TYPE
+  ) {
+    domainResult = await completeTestLabTask(
+      env,
+      runner,
+      run,
+      runId,
+      rawOutput
+    );
   } else {
     throw new AgentTaskError("Agent task type is not supported", 409);
   }
@@ -167,6 +191,12 @@ export async function failAgentTask(
   if (run.task_type.startsWith("country_sweep.")) {
     domainResult = await failCountryTask(env.DB, runner, run, error);
   } else if (
+    run.task_type === TEST_LAB_TASK_TYPE ||
+    run.task_type === TEST_LAB_DOCUMENT_OCR_TASK_TYPE
+  ) {
+    await failTestLabTask(env, runner, run.source_task_id, runId, error);
+    return { domainResult, runId };
+  } else if (
     run.task_type !== JOB_POSITION_TASK_TYPE &&
     run.task_type !== JOB_MATCH_FACTS_TASK_TYPE
   ) {
@@ -191,6 +221,12 @@ function taskFamilyForType(taskType: string | null): AgentTaskFamily | null {
   }
   if (taskType === PROFILE_IMPORT_TASK_TYPE) {
     return "profile_import";
+  }
+  if (
+    taskType === TEST_LAB_TASK_TYPE ||
+    taskType === TEST_LAB_DOCUMENT_OCR_TASK_TYPE
+  ) {
+    return "test_lab";
   }
   return null;
 }

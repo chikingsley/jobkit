@@ -1,3 +1,10 @@
+import { PROFILE_IMPORT_TASK_TYPE } from "../../src/agent-tasks/profile-import";
+import {
+  TEST_LAB_DOCUMENT_OCR_TASK_TYPE,
+  TEST_LAB_TASK_TYPE,
+} from "../../src/agent-tasks/test-lab";
+import { AgentTaskError } from "./agent-tasks/contracts";
+
 export interface ClaimedAgentTaskRequest {
   id: string;
   input: unknown;
@@ -299,6 +306,18 @@ export async function cancelAgentTaskRequest(
         .bind(timestamp, request.subject_id, userId)
     );
   }
+  if (isTestLabTaskType(request.task_type)) {
+    statements.push(
+      db
+        .prepare(
+          `UPDATE test_lab_runs
+              SET status='cancelled',error_detail='Cancelled by user',
+                  completed_at=?,updated_at=?
+            WHERE id=? AND user_id=? AND status='queued'`
+        )
+        .bind(timestamp, timestamp, request.subject_id, userId)
+    );
+  }
   const [result] = await db.batch(statements);
   if ((result?.meta.changes ?? 0) !== 1) {
     throw new AgentTaskError("Agent task could not be cancelled", 409);
@@ -340,6 +359,23 @@ export async function retryAgentTaskRequest(
         .bind(new Date().toISOString(), request.subject_id, userId)
     );
   }
+  if (isTestLabTaskType(request.task_type)) {
+    statements.push(
+      db
+        .prepare(
+          `UPDATE test_lab_runs
+              SET status='queued',agent_task_request_id=?,error_detail='',
+                  completed_at=NULL,started_at=NULL,updated_at=?
+            WHERE id=? AND user_id=? AND status IN ('failed','cancelled')`
+        )
+        .bind(
+          creation.request.id,
+          new Date().toISOString(),
+          request.subject_id,
+          userId
+        )
+    );
+  }
   await db.batch(statements);
   return creation.request;
 }
@@ -349,6 +385,18 @@ export async function releaseExpiredAgentTaskRequests(
   userId: string,
   timestamp: string
 ) {
+  await db
+    .prepare(
+      `UPDATE test_lab_runs
+          SET status='queued',started_at=NULL,
+              error_detail='Runner lease expired; task requeued',updated_at=?
+        WHERE user_id=? AND status='running' AND agent_task_request_id IN (
+          SELECT id FROM agent_task_requests
+           WHERE user_id=? AND status='claimed' AND lease_expires_at<?
+        )`
+    )
+    .bind(timestamp, userId, userId, timestamp)
+    .run();
   await db
     .prepare(
       `UPDATE agent_task_requests
@@ -369,6 +417,13 @@ function toClaimedRequest(row: AgentTaskRequestRow): ClaimedAgentTaskRequest {
     subjectType: row.subject_type,
     taskType: row.task_type,
   };
+}
+
+function isTestLabTaskType(taskType: string) {
+  return (
+    taskType === TEST_LAB_TASK_TYPE ||
+    taskType === TEST_LAB_DOCUMENT_OCR_TASK_TYPE
+  );
 }
 
 function toStoredRequest(row: AgentTaskRequestRow) {
@@ -451,6 +506,3 @@ function toAutonomousTaskSummary(row: Record<string, unknown>) {
     taskType: String(row.task_type),
   };
 }
-
-import { PROFILE_IMPORT_TASK_TYPE } from "../../src/agent-tasks/profile-import";
-import { AgentTaskError } from "./agent-tasks/contracts";

@@ -35,8 +35,21 @@ export const AgentTaskFailureSchema = z
   .object({ error: z.string().trim().min(1).max(4000) })
   .strict();
 
+export const AgentTaskArtifactSchema = z
+  .object({
+    contentType: z.string().min(1),
+    filename: z.string().min(1),
+    id: z.string().min(1),
+    purpose: z.string().min(1),
+    sha256: z.string().regex(/^[a-f0-9]{64}$/u),
+    sizeBytes: z.number().int().positive(),
+    url: z.string().startsWith("/api/agent-tasks/"),
+  })
+  .strict();
+
 export const AgentTaskEnvelopeSchema = z
   .object({
+    artifacts: z.array(AgentTaskArtifactSchema).max(20).default([]),
     leaseExpiresAt: z.iso.datetime(),
     model: z.string().min(1),
     outputSchema: z.record(z.string(), z.unknown()),

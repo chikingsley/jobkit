@@ -8,6 +8,7 @@ export const workspacePaths = {
   messages: "/messages",
   preferences: "/preferences",
   profile: "/profile",
+  testLab: "/test-lab",
 } as const;
 
 export type WorkspaceView = keyof typeof workspacePaths;

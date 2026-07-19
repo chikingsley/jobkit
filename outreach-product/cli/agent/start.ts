@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { parseArgs } from "node:util";
 import { AgentTaskEnvelopeSchema } from "../../src/features/agents/schema";
 import { runStructuredAgent } from "../lib/structured-agent";
@@ -30,7 +31,15 @@ async function main() {
 
     console.log(`Running ${task.taskType} with ${task.model}`);
     try {
+      const artifacts = await Promise.all(
+        task.artifacts.map(async (artifact) => ({
+          bytes: await downloadArtifact(artifact),
+          contentType: artifact.contentType,
+          filename: artifact.filename,
+        }))
+      );
       const output = await runStructuredAgent({
+        artifacts,
         effort: task.reasoningEffort,
         model: task.model,
         outputSchema: task.outputSchema,
@@ -50,6 +59,35 @@ async function main() {
       console.error(`Failed ${task.taskType}: ${message}`);
     }
   } while (!args.once);
+}
+
+async function downloadArtifact(artifact: {
+  contentType: string;
+  filename: string;
+  sha256: string;
+  sizeBytes: number;
+  url: string;
+}) {
+  const response = await fetch(`${config.baseUrl}${artifact.url}`, {
+    headers: { authorization: `Bearer ${config.token}` },
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!response.ok) {
+    throw new Error(
+      `JobKit artifact ${response.status}: ${await response.text()}`
+    );
+  }
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes.byteLength !== artifact.sizeBytes) {
+    throw new Error(
+      `Artifact size changed for ${artifact.filename}: expected ${artifact.sizeBytes}, received ${bytes.byteLength}`
+    );
+  }
+  const digest = createHash("sha256").update(bytes).digest("hex");
+  if (digest !== artifact.sha256) {
+    throw new Error(`Artifact hash changed for ${artifact.filename}`);
+  }
+  return bytes;
 }
 
 async function api(path: string, body: Record<string, unknown>) {

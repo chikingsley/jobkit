@@ -24,6 +24,7 @@ import {
   readAgentTaskRequest,
   retryAgentTaskRequest,
 } from "../services/agent-task-requests";
+import { readAgentTaskArtifact } from "../services/agent-tasks/artifacts";
 import { AgentTaskError } from "../services/agent-tasks/contracts";
 
 export function registerAgentRunnerRoutes(app: JobKitApp) {
@@ -163,6 +164,25 @@ export function registerAgentRunnerRoutes(app: JobKitApp) {
     );
     return c.json({ message: "Agent task failed", ok: true, result });
   });
+
+  app.get("/api/agent-tasks/:runId/artifacts/:artifactId", async (c) => {
+    const runner = requireAgentRunner(c.get("agentRunner"));
+    const { artifact, object } = await readAgentTaskArtifact(
+      c.env,
+      runner,
+      c.req.param("runId"),
+      c.req.param("artifactId")
+    );
+    return new Response(object.body, {
+      headers: {
+        "cache-control": "private, no-store",
+        "content-disposition": `attachment; filename="${safeArtifactFilename(artifact.filename)}"`,
+        "content-length": String(artifact.size_bytes),
+        "content-type": artifact.content_type,
+        "x-jobkit-artifact-sha256": artifact.sha256,
+      },
+    });
+  });
 }
 
 function requireAgentRunner(runner: AgentRunnerContext | null) {
@@ -170,4 +190,11 @@ function requireAgentRunner(runner: AgentRunnerContext | null) {
     throw new AgentTaskError("Agent runner authentication is required", 401);
   }
   return runner;
+}
+
+function safeArtifactFilename(value: string) {
+  return value
+    .replace(/[^a-z0-9._ -]/gi, "_")
+    .replace(/\s+/g, " ")
+    .slice(0, 120);
 }

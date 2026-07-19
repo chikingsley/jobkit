@@ -21,13 +21,13 @@ interface DraftAttachmentRow {
   size_bytes: number;
 }
 
-interface GmailEnvelope {
+export interface GmailEnvelope {
   from: string;
   subject: string;
   to: string;
 }
 
-interface MimeAttachment {
+export interface MimeAttachment {
   bytes: Uint8Array;
   contentType: string;
   filename: string;
@@ -116,7 +116,7 @@ export async function buildGmailMessagePayload(
       };
     })
   );
-  const rawMessage = buildMimeMessage(
+  const rawMessage = buildRawMimeMessage(
     envelope,
     applicationMessage,
     attachments
@@ -128,12 +128,22 @@ export async function buildGmailMessagePayload(
   };
 }
 
-function buildMimeMessage(
+export function buildRawMimeMessage(
   envelope: GmailEnvelope,
   message: string,
-  attachments: MimeAttachment[]
+  attachments: MimeAttachment[],
+  fixedBoundary?: string
 ): string {
-  const boundary = `jobkit-${crypto.randomUUID()}`;
+  const totalAttachmentBytes = attachments.reduce(
+    (total, attachment) => total + attachment.bytes.byteLength,
+    0
+  );
+  if (totalAttachmentBytes > MAX_RAW_ATTACHMENT_BYTES) {
+    throw new GmailMessagePayloadError(
+      "The selected attachment packet is too large for email generation"
+    );
+  }
+  const boundary = fixedBoundary ?? `jobkit-${crypto.randomUUID()}`;
   const headers = [
     `From: ${safeHeader(envelope.from)}`,
     `To: ${safeHeader(envelope.to)}`,
