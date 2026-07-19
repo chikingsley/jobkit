@@ -76,7 +76,7 @@ Covers units 9.1 to 9.3. 16 points total; pass mark 70%. Section B re-asks quest
    c. Ensuring that all students have an equal opportunity to contribute.
    d. Demonstrating the correct answers so students can check their recorded responses.
 
-**11. In the genetic testing classroom described in the unit, what does the module identify as the reason students were more motivated to learn and listen to one another?**
+**11. In the genetic testing classroom described in the unit, what does the source identify as the reason students were more motivated to learn and listen to one another?**
 
    a. The teacher had scripted the presentations in advance to ensure accuracy
    b. Students were awarded grades based on how well their classmates evaluated their presentations
@@ -85,4 +85,4 @@ Covers units 9.1 to 9.3. 16 points total; pass mark 70%. Section B re-asks quest
 
 ## Section C — Scenario (5 points)
 
-**12. Mr. Osei is running a fluency activity in which learners tell a partner about something they did last weekend. While monitoring, he hears Yuki produce several accurate sentences but notices she says 'and then we go to a café' once, in an otherwise well-formed turn. He also hears Daniel say 'we go,' 'they come,' and 'I eat' throughout his entire turn, with no past-tense forms appearing at all. Both students are mid-conversation with their partners. What should Mr. Osei do differently for each student during and after the activity, and why?**
+**12. Mr. Osei is running a fluency activity in which learners tell a partner about something they did last weekend. While monitoring, he hears Yuki produce several accurate sentences but notices she says 'and then we go to a café' once, in an otherwise well-formed turn. He also hears Daniel say 'we go,' 'she come,' and 'I eat' throughout his entire turn, with no past-tense forms appearing at all. Both students are mid-conversation with their partners. What should Mr. Osei do differently for each student during and after the activity, and why?**

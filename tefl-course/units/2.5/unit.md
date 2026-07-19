@@ -58,7 +58,7 @@ Negatives produce a parallel problem. Many languages form negation by inserting 
 
 Adjective placement causes a persistent error for speakers of Arabic, French, Spanish, and other languages that place descriptive adjectives after the noun they modify. In those grammars, a phrase meaning "a red fast car" would be constructed with the adjectives following "car." The English equivalent of that pattern produces "I have a car red and fast." English places attributive adjectives before the noun, and when a learner produces the post-nominal form, the sentence reads as unfinished or as a clumsy attempt at emphasis. A brief contrastive note, showing the learner's L1 pattern alongside the English pattern, is usually enough to make the positional rule clear, since the learner already controls the adjectives themselves and needs only to relocate them.
 
-Each of these error types points to a specific structural feature of the learner's first language that conflicts with English grammar. Identifying the module of the mismatch allows the teacher to give targeted, efficient feedback rather than marking the sentence as incorrect and moving on.
+Each of these error types points to a specific structural feature of the learner's first language that conflicts with English grammar. Identifying the source of the mismatch allows the teacher to give targeted, efficient feedback rather than marking the sentence as incorrect and moving on.
 
 ## Tense and Aspect Errors: Marking Time in English
 
@@ -88,7 +88,7 @@ A Spanish-speaking student named Carlos might write "I dreamed with my grandmoth
 
 These errors are among the most persistent in learner writing because there is rarely a rule that resolves them. The teacher cannot explain to Carlos by any principled rule why English speakers dream "about" or "of" someone rather than "with" them; the pairing is a fixed feature of English, and no deeper logic governs it. Prepositions therefore need to be taught as part of fixed collocations and lexical chunks, the term for multi-word units stored and retrieved as single items. A teacher presenting the word "depend" should introduce the full phrase "depend on someone" from the start, so that the preposition is bound to the verb in the learner's memory rather than selected separately each time.
 
-T: "Priya, you wrote 'she depends of her parents.' In English, the verb is always 'depend on.' Say the whole phrase for me."
+T: "You wrote 'she depends of her parents.' In English, the verb is always 'depend on.' Say the whole phrase for me."
 S: "She depends on her parents."
 T: "Good. Write that phrase in your vocabulary notebook exactly like that, with the preposition included."
 
@@ -108,11 +108,11 @@ The second approach is error analysis during feedback. When a teacher marks a se
 
 The third approach is contrastive explanation: pointing out clearly and briefly how English differs from the learner's L1 on a specific grammatical or phonological point. A teacher does not need to speak the learner's language to do this. A short exchange can be enough:
 
-T: "Yuki, you wrote 'She suggested to go.' How would you express that idea in Japanese?"
-S: "The pattern is different. I think I chose 'to go' because many English verbs use it."
-T: "That is a reasonable hypothesis. With 'suggest,' English uses an -ing clause here: 'She suggested going.' Add that phrase to your verb-pattern notes."
+T: "Yuki, you wrote 'She suggested to go.' In Japanese, what follows a verb like 'suggest' is a nominalized clause, something close to 'the going.' English actually does something similar here: 'suggest' takes a gerund, so we say 'She suggested going.'"
+S: "So the '-ing' form does the job the nominalized clause does in Japanese?"
+T: "Exactly. The one pattern English refuses after 'suggest' is the to-infinitive."
 
-The exchange treats the learner's choice as a hypothesis without inventing a claim about Japanese grammar. Contrastive explanation is useful only when the teacher has checked the relevant L1 pattern or invites the learner to supply it; otherwise the safe move is to teach the English pattern and help the learner record it accurately.
+The exchange names the source of the error without treating the learner as careless, and it gives a rule the learner can apply independently.
 
 A final point deserves emphasis. L1 background is a useful diagnostic tool, not a fixed description of any individual learner. Carlos, whose first language is Spanish, may have already mastered English article use through extensive reading, while a classmate with the same background struggles with it daily. Individual variation in exposure, aptitude, and prior instruction means that L1 predictions are starting points for a teacher's attention, not conclusions about what a particular learner can or cannot do.
 
@@ -160,7 +160,7 @@ A final point deserves emphasis. L1 background is a useful diagnostic tool, not 
 
 **6. A class of intermediate Arabic-speaking learners submits written paragraphs. Several students, including one named Fatima, have written questions such as 'She can drive?' and 'You are coming tomorrow?' without subject-auxiliary inversion. Describe the move you would make in the next lesson and justify it by reference to the unit.**
 
-   *Answer: The appropriate move is contrastive explanation combined with explicit drilling of subject-auxiliary inversion. The teacher should name the structural source of the error: Arabic forms yes-no questions through a particle or rising intonation on a declarative sentence, so inversion feels unnecessary to these learners. The teacher can write Fatima's sentence on the board, identify the auxiliary, and show that English requires it to move before the subject: 'Can she drive?' and 'Are you coming tomorrow?' The unit supports this move in two places. First, it states that a teacher with a class of Arabic-speaking learners, knowing that subject-auxiliary inversion is not a feature of Arabic syntax, can drill question formation early and explicitly before learners fossilize the error. Second, it describes contrastive explanation as pointing out clearly and briefly how English differs from the learner's L1 on a specific grammatical point, and it notes that this approach names the module of the error without treating the learner as careless.*
+   *Answer: The appropriate move is contrastive explanation combined with explicit drilling of subject-auxiliary inversion. The teacher should name the structural source of the error: Arabic forms yes-no questions through a particle or rising intonation on a declarative sentence, so inversion feels unnecessary to these learners. The teacher can write Fatima's sentence on the board, identify the auxiliary, and show that English requires it to move before the subject: 'Can she drive?' and 'Are you coming tomorrow?' The unit supports this move in two places. First, it states that a teacher with a class of Arabic-speaking learners, knowing that subject-auxiliary inversion is not a feature of Arabic syntax, can drill question formation early and explicitly before learners fossilize the error. Second, it describes contrastive explanation as pointing out clearly and briefly how English differs from the learner's L1 on a specific grammatical point, and it notes that this approach names the source of the error without treating the learner as careless.*
    *Anchor: "a teacher with a class of Arabic-speaking learners, knowing that subject-auxiliary inversion in questions is not a feature of Arabic syntax, can drill question formation early and explicitly."*
 
 ## References

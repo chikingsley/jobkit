@@ -74,12 +74,12 @@ Covers units 4.1 to 4.5. 22 points total; pass mark 70%. Section B re-asks quest
    c. A task is always completed in groups, while a grammar exercise is done individually
    d. A task is assessed with a rubric, while a grammar exercise is assessed with a checklist
 
-**11. Which sequence correctly describes the task cycle in the Willis framework used by the unit?**
+**11. Which sequence correctly describes the three phases of a TBLT lesson in the unit?**
 
-   a. Teacher explanation, controlled practice, and a final grammar test
-   b. Task, planning, and report
-   c. Entry event, project production, and public exhibition
-   d. Vocabulary preview, silent reading, and error correction
+   a. Presentation, controlled practice, and a final test
+   b. Pre-task, task cycle, and post-task
+   c. Entry event, project work, and public exhibition
+   d. Vocabulary preview, silent reading, and correction
 
 **12. The unit argues that the disagreement between Bryfonski and McKay (2019) and Xuan, Cheung and Liu (2025) concerns magnitude but not direction. What does this mean for a teacher reading the evidence?**
 

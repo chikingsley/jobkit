@@ -10,7 +10,7 @@ The central tension in using a coursebook is that the book is a tool, not a curr
 
 When professional judgment is suspended, problems follow quickly. Consider a class of ten-year-olds working through a general English coursebook whose third unit focuses on booking a hotel room by telephone. The unit assumes familiarity with travel, adult transactions, and the social context of speaking to a receptionist. A teacher who moves through the pages without adaptation might produce exchanges like this:
 
-T: "So, Yuki, you want a double room for two nights. What do you say?"
+T: "So, you want a double room for two nights. What do you say?"
 S: "I don't know what a double room is."
 T: "It's a room with a big bed. Now read line three."
 
@@ -22,7 +22,7 @@ Before committing to a coursebook, a teacher needs a clear set of criteria to ap
 
 The first criterion is level and progression. A coursebook pitched at the wrong level wastes class time from the first lesson. The teacher should read through the first three or four units and ask whether the vocabulary load, sentence complexity, and assumed knowledge match the learners who will sit in the room. A book designed for teenagers who have studied English at school for two years will frustrate a group of adult complete beginners, even if both groups are nominally at A1, because the assumed cultural and educational background differs considerably.
 
-Topic and cultural relevance forms the second criterion. The themes a book uses to present language should feel plausible and interesting to the specific learners, not merely inoffensive in a general sense. A unit built around planning a ski holiday may present perfectly graded language, yet leave a class of adult learners in a coastal city with no mountains nearby feeling that the material has nothing to do with their lives. The teacher should scan the topic list and ask honestly whether at least the majority of themes will generate genuine engagement from this particular group.
+Topic and cultural relevance forms the second criterion. The themes a book uses to present language should feel plausible and interesting to the specific learners, not merely inoffensive in a general sense. A unit built around planning a ski vacation may present perfectly graded language, yet leave a class of adult learners in a coastal city with no mountains nearby feeling that the material has nothing to do with their lives. The teacher should scan the topic list and ask honestly whether at least the majority of themes will generate genuine engagement from this particular group.
 
 The third criterion concerns skills balance. A well-designed coursebook gives meaningful attention to reading, writing, listening, and speaking across each unit, rather than treating one or two skills as the main event and the others as brief add-ons. The teacher should count, roughly, how many activities in a sample unit develop productive skills and how many develop receptive ones. A book that offers rich reading texts but only a single speaking prompt per unit will require the teacher to supplement heavily if oral fluency is a course goal.
 
@@ -44,7 +44,7 @@ A third strategy involves combining two short units that share a grammar point. 
 
 All three strategies should be driven by learner needs and lesson aims. A teacher who reorders activities because a particular exercise looks dull, or who splits a lesson because time ran short the previous week, is making decisions based on personal preference or circumstance rather than on what the students require. Unprincipled changes accumulate. Over time, a course shaped by convenience rather than judgment loses its coherence.
 
-Picture Ms. Reyes working through a pre-intermediate coursebook with a class of adult evening students. She notices that the next unit introduces the present perfect, but her students are still making consistent errors with simple past narration. In a recent lesson, Carlos produced the sentence "Yesterday I have seen my manager" when recounting a work event, and several classmates made similar errors in their written tasks. Ms. Reyes decides to delay the new unit by one week and use that time to consolidate simple past through additional practice. She is not abandoning the coursebook's syllabus; she is applying it with enough judgment to ensure the foundation is secure before the next layer is added.
+Picture Ms. Reyes working through a pre-intermediate coursebook with a class of adult evening students. She notices that the next unit introduces the present perfect, but her students are still making consistent errors with simple past narration. In a recent lesson, a student, Carlos, produced the sentence "Yesterday I have seen my manager" when recounting a work event, and several classmates made similar errors in their written tasks. Ms. Reyes decides to delay the new unit by one week and use that time to consolidate simple past through additional practice. She is not abandoning the coursebook's syllabus; she is applying it with enough judgment to ensure the foundation is secure before the next layer is added.
 
 ## Adapting Coursebook Activities
 
@@ -110,11 +110,11 @@ When a coursebook is used in this way, it performs a significant structural serv
 
    a. It has identified Book A as the superior choice because grammar sequencing outweighs topic relevance.
    b. It has shown that neither book is suitable and both should be rejected before the course begins.
-   c. It has identified, before the course begins, exactly where each book will need supplementing.
+   c. It has identified, before the course begins, the precise points where each book will need supplementing.
    d. It has confirmed that layout and usability is the most important criterion when choosing a coursebook.
 
-   *Answer: It has identified, before the course begins, exactly where each book will need supplementing.*
-   *Anchor: "identifying, before the course begins, the precise points where each book will need supplementing"*
+   *Answer: It has identified, before the course begins, the precise points where each book will need supplementing.*
+   *Anchor: "The evaluation has done its job by identifying, before the course begins, the precise points where each book will need supplementing."*
 
 **3. According to the unit, which reason does NOT justify skipping a section of a coursebook?**
 
@@ -136,11 +136,13 @@ When a coursebook is used in this way, it performs a significant structural serv
    *Answer: The annotated notes become immediately useful when a colleague inherits the book, giving them a personalized record of how the book performs with a specific group.*
    *Anchor: "becomes immediately useful when the same material appears in a revision cycle or when a colleague inherits the book."*
 
-**6. Fatima is teaching a pre-intermediate adult evening class. The next unit in the coursebook introduces the present perfect, but during a recent lesson her student Carlos produced the sentence 'Yesterday I have seen my manager,' and several classmates made similar errors in written tasks. The coursebook's next double-page spread opens with a present perfect presentation box followed by controlled exercises, then ends with a short speaking task. Describe ONE move Fatima could make and justify it using the principles in the unit.**
+**6. Ms. Reyes is teaching a pre-intermediate adult evening class. The next unit in the coursebook introduces the present perfect, but during a recent lesson her student Carlos produced the sentence 'Yesterday I have seen my manager,' and several classmates made similar errors in written tasks. The coursebook's next double-page spread opens with a present perfect presentation box followed by controlled exercises, then ends with a short speaking task. Describe ONE move Ms. Reyes could make and justify it using the principles in the unit.**
 
-   *Answer: Fatima could delay the present perfect unit by one week and use that time to consolidate simple past through additional controlled practice, supplementing the coursebook rather than abandoning its syllabus. This is justified because the unit states that a teacher applies the syllabus 'with enough judgment to ensure the foundation is secure before the next layer is added.' Alternatively, Fatima could reorder the existing spread by using the speaking task as a warmer to surface current knowledge before the presentation box, since the unit supports reordering activities to match learner needs and lesson aims. Either move must be grounded in what students require, not in teacher preference.*
+   *Answer: Ms. Reyes could delay the present perfect unit by one week and use that time to consolidate simple past through additional controlled practice, supplementing the coursebook rather than abandoning its syllabus. This is justified because the unit states that a teacher applies the syllabus 'with enough judgment to ensure the foundation is secure before the next layer is added.' Alternatively, Ms. Reyes could reorder the existing spread by using the speaking task as a warmer to surface current knowledge before the presentation box, since the unit supports reordering activities to match learner needs and lesson aims. Either move must be grounded in what students require, not in teacher preference.*
    *Anchor: "applying it with enough judgment to ensure the foundation is secure before the next layer is added."*
 
 ## References
 
-- U.S. Department of State. *Shaping the Way We Teach English: Using a Coursebook*. americanenglish.state.gov (public domain).
+- Cunningsworth, A. (1995). *Choosing Your Coursebook*. Heinemann.
+- McGrath, I. (2002). *Materials Evaluation and Design for Language Teaching*. Edinburgh University Press.
+- Tomlinson, B. (Ed.). (2011). *Materials Development in Language Teaching* (2nd ed.). Cambridge University Press.

@@ -21,7 +21,7 @@
       "428 studies; the overall difference between explicit and implicit instruction is only minor."
     ],
     "answer": "34 studies; explicit instruction produces stronger outcomes than implicit instruction.",
-    "anchor": "Goo, Granena, Yilmaz, and Novella (2015) revisited this comparison across 34 studies"
+    "anchor": "updated and extended the Norris and Ortega synthesis with a pool of 34 studies"
   },
   {
     "type": "mc",
@@ -40,6 +40,6 @@
     "question": "The unit describes a student named Fatima, who scores well on a fill-in-the-blank grammar test but still omits the target inflection during a role-play. What does this example show about classroom assessment?",
     "options": null,
     "answer": "The two activities sample different performances. The fill-in-the-blank task shows controlled rule knowledge, while the role-play shows whether the learner can deploy the form while focused on meaning. A sound classroom assessment plan samples both separately rather than assuming that one score proves both.",
-    "anchor": "A sound classroom assessment plan samples controlled accuracy and communicative use separately rather than assuming that one score proves both."
+    "anchor": "The test and the task are measuring different things"
   }
 ]

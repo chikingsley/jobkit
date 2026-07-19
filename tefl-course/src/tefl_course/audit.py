@@ -155,6 +155,10 @@ _ANSWER_LETTER_RE = re.compile(r"^\s*\*Answer:\s*([a-d])[.)]", re.MULTILINE)
 _ASSESSMENT_OPTION_RE = re.compile(r"^\s{3}([a-d])\.\s+(.+)$", re.MULTILINE)
 _ASSESSMENT_ANSWER_RE = re.compile(r"^\s{3}\*Answer:\s*([a-d])\.", re.MULTILINE)
 _QUESTION_SPLIT_RE = re.compile(r"(?=^\*\*\d+\.)", re.MULTILINE)
+_INLINE_RUBRIC_RE = re.compile(
+    r"^\s{3}\*Rubric \((?P<points>5|10) points\): (?P<body>.+)\*\s*$",
+    re.MULTILINE,
+)
 
 QUIZ_HEADER = "## Check your understanding"
 REFS_HEADER = "## References"
@@ -656,6 +660,41 @@ def check_bank_anchors(unit_md: Path) -> list[Issue]:
         entries = json.loads(bank.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         return [Issue(rel, 1, "bank-anchor", "error", f"bank.json unparseable: {exc}")]
+    # Structural contract (pipeline/assessments.py): exactly 4 entries, positions 1-3
+    # multiple-choice (module test), position 4 short-answer (reserved for the final).
+    if isinstance(entries, list):
+        if len(entries) != 4:
+            issues.append(
+                Issue(
+                    rel,
+                    1,
+                    "bank-structure",
+                    "error",
+                    f"bank.json must have exactly 4 entries, has {len(entries)}",
+                )
+            )
+        for i, entry in enumerate(entries):
+            is_mc = isinstance(entry, dict) and isinstance(entry.get("options"), list)
+            if i < 3 and not is_mc:
+                issues.append(
+                    Issue(
+                        rel,
+                        1,
+                        "bank-structure",
+                        "error",
+                        f"bank entry {i + 1} must be multiple-choice",
+                    )
+                )
+            if i == 3 and is_mc:
+                issues.append(
+                    Issue(
+                        rel,
+                        1,
+                        "bank-structure",
+                        "error",
+                        "bank entry 4 must be short-answer (final-exam reserve)",
+                    )
+                )
     for i, entry in enumerate(entries if isinstance(entries, list) else []):
         anchor = entry.get("anchor", "") if isinstance(entry, dict) else ""
         if not anchor:
@@ -772,11 +811,19 @@ def check_option_length_bias(paths: list[Path]) -> list[Issue]:
 
 
 def check_scenario_rubrics(paths: list[Path]) -> list[Issue]:
-    """Every scenario in a grading key needs explicit score-band guidance."""
+    """Every scenario key needs explicit guidance whose allocations match its point total."""
     issues: list[Issue] = []
     for path in paths:
         expected = 3 if path.name == "final-exam-key.md" else 1
-        actual = path.read_text(encoding="utf-8").count("### Scoring guidance")
+        points = 10 if path.name == "final-exam-key.md" else 5
+        text = path.read_text(encoding="utf-8")
+        inline = [
+            match
+            for match in _INLINE_RUBRIC_RE.finditer(text)
+            if int(match.group("points")) == points
+            and sum(int(value) for value in re.findall(r"\((\d+)\)", match.group("body"))) == points
+        ]
+        actual = text.count("### Scoring guidance") + len(inline)
         if actual != expected:
             issues.append(
                 Issue(
@@ -784,7 +831,7 @@ def check_scenario_rubrics(paths: list[Path]) -> list[Issue]:
                     1,
                     "scenario-rubric",
                     "error",
-                    f"expected {expected} scoring-guidance block(s), found {actual}",
+                    f"expected {expected} valid scoring rubric(s), found {actual}",
                 )
             )
     return issues

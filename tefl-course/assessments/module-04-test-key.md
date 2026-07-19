@@ -62,7 +62,7 @@ Covers units 4.1 to 4.5. 22 points total; pass mark 70%. Section B re-asks quest
    d. A full class period, so the theme can be introduced and consolidated in one session
 
    *Answer: a. Roughly fifteen minutes, as a manageable scope for a first attempt*
-   *Anchor: "The module suggests working with a segment of roughly fifteen minutes, which is a manageable scope for a first attempt."*
+   *Anchor: "The source suggests working with a segment of roughly fifteen minutes"*
 
 **7. What shift in the teacher's role occurs specifically at the Production stage of PPP?**
 
@@ -104,15 +104,15 @@ Covers units 4.1 to 4.5. 22 points total; pass mark 70%. Section B re-asks quest
    *Answer: a. A task has a communicable outcome that exists independently of the language forms required to reach it*
    *Anchor: "a task is an activity in which learners use language to achieve a real, communicable outcome, one that exists independently of the language forms required to reach it"*
 
-**11. Which sequence correctly describes the task cycle in the Willis framework used by the unit?**
+**11. Which sequence correctly describes the three phases of a TBLT lesson in the unit?**
 
-   a. Teacher explanation, controlled practice, and a final grammar test
-   b. Task, planning, and report
-   c. Entry event, project production, and public exhibition
-   d. Vocabulary preview, silent reading, and error correction
+   a. Presentation, controlled practice, and a final test
+   b. Pre-task, task cycle, and post-task
+   c. Entry event, project work, and public exhibition
+   d. Vocabulary preview, silent reading, and correction
 
-   *Answer: b. Task, planning, and report*
-   *Anchor: "The task cycle itself contains the task, planning, and report stages"*
+   *Answer: b. Pre-task, task cycle, and post-task*
+   *Anchor: "The three phases are the pre-task, the task cycle, and the post-task"*
 
 **12. The unit argues that the disagreement between Bryfonski and McKay (2019) and Xuan, Cheung and Liu (2025) concerns magnitude but not direction. What does this mean for a teacher reading the evidence?**
 
@@ -142,7 +142,7 @@ Covers units 4.1 to 4.5. 22 points total; pass mark 70%. Section B re-asks quest
    d. 428 studies; the overall difference between explicit and implicit instruction is only minor.
 
    *Answer: a. 34 studies; explicit instruction produces stronger outcomes than implicit instruction.*
-   *Anchor: "Goo, Granena, Yilmaz, and Novella (2015) revisited this comparison across 34 studies"*
+   *Anchor: "updated and extended the Norris and Ortega synthesis with a pool of 34 studies"*
 
 **15. In the unit's recommended four-step lesson design framework, what is the FIRST decision a teacher must make?**
 
@@ -177,10 +177,4 @@ Covers units 4.1 to 4.5. 22 points total; pass mark 70%. Section B re-asks quest
 
    *Answer: Mr. Osei's activity does not constitute a genuine Production stage, even though the sentences his students write are grammatically accurate. The problem is that writing isolated sentences for the teacher to collect and mark is not meaningfully different from the controlled Practice stage that preceded it. Students are still retrieving and displaying a form rather than using language to achieve a communicable outcome with a real purpose, a real audience, or a social relationship that shapes what they say. The module defines constructing language as 'deciding what language to use for what purpose in a given situation to meet particular social needs,' and that act of construction is absent here. Carlos, Daniel, and Wei have demonstrated recall, not production in the communicative sense. A stronger Production activity would release responsibility to the learners while giving them a genuine reason to speak. For example, Mr. Osei could ask students to interview a partner: 'Find out two surprising things your partner used to do that they no longer do, then share the most interesting one with the class.' Now Fatima is asking Yuki a real question, Yuki is deciding how much to reveal and how to phrase it, and Priya has a reason to listen because she will report back. The setting, purpose, and participant roles are all present. This also aligns with the PPP framework's logic: the teacher steps back and creates conditions in which students must draw on what they have practiced to communicate something of their own. The written sentence task keeps Mr. Osei at the center; the interview task transfers communicative responsibility to the learners, which is precisely what the Production stage is designed to do.*
    *Anchor: "students must draw on what they have practiced to communicate something of their own"*
-
-### Scoring guidance
-
-**5:** Complete, accurate diagnosis and feasible action, justified with the module's relevant principle(s) and applied to the named context.
-**3-4:** Sound core response with one missing, underdeveloped, or weakly justified element.
-**1-2:** Partial recognition of the issue, but the action is vague, incomplete, or poorly connected to module content.
-**0:** Blank, irrelevant, or incompatible with the module's central principle.
+   *Rubric (5 points): identifies that writing isolated sentences for the teacher is not a genuine Production stage but extended controlled practice (2); explains that production means using language for a real communicative purpose, audience, or outcome (1); proposes a genuine production activity that transfers responsibility to the learners (2).*

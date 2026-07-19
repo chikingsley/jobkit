@@ -13,15 +13,15 @@
   },
   {
     "type": "mc",
-    "question": "Which sequence correctly describes the task cycle in the Willis framework used by the unit?",
+    "question": "Which sequence correctly describes the three phases of a TBLT lesson in the unit?",
     "options": [
-      "Teacher explanation, controlled practice, and a final grammar test",
-      "Task, planning, and report",
-      "Entry event, project production, and public exhibition",
-      "Vocabulary preview, silent reading, and error correction"
+      "Presentation, controlled practice, and a final test",
+      "Pre-task, task cycle, and post-task",
+      "Entry event, project work, and public exhibition",
+      "Vocabulary preview, silent reading, and correction"
     ],
-    "answer": "Task, planning, and report",
-    "anchor": "The task cycle itself contains the task, planning, and report stages"
+    "answer": "Pre-task, task cycle, and post-task",
+    "anchor": "The three phases are the pre-task, the task cycle, and the post-task"
   },
   {
     "type": "mc",

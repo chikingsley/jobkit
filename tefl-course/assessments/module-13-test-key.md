@@ -12,7 +12,7 @@ Covers units 13.1 to 13.3. 16 points total; pass mark 70%. Section B re-asks que
    d. Authenticity, because more than one teacher observed the task
 
    *Answer: a. Reliability, because the result changes substantially across raters*
-   *Anchor: "Reliability is the consistency of an assessment result under comparable conditions."*
+   *Anchor: "Reliability is the consistency of assessment results across occasions, raters, and forms"*
 
 **2. Which of the following best explains why a teacher should consider class size when selecting an assessment task?**
 
@@ -117,10 +117,4 @@ Covers units 13.1 to 13.3. 16 points total; pass mark 70%. Section B re-asks que
 
    *Answer: Mr. Osei should replace the grammar quiz with a two-component assessment that matches his learning goals. First, he should use a performance-based task — for example, having each student (Carlos, Daniel, Wei, Fatima, Yuki, or Priya) lead a small-group discussion while he listens and completes a teacher rubric. The rubric score becomes the summative record: a defensible final grade reflecting each student's communicative achievement. This aligns directly with what was taught because the assessment task and the learning goal point toward the same outcome — spoken discussion skill — rather than written knowledge of grammar labels. A grammar quiz, by contrast, would test knowledge about discourse markers, not the ability to deploy them under real communicative pressure; a student like Carlos might use them fluently in speech yet blank on a written definition, so the quiz would misrepresent his actual ability. Second, Mr. Osei should have classmates complete peer assessment worksheets during the same discussion. These forms are explicitly not a formal grade; they give the discussion leader structured feedback from the group's perspective — for instance, whether Fatima included everyone or whether Wei's contributions were clear — information the student can use to improve before or alongside the summative judgment. To ensure fairness and clarity, Mr. Osei should show students both the teacher rubric and the peer worksheet in advance, so they know precisely how they will be evaluated and can articulate each criterion in their own words. This transparency satisfies the clarity requirement for a well-designed assessment task. Together, the two components serve entirely different purposes while sitting side by side in the same lesson: one produces a final record, the other produces actionable feedback.*
    *Anchor: "the assessment task and the learning goal point toward the same outcome"*
-
-### Scoring guidance
-
-**5:** Complete, accurate diagnosis and feasible action, justified with the module's relevant principle(s) and applied to the named context.
-**3-4:** Sound core response with one missing, underdeveloped, or weakly justified element.
-**1-2:** Partial recognition of the issue, but the action is vague, incomplete, or poorly connected to module content.
-**0:** Blank, irrelevant, or incompatible with the module's central principle.
+   *Rubric (5 points): rejects the grammar quiz as misaligned with the spoken-discussion goal (1); designs a performance-based summative component that targets that goal (2); adds a formative component giving feedback before the final grade (1); explains how each component aligns with what was taught (1).*

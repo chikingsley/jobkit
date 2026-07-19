@@ -82,10 +82,10 @@ _SCENARIO_BRIEF = (
     "specific classroom situation (use only the course cast: learners Carlos, Daniel, Wei, "
     "Fatima, Yuki, Priya; teachers Ms. Reyes, Mr. Osei) that requires applying ideas from the "
     "module summarized below, then ask the trainee what they would do and why. Provide a model "
-    "answer grounded in the module content. End the model answer with explicit full-credit "
-    "criteria naming the required diagnosis, action, evidence, or justification. Return ONLY "
+    "answer grounded in the module content and an analytic rubric whose criteria add up to the "
+    "stated point total. Return ONLY "
     '{"question": "...", "answer": "...", "anchor": "<verbatim quote of <=15 words from the '
-    'material that the answer rests on>"}.'
+    'material that the answer rests on>", "rubric": "Rubric (<points> points): ..."}.'
 )
 
 
@@ -220,9 +220,15 @@ def _sample_reviews(
     return rng.sample(candidates, k=min(REVIEW_PER_TEST, len(candidates))) if candidates else []
 
 
-def _scenario(client: SuperwhisperClient, label: str, material: str) -> dict[str, object]:
+def _scenario(
+    client: SuperwhisperClient,
+    label: str,
+    material: str,
+    *,
+    points: int,
+) -> dict[str, object]:
     """Generate one validated scenario question against `material`."""
-    prompt = f"{_SCENARIO_BRIEF}\n\n== MODULE: {label} ==\n{material}"
+    prompt = f"{_SCENARIO_BRIEF}\n\n== POINTS: {points} ==\n\n== MODULE: {label} ==\n{material}"
     for _attempt in range(3):
         parsed = build._json_call(client, prompt, max_tokens=1200)  # noqa: SLF001
         if isinstance(parsed, dict) and str(parsed.get("question", "")).strip():
@@ -290,34 +296,11 @@ def _render_mc(i: int, q: dict[str, object], *, include_key: bool) -> str:
         anchor = str(q.get("anchor", "")).strip()
         if anchor:
             lines.append(f'   *Anchor: "{anchor}"*')
+        rubric = str(q.get("rubric", "")).strip()
+        if rubric:  # scenario keys carry a point-allocation rubric
+            lines.append(f"   *{rubric}*")
         lines.append("")
     return "\n".join(lines)
-
-
-def _scenario_rubric(points: int) -> str:
-    """Return explicit analytic band guidance for a constructed-response scenario."""
-    if points == 5:  # noqa: PLR2004
-        bands = [
-            "**5:** Complete, accurate diagnosis and feasible action, justified with the "
-            "module's relevant principle(s) and applied to the named context.",
-            "**3-4:** Sound core response with one missing, underdeveloped, or weakly justified "
-            "element.",
-            "**1-2:** Partial recognition of the issue, but the action is vague, incomplete, or "
-            "poorly connected to module content.",
-            "**0:** Blank, irrelevant, or incompatible with the module's central principle.",
-        ]
-    else:
-        bands = [
-            "**10:** Complete synthesis of every requested component; actions are feasible, "
-            "accurate, context-sensitive, and explicitly justified from course principles.",
-            "**7-9:** Strong response with a minor omission or an underdeveloped connection "
-            "between action, evidence, and context.",
-            "**4-6:** Partly correct response that addresses several requested components but "
-            "contains a material gap, weak justification, or limited synthesis.",
-            "**1-3:** Minimal relevant knowledge with an impractical or largely unsupported plan.",
-            "**0:** Blank, irrelevant, or fundamentally incompatible with course principles.",
-        ]
-    return "\n".join(["### Scoring guidance", "", *bands])
 
 
 def assemble_module_test(
@@ -368,13 +351,10 @@ def assemble_module_test(
                 mc_index += 1
             out.append(_render_mc(i, review, include_key=include_key))
     scen = json.loads((ASSESSMENTS_DIR / f"_scenario-M{module}.json").read_text(encoding="utf-8"))
-    scenario_text = _render_mc(i + 1, scen, include_key=include_key)
-    if include_key:
-        scenario_text += "\n" + _scenario_rubric(5)
     out += [
         "## Section C — Scenario (5 points)",
         "",
-        scenario_text,
+        _render_mc(i + 1, scen, include_key=include_key),
     ]
     return "\n".join(out).rstrip() + "\n"
 
@@ -404,10 +384,7 @@ def assemble_final(*, include_key: bool) -> str:
         scen = json.loads(
             (ASSESSMENTS_DIR / f"_scenario-final-{j}.json").read_text(encoding="utf-8")
         )
-        scenario_text = _render_mc(len(uids) + j, scen, include_key=include_key)
-        if include_key:
-            scenario_text += "\n" + _scenario_rubric(10)
-        out.append(scenario_text)
+        out.append(_render_mc(len(uids) + j, scen, include_key=include_key))
     return "\n".join(out).rstrip() + "\n"
 
 
@@ -432,7 +409,7 @@ def cmd_scenarios() -> None:
             if cache.exists():
                 continue
             material = "\n\n".join(_unit_text(u)[0][:4000] for u in _units_of(module))
-            scen = _scenario(client, MODULE_TITLES[module], material)
+            scen = _scenario(client, MODULE_TITLES[module], material, points=5)
             cache.write_text(json.dumps(scen, indent=2, ensure_ascii=False), encoding="utf-8")
             build._log(f"[M{module}] scenario ok")  # noqa: SLF001
         spans = [
@@ -448,7 +425,12 @@ def cmd_scenarios() -> None:
             material = "\n\n".join(
                 _unit_text(_units_of(m)[0])[0][:2500] for m in mods if _units_of(m)
             )
-            scen = _scenario(client, f"modules {lo}-{hi - 1} ({label})", material)
+            scen = _scenario(
+                client,
+                f"modules {lo}-{hi - 1} ({label})",
+                material,
+                points=10,
+            )
             cache.write_text(json.dumps(scen, indent=2, ensure_ascii=False), encoding="utf-8")
             build._log(f"[final-{j}] scenario ok")  # noqa: SLF001
     finally:
@@ -479,10 +461,22 @@ def _preflight() -> None:
         raise SystemExit(msg)
 
 
-def cmd_assemble() -> None:
-    """Write all module tests and the final exam."""
+def cmd_assemble(*, force: bool) -> None:
+    """Write all module tests and the final exam.
+
+    The assembled markdown was hand-finalized after generation (2026-07-17 repair pass).
+    To protect that work, refuse to overwrite existing output unless `force` is set; the
+    scenario caches and bank option order are kept in sync with the markdown so a forced
+    regeneration reproduces it.
+    """
     ASSESSMENTS_DIR.mkdir(exist_ok=True)
     _preflight()
+    if not force and any(ASSESSMENTS_DIR.glob("*-test.md")):
+        msg = (
+            "assemble: assessment markdown already exists and is hand-finalized. "
+            "Re-run with --force to regenerate from bank.json + _scenario-*.json."
+        )
+        raise SystemExit(msg)
     used_review_stems: set[str] = set()
     for module in sorted(MODULE_TITLES):
         review_rng = random.Random(20260609 + module)  # noqa: S311 - reproducible, not crypto.
@@ -510,6 +504,9 @@ def main() -> None:
     )
     parser.add_argument("command", choices=["bank", "scenarios", "assemble"])
     parser.add_argument("units", nargs="*", help="unit ids or 'all' (bank only)")
+    parser.add_argument(
+        "--force", action="store_true", help="assemble: overwrite hand-finalized markdown"
+    )
     args = parser.parse_args()
     if args.command == "bank":
         uids = list(UNITS) if args.units in ([], ["all"]) else args.units
@@ -517,7 +514,7 @@ def main() -> None:
     elif args.command == "scenarios":
         cmd_scenarios()
     else:
-        cmd_assemble()
+        cmd_assemble(force=args.force)
 
 
 if __name__ == "__main__":

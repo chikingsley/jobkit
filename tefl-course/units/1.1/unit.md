@@ -20,7 +20,7 @@ Young learners occupy the wider primary years, from age six to twelve. This is a
 
 Teenagers at secondary level present a different challenge entirely. They are capable of more sustained attention and more abstract thinking than younger children, but they bring social pressures, varying levels of motivation, and a sharper awareness of how they appear to their peers. A student like Yuki, fourteen years old and sitting in the back row of an EFL class, may disengage quickly if the material feels irrelevant or if the classroom dynamic does not feel safe. Classroom management at this level is less about physical transitions and more about creating conditions in which adolescents are willing to participate.
 
-Young adults and adults, the post-secondary group, arrive with life experience, established learning habits, and often a clear sense of why they are studying English. They may be university students, working professionals, or community learners, and their goals vary considerably. Fatima, attending an evening English class after work, has different priorities from a nineteen-year-old in a university language program. What unites adult learners is that they can reflect on their own learning in ways that younger students cannot, which opens up possibilities for discussion, self-assessment, and peer feedback that would be less productive with a class of six-year-olds. Recognizing which of these four populations sits in front of you is the first practical step any teacher takes before planning a single lesson.
+Young adults and adults, the post-secondary group, arrive with life experience, established learning habits, and often a clear sense of why they are studying English. They may be university students, working professionals, or community learners, and their goals vary considerably. A student named Fatima, attending an evening English class after work, has different priorities from a nineteen-year-old in a university language program. What unites adult learners is that they can reflect on their own learning in ways that younger students cannot, which opens up possibilities for discussion, self-assessment, and peer feedback that would be less productive with a class of six-year-olds. Recognizing which of these four populations sits in front of you is the first practical step any teacher takes before planning a single lesson.
 
 ## Contexts and Settings: Where English Is Taught
 
@@ -28,7 +28,7 @@ The classroom in which a teacher works shapes almost every decision about materi
 
 These two settings illustrate a broader reality: TEFL happens across a wide range of contexts around the world, from public primary schools to secondary programs to post-secondary institutions. A teacher working in a secondary school in one country faces a different set of constraints from a colleague who leads an adult conversation class at a community college. The learners differ, the institutional expectations differ, and the role English plays in daily life outside the classroom differs. Treating all these situations as interchangeable leads to lessons that fit none of them well.
 
-Physical conditions vary just as much as institutional ones. Some classrooms are large and well-equipped, with dedicated learning stations, visual aids, and ample floor space for movement activities. Many teachers, however, work in rooms that offer far fewer resources, and a technique designed for a spacious, well-furnished environment cannot be transplanted unchanged into a smaller or less-equipped space. A teacher watching a video of an elaborate station-based lesson and thinking "I could never do that" is asking the wrong question; the more productive question is which elements of the approach can be adapted to the resources actually available.
+Physical conditions vary just as much as institutional ones. Some classrooms are large and well-equipped, with dedicated learning stations, visual aids, and ample floor space for movement activities. Many teachers, however, work in rooms that offer far fewer resources, and a technique designed for a spacious, well-furnished environment cannot be transplanted unchanged into a smaller or less-equipped space. A teacher watching a video of an elaborate station-based lesson and thinking "I could never do that" is asking the wrong question; the more productive question is which elements of the approach can be adapted to the resources available.
 
 Adaptation is a core professional skill rather than a workaround. If a lesson design calls for printed handouts and a classroom has no photocopier, the teacher might draw the same content on a chalkboard or ask students to copy a short text into their notebooks. If a song-based activity assumes a sound system, a teacher with a strong voice and a willingness to sing can achieve a comparable effect. The *Shaping* materials were designed with this in mind: teachers are encouraged to observe classroom practices, compare them to their own situations, and then adopt or adapt what they see to fit their local needs.
 
@@ -70,7 +70,7 @@ That small moment of friction, recorded and examined, becomes the basis for a be
 
 ## Learning from Other Classrooms: Observation as a Professional Tool
 
-Watching another teacher work is one of the oldest forms of professional learning available, and in TEFL it carries particular weight. A teacher who observes a colleague's class, or watches a recorded lesson from a different country, gains access to decisions and routines that no methodology textbook can fully describe. Course material underlying this unit, *Shaping the Way We Teach English: From Observation to Action*, frames this experience precisely: observation can help teachers better understand how they approach their own students, curricula, and classroom routines.
+Watching another teacher work is one of the oldest forms of professional learning available, and in TEFL it carries particular weight. A teacher who observes a colleague's class, or watches a recorded lesson from a different country, gains access to decisions and routines that no methodology textbook can fully describe. The source material underlying this unit, *Shaping the Way We Teach English: From Observation to Action*, frames this experience precisely: observation can help teachers better understand how they approach their own students, curricula, and classroom routines.
 
 The framework moves through defined stages rather than leaving the observer to watch without direction. Teachers first activate their prior knowledge before viewing, drawing on their own classroom experience to set a context for what they are about to see. They then watch with specific focus areas in mind, attend to particular teaching concepts and classroom management techniques, and finally move toward action by planning how to apply what they have observed. This sequence transforms passive watching into a structured professional activity.
 
@@ -109,12 +109,12 @@ This outward-looking, reflective habit is not reserved for experienced teachers 
 **3. In the unit, what is described as the more productive question when a teacher sees an elaborate station-based lesson she cannot replicate directly?**
 
    a. How can I request more funding for better resources?
-   b. Which elements of the approach can be adapted to the resources actually available?
+   b. Which elements of the approach can be adapted to the resources available?
    c. Should I find a different school with better facilities?
    d. How can I show students a video of the lesson instead?
 
-   *Answer: Which elements of the approach can be adapted to the resources actually available?*
-   *Anchor: "which elements of the approach can be adapted to the resources actually available"*
+   *Answer: Which elements of the approach can be adapted to the resources available?*
+   *Anchor: "which elements of the approach can be adapted to the resources available"*
 
 **4. What specific term does the unit use for the context in which a student in Costa Rica learns English in a local school, and what does that term mean?**
 
