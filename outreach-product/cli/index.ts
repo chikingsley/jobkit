@@ -2,11 +2,9 @@ import { spawn } from "node:child_process";
 import { resolve } from "node:path";
 
 const COMMANDS = new Map<string, string>([
-  ["analyze jobs", "analyze-jobs/run.ts"],
-  ["analyze positions", "analyze-job-positions/run.ts"],
-  ["applications prepare", "applications/prepare.ts"],
+  ["agent connect", "agent/connect.ts"],
+  ["agent start", "agent/start.ts"],
   ["inventory sync", "job-inventory/sync.ts"],
-  ["sweeps run", "run-country-sweeps.ts"],
 ]);
 
 const args = process.argv.slice(2);
@@ -32,11 +30,9 @@ Usage:
   bun run jobkit -- <group> <command> [options]
 
 Commands:
-  analyze jobs                 Extract job requirements and economics
-  analyze positions            Extract distinct positions from listings
-  applications prepare         Prepare selected applications for review
-  inventory sync               Sync the local source inventory into D1
-  sweeps run                   Claim and execute country-sweep tasks`);
+  agent connect                Pair this checkout with JobKit using Codex login
+  agent start                  Claim and execute queued Codex tasks
+  inventory sync               Sync the local source inventory into D1`);
   if (unknownCommand) {
     process.exitCode = 1;
   }

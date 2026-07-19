@@ -102,30 +102,6 @@ export const CountrySweepTaskOutputSchema = z
   })
   .strict();
 
-export const SweepTaskClaimSchema = z
-  .object({
-    workerId: z.string().min(1).max(160),
-  })
-  .strict();
-
-export const SweepTaskCompletionSchema = z
-  .object({
-    output: CountrySweepTaskOutputSchema,
-    workerId: z.string().min(1).max(160),
-  })
-  .strict();
-
-export const SweepTaskFailureSchema = z
-  .object({
-    error: z.string().min(1).max(4000),
-    workerId: z.string().min(1).max(160),
-  })
-  .strict();
-
-export const SweepRunnerTokenCreateSchema = z
-  .object({ name: z.string().trim().min(1).max(120) })
-  .strict();
-
 export type CampaignExecutionMode = z.infer<typeof CampaignExecutionModeSchema>;
 export type CountryCampaignTargetStatus = z.infer<
   typeof CountryCampaignTargetStatusSchema

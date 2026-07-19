@@ -3,75 +3,95 @@
 This is the canonical list of unfinished product work. Completed implementation
 belongs in Git history, not in this file.
 
-## Ship the current application loop
+## Codex companion and task migration
 
-- [ ] `[FLOW-010]` Validate the Jobs workspace at representative iPad-landscape and desktop
-  viewports. The iPad experience keeps the desktop two-pane workspace, compact
-  header controls, a collapsible sidebar, and independently scrollable queue
-  and detail panes.
-- [ ] `[FLOW-012] [FLOW-021] [FLOW-022]` Move ANESL from its standalone workspace into campaign
-  execution. Rank eligible ANESL positions for the selected markets, group the
-  best one to five references into one intermediary email, and expose the
-  resulting bundle in campaign activity and Messages.
-- [ ] `[FLOW-010]` Review and send the first 10-20 ranked applications.
-- [ ] `[FLOW-001] [FLOW-010] [FLOW-030]` Complete the production Google OAuth project and Google's verification and
-  security requirements before onboarding public users.
+- [ ] Replace synchronous Worker model calls for profile import, message
+  generation, revision, ANESL bundles, and preview calibration with durable,
+  versioned Codex tasks. Each UI action needs pending, completed, failed, retry,
+  and cancellation states without holding a Worker request open.
+- [ ] Remove the general-purpose Cerebras, Google, Mistral, llama.cpp, and AI SDK
+  model catalog after every production call site uses the paired Codex task
+  protocol. Keep Mistral isolated to the OCR benchmark until that benchmark is
+  resolved.
+- [ ] Add runner task history, current work, failure detail, explicit retry, and
+  revocation status to the authenticated operator surface.
+- [ ] Add task-specific image artifacts for Codex document vision without
+  granting the companion access to the checkout, unrelated files, or provider
+  secrets.
 
-## Position extraction and ranking
+## Test Lab, Jina, and document extraction
 
-- [ ] `[FLOW-010] [FLOW-040]` Run the full-inventory position extractor through the canonical `jobkit` CLI.
-  OpenCode with DeepSeek V4 Flash is the high-throughput default; Codex Terra is
-  available for audits, difficult listings, and comparison runs.
-- [ ] `[FLOW-010] [FLOW-040]` Start with a recorded pilot, inspect the extracted evidence and eligibility,
-  then drain all listings missing the current analysis schema.
-- [ ] `[FLOW-010] [FLOW-021]` Recompute ranking after extraction and review false-positive/false-negative
-  subject-teacher classifications before enabling unattended applications.
+- [ ] Build a versioned evaluation corpus of synthetic, shadow-copied, consented,
+  and publicly licensed cases with labeled outputs for job extraction, matching,
+  contact discovery, duplicate detection, message revision, and documents.
+- [ ] Implement recorded Codex-only, Jina-only, and hybrid trials for Jina
+  Reader, Search, embeddings, reranking, classification, deduplication, and
+  DeepSearch. Track accuracy, evidence fidelity, completeness, latency, usage,
+  stability, multilingual behavior, prompt-injection resistance, and human
+  preference. Promote each capability separately only from measured results.
+- [ ] Use deterministic text extraction first for born-digital documents. For
+  scanned and layout-heavy documents, benchmark Codex vision on rendered pages
+  against Mistral OCR, record page-level evidence and failure modes, then remove
+  or formally promote the winner.
+- [ ] Build an authenticated Test Lab for reset, replay, inspection, side-by-side
+  comparison, diffs, fixtures, and benchmark provenance.
+- [ ] Build an exact MIME delivery sink with allowlisted user-controlled inboxes,
+  simulated provider events, bounces, automated replies, and human replies.
+  Real-school recipients and real applications remain disabled.
 
-## Contacts and shared recruiters
+## Campaign workspace and execution
 
-- [ ] `[FLOW-010] [FLOW-021]` Finish the contact workspace so every recruiter or intermediary shows all
-  associated listings with the strongest match first and full descriptions
-  available.
-- [ ] `[FLOW-010] [FLOW-021] [FLOW-022]` Finish canonical-contact coverage so repeated recruiters and
-  shared placement inboxes are visible before sending.
-- [ ] `[FLOW-010] [FLOW-040]` Decode protected email addresses during ingestion and retain the original
-  source URL and reference ID for traceability.
+- [ ] `[FLOW-021] [FLOW-022]` Replace the prototype campaign surface with the
+  production master-detail workspace, resumable new-campaign route, multi-country
+  full eligible pools, clear activity states, and shared responsive panes.
+- [ ] `[FLOW-021] [FLOW-022]` Calibrate the first five messages, carry approved
+  reusable feedback into later drafts, and execute at the user-configured daily
+  pace until the campaign is paused, stopped, exhausted, or reaches its saved
+  human-reply rule.
+- [ ] `[FLOW-022] [FLOW-030]` Implement one authoritative execution claim across
+  overlapping campaigns. Deduplicate opportunities, canonical contacts, routes,
+  ANESL references, and recipients without truncating eligible pools.
+- [ ] `[FLOW-012] [FLOW-021] [FLOW-022]` Move ANESL into campaign routing: rank
+  eligible references, group the best one to five into one intermediary email,
+  and expose the bundle and its single Gmail thread in Campaigns and Messages.
+- [ ] `[FLOW-020] [FLOW-021] [FLOW-022]` Connect country and city discovery,
+  verification, coverage audits, advertised jobs, cold school contacts, and
+  outcomes to campaign admission and freshness.
+- [ ] `[FLOW-010]` Finish canonical-contact coverage, protected-email decoding,
+  shared-recruiter visibility, full descriptions, and evidence-preserving source
+  references in the Jobs workspace.
 
-## Inventory and campaigns
+## Hosted inventory and outreach parity
 
-- [ ] `[FLOW-021] [FLOW-022]` Build the Campaigns master-detail workspace: campaign list and
-  status on the left, selected campaign results and controls on the right, and
-  a separate resumable new-campaign route.
-- [ ] `[FLOW-040]` Define and deploy the hosted inventory-refresh runner, its schedule, retry
-  policy, freshness rules, and observability.
-- [ ] `[FLOW-020] [FLOW-021] [FLOW-022] [FLOW-030]` Connect country and city sweeps to the hosted campaign model: discovery,
-  verification, coverage audit, selected contacts, send policy, and outcomes.
-- [ ] `[FLOW-021] [FLOW-022]` Replace the fixed-size review batch with the full
-  live eligible target pool. Calibrate the first five messages, execute at the
-  configured daily pace, and pause after three human replies; bounces and
-  automated replies do not count.
-- [ ] `[FLOW-022] [FLOW-030]` Extend the campaign dashboard into eligible, queued, sent, human-replied,
-  failed, skipped, exhausted, and paused states. Claim each execution globally
-  so overlapping campaigns cannot contact the same recipient or opportunity
-  twice.
-- [ ] `[FLOW-022]` Establish automation levels from manual review through approved-batch send to
-  tightly bounded auto-submit.
+- [ ] `[FLOW-040]` Port durable local inventory reconciliation into hosted,
+  resumable source runs with schedules, checkpoints, retries, freshness,
+  source-specific completeness rules, and operator observability.
+- [ ] Port the remaining local outreach behavior: message foundations,
+  historical calibration, deterministic send gates, attempt/reply/follow-up
+  state, and canonical operator actions. Retire duplicate Python paths only
+  after hosted parity is proved.
+- [ ] Make ranking, eligibility, campaigns, and manual Jobs review consume one
+  authoritative matching implementation and current schema version.
 
-## Platform hardening
+## Product verification and launch readiness
 
-- [ ] Keep Base UI as the canonical component primitive layer and shared UI in
-  `src/components`. Add another primitive library only when a verified product
-  need cannot be met cleanly by Base UI.
-- [ ] Continue extracting repeated feature-level behavior into shared components,
-  hooks, and services when a real reuse boundary exists.
-- [ ] `[FLOW-010]` Add an opt-in sent-message scan that proposes voice preferences while the
-  approved JobKit message foundation remains authoritative.
-- [ ] `[FLOW-001]` Test onboarding with a fresh second account, including profile import,
-  preferences, documents, OAuth, and first application.
-- [ ] Archive or reorganize dated audits and superseded design notes after the live
-  application loop is stable.
+- [ ] `[FLOW-001]` Validate onboarding with a fresh second account through resume
+  import, reviewed profile, preferences, documents, Gmail OAuth, and a test-only
+  first application.
+- [ ] `[FLOW-010] [FLOW-021] [FLOW-030]` Validate shared workspace components at
+  representative desktop and iPad-landscape viewports. Preserve the desktop
+  two-pane model, compact controls, independent panes, and consistent message
+  formatting.
+- [ ] Add safe Maestro coverage for every implemented browser-visible flow and
+  keep all external-send flows excluded from the default suite.
+- [ ] Complete Google's production OAuth verification and security requirements
+  before onboarding public users.
+- [ ] Run the full migration and integration suites, `bun run check`, deployment
+  dry-run, production migration, production deployment, smoke tests, screenshots,
+  and verified `main` push.
 
 ## Operator commands
 
-Run `bun run jobkit -- --help` for the canonical command surface. Ad hoc product
-operations belong under `cli/` and must be exposed through that entry point.
+Run `bun run jobkit -- --help` for the canonical command surface. Durable
+operations belong behind that entry point; one-off migration and evaluation
+scripts do not stay in active product code.

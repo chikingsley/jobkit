@@ -2,10 +2,6 @@ import {
   CountryCampaignLaunchSchema,
   CountryCampaignTargetDecisionSchema,
   CountrySweepRequestSchema,
-  SweepRunnerTokenCreateSchema,
-  SweepTaskClaimSchema,
-  SweepTaskCompletionSchema,
-  SweepTaskFailureSchema,
 } from "../../src/features/countries/schema";
 import type { JobKitApp } from "../app-types";
 import {
@@ -17,54 +13,10 @@ import {
   readCountryCampaign,
   readCountryDetail,
 } from "../services/country-markets";
-import {
-  createCountrySweepRunnerToken,
-  listCountrySweepRunnerTokens,
-  revokeCountrySweepRunnerToken,
-} from "../services/country-sweep-runner-auth";
-import {
-  claimCountrySweepTask,
-  completeCountrySweepTask,
-  failCountrySweepTask,
-} from "../services/country-sweep-tasks";
 
 const COUNTRY_CODE_PATTERN = /^[A-Z]{2}$/u;
 
 export function registerCountryRoutes(app: JobKitApp) {
-  app.get("/api/country-sweep-runner-tokens", async (c) => {
-    const tokens = await listCountrySweepRunnerTokens(
-      c.env.DB,
-      c.get("user").id
-    );
-    return c.json({ tokens });
-  });
-
-  app.post("/api/country-sweep-runner-tokens", async (c) => {
-    const { name } = SweepRunnerTokenCreateSchema.parse(await c.req.json());
-    const token = await createCountrySweepRunnerToken(
-      c.env.DB,
-      c.get("user").id,
-      name
-    );
-    return c.json({
-      message: "Runner token created. Copy it now; it will not be shown again.",
-      ok: true,
-      token,
-    });
-  });
-
-  app.delete("/api/country-sweep-runner-tokens/:tokenId", async (c) => {
-    const revoked = await revokeCountrySweepRunnerToken(
-      c.env.DB,
-      c.get("user").id,
-      c.req.param("tokenId")
-    );
-    if (!revoked) {
-      throw new Error("Runner token was not active");
-    }
-    return c.json({ message: "Runner token revoked", ok: true });
-  });
-
   app.get("/api/countries", async (c) => {
     const countries = await listCountryMarkets(c.env.DB, c.get("user").id);
     return c.json({ countries });
@@ -142,50 +94,6 @@ export function registerCountryRoutes(app: JobKitApp) {
       return c.json({ campaign, message: "Campaign target updated", ok: true });
     }
   );
-
-  app.post("/api/country-sweep-tasks/claim", async (c) => {
-    const { workerId } = SweepTaskClaimSchema.parse(await c.req.json());
-    const task = await claimCountrySweepTask(
-      c.env.DB,
-      c.get("user").id,
-      workerId
-    );
-    return task
-      ? c.json({ ok: true, task })
-      : c.json({ message: "No country sweep work is queued", ok: true, task });
-  });
-
-  app.post("/api/country-sweep-tasks/:taskId/complete", async (c) => {
-    const { output, workerId } = SweepTaskCompletionSchema.parse(
-      await c.req.json()
-    );
-    const result = await completeCountrySweepTask(
-      c.env.DB,
-      c.get("user").id,
-      c.req.param("taskId"),
-      workerId,
-      output
-    );
-    return c.json({
-      message: "Country sweep task completed",
-      ok: true,
-      result,
-    });
-  });
-
-  app.post("/api/country-sweep-tasks/:taskId/fail", async (c) => {
-    const { error, workerId } = SweepTaskFailureSchema.parse(
-      await c.req.json()
-    );
-    const result = await failCountrySweepTask(
-      c.env.DB,
-      c.get("user").id,
-      c.req.param("taskId"),
-      workerId,
-      error
-    );
-    return c.json({ message: "Country sweep task failed", ok: true, result });
-  });
 }
 
 function normalizedCountryCode(value: string) {

@@ -3,49 +3,17 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-export type StructuredAgentProvider = "codex" | "opencode";
-
 export interface StructuredAgentOptions {
-  cwd: string;
-  effort: string;
+  effort: "high" | "low" | "medium" | "xhigh";
   model: string;
   outputSchema: object;
   prompt: string;
-  provider: StructuredAgentProvider;
   timeoutMs: number;
-  variant: string;
+  webSearch: "disabled" | "live";
 }
 
-export function runStructuredAgent(options: StructuredAgentOptions) {
-  if (options.provider === "codex") {
-    return runCodex(options);
-  }
-  return runOpencode(options);
-}
-
-function runOpencode(options: StructuredAgentOptions): Promise<string> {
-  return capture(
-    "opencode",
-    [
-      "run",
-      "--pure",
-      "--agent",
-      "jobkit-extractor",
-      "--model",
-      options.model,
-      ...(options.variant ? ["--variant", options.variant] : []),
-      options.prompt,
-    ],
-    {
-      cwd: options.cwd,
-      input: null,
-      timeoutMs: options.timeoutMs,
-    }
-  );
-}
-
-async function runCodex(options: StructuredAgentOptions): Promise<string> {
-  const directory = await mkdtemp(join(tmpdir(), "jobkit-codex-"));
+export async function runStructuredAgent(options: StructuredAgentOptions) {
+  const directory = await mkdtemp(join(tmpdir(), "jobkit-codex-task-"));
   const schemaPath = join(directory, "schema.json");
   const outputPath = join(directory, "output.json");
   try {
@@ -58,16 +26,23 @@ async function runCodex(options: StructuredAgentOptions): Promise<string> {
       [
         "exec",
         "--ephemeral",
+        "--ignore-user-config",
+        "--ignore-rules",
+        "--skip-git-repo-check",
         "--color",
         "never",
         "--sandbox",
         "read-only",
         "--cd",
-        options.cwd,
+        directory,
         "--model",
         options.model,
         "--config",
+        'approval_policy="never"',
+        "--config",
         `model_reasoning_effort=${JSON.stringify(options.effort)}`,
+        "--config",
+        `web_search=${JSON.stringify(options.webSearch)}`,
         "--output-schema",
         schemaPath,
         "--output-last-message",
@@ -75,7 +50,7 @@ async function runCodex(options: StructuredAgentOptions): Promise<string> {
         "-",
       ],
       {
-        cwd: options.cwd,
+        cwd: directory,
         input: options.prompt,
         timeoutMs: options.timeoutMs,
       }
@@ -89,24 +64,36 @@ async function runCodex(options: StructuredAgentOptions): Promise<string> {
 function capture(
   executable: string,
   args: string[],
-  options: { cwd: string; input: string | null; timeoutMs: number }
+  options: { cwd: string; input: string; timeoutMs: number }
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn(executable, args, {
       cwd: options.cwd,
-      stdio: [options.input === null ? "ignore" : "pipe", "pipe", "pipe"],
+      env: codexEnvironment(),
+      stdio: ["pipe", "pipe", "pipe"],
     });
-    if (!(child.stdout && child.stderr)) {
-      reject(new Error(`${executable} did not expose output streams`));
+    if (!(child.stdin && child.stdout && child.stderr)) {
+      reject(new Error(`${executable} did not expose expected streams`));
       return;
     }
     let stdout = "";
     let stderr = "";
+    let settled = false;
+    const finish = (operation: () => void) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timer);
+      operation();
+    };
     const timer = setTimeout(() => {
       child.kill("SIGKILL");
-      reject(
-        new Error(
-          `${executable} timed out after ${Math.round(options.timeoutMs / 1000)} seconds`
+      finish(() =>
+        reject(
+          new Error(
+            `${executable} timed out after ${Math.round(options.timeoutMs / 1000)} seconds`
+          )
         )
       );
     }, options.timeoutMs);
@@ -116,28 +103,44 @@ function capture(
     child.stderr.on("data", (chunk: Buffer) => {
       stderr += chunk.toString();
     });
-    child.once("error", (error) => {
-      clearTimeout(timer);
-      reject(error);
-    });
+    child.once("error", (error) => finish(() => reject(error)));
     child.once("close", (code) => {
-      clearTimeout(timer);
-      if (code === 0) {
-        resolve(stdout);
-        return;
-      }
-      reject(
-        new Error(
-          `${executable} exited ${code}: ${stderr.slice(-1000) || "no stderr"}`
-        )
-      );
+      finish(() => {
+        if (code === 0) {
+          resolve(stdout);
+          return;
+        }
+        reject(
+          new Error(
+            `${executable} exited ${code}: ${stderr.slice(-1000) || "no stderr"}`
+          )
+        );
+      });
     });
-    if (options.input !== null) {
-      if (!child.stdin) {
-        reject(new Error(`${executable} did not expose an input stream`));
-        return;
-      }
-      child.stdin.end(options.input);
-    }
+    child.stdin.end(options.input);
   });
+}
+
+function codexEnvironment(): NodeJS.ProcessEnv {
+  const allowed = new Set<string>([
+    "CODEX_HOME",
+    "HOME",
+    "LANG",
+    "LC_ALL",
+    "LOGNAME",
+    "PATH",
+    "SHELL",
+    "TMPDIR",
+    "USER",
+    "XDG_CACHE_HOME",
+    "XDG_CONFIG_HOME",
+    "XDG_DATA_HOME",
+  ]);
+  const environment = { ...process.env };
+  for (const key of Object.keys(environment)) {
+    if (!allowed.has(key)) {
+      Reflect.deleteProperty(environment, key);
+    }
+  }
+  return environment;
 }

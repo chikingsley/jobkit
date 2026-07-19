@@ -244,115 +244,136 @@ export function AutomationView({ request }: { request: ApiRequest }) {
         </CardFooter>
       </Card>
 
-      <RunnerAccessCard request={request} />
+      <AgentRunnerCard request={request} />
     </SettingsPage>
   );
 }
 
-interface RunnerTokenSummary {
+interface AgentRunnerSummary {
+  capabilities: string[];
+  codexVersion: string;
   createdAt: string;
   id: string;
-  lastUsedAt: string | null;
+  lastSeenAt: string | null;
   name: string;
   revokedAt: string | null;
 }
 
-function RunnerAccessCard({ request }: { request: ApiRequest }) {
+interface AgentPairing {
+  code: string;
+  expiresAt: string;
+}
+
+function AgentRunnerCard({ request }: { request: ApiRequest }) {
   const { data, mutate } = useSWR(
-    "/api/country-sweep-runner-tokens",
+    "/api/agent-runners",
     async (path) =>
-      (await (await request(path)).json()) as { tokens: RunnerTokenSummary[] }
+      (await (await request(path)).json()) as {
+        runners: AgentRunnerSummary[];
+      }
   );
-  const [createdToken, setCreatedToken] = useState("");
+  const [pairing, setPairing] = useState<AgentPairing | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function createToken() {
+  async function createPairing() {
     setBusy(true);
     try {
-      const response = await request("/api/country-sweep-runner-tokens", {
-        body: JSON.stringify({ name: "gmk-server Codex runner" }),
+      const response = await request("/api/agent-runner-pairings", {
+        body: JSON.stringify({
+          capabilities: ["research", "extraction", "drafting", "evaluation"],
+        }),
         headers: { "content-type": "application/json" },
         method: "POST",
       });
       const result = (await response.json()) as {
         message: string;
-        token: RunnerTokenSummary & { token: string };
+        pairing: AgentPairing;
       };
-      setCreatedToken(result.token.token);
-      await mutate();
+      setPairing(result.pairing);
       toast.success(result.message);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Runner token failed"
+        error instanceof Error ? error.message : "Agent pairing failed"
       );
     } finally {
       setBusy(false);
     }
   }
 
-  async function revoke(tokenId: string) {
+  async function revoke(runnerId: string) {
     try {
-      await request(`/api/country-sweep-runner-tokens/${tokenId}`, {
+      await request(`/api/agent-runners/${runnerId}`, {
         method: "DELETE",
       });
       await mutate();
-      toast.success("Runner token revoked");
+      toast.success("Codex agent revoked");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Runner token failed"
+        error instanceof Error ? error.message : "Agent revoke failed"
       );
     }
   }
 
-  async function copyToken() {
-    await navigator.clipboard.writeText(createdToken);
-    toast.success("Runner token copied");
+  const pairingCommand = pairing
+    ? `bun run jobkit -- agent connect --code ${pairing.code}`
+    : "";
+
+  async function copyPairingCommand() {
+    await navigator.clipboard.writeText(pairingCommand);
+    toast.success("Pairing command copied");
   }
 
-  const activeTokens = (data?.tokens ?? []).filter((token) => !token.revokedAt);
+  const activeRunners = (data?.runners ?? []).filter(
+    (runner) => !runner.revokedAt
+  );
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Codex country runner</CardTitle>
+        <CardTitle>Codex agent</CardTitle>
         <CardDescription>
-          A runner token can claim country research tasks. It cannot access
-          profiles, documents, messages, or application routes.
+          Pair a local Codex login with JobKit. The agent receives only queued
+          task inputs and returns schema-validated results over outbound HTTPS.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">
-        {createdToken ? (
+        {pairing ? (
           <div className="grid gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
-            <div className="font-medium">Copy this token now</div>
+            <div className="font-medium">Run this from outreach-product</div>
             <code className="break-all rounded bg-background p-2 text-xs">
-              {createdToken}
+              {pairingCommand}
             </code>
+            <div className="text-muted-foreground text-xs">
+              This one-time code expires at{" "}
+              {new Date(pairing.expiresAt).toLocaleTimeString()}.
+            </div>
             <Button
               className="justify-self-start"
-              onClick={() => void copyToken()}
+              onClick={() => void copyPairingCommand()}
               variant="outline"
             >
-              <Copy /> Copy token
+              <Copy /> Copy command
             </Button>
           </div>
         ) : null}
-        {activeTokens.map((token) => (
+        {activeRunners.map((runner) => (
           <div
             className="flex items-center justify-between gap-3 rounded-lg border p-3"
-            key={token.id}
+            key={runner.id}
           >
             <div>
               <div className="flex items-center gap-2 font-medium">
-                <Terminal className="size-4" /> {token.name}
+                <Terminal className="size-4" /> {runner.name}
               </div>
               <div className="mt-1 text-muted-foreground text-xs">
-                {token.lastUsedAt
-                  ? `Last used ${new Date(token.lastUsedAt).toLocaleString()}`
-                  : "Never used"}
+                {runner.lastSeenAt
+                  ? `Last seen ${new Date(runner.lastSeenAt).toLocaleString()}`
+                  : "Waiting for first connection"}
+                {runner.codexVersion ? ` · ${runner.codexVersion}` : ""}
               </div>
             </div>
             <Button
-              aria-label={`Revoke ${token.name}`}
-              onClick={() => void revoke(token.id)}
+              aria-label={`Revoke ${runner.name}`}
+              onClick={() => void revoke(runner.id)}
               size="icon-sm"
               variant="ghost"
             >
@@ -360,19 +381,19 @@ function RunnerAccessCard({ request }: { request: ApiRequest }) {
             </Button>
           </div>
         ))}
-        {activeTokens.length === 0 && !createdToken ? (
+        {activeRunners.length === 0 && !pairing ? (
           <div className="text-muted-foreground text-sm">
-            No active runner is connected.
+            No Codex agent is paired.
           </div>
         ) : null}
       </CardContent>
       <CardFooter className="justify-end">
         <Button
           disabled={busy}
-          onClick={() => void createToken()}
+          onClick={() => void createPairing()}
           variant="outline"
         >
-          <Terminal /> {busy ? "Creating…" : "Create runner token"}
+          <Terminal /> {busy ? "Creating…" : "Pair Codex agent"}
         </Button>
       </CardFooter>
     </Card>

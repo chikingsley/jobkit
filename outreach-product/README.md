@@ -13,7 +13,7 @@ Production: <https://outreach-product.peacockery.studio>
 - Gmail OAuth sending with a snapshotted R2 attachment packet.
 - Authenticated Gmail Pub/Sub reply ingestion, D1 message threads, unread state, and attachment retrieval in the Messages interface.
 - SeriousTeachers login-gated form submission with authoritative post-submit verification.
-- Country-market catalogs, bounded sweep tasks, campaigns, runner credentials, and automation policy.
+- Country-market catalogs, campaigns, paired Codex task execution, and automation policy.
 - React Router routes plus URL-backed job filters, sort, selected job, and selected message thread.
 
 R2 objects have no public bucket URL. All document operations are authenticated and ownership scoped. Accepted uploads are PDF, DOCX, JPG, and PNG files up to 10 MB.
@@ -32,9 +32,18 @@ Cloudflare Worker (Hono, Better Auth, application executors)
 
 job-search/job-data/jobs.sqlite
         `-- bun run inventory:sync --> D1 global inventory
+
+paired local Codex CLI
+        `-- outbound HTTPS claim/result protocol --> versioned agent tasks
 ```
 
-The country-sweep runner is intentionally external to the request path. It claims bounded tasks with a revocable runner token and writes structured results back to D1; the browser never receives that token.
+Long-running research and analysis never hold open a Worker request. A user
+pairs a local `codex login` with a short-lived one-time code, then the local
+companion claims versioned tasks over outbound HTTPS. JobKit stores only a hash
+of the revocable companion token. Each task runs in an empty ephemeral
+workspace with project secrets removed from the child environment and returns a
+schema-validated result. See
+[`docs/architecture/codex-agent-runtime.md`](docs/architecture/codex-agent-runtime.md).
 
 ## Local development
 
@@ -51,19 +60,20 @@ Put local credentials in an untracked, mode-600 `.dev.vars` file. The Worker val
 
 ```text
 BETTER_AUTH_SECRET=...
-CEREBRAS_API_KEY=...
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 GOOGLE_PUBSUB_AUDIENCE=...
 GOOGLE_PUBSUB_SERVICE_ACCOUNT=...
 GOOGLE_PUBSUB_TOPIC=...
 MAPBOX_ACCESS_TOKEN=...
-MISTRAL_API_KEY=...
+JINA_API_KEY=...             # optional benchmark and promoted capabilities
+MISTRAL_API_KEY=...          # temporary OCR benchmark only
 SERIOUSTEACHERS_EMAIL=...
 SERIOUSTEACHERS_PASSWORD=...
 ```
 
-Never commit `.dev.vars`, OAuth client JSON, access tokens, or runner tokens.
+Never commit `.dev.vars`, OAuth client JSON, access tokens, pairing codes, or
+companion tokens.
 
 ## Verification and deployment
 
@@ -89,12 +99,9 @@ bunx wrangler d1 migrations apply jobkit-outreach --remote
 # Normalize the local durable source inventory into hosted D1
 bun run inventory:sync
 
-# Run the analysis/economics pipelines with local protected credentials
-bun run analyze:jobs
-bun run economics:evaluate
-
-# Process country sweep tasks from an authorized runner environment
-bun run sweeps:run
+# Pair this checkout from Automation, then execute all queued Codex work
+bun run jobkit -- agent connect --code <one-time-code>
+bun run jobkit -- agent start
 ```
 
 The source inventory is `../job-search/job-data/jobs.sqlite`. It is not application state. D1 is the hosted source of truth for user profiles, preferences, job workflow state, qualification claims, drafts, send attempts, Gmail threads, and replies.
@@ -102,6 +109,7 @@ The source inventory is `../job-search/job-data/jobs.sqlite`. It is not applicat
 ## Documentation
 
 - [`docs/jobkit-product-prd.md`](docs/jobkit-product-prd.md) — canonical product behavior and direction.
+- [`docs/architecture/codex-agent-runtime.md`](docs/architecture/codex-agent-runtime.md) — Codex pairing, execution, trust, and provider-migration contract.
 - [`docs/escape-pathways-product-research.md`](docs/escape-pathways-product-research.md) — research and positioning for expanding from ESL jobs into verified work, training, and relocation routes.
 - [`docs/recruiting-business/`](docs/recruiting-business/) — proposed recruiting business, licensing, market order, school offer, candidate pricing, and confidential relocation product.
 - [`docs/outreach-and-product-design.md`](docs/outreach-and-product-design.md) — design history and the transition from personal local tools to the hosted application.

@@ -3,9 +3,8 @@ import {
   JOB_POSITION_ANALYSIS_SCHEMA_VERSION,
   JobPositionAnalysisSchema,
 } from "../../src/features/jobs/position-variants";
-import { jobFactSource, jobSourceHash } from "../ai/job-fact-extraction";
-import { unsupportedPositionEvidence } from "../ai/job-position-extraction";
 import type { JobKitApp } from "../app-types";
+import { recordJobPositionAnalysis } from "../services/job-analysis-records";
 
 const PENDING_LIMIT_MAX = 100;
 const PENDING_IDS_MAX = 100;
@@ -111,99 +110,13 @@ export function registerJobPositionAnalysisRoutes(app: JobKitApp) {
       );
     }
     const { analysis, jobId, modelId, provider, sourceHash } = body.data;
-    const job = await c.env.DB.prepare(
-      `SELECT j.title,j.salary,j.description
-       FROM jobs j
-       JOIN user_jobs uj ON uj.job_id=j.id AND uj.user_id=?1
-       WHERE j.id=?2`
-    )
-      .bind(c.get("user").id, jobId)
-      .first<{ description: string; salary: string; title: string }>();
-    if (!job) {
-      return c.json({ message: "Unknown job", ok: false }, 404);
-    }
-    const fields = {
-      description: String(job.description),
-      salary: String(job.salary),
-      title: String(job.title),
-    };
-    if ((await jobSourceHash(fields)) !== sourceHash) {
-      return c.json(
-        {
-          message:
-            "Source hash does not match the stored listing; re-fetch and analyze the current text",
-          ok: false,
-        },
-        409
-      );
-    }
-    const source = jobFactSource(fields);
-    const rejected = unsupportedPositionEvidence(analysis, source);
-    if (rejected.length > 0) {
-      return c.json(
-        {
-          message: `${rejected.length} evidence quotes are not present in the stored listing`,
-          ok: false,
-          rejectedEvidence: rejected.slice(0, 10),
-        },
-        422
-      );
-    }
-    const timestamp = new Date().toISOString();
-    const statements = [
-      c.env.DB.prepare("DELETE FROM job_position_variants WHERE job_id=?").bind(
-        jobId
-      ),
-      c.env.DB.prepare(
-        `INSERT INTO job_position_analyses
-          (job_id,scope,review_notes_json,schema_version,model_provider,model_id,
-           source_hash,updated_at)
-         VALUES (?,?,?,?,?,?,?,?)
-         ON CONFLICT(job_id) DO UPDATE SET
-           scope=excluded.scope,
-           review_notes_json=excluded.review_notes_json,
-           schema_version=excluded.schema_version,
-           model_provider=excluded.model_provider,
-           model_id=excluded.model_id,
-           source_hash=excluded.source_hash,
-           updated_at=excluded.updated_at`
-      ).bind(
-        jobId,
-        analysis.scope,
-        JSON.stringify(analysis.reviewNotes),
-        JOB_POSITION_ANALYSIS_SCHEMA_VERSION,
-        provider,
-        modelId,
-        sourceHash,
-        timestamp
-      ),
-      ...analysis.positions.map((position, ordinal) =>
-        c.env.DB.prepare(
-          `INSERT INTO job_position_variants
-            (id,job_id,ordinal,title,role_family,subjects_json,locations_json,
-             audiences_json,employment_types_json,requirements_json,evidence_json,
-             compensation_evidence_json,certainty,created_at,updated_at)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-        ).bind(
-          crypto.randomUUID(),
-          jobId,
-          ordinal,
-          position.title,
-          position.roleFamily,
-          JSON.stringify(position.subjects),
-          JSON.stringify(position.locations),
-          JSON.stringify(position.audiences),
-          JSON.stringify(position.employmentTypes),
-          JSON.stringify(position.requirements),
-          JSON.stringify(position.evidence),
-          JSON.stringify(position.compensationEvidence),
-          position.certainty,
-          timestamp,
-          timestamp
-        )
-      ),
-    ];
-    await c.env.DB.batch(statements);
+    await recordJobPositionAnalysis(c.env.DB, c.get("user").id, {
+      analysis,
+      jobId,
+      modelId,
+      provider,
+      sourceHash,
+    });
     return c.json({
       message: `Recorded ${analysis.positions.length} position variants for ${jobId}`,
       ok: true,

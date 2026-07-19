@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ApplicationMessageGenerationError } from "./ai/application-messages";
 import { JobFactExtractionError } from "./ai/job-fact-extraction";
 import { ProfileExtractionError } from "./ai/profile-extraction";
-import type { AuthUser, JobKitApp } from "./app-types";
+import type { AgentRunnerContext, AuthUser, JobKitApp } from "./app-types";
 import { createAuth } from "./auth";
 import type { AppEnv } from "./env";
 import { OnboardingIncompleteError } from "./repositories/onboarding";
@@ -13,6 +13,7 @@ import {
   writePreferences,
   writeProfile,
 } from "./repositories/user-settings";
+import { registerAgentRunnerRoutes } from "./routes/agent-runners";
 import { registerApplicationBundleRoutes } from "./routes/application-bundles";
 import { registerApplicationDraftRoutes } from "./routes/application-drafts";
 import { registerCountryRoutes } from "./routes/countries";
@@ -27,6 +28,8 @@ import { registerMessageRoutes } from "./routes/messages";
 import { registerOnboardingRoutes } from "./routes/onboarding";
 import { registerUserSettingsRoutes } from "./routes/user-settings";
 import { ImportSchema, SubmitSchema } from "./schemas";
+import { authenticateAgentRunner } from "./services/agent-runners";
+import { AgentTaskError } from "./services/agent-task-broker";
 import { ApplicationBundleError } from "./services/application-bundle-model";
 import {
   DraftMessageFoundationRequiredError,
@@ -36,11 +39,11 @@ import {
   regenerateDrafts,
 } from "./services/application-drafts";
 import { CountryMarketError } from "./services/country-markets";
-import { authenticateCountrySweepRunner } from "./services/country-sweep-runner-auth";
 import { DocumentConversionError } from "./services/document-text";
 import { EmailAttemptError } from "./services/email-attempts";
 import { GmailIntegrationError } from "./services/gmail-errors";
 import { renewExpiringGmailWatches } from "./services/gmail-integration";
+import { JobAnalysisRecordError } from "./services/job-analysis-records";
 import { approveAndSubmitApplication } from "./services/job-submission";
 import {
   fetchExchangeRates,
@@ -51,7 +54,7 @@ import { ResumeUploadError } from "./services/profile-imports";
 
 const app: JobKitApp = new OpenAPIHono<{
   Bindings: AppEnv;
-  Variables: { user: AuthUser };
+  Variables: { agentRunner: AgentRunnerContext | null; user: AuthUser };
 }>();
 const jsonMessage = z.object({
   message: z.string().optional(),
@@ -110,6 +113,21 @@ app.onError((error, c) => {
   if (error instanceof CountryMarketError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
+  if (error instanceof AgentTaskError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
+  if (error instanceof JobAnalysisRecordError) {
+    return c.json(
+      {
+        message: error.message,
+        ok: false,
+        ...(error.rejectedEvidence.length > 0
+          ? { rejectedEvidence: error.rejectedEvidence }
+          : {}),
+      },
+      error.status
+    );
+  }
   return c.json({ message: "Internal server error", ok: false }, 500);
 });
 
@@ -119,35 +137,22 @@ app.on(["GET", "POST"], "/api/auth/*", (c) =>
   createAuth(c.env, c.req.raw).handler(c.req.raw)
 );
 
-const RUNNER_TASK_RESULT_PATH =
-  /^\/api\/country-sweep-tasks\/[^/]+\/(complete|fail)$/u;
-const RUNNER_CLAIM_PATH = "/api/country-sweep-tasks/claim";
-const RUNNER_MATCH_FACTS_PATH = "/api/job-match-facts";
-const RUNNER_POSITION_ANALYSES_PATH = "/api/job-position-analyses";
-const RUNNER_GENERATE_PATH = /^\/api\/jobs\/[^/]+\/generate$/u;
+const AGENT_PAIRING_EXCHANGE_PATH = "/api/agent-runner-pairings/exchange";
+const AGENT_TASK_RESULT_PATH = /^\/api\/agent-tasks\/[^/]+\/(complete|fail)$/u;
+const AGENT_TASK_CLAIM_PATH = "/api/agent-tasks/claim";
 
 function runnerRequestAllowed(method: string, path: string) {
-  if (method === "GET") {
-    return (
-      path === `${RUNNER_MATCH_FACTS_PATH}/pending` ||
-      path === `${RUNNER_POSITION_ANALYSES_PATH}/pending`
-    );
-  }
   if (method !== "POST") {
     return false;
   }
-  return (
-    path === RUNNER_CLAIM_PATH ||
-    path === RUNNER_MATCH_FACTS_PATH ||
-    path === RUNNER_POSITION_ANALYSES_PATH ||
-    RUNNER_TASK_RESULT_PATH.test(path) ||
-    // Draft generation, approval, and sending remain separate capabilities.
-    RUNNER_GENERATE_PATH.test(path)
-  );
+  return path === AGENT_TASK_CLAIM_PATH || AGENT_TASK_RESULT_PATH.test(path);
 }
 
 app.use("/api/*", async (c, next) => {
-  if (c.req.path === GMAIL_PUBSUB_WEBHOOK_PATH) {
+  if (
+    c.req.path === GMAIL_PUBSUB_WEBHOOK_PATH ||
+    (c.req.method === "POST" && c.req.path === AGENT_PAIRING_EXCHANGE_PATH)
+  ) {
     await next();
     return;
   }
@@ -156,23 +161,29 @@ app.use("/api/*", async (c, next) => {
     if (!runnerRequestAllowed(c.req.method, c.req.path)) {
       return c.json(
         {
-          message:
-            "Runner token is limited to sweep tasks, job analysis, and draft generation",
+          message: "Runner token is limited to agent task execution",
           ok: false,
         },
         403
       );
     }
-    const user = await authenticateCountrySweepRunner(c.env.DB, authorization);
-    if (!user) {
+    const runner = await authenticateAgentRunner(c.env.DB, authorization);
+    if (!runner) {
       return c.json(
         { message: "Runner authentication failed", ok: false },
         401
       );
     }
-    c.set("user", user);
+    c.set("agentRunner", runner);
+    c.set("user", runner.user);
     await next();
     return;
+  }
+  if (runnerRequestAllowed(c.req.method, c.req.path)) {
+    return c.json(
+      { message: "Agent runner authentication is required", ok: false },
+      401
+    );
   }
   const session = await createAuth(c.env, c.req.raw).api.getSession({
     headers: c.req.raw.headers,
@@ -185,9 +196,11 @@ app.use("/api/*", async (c, next) => {
     id: session.user.id,
     name: session.user.name,
   });
+  c.set("agentRunner", null);
   await next();
 });
 
+registerAgentRunnerRoutes(app);
 registerOnboardingRoutes(app);
 registerApplicationBundleRoutes(app);
 registerApplicationDraftRoutes(app);
