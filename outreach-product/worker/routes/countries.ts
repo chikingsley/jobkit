@@ -1,5 +1,6 @@
 import {
   CountryCampaignLaunchSchema,
+  CountryCampaignTargetDecisionSchema,
   CountrySweepRequestSchema,
   SweepRunnerTokenCreateSchema,
   SweepTaskClaimSchema,
@@ -10,8 +11,10 @@ import type { JobKitApp } from "../app-types";
 import {
   CountryMarketError,
   createCountrySweep,
+  decideCountryCampaignTarget,
   launchCountryCampaign,
   listCountryMarkets,
+  readCountryCampaign,
   readCountryDetail,
 } from "../services/country-markets";
 import {
@@ -113,6 +116,32 @@ export function registerCountryRoutes(app: JobKitApp) {
       ok: true,
     });
   });
+
+  app.get("/api/country-campaigns/:campaignId", async (c) => {
+    const campaign = await readCountryCampaign(
+      c.env.DB,
+      c.get("user").id,
+      c.req.param("campaignId")
+    );
+    return c.json({ campaign });
+  });
+
+  app.patch(
+    "/api/country-campaigns/:campaignId/targets/:targetId",
+    async (c) => {
+      const decision = CountryCampaignTargetDecisionSchema.parse(
+        await c.req.json()
+      );
+      const campaign = await decideCountryCampaignTarget(
+        c.env.DB,
+        c.get("user").id,
+        c.req.param("campaignId"),
+        c.req.param("targetId"),
+        decision
+      );
+      return c.json({ campaign, message: "Campaign target updated", ok: true });
+    }
+  );
 
   app.post("/api/country-sweep-tasks/claim", async (c) => {
     const { workerId } = SweepTaskClaimSchema.parse(await c.req.json());

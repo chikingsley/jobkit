@@ -30,6 +30,14 @@ describe("country markets and campaigns", () => {
         includeSchoolOutreach: false,
       }
     );
+    const campaignPayload = (await campaign.json()) as {
+      campaign: {
+        campaignId: string;
+        executionMode: string;
+        targetCount: number;
+      };
+      ok: boolean;
+    };
 
     expect(countries.status).toBe(200);
     expect(await countries.json()).toMatchObject({
@@ -42,7 +50,7 @@ describe("country markets and campaigns", () => {
       ],
     });
     expect(campaign.status).toBe(200);
-    expect(await campaign.json()).toMatchObject({
+    expect(campaignPayload).toMatchObject({
       campaign: { executionMode: "review_each", targetCount: 1 },
       ok: true,
     });
@@ -57,6 +65,60 @@ describe("country markets and campaigns", () => {
       route_id: "route-poland",
       status: "review",
     });
+
+    const detail = await request(
+      `/api/country-campaigns/${campaignPayload.campaign.campaignId}`,
+      cookie
+    );
+    const detailPayload = (await detail.json()) as {
+      campaign: {
+        targetCounts: Record<string, number>;
+        targets: Array<{ id: string }>;
+      };
+    };
+    const [target] = detailPayload.campaign.targets;
+    expect(detail.status).toBe(200);
+    expect(detailPayload.campaign.targetCounts).toMatchObject({ review: 1 });
+    if (!target) {
+      throw new Error("Campaign target was not returned");
+    }
+
+    const approved = await request(
+      `/api/country-campaigns/${campaignPayload.campaign.campaignId}/targets/${target.id}`,
+      cookie,
+      "PATCH",
+      { reason: "", status: "approved" }
+    );
+    expect(approved.status).toBe(200);
+    expect(await approved.json()).toMatchObject({
+      campaign: { targetCounts: { approved: 1, review: 0 } },
+      ok: true,
+    });
+
+    const held = await request(
+      `/api/country-campaigns/${campaignPayload.campaign.campaignId}/targets/${target.id}`,
+      cookie,
+      "PATCH",
+      { reason: "Recipient needs verification", status: "held" }
+    );
+    expect(held.status).toBe(200);
+    expect(await held.json()).toMatchObject({
+      campaign: {
+        targetCounts: { approved: 0, held: 1 },
+        targets: [
+          { holdReason: "Recipient needs verification", status: "held" },
+        ],
+      },
+      ok: true,
+    });
+    expect(
+      await testEnv.DB.prepare(
+        `SELECT COUNT(*) count FROM country_campaign_target_events
+          WHERE target_id=?`
+      )
+        .bind(target.id)
+        .first<number>("count")
+    ).toBe(2);
   });
 
   it("claims discovery work and persists a verified school contact", async () => {

@@ -103,6 +103,7 @@ export function JobDetail({
           </p>
         </div>
         <Button
+          nativeButton={false}
           render={
             <a
               href={job.sourceUrl || job.applyUrl}

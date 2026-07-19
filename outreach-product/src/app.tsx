@@ -48,6 +48,10 @@ const CountriesView = lazy(async () => ({
 const CountryView = lazy(async () => ({
   default: (await import("@/features/countries/country-view")).CountryView,
 }));
+const CountryCampaignView = lazy(async () => ({
+  default: (await import("@/features/countries/campaign-view"))
+    .CountryCampaignView,
+}));
 const MessageStyleView = lazy(async () => ({
   default: (await import("@/features/message-style/view")).MessageStyleView,
 }));
@@ -274,6 +278,14 @@ export function App() {
               </WorkspacePage>
             }
             path={`${workspacePaths.countries}/:countryCode`}
+          />
+          <Route
+            element={
+              <WorkspacePage>
+                <CountryCampaignView request={apiRequest} />
+              </WorkspacePage>
+            }
+            path={`${workspacePaths.countries}/:countryCode/campaigns/:campaignId`}
           />
           <Route
             element={

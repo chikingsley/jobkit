@@ -16,6 +16,7 @@
     "inventory:sync": "bun --env-file=.dev.vars cli/index.ts inventory sync",
     "sweeps:run": "bun --env-file=.dev.vars cli/index.ts sweeps run",
     "test": "vitest --config tests/vitest.config.ts",
+    "test:e2e": "bun tests/e2e/run-maestro.ts",
     "test:run": "vitest run --config tests/vitest.config.ts",
     "types:worker": "wrangler types"
   },

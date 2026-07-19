@@ -6,6 +6,17 @@ export const CampaignExecutionModeSchema = z.enum([
   "use_automation",
 ]);
 
+export const CountryCampaignTargetStatusSchema = z.enum([
+  "pending",
+  "review",
+  "approved",
+  "sent",
+  "held",
+  "skipped",
+  "failed",
+  "replied",
+]);
+
 export const CountryCampaignLaunchSchema = z
   .object({
     executionMode: CampaignExecutionModeSchema,
@@ -17,6 +28,17 @@ export const CountryCampaignLaunchSchema = z
     (value) => value.includeOpenPositions || value.includeSchoolOutreach,
     { message: "Choose open positions, school outreach, or both" }
   );
+
+export const CountryCampaignTargetDecisionSchema = z
+  .object({
+    reason: z.string().trim().max(500).default(""),
+    status: z.enum(["approved", "held", "review"]),
+  })
+  .strict()
+  .refine((value) => value.status !== "held" || value.reason.length > 0, {
+    message: "A hold reason is required",
+    path: ["reason"],
+  });
 
 export const CountrySweepRequestSchema = z
   .object({
@@ -105,7 +127,13 @@ export const SweepRunnerTokenCreateSchema = z
   .strict();
 
 export type CampaignExecutionMode = z.infer<typeof CampaignExecutionModeSchema>;
+export type CountryCampaignTargetStatus = z.infer<
+  typeof CountryCampaignTargetStatusSchema
+>;
 export type CountryCampaignLaunch = z.infer<typeof CountryCampaignLaunchSchema>;
+export type CountryCampaignTargetDecision = z.infer<
+  typeof CountryCampaignTargetDecisionSchema
+>;
 export type CountrySweepRequest = z.infer<typeof CountrySweepRequestSchema>;
 export type CountrySweepTaskOutput = z.infer<
   typeof CountrySweepTaskOutputSchema

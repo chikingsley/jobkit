@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, RefreshCw } from "lucide-react";
+import { ArrowLeft, ChevronRight, ExternalLink, RefreshCw } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import useSWR from "swr";
@@ -123,7 +123,11 @@ export function CountryView({ request }: { request: ApiRequest }) {
           )}
         </TabsContent>
         <TabsContent className="grid gap-4 pt-3" value="activity">
-          <ActivitySection campaigns={data.campaigns} sweeps={data.sweeps} />
+          <ActivitySection
+            campaigns={data.campaigns}
+            countryCode={data.countryCode}
+            sweeps={data.sweeps}
+          />
         </TabsContent>
       </Tabs>
     </SettingsPage>
@@ -153,6 +157,7 @@ function OpportunityCard({
           {opportunity.userStatus ?? "Not reviewed"}
         </span>
         <Button
+          nativeButton={false}
           render={
             <a href={opportunity.sourceUrl} rel="noreferrer" target="_blank" />
           }
@@ -200,6 +205,7 @@ function OrganizationCard({
         </span>
         {organization.websiteUrl ? (
           <Button
+            nativeButton={false}
             render={
               <a
                 href={organization.websiteUrl}
@@ -220,11 +226,14 @@ function OrganizationCard({
 
 function ActivitySection({
   campaigns,
+  countryCode,
   sweeps,
 }: {
   campaigns: CountryCampaignSummary[];
+  countryCode: string;
   sweeps: CountrySweepSummary[];
 }) {
+  const navigate = useNavigate();
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
@@ -249,6 +258,20 @@ function ActivitySection({
                   {campaign.targetCount === 1 ? "" : "s"} ·{" "}
                   {formatDate(campaign.createdAt)}
                 </div>
+                {campaign.targetCount > 0 ? (
+                  <Button
+                    className="mt-2"
+                    onClick={() =>
+                      navigate(
+                        `/countries/${countryCode}/campaigns/${campaign.id}`
+                      )
+                    }
+                    size="sm"
+                    variant="outline"
+                  >
+                    Review targets <ChevronRight />
+                  </Button>
+                ) : null}
               </div>
             ))
           ) : (

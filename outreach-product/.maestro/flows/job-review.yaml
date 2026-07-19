@@ -1,0 +1,10 @@
+url: ${JOBKIT_URL}
+name: Review a stored job without submitting it
+tags:
+  - safe
+  - applications
+---
+- runFlow: ../sign-in.yaml
+- assertVisible: "Maestro English Teacher"
+- assertVisible: ".*Warsaw, Poland.*"
+- assertVisible: "Full original job description"

@@ -157,6 +157,7 @@ function ThreadAttachmentCard({
       <AttachmentActions>
         <AttachmentAction
           aria-label={label}
+          nativeButton={false}
           render={<a href={attachment.url} rel="noreferrer" target="_blank" />}
         >
           <DownloadIcon />

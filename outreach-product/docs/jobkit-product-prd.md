@@ -205,6 +205,11 @@ NativewindUI:
 
 ## 10. Core User Flows
 
+The canonical route-by-route registry is in
+[`docs/user-flows/`](./user-flows/README.md). This section retains the broader
+product acceptance criteria; the registry defines journey order, terminal
+states, current implementation boundaries, and roadmap linkage.
+
 ### 10.1 Refresh inventory
 
 As the user, I can refresh all job sources and know what changed.
@@ -402,6 +407,22 @@ to review with a specific reason.
 Non-response belongs to an outreach attempt, not permanently to the school. School/contact response
 rates are computed only after a defined response window and sufficient attempts; the initial
 display threshold is at least three independent sends.
+
+Country campaigns operate as paced searches rather than fixed item batches. A
+campaign exposes all currently eligible advertised opportunities and verified
+school contacts. It calibrates the first five messages, then executes at the
+user's configured daily pace until the pool is exhausted, the user stops it, or
+three person-authored replies pause it by default. Bounces, delivery failures,
+vacation responders, and automated acknowledgements do not count toward that
+reply threshold. Provider quotas and measured delivery backpressure may slow
+execution, but they do not truncate the eligible pool or create an unsupported
+product-level target cap.
+
+Campaigns may overlap in country and source inventory. Before execution, JobKit atomically claims
+the opportunity or canonical contact channel for that user. A verified send suppresses the same
+execution in every other campaign. Intermediary routes are composed automatically: for ANESL,
+JobKit ranks eligible references in the campaign markets and sends one instruction-compliant email
+covering the strongest one to five positions instead of requiring a separate ANESL workspace.
 
 ## 11. Data Model
 

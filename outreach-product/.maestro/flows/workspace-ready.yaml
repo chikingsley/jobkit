@@ -1,0 +1,11 @@
+url: ${JOBKIT_URL}
+name: Completed onboarding opens the workspace
+tags:
+  - safe
+  - onboarding
+---
+- runFlow: ../sign-in.yaml
+- assertVisible: "Jobs"
+- assertVisible: "Countries"
+- assertVisible: "Profile"
+- assertVisible: "Preferences"

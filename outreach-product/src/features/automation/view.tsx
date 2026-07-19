@@ -233,7 +233,11 @@ export function AutomationView({ request }: { request: ApiRequest }) {
               Unsaved changes
             </span>
           ) : null}
-          <Button disabled={!dirty || saving} onClick={() => void save()}>
+          <Button
+            disabled={!dirty || saving}
+            id="save-automation-policy"
+            onClick={() => void save()}
+          >
             {draft.paused ? <Pause /> : <Save />}
             {saving ? "Saving…" : "Save policy"}
           </Button>

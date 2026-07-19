@@ -374,6 +374,7 @@ export function DocumentsView({
                   {previewUrl ? (
                     <>
                       <Button
+                        nativeButton={false}
                         render={
                           <a
                             href={previewUrl}
@@ -388,6 +389,7 @@ export function DocumentsView({
                         <span className="sr-only">Open in new window</span>
                       </Button>
                       <Button
+                        nativeButton={false}
                         render={
                           <a download={selected.filename} href={previewUrl} />
                         }

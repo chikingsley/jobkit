@@ -1,0 +1,22 @@
+url: ${JOBKIT_URL}
+name: Save a local automation policy
+tags:
+  - safe
+  - automation
+---
+- runFlow: ../sign-in.yaml
+- openLink: ${JOBKIT_URL}/automation
+- assertVisible: "Global pause"
+- tapOn: "Pause automation"
+- swipe:
+    start: 50%, 90%
+    end: 50%, 30%
+- tapOn: ".*Save policy.*"
+- assertVisible: "Automation policy saved"
+- openLink: ${JOBKIT_URL}/automation
+- tapOn: "Pause automation"
+- swipe:
+    start: 50%, 90%
+    end: 50%, 30%
+- tapOn: ".*Save policy.*"
+- assertVisible: "Automation policy saved"
