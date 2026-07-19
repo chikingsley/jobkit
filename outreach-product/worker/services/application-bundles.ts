@@ -30,6 +30,7 @@ import {
   ANESL_CONTACT_NAME,
   ANESL_KIND,
   ANESL_RECIPIENT,
+  ANESL_REQUIRED_QUESTION,
   ApplicationBundleError,
   aneslBundleJob,
   aneslBundleSubject,
@@ -48,9 +49,6 @@ import {
   messageContext,
   savedProfile,
 } from "./application-drafts";
-
-const REQUIRED_QUESTION =
-  "Would you be open to talking about which of these positions and locations you are currently recruiting for?";
 
 export type AneslBundleTaskInput = Extract<
   ApplicationMessageRequestInput,
@@ -518,6 +516,18 @@ export async function cancelAneslApplicationSet(
       ),
     db
       .prepare(
+        `UPDATE outbound_recipient_claims
+            SET status='released',released_at=?,updated_at=?
+          WHERE source_kind='application_attempt' AND status='claimed'
+            AND source_id IN (
+              SELECT id FROM application_attempts
+               WHERE application_bundle_id=?
+                 AND status IN ('approved','failed')
+            )`
+      )
+      .bind(timestamp, timestamp, bundleId),
+    db
+      .prepare(
         `DELETE FROM application_attempts
         WHERE application_bundle_id=? AND status IN ('approved','failed')`
       )
@@ -649,6 +659,17 @@ function buildBundleDraftMutationPlan(
     },
     statements: [
       env.DB.prepare(
+        `UPDATE outbound_recipient_claims
+            SET status='released',released_at=?,updated_at=?
+          WHERE source_kind='application_attempt' AND status='claimed'
+            AND source_id IN (
+              SELECT id FROM application_attempts
+               WHERE application_bundle_id=? AND draft_id=?
+                 AND status='approved' AND send_requested_at IS NULL
+                 AND gmail_draft_id=''
+            )`
+      ).bind(timestamp, timestamp, current.bundleId, current.draftId),
+      env.DB.prepare(
         `DELETE FROM application_attempts
           WHERE application_bundle_id=? AND draft_id=? AND status='approved'
             AND send_requested_at IS NULL AND gmail_draft_id=''`
@@ -712,7 +733,7 @@ async function bundleMessageContext(
     .split(",")
     .map((reference) => reference.trim())
     .filter(Boolean);
-  context.requiredQuestion = REQUIRED_QUESTION;
+  context.requiredQuestion = ANESL_REQUIRED_QUESTION;
   return context;
 }
 
@@ -727,7 +748,7 @@ function validatedBundleMessage(
       openingFor(job.contactName),
       `Best,\n${signatureFor(profile)}`,
       messageRouteFor(job),
-      REQUIRED_QUESTION
+      ANESL_REQUIRED_QUESTION
     );
     const missing = job.sourceReference
       .split(",")

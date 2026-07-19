@@ -5,7 +5,6 @@ import {
   Files,
   FlaskConical,
   Globe2,
-  Layers3,
   LogOut,
   MessageSquareText,
   MessagesSquare,
@@ -48,10 +47,10 @@ import {
 
 const navigation = [
   { icon: BriefcaseBusiness, id: "jobs", label: "Jobs" },
-  { icon: Layers3, id: "anesl", label: "ANESL sets" },
+  { icon: Bot, id: "campaigns", label: "Campaigns" },
   { icon: MessagesSquare, id: "messages", label: "Messages" },
   { icon: Globe2, id: "countries", label: "Countries" },
-  { icon: Bot, id: "automation", label: "Automation" },
+  { icon: SlidersHorizontal, id: "automation", label: "Automation" },
   { icon: UserRound, id: "profile", label: "Profile" },
   { icon: SlidersHorizontal, id: "preferences", label: "Preferences" },
   { icon: Files, id: "documents", label: "Documents" },
@@ -256,8 +255,8 @@ export function WorkspaceHeader({
 }) {
   const navigate = useNavigate();
   const title = {
-    anesl: "ANESL application sets",
     automation: "Automation",
+    campaigns: "Campaigns",
     countries: "Countries",
     documents: "Documents",
     jobs: "Job review",

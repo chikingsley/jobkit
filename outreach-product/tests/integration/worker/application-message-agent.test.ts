@@ -6,7 +6,9 @@ import { advertisedPositionQuestion } from "../../../worker/ai/application-messa
 import { upsertJob, upsertUserJob } from "../../../worker/repositories/jobs";
 import { writeProfile } from "../../../worker/repositories/user-settings";
 import { JobImportSchema } from "../../../worker/schemas";
+import { importJobs } from "../../../worker/services/application-drafts";
 import { createAuthenticatedUser } from "./auth";
+import { seedStrongEnglishMatch } from "./campaign-match-fixtures";
 
 interface TestEnv extends Env {
   TEST_MIGRATIONS: D1Migration[];
@@ -186,6 +188,125 @@ describe("Codex application message tasks", () => {
       version: 2,
     });
   });
+
+  it("calibrates a campaign dispatch and persists reusable feedback", async () => {
+    const email = "campaign-message-agent@example.test";
+    const { cookie, userId } = await createAuthenticatedUser(email);
+    const timestamp = "2026-07-18T00:00:00.000Z";
+    await writeProfile(testEnv.DB, userId, {
+      ...defaultProfile,
+      citizenship: "United States",
+      currentLocation: "Phoenix, Arizona",
+      email,
+      fullName: "Integration User",
+      preferredName: "Integration",
+    });
+    await seedMessageFoundation(userId, timestamp);
+    await importJobs(testEnv, userId, [
+      JobImportSchema.parse({
+        applyEmail: "campaign-hiring@example.test",
+        applyUrl: "https://example.test/campaign-role",
+        company: "Campaign School",
+        country: "Poland",
+        description: "A posted English teaching position for adult learners.",
+        id: "campaign-message-job",
+        title: "English teacher",
+      }),
+    ]);
+    await seedStrongEnglishMatch(testEnv.DB, "campaign-message-job", timestamp);
+
+    const created = await sessionPost("/api/campaigns", cookie, {
+      countryCodes: ["PL"],
+      dailyPace: 6,
+      firstFiveRequired: true,
+      postedTargetPercent: 80,
+      stopAfterHumanReplies: 3,
+    });
+    const createdPayload = (await created.json()) as {
+      campaign: { id: string };
+    };
+    const calibration = await sessionPost(
+      `/api/campaigns/${createdPayload.campaign.id}/actions`,
+      cookie,
+      { action: "begin_calibration", reason: "" }
+    );
+    const calibrationPayload = (await calibration.json()) as {
+      campaign: { dispatches: Array<{ id: string }> };
+    };
+    const [dispatch] = calibrationPayload.campaign.dispatches;
+    if (!dispatch) {
+      throw new Error("Campaign calibration dispatch was not created");
+    }
+
+    const token = await pairAgent(cookie);
+    const generation = await claimTask(token);
+    const question = advertisedPositionQuestion(new Date(), "UTC");
+    const generatedMessage = `Hello,\n\nI have taught adult English learners and would be glad to discuss this position.\n\n${question}\n\nBest,\nIntegration User\nE: ${email}`;
+    await completeTask(token, generation.runId, {
+      message: generatedMessage,
+      summary: "Used the candidate's adult teaching experience.",
+    });
+    const afterGeneration = await sessionGet(
+      `/api/campaigns/${createdPayload.campaign.id}`,
+      cookie
+    );
+    await expect(afterGeneration.json()).resolves.toMatchObject({
+      campaign: {
+        dispatches: [
+          {
+            id: dispatch.id,
+            message: { message: generatedMessage, version: 1 },
+            status: "review",
+          },
+        ],
+      },
+    });
+
+    const revision = await sessionPost(
+      `/api/campaigns/${createdPayload.campaign.id}/dispatches/${dispatch.id}/revisions`,
+      cookie,
+      {
+        dispatchId: dispatch.id,
+        instruction: "Keep the description of adult teaching this direct.",
+        scope: "campaign",
+      }
+    );
+    expect(revision.status).toBe(202);
+    const revisionTask = await claimTask(token);
+    const revisedMessage = `Hello,\n\nI have taught adult English learners in several classroom settings and would be glad to discuss this position.\n\n${question}\n\nBest,\nIntegration User\nE: ${email}`;
+    await completeTask(token, revisionTask.runId, {
+      message: revisedMessage,
+      summary: "Kept the adult teaching description direct.",
+    });
+    const approved = await sessionPost(
+      `/api/campaigns/${createdPayload.campaign.id}/dispatches/${dispatch.id}/approve`,
+      cookie,
+      {}
+    );
+    expect(approved.status).toBe(200);
+    await expect(approved.json()).resolves.toMatchObject({
+      campaign: {
+        dispatches: [
+          {
+            message: {
+              message: revisedMessage,
+              status: "approved",
+              version: 2,
+            },
+            status: "ready",
+          },
+        ],
+        guidance: [
+          {
+            instruction: "Keep the description of adult teaching this direct.",
+            scope: "campaign",
+            status: "accepted",
+          },
+        ],
+        status: "ready",
+      },
+    });
+  });
 });
 
 function messageFor(question: string, body: string) {
@@ -344,6 +465,12 @@ function sessionPost(
     body: JSON.stringify(body),
     headers: { "content-type": "application/json", cookie },
     method: "POST",
+  });
+}
+
+function sessionGet(path: string, cookie: string) {
+  return exports.default.fetch(`https://outreach.test${path}`, {
+    headers: { cookie },
   });
 }
 

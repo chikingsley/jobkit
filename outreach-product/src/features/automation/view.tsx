@@ -454,9 +454,8 @@ function ChannelPolicyCard({
           </Select>
         </Field>
         <Field>
-          <FieldLabel>Daily maximum</FieldLabel>
+          <FieldLabel>Daily pace</FieldLabel>
           <Input
-            max={100}
             min={1}
             onChange={(event) =>
               onChange({ dailyLimit: Number(event.target.value), mode })

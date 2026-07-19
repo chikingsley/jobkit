@@ -4,7 +4,7 @@ export const AutomationModeSchema = z.enum(["off", "review", "auto"]);
 
 export const AutomationChannelPolicySchema = z
   .object({
-    dailyLimit: z.number().int().min(1).max(100),
+    dailyLimit: z.number().int().min(1),
     mode: AutomationModeSchema,
   })
   .strict();
@@ -29,7 +29,7 @@ export const AutomationPolicySchema = z
     minimumFit: z.enum(["likely", "strong"]),
     paused: z.boolean(),
     requireKnownCompensation: z.boolean(),
-    routeFreshnessDays: z.number().int().min(1).max(90),
+    routeFreshnessDays: z.number().int().min(1),
   })
   .strict();
 

@@ -10,6 +10,7 @@ export interface ThreadAttachment {
 export interface ThreadMessage {
   attachments: ThreadAttachment[];
   body: string;
+  classification: "automated" | "bounce" | "human" | "vacation" | null;
   direction: "inbound" | "outbound";
   error: null | { detail: string; stage: string };
   from: string;

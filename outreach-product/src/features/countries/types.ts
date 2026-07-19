@@ -1,9 +1,3 @@
-import type { AutomationPolicy } from "@/features/automation/schema";
-import type {
-  CampaignExecutionMode,
-  CountryCampaignTargetStatus,
-} from "./schema";
-
 export interface CountryMarketSummary {
   campaignCount: number;
   countryCode: string;
@@ -37,36 +31,12 @@ export interface CountryOrganizationSummary {
   websiteUrl: string;
 }
 
-export interface CountryCampaignSummary {
+export interface CountryCampaignReference {
   createdAt: string;
-  executionMode: CampaignExecutionMode;
   id: string;
-  includeOpenPositions: boolean;
-  includeSchoolOutreach: boolean;
+  name: string;
   status: string;
-  sweepStatus: string | null;
   targetCount: number;
-}
-
-export interface CountryCampaignTarget {
-  channel: "board_form" | "email" | "external_url" | "manual";
-  description: string;
-  destination: string;
-  holdReason: string;
-  id: string;
-  kind: "job" | "organization";
-  label: string;
-  sourceUrl: string;
-  status: CountryCampaignTargetStatus;
-  updatedAt: string;
-}
-
-export interface CountryCampaignDetail extends CountryCampaignSummary {
-  countryCode: string;
-  countryName: string;
-  policy: AutomationPolicy;
-  targetCounts: Record<CountryCampaignTargetStatus, number>;
-  targets: CountryCampaignTarget[];
 }
 
 export interface CountrySweepSummary {
@@ -78,7 +48,7 @@ export interface CountrySweepSummary {
 }
 
 export interface CountryDetail {
-  campaigns: CountryCampaignSummary[];
+  campaigns: CountryCampaignReference[];
   countryCode: string;
   countryName: string;
   opportunities: CountryOpportunitySummary[];

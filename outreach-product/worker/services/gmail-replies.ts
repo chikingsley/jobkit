@@ -2,6 +2,10 @@ import { parse } from "node-html-parser";
 import { z } from "zod";
 import type { AppEnv } from "../env";
 import {
+  type CampaignReplyClassification,
+  recordCampaignReply,
+} from "./campaign-replies";
+import {
   GmailApiError,
   type GmailMessage,
   type GmailMessagePart,
@@ -21,9 +25,11 @@ interface GmailWatchRow {
 }
 
 interface TrackedGmailRoute {
+  campaign_id: string;
+  dispatch_id: string;
   gmail_thread_id: string;
   id: string;
-  kind: "attempt" | "test";
+  kind: "attempt" | "campaign" | "test";
   recipient: string;
   subject: string;
 }
@@ -207,20 +213,32 @@ async function syncInboundMessages(
   messageIds: string[]
 ) {
   const tracked = await env.DB.prepare(
-    `SELECT a.id,'attempt' kind,a.gmail_thread_id,'' recipient,'' subject
+    `SELECT a.id,'attempt' kind,a.gmail_thread_id,'' recipient,'' subject,
+            '' campaign_id,'' dispatch_id
        FROM application_attempts a
        JOIN user_jobs uj ON uj.id=a.user_job_id
       WHERE uj.user_id=? AND a.gmail_thread_id<>''
         AND a.status IN ('sent','sending','uncertain')
       UNION ALL
      SELECT test_send.id,'test' kind,test_send.gmail_thread_id,
-            test_send.recipient,test_send.subject
+            test_send.recipient,test_send.subject,'' campaign_id,'' dispatch_id
        FROM application_bundle_test_sends test_send
        JOIN application_bundles bundle ON bundle.id=test_send.bundle_id
       WHERE bundle.user_id=? AND test_send.gmail_thread_id<>''
-        AND test_send.status='sent'`
+        AND test_send.status='sent'
+     UNION ALL
+     SELECT campaign_attempt.id,'campaign' kind,
+            campaign_attempt.gmail_thread_id,campaign_attempt.recipient,
+            campaign_attempt.subject,dispatch.campaign_id,
+            dispatch.id dispatch_id
+       FROM campaign_email_attempts campaign_attempt
+       JOIN campaign_dispatches dispatch
+         ON dispatch.id=campaign_attempt.dispatch_id
+       JOIN campaigns campaign ON campaign.id=dispatch.campaign_id
+      WHERE campaign.user_id=? AND campaign_attempt.gmail_thread_id<>''
+        AND campaign_attempt.status IN ('sent','uncertain')`
   )
-    .bind(userId, userId)
+    .bind(userId, userId, userId)
     .all<TrackedGmailRoute>();
   if (tracked.results.length === 0) {
     return 0;
@@ -240,6 +258,11 @@ async function syncInboundMessages(
       .filter((route) => route.kind === "test")
       .map((route) => [testReplyKey(route.subject, route.recipient), route.id])
   );
+  const campaignsByThread = new Map(
+    tracked.results
+      .filter((route) => route.kind === "campaign")
+      .map((route) => [route.gmail_thread_id, route])
+  );
   const messages = await Promise.all(
     [...new Set(messageIds)].map((messageId) =>
       getGmailMessage(accessToken, messageId, "full")
@@ -253,18 +276,23 @@ async function syncInboundMessages(
       testSendsByThread,
       testSendsByReply
     );
-    if (!(attemptThreads.has(message.threadId) || testSendId)) {
+    const campaign = campaignsByThread.get(message.threadId);
+    if (!(attemptThreads.has(message.threadId) || testSendId || campaign)) {
       return [];
     }
     if (!isInboxReply(message)) {
       return [];
     }
-    if (automatedMessage(headers, emailAddress)) {
+    const classification = classifyInboundMessage(headers, emailAddress);
+    if (!campaign && classification !== "human") {
       return [];
     }
     return [
       {
         bodyText: messageText(message),
+        campaign,
+        classification,
+        evidence: classificationEvidence(headers),
         fromAddress: headers.get("from") ?? "",
         gmailMessageId: message.id,
         gmailThreadId: message.threadId,
@@ -276,7 +304,21 @@ async function syncInboundMessages(
     ];
   });
   const results = await Promise.all(
-    inbound.map((message) => recordInboundMessage(env.DB, userId, message))
+    inbound.map(async (message) => {
+      const recorded = await recordInboundMessage(env.DB, userId, message);
+      if (message.campaign) {
+        await recordCampaignReply(env.DB, {
+          campaignId: message.campaign.campaign_id,
+          classification: message.classification,
+          dispatchId: message.campaign.dispatch_id,
+          evidence: message.evidence,
+          gmailMessageId: message.gmailMessageId,
+          gmailThreadId: message.gmailThreadId,
+          receivedAt: message.sentAt,
+        });
+      }
+      return recorded;
+    })
   );
   return results.filter((result) => result.created).length;
 }
@@ -348,19 +390,51 @@ function messageHeaders(message: GmailMessage) {
   );
 }
 
-function automatedMessage(headers: Map<string, string>, senderEmail: string) {
+function classifyInboundMessage(
+  headers: Map<string, string>,
+  senderEmail: string
+): CampaignReplyClassification {
   const from = (headers.get("from") ?? "").toLowerCase();
   const autoSubmitted = (headers.get("auto-submitted") ?? "").toLowerCase();
   const precedence = (headers.get("precedence") ?? "").toLowerCase();
-  return (
-    from.includes(senderEmail.toLowerCase()) ||
+  if (
     from.includes("mailer-daemon") ||
     from.includes("postmaster") ||
-    (autoSubmitted !== "" && autoSubmitted !== "no") ||
-    ["bulk", "junk", "list"].includes(precedence) ||
-    headers.has("list-id") ||
+    headers.has("x-failed-recipients")
+  ) {
+    return "bounce";
+  }
+  if (
+    autoSubmitted.includes("auto-replied") ||
     headers.has("x-autoreply") ||
     headers.has("x-autorespond")
+  ) {
+    return "vacation";
+  }
+  if (
+    from.includes(senderEmail.toLowerCase()) ||
+    (autoSubmitted !== "" && autoSubmitted !== "no") ||
+    ["bulk", "junk", "list"].includes(precedence) ||
+    headers.has("list-id")
+  ) {
+    return "automated";
+  }
+  return "human";
+}
+
+function classificationEvidence(headers: Map<string, string>) {
+  return Object.fromEntries(
+    [
+      "from",
+      "auto-submitted",
+      "precedence",
+      "list-id",
+      "x-autoreply",
+      "x-autorespond",
+      "x-failed-recipients",
+    ]
+      .map((name) => [name, headers.get(name) ?? ""] as const)
+      .filter(([, value]) => value !== "")
   );
 }
 

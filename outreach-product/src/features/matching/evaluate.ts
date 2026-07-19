@@ -1,10 +1,3 @@
-import type { Job } from "@/features/jobs/types";
-import {
-  alternativeQualificationClaimKey,
-  type QualificationClaims,
-  qualificationClaimKey,
-} from "@/features/matching/claims";
-import type { JobRequirement } from "@/features/matching/schema";
 import type {
   JobMatch,
   MatchCriterion,
@@ -12,7 +5,14 @@ import type {
   Preferences,
   Profile,
   StoredDocument,
-} from "@/profile-types";
+} from "../../profile-types";
+import type { Job } from "../jobs/types";
+import {
+  alternativeQualificationClaimKey,
+  type QualificationClaims,
+  qualificationClaimKey,
+} from "./claims";
+import type { JobRequirement } from "./schema";
 
 const degreeRanks = {
   associate: 1,

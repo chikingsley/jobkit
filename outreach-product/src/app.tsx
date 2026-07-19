@@ -45,12 +45,14 @@ const AutomationView = lazy(async () => ({
 const CountriesView = lazy(async () => ({
   default: (await import("@/features/countries/view")).CountriesView,
 }));
+const CampaignsWorkspace = lazy(async () => ({
+  default: (await import("@/features/campaigns/workspace")).CampaignsWorkspace,
+}));
+const NewCampaignView = lazy(async () => ({
+  default: (await import("@/features/campaigns/new-campaign")).NewCampaignView,
+}));
 const CountryView = lazy(async () => ({
   default: (await import("@/features/countries/country-view")).CountryView,
-}));
-const CountryCampaignView = lazy(async () => ({
-  default: (await import("@/features/countries/campaign-view"))
-    .CountryCampaignView,
 }));
 const MessageStyleView = lazy(async () => ({
   default: (await import("@/features/message-style/view")).MessageStyleView,
@@ -66,9 +68,6 @@ const MessagesWorkspace = lazy(async () => ({
 }));
 const JobsWorkspace = lazy(async () => ({
   default: (await import("@/features/jobs/workspace")).JobsWorkspace,
-}));
-const AneslWorkspace = lazy(async () => ({
-  default: (await import("@/features/anesl/workspace")).AneslWorkspace,
 }));
 const TestLabView = lazy(async () => ({
   default: (await import("@/features/test-lab/view")).TestLabView,
@@ -113,7 +112,6 @@ export function App() {
     matches,
     preferences,
     profile,
-    qualificationClaims,
     refreshing,
     saveQualificationClaim,
     setPreferences,
@@ -257,17 +255,26 @@ export function App() {
           <Route
             element={
               <Suspense fallback={<ViewLoading />}>
-                <AneslWorkspace
-                  documents={documents}
-                  fx={fx}
-                  preferences={preferences}
-                  profile={profile}
-                  qualificationClaims={qualificationClaims}
-                  request={apiRequest}
-                />
+                <CampaignsWorkspace request={apiRequest} />
               </Suspense>
             }
-            path={workspacePaths.anesl}
+            path={workspacePaths.campaigns}
+          />
+          <Route
+            element={
+              <WorkspacePage>
+                <NewCampaignView request={apiRequest} />
+              </WorkspacePage>
+            }
+            path={`${workspacePaths.campaigns}/new`}
+          />
+          <Route
+            element={
+              <Suspense fallback={<ViewLoading />}>
+                <CampaignsWorkspace request={apiRequest} />
+              </Suspense>
+            }
+            path={`${workspacePaths.campaigns}/:campaignId`}
           />
           <Route
             element={
@@ -299,14 +306,6 @@ export function App() {
               </WorkspacePage>
             }
             path={`${workspacePaths.countries}/:countryCode`}
-          />
-          <Route
-            element={
-              <WorkspacePage>
-                <CountryCampaignView request={apiRequest} />
-              </WorkspacePage>
-            }
-            path={`${workspacePaths.countries}/:countryCode/campaigns/:campaignId`}
           />
           <Route
             element={

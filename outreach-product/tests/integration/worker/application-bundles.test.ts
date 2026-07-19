@@ -184,7 +184,7 @@ Integration User`,
     ]);
   });
 
-  it("allows a later batch after a completed intermediary send", async () => {
+  it("blocks a later batch to a recipient already contacted", async () => {
     const { userId } = await createAuthenticatedUser(
       "anesl-repeat@example.test"
     );
@@ -239,7 +239,9 @@ Integration User`,
         second.draftId,
         second.routeId
       )
-    ).resolves.toMatchObject({ status: "approved" });
+    ).rejects.toThrow(
+      "This recipient already has an active or sent outreach message"
+    );
   });
 
   it("records a bundle test reply when Gmail uses a recipient-side thread ID", async () => {

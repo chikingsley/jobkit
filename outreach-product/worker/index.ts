@@ -4,6 +4,7 @@ import type { AgentRunnerContext, AuthUser, JobKitApp } from "./app-types";
 import { createAuth } from "./auth";
 import type { AppEnv } from "./env";
 import { OnboardingIncompleteError } from "./repositories/onboarding";
+import { OutboundRecipientClaimError } from "./repositories/outbound-recipient-claims";
 import {
   readPreferences,
   readProfile,
@@ -13,6 +14,7 @@ import {
 import { registerAgentRunnerRoutes } from "./routes/agent-runners";
 import { registerApplicationBundleRoutes } from "./routes/application-bundles";
 import { registerApplicationDraftRoutes } from "./routes/application-drafts";
+import { registerCampaignRoutes } from "./routes/campaigns";
 import { registerCountryRoutes } from "./routes/countries";
 import { registerDocumentRoutes } from "./routes/documents";
 import { registerEmailAttemptRoutes } from "./routes/email-attempts";
@@ -35,6 +37,9 @@ import {
   DraftProfileRequiredError,
   importJobs,
 } from "./services/application-drafts";
+import { runCampaignMatchingPass } from "./services/campaign-matching";
+import { runCampaignScheduler } from "./services/campaign-scheduler";
+import { CampaignError } from "./services/campaigns";
 import { CountryMarketError } from "./services/country-markets";
 import { DocumentConversionError } from "./services/document-text";
 import { EmailAttemptError } from "./services/email-attempts";
@@ -90,6 +95,9 @@ app.onError((error, c) => {
   if (error instanceof EmailAttemptError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
+  if (error instanceof OutboundRecipientClaimError) {
+    return c.json({ message: error.message, ok: false }, 409);
+  }
   if (error instanceof ApplicationBundleError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
@@ -100,6 +108,9 @@ app.onError((error, c) => {
     return c.json({ message: error.message, ok: false }, 409);
   }
   if (error instanceof CountryMarketError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
+  if (error instanceof CampaignError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
   if (error instanceof AgentTaskError) {
@@ -201,6 +212,7 @@ registerAgentRunnerRoutes(app);
 registerOnboardingRoutes(app);
 registerApplicationBundleRoutes(app);
 registerApplicationDraftRoutes(app);
+registerCampaignRoutes(app);
 registerJobRoutes(app);
 registerJobMatchFactRoutes(app);
 registerJobPositionAnalysisRoutes(app);
@@ -341,6 +353,21 @@ export default {
     env: AppEnv,
     ctx: ExecutionContext
   ) {
-    ctx.waitUntil(renewExpiringGmailWatches(env));
+    ctx.waitUntil(
+      Promise.all([
+        renewExpiringGmailWatches(env),
+        runCampaignMatchingPass(env.DB),
+        runCampaignScheduler(env),
+      ]).then(([gmail, matching, campaigns]) => {
+        console.log(
+          JSON.stringify({
+            campaigns,
+            event: "scheduled_maintenance",
+            gmail,
+            matching,
+          })
+        );
+      })
+    );
   },
 };

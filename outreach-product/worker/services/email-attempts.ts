@@ -1,6 +1,12 @@
 import { applicationMessageOpeningProblem } from "../ai/application-message-policy";
 import type { AppEnv } from "../env";
 import { jobEventStatement } from "../repositories/job-events";
+import {
+  acquireOutboundRecipientClaim,
+  outboundRecipientDedupKey,
+  outboundRecipientSentStatement,
+  releaseOutboundRecipientClaim,
+} from "../repositories/outbound-recipient-claims";
 import { buildGmailMessagePayload } from "./gmail-message";
 
 export type EmailAttemptStatus =
@@ -148,7 +154,14 @@ export async function createApprovedEmailAttempt(
   }
 
   const timestamp = new Date().toISOString();
-  const attemptId = crypto.randomUUID();
+  const existingAttempt = await readAttemptBySelection(
+    env.DB,
+    userId,
+    source.user_job_id,
+    draftId,
+    routeId
+  );
+  const attemptId = existingAttempt?.id ?? crypto.randomUUID();
   const subject = applicationSubject(
     source.board,
     source.source_reference,
@@ -156,19 +169,22 @@ export async function createApprovedEmailAttempt(
     source.location,
     source.country
   );
-  const results = await env.DB.batch([
-    env.DB.prepare(
-      `UPDATE user_jobs
+  await acquireApplicationRecipientClaim(env.DB, userId, source, attemptId);
+  let results: D1Result<unknown>[];
+  try {
+    results = await env.DB.batch([
+      env.DB.prepare(
+        `UPDATE user_jobs
           SET status='approved',updated_at=?
         WHERE id=? AND user_id=? AND status IN ('new','review','approved','failed')`
-    ).bind(timestamp, source.user_job_id, userId),
-    env.DB.prepare(
-      `UPDATE application_drafts
+      ).bind(timestamp, source.user_job_id, userId),
+      env.DB.prepare(
+        `UPDATE application_drafts
           SET status='approved',approved_at=COALESCE(approved_at,?)
         WHERE id=? AND status IN ('draft','approved')`
-    ).bind(timestamp, draftId),
-    env.DB.prepare(
-      `INSERT INTO application_attempts
+      ).bind(timestamp, draftId),
+      env.DB.prepare(
+        `INSERT INTO application_attempts
         (id,user_job_id,draft_id,route_id,channel,recipient,subject,status,
          approved_at,created_at,updated_at)
        VALUES (?,?,?,?,'email',?,?,'approved',?,?,?)
@@ -177,18 +193,26 @@ export async function createApprovedEmailAttempt(
          error_stage='',error_detail='',approved_at=excluded.approved_at,
          updated_at=excluded.updated_at
        WHERE application_attempts.status='failed'`
-    ).bind(
-      attemptId,
-      source.user_job_id,
-      draftId,
-      routeId,
-      source.recipient,
-      subject,
-      timestamp,
-      timestamp,
-      timestamp
-    ),
-  ]);
+      ).bind(
+        attemptId,
+        source.user_job_id,
+        draftId,
+        routeId,
+        source.recipient,
+        subject,
+        timestamp,
+        timestamp,
+        timestamp
+      ),
+    ]);
+  } catch (error) {
+    await releaseOutboundRecipientClaim(
+      env.DB,
+      "application_attempt",
+      attemptId
+    );
+    throw error;
+  }
   if ((results.at(2)?.meta.changes ?? 0) === 1) {
     await env.DB.batch([
       jobEventStatement(
@@ -259,6 +283,23 @@ async function assertNoExistingContactAttempt(
   );
 }
 
+async function acquireApplicationRecipientClaim(
+  db: D1Database,
+  userId: string,
+  source: AttemptSourceRow,
+  attemptId: string
+) {
+  await acquireOutboundRecipientClaim(db, {
+    dedupKey: outboundRecipientDedupKey(
+      source.contact_channel_id,
+      source.recipient
+    ),
+    sourceId: attemptId,
+    sourceKind: "application_attempt",
+    userId,
+  });
+}
+
 export async function createApprovedBundleEmailAttempt(
   env: AppEnv,
   userId: string,
@@ -319,25 +360,34 @@ export async function createApprovedBundleEmailAttempt(
   }
 
   const timestamp = new Date().toISOString();
-  const attemptId = crypto.randomUUID();
-  const results = await env.DB.batch([
-    env.DB.prepare(
-      `UPDATE user_jobs SET status='approved',updated_at=?
+  const existingAttempt = await readAttemptByBundleSelection(
+    env.DB,
+    userId,
+    bundleId,
+    draftId
+  );
+  const attemptId = existingAttempt?.id ?? crypto.randomUUID();
+  await acquireApplicationRecipientClaim(env.DB, userId, source, attemptId);
+  let results: D1Result<unknown>[];
+  try {
+    results = await env.DB.batch([
+      env.DB.prepare(
+        `UPDATE user_jobs SET status='approved',updated_at=?
         WHERE user_id=? AND id IN (
           SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
         ) AND status IN ('new','review','approved','failed')`
-    ).bind(timestamp, userId, bundleId),
-    env.DB.prepare(
-      `UPDATE application_drafts
+      ).bind(timestamp, userId, bundleId),
+      env.DB.prepare(
+        `UPDATE application_drafts
           SET status='approved',approved_at=COALESCE(approved_at,?)
         WHERE id=? AND application_bundle_id=? AND status IN ('draft','approved')`
-    ).bind(timestamp, draftId, bundleId),
-    env.DB.prepare(
-      `UPDATE application_bundles SET status='approved',updated_at=?
+      ).bind(timestamp, draftId, bundleId),
+      env.DB.prepare(
+        `UPDATE application_bundles SET status='approved',updated_at=?
         WHERE id=? AND user_id=? AND status IN ('review','approved','failed')`
-    ).bind(timestamp, bundleId, userId),
-    env.DB.prepare(
-      `INSERT INTO application_attempts
+      ).bind(timestamp, bundleId, userId),
+      env.DB.prepare(
+        `INSERT INTO application_attempts
         (id,user_job_id,draft_id,route_id,application_bundle_id,channel,
          recipient,subject,status,approved_at,created_at,updated_at)
        VALUES (?,?,?,?,?,'email',?,?,'approved',?,?,?)
@@ -346,19 +396,27 @@ export async function createApprovedBundleEmailAttempt(
          payload_sha256='',claimed_at=NULL,error_stage='',error_detail='',
          approved_at=excluded.approved_at,updated_at=excluded.updated_at
        WHERE application_attempts.status='failed'`
-    ).bind(
-      attemptId,
-      source.user_job_id,
-      draftId,
-      source.route_id,
-      bundleId,
-      source.recipient,
-      source.subject,
-      timestamp,
-      timestamp,
-      timestamp
-    ),
-  ]);
+      ).bind(
+        attemptId,
+        source.user_job_id,
+        draftId,
+        source.route_id,
+        bundleId,
+        source.recipient,
+        source.subject,
+        timestamp,
+        timestamp,
+        timestamp
+      ),
+    ]);
+  } catch (error) {
+    await releaseOutboundRecipientClaim(
+      env.DB,
+      "application_attempt",
+      attemptId
+    );
+    throw error;
+  }
   if ((results.at(3)?.meta.changes ?? 0) !== 1) {
     throw new EmailAttemptError(
       "The application set already has an active email attempt",
@@ -641,6 +699,12 @@ export async function recordGmailSent(
         gmailDraftId,
         userId
       ),
+    outboundRecipientSentStatement(
+      db,
+      "application_attempt",
+      attemptId,
+      timestamp
+    ),
   ];
   if (attempt.application_bundle_id) {
     sentStatements.push(
@@ -756,7 +820,7 @@ export async function recordGmailSent(
     );
   }
   const results = await db.batch(sentStatements);
-  if ((results.at(0)?.meta.changes ?? 0) !== 1) {
+  if (results.slice(0, 2).some((result) => (result.meta.changes ?? 0) !== 1)) {
     throw new EmailAttemptError("Email send state changed concurrently", 409);
   }
   const updated = await readOwnedAttempt(db, userId, attemptId);
@@ -786,7 +850,7 @@ export function recordUncertainEmailAttempt(
   );
 }
 
-export function recordFailedEmailAttempt(
+export async function recordFailedEmailAttempt(
   db: D1Database,
   userId: string,
   attemptId: string,
@@ -799,7 +863,7 @@ export function recordFailedEmailAttempt(
       422
     );
   }
-  return transitionAttempt(
+  const attempt = await transitionAttempt(
     db,
     userId,
     attemptId,
@@ -808,6 +872,8 @@ export function recordFailedEmailAttempt(
     "error_stage=?,error_detail=?",
     [stage, error]
   );
+  await releaseOutboundRecipientClaim(db, "application_attempt", attemptId);
+  return attempt;
 }
 
 async function transitionAttempt(
@@ -865,6 +931,7 @@ async function failClaimedAttempt(
     )
     .bind(stage, detail.slice(0, 1000), timestamp, attemptId, userId)
     .run();
+  await releaseOutboundRecipientClaim(db, "application_attempt", attemptId);
 }
 
 function readAttemptBySelection(

@@ -13,7 +13,7 @@ const testEnv = env as TestEnv;
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("automation policy", () => {
-  it("starts in review and persists channel-specific safety limits", async () => {
+  it("starts in review and persists channel-specific pacing", async () => {
     const { cookie, userId } = await createAuthenticatedUser(
       "automation-policy@example.test"
     );
@@ -62,5 +62,32 @@ describe("automation policy", () => {
       email_mode: "auto",
       route_freshness_days: 14,
     });
+  });
+
+  it("persists user-selected pacing and freshness without a product ceiling", async () => {
+    const { cookie } = await createAuthenticatedUser(
+      "automation-unbounded@example.test"
+    );
+    const policy = {
+      allowedBoards: [],
+      boardForm: { dailyLimit: 180, mode: "review" },
+      email: { dailyLimit: 250, mode: "auto" },
+      excludedMarketSegments: [],
+      minimumFit: "strong",
+      paused: false,
+      requireKnownCompensation: false,
+      routeFreshnessDays: 365,
+    };
+    const response = await exports.default.fetch(
+      "https://outreach.test/api/automation-policy",
+      {
+        body: JSON.stringify(policy),
+        headers: { "content-type": "application/json", cookie },
+        method: "PUT",
+      }
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ policy });
   });
 });

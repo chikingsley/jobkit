@@ -28,7 +28,7 @@ export const ApplicationMessageRouteSchema = z.enum([
 
 export const JobImportSchema = z.object({
   applyEmail: z.union([z.literal(""), z.email()]).default(""),
-  applyUrl: z.string().url(),
+  applyUrl: z.string().url().or(z.literal("")),
   board: z.string().default("seriousteachers"),
   company: z.string().default(""),
   contactName: z.string().default(""),

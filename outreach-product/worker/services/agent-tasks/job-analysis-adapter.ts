@@ -23,6 +23,7 @@ import {
 } from "../../ai/job-fact-extraction";
 import type { AgentRunnerContext } from "../../app-types";
 import { agentRunnerHasCapability } from "../agent-runners";
+import { refreshCampaignMatchesForJob } from "../campaign-matching";
 import {
   readOwnedJobSource,
   recordJobMatchFacts,
@@ -132,6 +133,7 @@ export async function completeJobPositionTask(
     provider: "codex",
     sourceHash: run.source_hash,
   });
+  await refreshCampaignMatchesForJob(db, runner.user.id, run.source_task_id);
   await completeAgentTaskRun(db, runner.id, runId, analysis);
   return domainResult;
 }
@@ -157,6 +159,7 @@ export async function completeJobMatchFactsTask(
     provider: "codex",
     sourceHash: run.source_hash,
   });
+  await refreshCampaignMatchesForJob(db, runner.user.id, run.source_task_id);
   await completeAgentTaskRun(db, runner.id, runId, facts);
   return domainResult;
 }

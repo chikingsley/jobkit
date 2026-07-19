@@ -25,52 +25,11 @@ export async function defaultPacketSnapshotStatements(
   draftId: string,
   timestamp: string
 ): Promise<D1PreparedStatement[]> {
-  await ensureDocumentPackets(env.DB, userId);
-  const rows = await env.DB.prepare(
-    `SELECT p.id packet_id,p.name packet_name,p.slug packet_slug,i.position,
-            i.category,d.id document_id,d.filename,d.object_key,d.content_type,
-            d.size_bytes,d.r2_version,d.etag
-       FROM user_document_packets p
-       LEFT JOIN user_document_packet_items i ON i.packet_id=p.id
-       LEFT JOIN user_documents d ON d.id=i.document_id
-      WHERE p.user_id=? AND p.is_default=1
-      ORDER BY i.position`
-  )
-    .bind(userId)
-    .all<PacketDocumentRow>();
-  const [first] = rows.results;
-  if (!first) {
+  const snapshot = await readDefaultPacketSnapshot(env, userId);
+  if (!snapshot) {
     return [];
   }
-  const definition = documentPacketDefinitions.find(
-    (candidate) => candidate.slug === first.packet_slug
-  );
-  if (!definition) {
-    throw new DocumentPacketSnapshotError(
-      "Document packet definition is invalid"
-    );
-  }
-
-  const documents = rows.results.filter((row) => row.document_id);
-  const resolved = await Promise.all(
-    documents.map(async (document) => {
-      const object = await env.DOCUMENTS.head(document.object_key);
-      if (!object) {
-        throw new DocumentPacketSnapshotError(
-          `Document packet file is missing: ${document.filename}`
-        );
-      }
-      if (
-        (document.r2_version && document.r2_version !== object.version) ||
-        (document.etag && document.etag !== object.etag)
-      ) {
-        throw new DocumentPacketSnapshotError(
-          `Document packet file changed unexpectedly: ${document.filename}`
-        );
-      }
-      return { document, etag: object.etag, r2Version: object.version };
-    })
-  );
+  const { definition, first, resolved } = snapshot;
 
   const statements: D1PreparedStatement[] = [
     env.DB.prepare(
@@ -113,6 +72,107 @@ export async function defaultPacketSnapshotStatements(
     );
   }
   return statements;
+}
+
+export async function defaultCampaignPacketSnapshotStatements(
+  env: AppEnv,
+  userId: string,
+  dispatchId: string,
+  timestamp: string
+): Promise<D1PreparedStatement[]> {
+  const snapshot = await readDefaultPacketSnapshot(env, userId);
+  if (!snapshot) {
+    return [];
+  }
+  const { definition, first, resolved } = snapshot;
+  return [
+    env.DB.prepare(
+      `UPDATE campaign_dispatches
+          SET document_packet_id=?,document_packet_name=?,
+              document_packet_slug=?,document_packet_manifest_json=?
+        WHERE id=?`
+    ).bind(
+      first.packet_id,
+      first.packet_name,
+      first.packet_slug,
+      JSON.stringify(definition.categories),
+      dispatchId
+    ),
+    ...resolved.flatMap((item) => [
+      env.DB.prepare(
+        `UPDATE user_documents SET r2_version=?,etag=?
+          WHERE id=? AND user_id=? AND (r2_version='' OR etag='')`
+      ).bind(item.r2Version, item.etag, item.document.document_id, userId),
+      env.DB.prepare(
+        `INSERT INTO campaign_dispatch_attachments
+          (dispatch_id,position,source_document_id,category,filename,
+           object_key,content_type,size_bytes,r2_version,etag,created_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+      ).bind(
+        dispatchId,
+        item.document.position,
+        item.document.document_id,
+        item.document.category,
+        item.document.filename,
+        item.document.object_key,
+        item.document.content_type,
+        item.document.size_bytes,
+        item.r2Version,
+        item.etag,
+        timestamp
+      ),
+    ]),
+  ];
+}
+
+async function readDefaultPacketSnapshot(env: AppEnv, userId: string) {
+  await ensureDocumentPackets(env.DB, userId);
+  const rows = await env.DB.prepare(
+    `SELECT p.id packet_id,p.name packet_name,p.slug packet_slug,i.position,
+            i.category,d.id document_id,d.filename,d.object_key,d.content_type,
+            d.size_bytes,d.r2_version,d.etag
+       FROM user_document_packets p
+       LEFT JOIN user_document_packet_items i ON i.packet_id=p.id
+       LEFT JOIN user_documents d ON d.id=i.document_id
+      WHERE p.user_id=? AND p.is_default=1
+      ORDER BY i.position`
+  )
+    .bind(userId)
+    .all<PacketDocumentRow>();
+  const [first] = rows.results;
+  if (!first) {
+    return null;
+  }
+  const definition = documentPacketDefinitions.find(
+    (candidate) => candidate.slug === first.packet_slug
+  );
+  if (!definition) {
+    throw new DocumentPacketSnapshotError(
+      "Document packet definition is invalid"
+    );
+  }
+  const resolved = await Promise.all(
+    rows.results
+      .filter((row) => row.document_id)
+      .map(async (document) => {
+        const object = await env.DOCUMENTS.head(document.object_key);
+        if (!object) {
+          throw new DocumentPacketSnapshotError(
+            `Document packet file is missing: ${document.filename}`
+          );
+        }
+        if (
+          (document.r2_version && document.r2_version !== object.version) ||
+          (document.etag && document.etag !== object.etag)
+        ) {
+          throw new DocumentPacketSnapshotError(
+            `Document packet file changed unexpectedly: ${document.filename}`
+          );
+        }
+        return { document, etag: object.etag, r2Version: object.version };
+      })
+  );
+  return { definition, first, resolved };
 }
 
 export function copyPacketSnapshotStatements(

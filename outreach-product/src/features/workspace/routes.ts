@@ -1,6 +1,6 @@
 export const workspacePaths = {
-  anesl: "/anesl",
   automation: "/automation",
+  campaigns: "/campaigns",
   countries: "/countries",
   documents: "/documents",
   jobs: "/",
@@ -27,6 +27,9 @@ export function workspaceViewFromPathname(pathname: string): WorkspaceView {
     pathname.replace(TRAILING_SLASH_PATTERN, "") || "/";
   if (normalizedPathname.startsWith(`${workspacePaths.countries}/`)) {
     return "countries";
+  }
+  if (normalizedPathname.startsWith(`${workspacePaths.campaigns}/`)) {
+    return "campaigns";
   }
   return workspaceViewsByPath.get(normalizedPathname) ?? "jobs";
 }

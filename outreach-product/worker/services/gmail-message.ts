@@ -21,6 +21,29 @@ interface DraftAttachmentRow {
   size_bytes: number;
 }
 
+interface CampaignAttachmentRow {
+  category: string;
+  content_type: string;
+  document_packet_manifest_json: string;
+  etag: string;
+  filename: string;
+  message: string;
+  object_key: string;
+  position: number;
+  r2_version: string;
+  size_bytes: number;
+}
+
+interface SnapshotAttachmentRow {
+  category: string;
+  content_type: string;
+  etag: string;
+  filename: string;
+  object_key: string;
+  r2_version: string;
+  size_bytes: number;
+}
+
 export interface GmailEnvelope {
   from: string;
   subject: string;
@@ -67,12 +90,68 @@ export async function buildGmailMessagePayload(
     first.message,
     first.required_opening
   );
-  const attachmentRows = rows.results.filter((row) => row.object_key);
-  const expectedCategories = JSON.parse(
-    first.document_packet_manifest_json
-  ) as unknown;
+  return buildSnapshotGmailPayload(
+    env,
+    envelope,
+    applicationMessage,
+    first.document_packet_manifest_json,
+    rows.results.filter((row) => row.object_key)
+  );
+}
+
+export async function buildCampaignGmailMessagePayload(
+  env: AppEnv,
+  userId: string,
+  dispatchId: string,
+  envelope: GmailEnvelope
+): Promise<GmailMessagePayload> {
+  const rows = await env.DB.prepare(
+    `SELECT m.message,d.document_packet_manifest_json,
+            a.position,a.category,a.filename,a.object_key,a.content_type,
+            a.size_bytes,a.r2_version,a.etag
+       FROM campaign_dispatches d
+       JOIN campaigns c ON c.id=d.campaign_id
+       JOIN campaign_messages m ON m.dispatch_id=d.id AND m.status='approved'
+       LEFT JOIN campaign_dispatch_attachments a ON a.dispatch_id=d.id
+      WHERE d.id=? AND c.user_id=?
+        AND m.version=(
+          SELECT MAX(latest.version) FROM campaign_messages latest
+           WHERE latest.dispatch_id=d.id AND latest.status='approved'
+        )
+      ORDER BY a.position`
+  )
+    .bind(dispatchId, userId)
+    .all<CampaignAttachmentRow>();
+  const [first] = rows.results;
+  if (!first) {
+    throw new GmailMessagePayloadError(
+      "Approved campaign message was not found"
+    );
+  }
+  return buildSnapshotGmailPayload(
+    env,
+    envelope,
+    first.message.trim(),
+    first.document_packet_manifest_json,
+    rows.results.filter((row) => row.object_key)
+  );
+}
+
+async function buildSnapshotGmailPayload(
+  env: AppEnv,
+  envelope: GmailEnvelope,
+  message: string,
+  manifestJson: string,
+  attachmentRows: SnapshotAttachmentRow[]
+): Promise<GmailMessagePayload> {
+  if (!message) {
+    throw new GmailMessagePayloadError("Email message is empty");
+  }
+  const expectedCategories = JSON.parse(manifestJson) as unknown;
   if (!Array.isArray(expectedCategories)) {
-    throw new GmailMessagePayloadError("Draft attachment manifest is invalid");
+    throw new GmailMessagePayloadError(
+      "Document packet attachment manifest is invalid"
+    );
   }
   const attachedCategories = new Set(
     attachmentRows.map((attachment) => attachment.category)
@@ -116,11 +195,7 @@ export async function buildGmailMessagePayload(
       };
     })
   );
-  const rawMessage = buildRawMimeMessage(
-    envelope,
-    applicationMessage,
-    attachments
-  );
+  const rawMessage = buildRawMimeMessage(envelope, message, attachments);
   return {
     attachmentCount: attachments.length,
     filenames: attachments.map((attachment) => attachment.filename),

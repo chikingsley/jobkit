@@ -2,6 +2,7 @@ import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createAuthenticatedUser } from "./auth";
+import { seedStrongEnglishMatch } from "./campaign-match-fixtures";
 
 interface TestEnv extends Env {
   TEST_MIGRATIONS: D1Migration[];
@@ -13,28 +14,26 @@ const timestamp = "2026-07-15T00:00:00.000Z";
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("country markets and campaigns", () => {
-  it("lists a country and snapshots review targets for its current jobs", async () => {
+  it("creates a multi-market campaign from the full stored target pool", async () => {
     const { cookie } = await createAuthenticatedUser(
       "country-campaign@example.test"
     );
     await seedPolandJob();
 
     const countries = await request("/api/countries", cookie);
-    const campaign = await request(
-      "/api/countries/PL/campaigns",
-      cookie,
-      "POST",
-      {
-        executionMode: "review_each",
-        includeOpenPositions: true,
-        includeSchoolOutreach: false,
-      }
-    );
+    const campaign = await request("/api/campaigns", cookie, "POST", {
+      countryCodes: ["PL"],
+      dailyPace: 8,
+      firstFiveRequired: true,
+      postedTargetPercent: 70,
+      stopAfterHumanReplies: 2,
+    });
     const campaignPayload = (await campaign.json()) as {
       campaign: {
-        campaignId: string;
-        executionMode: string;
-        targetCount: number;
+        counts: { total: number };
+        id: string;
+        markets: Array<{ countryCode: string }>;
+        status: string;
       };
       ok: boolean;
     };
@@ -49,54 +48,69 @@ describe("country markets and campaigns", () => {
         },
       ],
     });
-    expect(campaign.status).toBe(200);
+    expect(campaign.status).toBe(201);
     expect(campaignPayload).toMatchObject({
-      campaign: { executionMode: "review_each", targetCount: 1 },
+      campaign: {
+        counts: { total: 1 },
+        markets: [{ countryCode: "PL" }],
+        status: "draft",
+      },
       ok: true,
     });
     expect(
       await testEnv.DB.prepare(
         `SELECT t.status,t.channel,t.route_id,c.policy_snapshot_json
-           FROM country_campaign_targets t
-           JOIN country_campaigns c ON c.id=t.campaign_id`
+           FROM campaign_targets t
+           JOIN campaigns c ON c.id=t.campaign_id`
       ).first()
     ).toMatchObject({
       channel: "email",
       route_id: "route-poland",
-      status: "review",
+      status: "eligible",
     });
 
-    const detail = await request(
-      `/api/country-campaigns/${campaignPayload.campaign.campaignId}`,
+    const targets = await request(
+      `/api/campaigns/${campaignPayload.campaign.id}/targets`,
       cookie
     );
-    const detailPayload = (await detail.json()) as {
-      campaign: {
-        targetCounts: Record<string, number>;
-        targets: Array<{ id: string }>;
-      };
+    const targetPayload = (await targets.json()) as {
+      targets: { items: Array<{ id: string }>; total: number };
     };
-    const [target] = detailPayload.campaign.targets;
-    expect(detail.status).toBe(200);
-    expect(detailPayload.campaign.targetCounts).toMatchObject({ review: 1 });
+    const [target] = targetPayload.targets.items;
+    expect(targets.status).toBe(200);
+    expect(targetPayload.targets.total).toBe(1);
     if (!target) {
       throw new Error("Campaign target was not returned");
     }
 
-    const approved = await request(
-      `/api/country-campaigns/${campaignPayload.campaign.campaignId}/targets/${target.id}`,
+    const calibration = await request(
+      `/api/campaigns/${campaignPayload.campaign.id}/actions`,
       cookie,
-      "PATCH",
-      { reason: "", status: "approved" }
+      "POST",
+      { action: "begin_calibration", reason: "" }
     );
-    expect(approved.status).toBe(200);
-    expect(await approved.json()).toMatchObject({
-      campaign: { targetCounts: { approved: 1, review: 0 } },
+    expect(calibration.status).toBe(200);
+    expect(await calibration.json()).toMatchObject({
+      campaign: {
+        counts: { calibration: 1 },
+        dispatches: [{ status: "calibration" }],
+        status: "calibrating",
+      },
       ok: true,
+    });
+    expect(
+      await testEnv.DB.prepare(
+        `SELECT task_type,subject_type,status FROM agent_task_requests
+          WHERE subject_type='campaign_dispatch'`
+      ).first()
+    ).toMatchObject({
+      status: "queued",
+      subject_type: "campaign_dispatch",
+      task_type: "application.message",
     });
 
     const held = await request(
-      `/api/country-campaigns/${campaignPayload.campaign.campaignId}/targets/${target.id}`,
+      `/api/campaigns/${campaignPayload.campaign.id}/targets/${target.id}`,
       cookie,
       "PATCH",
       { reason: "Recipient needs verification", status: "held" }
@@ -104,21 +118,18 @@ describe("country markets and campaigns", () => {
     expect(held.status).toBe(200);
     expect(await held.json()).toMatchObject({
       campaign: {
-        targetCounts: { approved: 0, held: 1 },
-        targets: [
-          { holdReason: "Recipient needs verification", status: "held" },
-        ],
+        counts: { calibration: 0, held: 1 },
       },
       ok: true,
     });
     expect(
       await testEnv.DB.prepare(
-        `SELECT COUNT(*) count FROM country_campaign_target_events
+        `SELECT COUNT(*) count FROM campaign_target_events
           WHERE target_id=?`
       )
         .bind(target.id)
         .first<number>("count")
-    ).toBe(2);
+    ).toBe(1);
   });
 
   it("claims discovery work and persists a verified school contact", async () => {
@@ -279,6 +290,7 @@ async function seedPolandJob() {
       timestamp
     ),
   ]);
+  await seedStrongEnglishMatch(testEnv.DB, "poland-job", timestamp);
 }
 
 function request(

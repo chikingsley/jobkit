@@ -86,14 +86,6 @@ export async function claimCountrySweepTask(
   if (!sweep) {
     throw new Error("Claimed sweep task lost its parent sweep");
   }
-  await db
-    .prepare(
-      `UPDATE country_campaigns
-          SET status='running',started_at=COALESCE(started_at,?),updated_at=?
-        WHERE sweep_id=? AND status='planned'`
-    )
-    .bind(timestamp, timestamp, task.sweep_id)
-    .run();
   return {
     countryCode: sweep.country_code,
     countryName: sweep.country_name,
@@ -213,21 +205,14 @@ export async function failCountrySweepTask(
     return { requeued: true, taskId };
   }
   if (task.phase === "coverage_audit") {
-    await db.batch([
-      db
-        .prepare(
-          `UPDATE country_sweeps
-              SET status='failed',error_detail=?,completed_at=?,updated_at=?
-            WHERE id=?`
-        )
-        .bind(error, timestamp, timestamp, task.sweep_id),
-      db
-        .prepare(
-          `UPDATE country_campaigns SET status='paused',updated_at=?
-            WHERE sweep_id=? AND status IN ('planned','running')`
-        )
-        .bind(timestamp, task.sweep_id),
-    ]);
+    await db
+      .prepare(
+        `UPDATE country_sweeps
+            SET status='failed',error_detail=?,completed_at=?,updated_at=?
+          WHERE id=?`
+      )
+      .bind(error, timestamp, timestamp, task.sweep_id)
+      .run();
   } else {
     await advanceSweep(db, task, {}, timestamp);
   }
@@ -358,34 +343,20 @@ async function advanceSweep(
   timestamp: string
 ) {
   if (task.phase === "coverage_audit") {
-    await db.batch([
-      db
-        .prepare(
-          `UPDATE country_sweeps
-              SET status='completed',coverage_summary_json=?,completed_at=?,
-                  updated_at=?
-            WHERE id=?`
-        )
-        .bind(
-          JSON.stringify(coverageSummary),
-          timestamp,
-          timestamp,
-          task.sweep_id
-        ),
-      db
-        .prepare(
-          `UPDATE country_campaigns
-              SET status=CASE
-                WHEN execution_mode='research_only' THEN 'completed'
-                ELSE 'running' END,
-                completed_at=CASE
-                  WHEN execution_mode='research_only' THEN ?
-                  ELSE completed_at END,
+    await db
+      .prepare(
+        `UPDATE country_sweeps
+            SET status='completed',coverage_summary_json=?,completed_at=?,
                 updated_at=?
-            WHERE sweep_id=? AND status IN ('planned','running')`
-        )
-        .bind(timestamp, timestamp, task.sweep_id),
-    ]);
+          WHERE id=?`
+      )
+      .bind(
+        JSON.stringify(coverageSummary),
+        timestamp,
+        timestamp,
+        task.sweep_id
+      )
+      .run();
     return;
   }
 
@@ -491,9 +462,11 @@ async function materializeCampaignOrganizations(
   const placeholders = organizationIds.map(() => "?").join(",");
   const rows = await db
     .prepare(
-      `SELECT c.id campaign_id,o.id organization_id,cp.id contact_point_id
-         FROM country_campaigns c
-         JOIN organizations o ON o.country_code=c.country_code
+      `SELECT c.id campaign_id,o.id organization_id,cp.id contact_point_id,
+              cp.value contact_value,o.market_segment,c.policy_snapshot_json
+         FROM campaigns c
+         JOIN campaign_markets cm ON cm.campaign_id=c.id
+         JOIN organizations o ON o.country_code=cm.country_code
          JOIN organization_contact_points cp ON cp.id=(
            SELECT candidate.id FROM organization_contact_points candidate
             WHERE candidate.organization_id=o.id
@@ -501,9 +474,8 @@ async function materializeCampaignOrganizations(
             ORDER BY candidate.last_verified_at DESC,candidate.updated_at DESC
             LIMIT 1
          )
-        WHERE c.country_code=? AND c.include_school_outreach=1
-          AND c.execution_mode<>'research_only'
-          AND c.status IN ('planned','running')
+        WHERE cm.country_code=?
+          AND c.status IN ('draft','calibrating','ready','running','paused')
           AND o.status='active' AND o.outreach_eligibility='eligible'
           AND o.id IN (${placeholders})`
     )
@@ -511,7 +483,10 @@ async function materializeCampaignOrganizations(
     .all<{
       campaign_id: string;
       contact_point_id: string;
+      contact_value: string;
+      market_segment: string;
       organization_id: string;
+      policy_snapshot_json: string;
     }>();
   if (rows.results.length === 0) {
     return;
@@ -520,22 +495,39 @@ async function materializeCampaignOrganizations(
     rows.results.map((row) =>
       db
         .prepare(
-          `INSERT OR IGNORE INTO country_campaign_targets
-            (id,campaign_id,organization_id,contact_point_id,channel,status,
-             hold_reason,created_at,updated_at)
-           VALUES (?,?,?,?,'email','review',?,?,?)`
+          `INSERT OR IGNORE INTO campaign_targets
+            (id,campaign_id,country_code,source_kind,subject_kind,subject_id,
+             organization_id,contact_point_id,channel,route_strategy,dedup_key,
+             status,hold_reason,admitted_at,updated_at)
+           VALUES (?,?,?,'school','organization',?,?,?,'email','single',?,?,?,?,?)`
         )
         .bind(
           crypto.randomUUID(),
           row.campaign_id,
+          countryCode,
+          row.organization_id,
           row.organization_id,
           row.contact_point_id,
-          "Fit threshold must be evaluated before automatic execution",
+          `email:${row.contact_value.trim().toLowerCase()}`,
+          excludedByCampaignPolicy(row) ? "held" : "eligible",
+          excludedByCampaignPolicy(row)
+            ? "Excluded market segment in the saved campaign policy"
+            : "",
           timestamp,
           timestamp
         )
     )
   );
+}
+
+function excludedByCampaignPolicy(row: {
+  market_segment: string;
+  policy_snapshot_json: string;
+}) {
+  const policy = JSON.parse(row.policy_snapshot_json) as {
+    excludedMarketSegments?: string[];
+  };
+  return (policy.excludedMarketSegments ?? []).includes(row.market_segment);
 }
 
 function normalizeDomain(value: string) {

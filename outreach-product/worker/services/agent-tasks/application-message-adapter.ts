@@ -22,6 +22,10 @@ import {
   prepareJobDraftTask,
 } from "../application-drafts";
 import {
+  buildCampaignDispatchTaskCompletion,
+  prepareCampaignDispatchTask,
+} from "../campaign-messages";
+import {
   completeMessagePreviewTask,
   prepareMessagePreviewTask,
 } from "../message-preview";
@@ -171,6 +175,15 @@ async function buildApplicationMessageCompletionPlan(
       modelId
     );
   }
+  if (input.kind === "campaign_dispatch") {
+    return buildCampaignDispatchTaskCompletion(
+      env,
+      userId,
+      input,
+      rawOutput,
+      modelId
+    );
+  }
   return {
     result: await completeMessagePreviewTask(
       env,
@@ -193,6 +206,9 @@ async function prepareApplicationMessageRequest(
   }
   if (input.kind === "anesl_bundle") {
     return (await prepareAneslBundleTask(env, userId, input)).prepared;
+  }
+  if (input.kind === "campaign_dispatch") {
+    return (await prepareCampaignDispatchTask(env, userId, input)).prepared;
   }
   return prepareMessagePreviewTask(env, userId, input);
 }

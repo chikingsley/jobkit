@@ -229,7 +229,7 @@ export async function prepareJobDraftTask(
     };
   }
   const row = await readJobForDraftGeneration(env.DB, userId, input.jobId);
-  const job = toJobImport(row);
+  const job = jobImportFromRow(row);
   const context = await messageContext(env, userId, job);
   return {
     context,
@@ -476,6 +476,16 @@ function buildDraftMutationPlan(
   const version = current.version + 1;
   const statements = [
     env.DB.prepare(
+      `UPDATE outbound_recipient_claims
+          SET status='released',released_at=?,updated_at=?
+        WHERE source_kind='application_attempt' AND status='claimed'
+          AND source_id IN (
+            SELECT id FROM application_attempts
+             WHERE draft_id=? AND status='approved'
+               AND send_requested_at IS NULL AND gmail_draft_id=''
+          )`
+    ).bind(timestamp, timestamp, current.draftId),
+    env.DB.prepare(
       `DELETE FROM application_attempts
        WHERE draft_id=? AND status='approved' AND send_requested_at IS NULL
          AND gmail_draft_id=''`
@@ -563,7 +573,7 @@ async function currentJobAndDraft(
     foundationId: row.message_foundation_id
       ? String(row.message_foundation_id)
       : null,
-    job: toJobImport(row),
+    job: jobImportFromRow(row),
     message: String(row.message),
     requiredOpening: String(row.required_opening),
     templateKey: row.message_template_key
@@ -609,7 +619,7 @@ export async function savedProfile(
   return profile.value;
 }
 
-function toJobImport(row: Record<string, unknown>): JobImport {
+export function jobImportFromRow(row: Record<string, unknown>): JobImport {
   return JobImportSchema.parse({
     applyUrl: row.apply_url,
     board: row.board,

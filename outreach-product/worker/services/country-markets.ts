@@ -1,27 +1,13 @@
 import { getCountries } from "libphonenumber-js";
 import { z } from "zod";
-import {
-  type AutomationPolicy,
-  AutomationPolicySchema,
-} from "../../src/features/automation/schema";
-import {
-  CampaignExecutionModeSchema,
-  type CountryCampaignLaunch,
-  type CountryCampaignTargetDecision,
-  type CountryCampaignTargetStatus,
-  CountryCampaignTargetStatusSchema,
-  type CountrySweepRequest,
-} from "../../src/features/countries/schema";
+import type { CountrySweepRequest } from "../../src/features/countries/schema";
 import type {
-  CountryCampaignDetail,
-  CountryCampaignTarget,
   CountryDetail,
   CountryMarketSummary,
   CountryOpportunitySummary,
   CountryOrganizationSummary,
   CountrySweepSummary,
 } from "../../src/features/countries/types";
-import { readAutomationPolicy } from "../repositories/automation-policy";
 
 interface CountryCountRow {
   count: number;
@@ -36,21 +22,6 @@ interface SweepRow {
   id: string;
   requested_at: string;
   status: string;
-}
-
-interface JobTargetRow {
-  board: string;
-  compensation_confidence: string;
-  job_id: string;
-  market_segments_json: string;
-  route_id: string | null;
-  route_kind: string | null;
-  route_last_verified_at: string | null;
-}
-
-interface OrganizationTargetRow {
-  contact_point_id: string | null;
-  organization_id: string;
 }
 
 const countryDisplayNames = new Intl.DisplayNames(["en"], { type: "region" });
@@ -69,13 +40,6 @@ const COUNTRY_NAME_ALIASES = new Map([
   ["taiwan", "TW"],
 ]);
 const D1_ROW_SCHEMA = z.record(z.string(), z.unknown());
-const mutableCampaignTargetStatuses = new Set([
-  "failed",
-  "held",
-  "pending",
-  "review",
-  "approved",
-]);
 
 function nullableString(value: unknown): string | null {
   return value === null || value === undefined ? null : String(value);
@@ -108,7 +72,7 @@ function countryCodeForName(name: string) {
   );
 }
 
-function countryNamesForCode(countryCode: string) {
+export function countryNamesForCode(countryCode: string) {
   const canonicalName = countryNameForCode(countryCode);
   const aliases = [...COUNTRY_NAME_ALIASES]
     .filter(([, code]) => code === countryCode)
@@ -142,10 +106,12 @@ export async function listCountryMarkets(
       ),
       db
         .prepare(
-          `SELECT country_code,country_name,COUNT(*) count
-           FROM country_campaigns
-          WHERE user_id=?
-          GROUP BY country_code,country_name`
+          `SELECT cm.country_code,cm.country_name,
+                  COUNT(DISTINCT cm.campaign_id) count
+             FROM campaign_markets cm
+             JOIN campaigns c ON c.id=cm.campaign_id
+            WHERE c.user_id=?
+            GROUP BY cm.country_code,cm.country_name`
         )
         .bind(userId),
       db.prepare(
@@ -153,8 +119,8 @@ export async function listCountryMarkets(
                 MAX(s.requested_at) latest_at,
                 (
                   SELECT latest.status FROM country_sweeps latest
-                  WHERE latest.country_code=s.country_code
-                  ORDER BY latest.requested_at DESC LIMIT 1
+                   WHERE latest.country_code=s.country_code
+                   ORDER BY latest.requested_at DESC LIMIT 1
                 ) latest_status
            FROM country_sweeps s
           GROUP BY s.country_code,s.country_name`
@@ -195,7 +161,9 @@ export async function listCountryMarkets(
   for (const row of jobCounts.results) {
     const code = countryCodeForName(row.country_name);
     if (code) {
-      read(code, row.country_name).openPositionCount = Number(row.count);
+      read(code, countryNameForCode(code)).openPositionCount += Number(
+        row.count
+      );
     }
   }
   for (const row of organizationCounts.results) {
@@ -240,8 +208,7 @@ export async function readCountryDetail(
              FROM jobs j
              LEFT JOIN user_jobs uj ON uj.job_id=j.id AND uj.user_id=?
             WHERE lower(trim(j.country)) IN (${jobCountryPlaceholders})
-            ORDER BY j.updated_at DESC,j.title
-            LIMIT 200`
+            ORDER BY j.updated_at DESC,j.title`
         )
         .bind(userId, ...jobCountryNames),
       db
@@ -254,22 +221,18 @@ export async function readCountryDetail(
                ON cp.organization_id=o.id AND cp.status='active'
             WHERE o.country_code=?
             GROUP BY o.id
-            ORDER BY o.outreach_eligibility,o.name
-            LIMIT 500`
+            ORDER BY o.outreach_eligibility,o.name`
         )
         .bind(countryCode),
       db
         .prepare(
-          `SELECT c.id,c.execution_mode,c.include_open_positions,
-                  c.include_school_outreach,c.status,c.created_at,
-                  s.status sweep_status,COUNT(t.id) target_count
-             FROM country_campaigns c
-             LEFT JOIN country_sweeps s ON s.id=c.sweep_id
-             LEFT JOIN country_campaign_targets t ON t.campaign_id=c.id
-            WHERE c.user_id=? AND c.country_code=?
+          `SELECT c.id,c.name,c.status,c.created_at,COUNT(t.id) target_count
+             FROM campaigns c
+             JOIN campaign_markets cm ON cm.campaign_id=c.id
+             LEFT JOIN campaign_targets t ON t.campaign_id=c.id
+            WHERE c.user_id=? AND cm.country_code=?
             GROUP BY c.id
-            ORDER BY c.created_at DESC
-            LIMIT 30`
+            ORDER BY c.created_at DESC`
         )
         .bind(userId, countryCode),
       db
@@ -277,8 +240,7 @@ export async function readCountryDetail(
           `SELECT id,status,requested_at,completed_at
              FROM country_sweeps
             WHERE country_code=?
-            ORDER BY requested_at DESC
-            LIMIT 20`
+            ORDER BY requested_at DESC`
         )
         .bind(countryCode),
       db
@@ -299,9 +261,8 @@ export async function readCountryDetail(
   for (const rawRow of taskCounts.results) {
     const row = D1_ROW_SCHEMA.parse(rawRow);
     const sweepId = String(row.sweep_id);
-    const status = String(row.status);
     const counts = taskCountsBySweep.get(sweepId) ?? {};
-    counts[status] = Number(row.count);
+    counts[String(row.status)] = Number(row.count);
     taskCountsBySweep.set(sweepId, counts);
   }
 
@@ -310,12 +271,9 @@ export async function readCountryDetail(
       const row = D1_ROW_SCHEMA.parse(rawRow);
       return {
         createdAt: String(row.created_at),
-        executionMode: CampaignExecutionModeSchema.parse(row.execution_mode),
         id: String(row.id),
-        includeOpenPositions: Boolean(row.include_open_positions),
-        includeSchoolOutreach: Boolean(row.include_school_outreach),
+        name: String(row.name),
         status: String(row.status),
-        sweepStatus: nullableString(row.sweep_status),
         targetCount: Number(row.target_count),
       };
     }),
@@ -362,182 +320,6 @@ export async function readCountryDetail(
         taskCounts: taskCountsBySweep.get(id) ?? {},
       };
     }),
-  };
-}
-
-export async function readCountryCampaign(
-  db: D1Database,
-  userId: string,
-  campaignId: string
-): Promise<CountryCampaignDetail> {
-  const [campaign, targets] = await Promise.all([
-    db
-      .prepare(
-        `SELECT c.id,c.country_code,c.country_name,c.execution_mode,
-                c.include_open_positions,c.include_school_outreach,
-                c.policy_snapshot_json,c.status,c.created_at,
-                s.status sweep_status,
-                (SELECT COUNT(*) FROM country_campaign_targets t
-                  WHERE t.campaign_id=c.id) target_count
-           FROM country_campaigns c
-           LEFT JOIN country_sweeps s ON s.id=c.sweep_id
-          WHERE c.id=? AND c.user_id=?`
-      )
-      .bind(campaignId, userId)
-      .first(),
-    db
-      .prepare(
-        `SELECT t.id,t.job_id,t.organization_id,t.channel,t.status,
-                t.hold_reason,t.updated_at,
-                j.title,j.company,j.location,j.board,j.source_url,
-                o.name organization_name,o.city,o.market_segment,
-                o.website_url,
-                ar.destination route_destination,
-                cp.value contact_destination
-           FROM country_campaign_targets t
-           LEFT JOIN jobs j ON j.id=t.job_id
-           LEFT JOIN organizations o ON o.id=t.organization_id
-           LEFT JOIN application_routes ar ON ar.id=t.route_id
-           LEFT JOIN organization_contact_points cp ON cp.id=t.contact_point_id
-          WHERE t.campaign_id=?
-          ORDER BY CASE t.status
-            WHEN 'review' THEN 0 WHEN 'pending' THEN 1 WHEN 'approved' THEN 2
-            WHEN 'held' THEN 3 WHEN 'failed' THEN 4 WHEN 'sent' THEN 5
-            WHEN 'replied' THEN 6 ELSE 7 END,
-            COALESCE(j.title,o.name),t.created_at`
-      )
-      .bind(campaignId)
-      .all(),
-  ]);
-  if (!campaign) {
-    throw new CountryMarketError("Campaign was not found", 404);
-  }
-  const campaignRow = D1_ROW_SCHEMA.parse(campaign);
-  const mappedTargets = targets.results.map(mapCampaignTarget);
-  const targetCounts: Record<CountryCampaignTargetStatus, number> = {
-    approved: 0,
-    failed: 0,
-    held: 0,
-    pending: 0,
-    replied: 0,
-    review: 0,
-    sent: 0,
-    skipped: 0,
-  };
-  for (const target of mappedTargets) {
-    targetCounts[target.status] = (targetCounts[target.status] ?? 0) + 1;
-  }
-  return {
-    countryCode: String(campaignRow.country_code),
-    countryName: String(campaignRow.country_name),
-    createdAt: String(campaignRow.created_at),
-    executionMode: CampaignExecutionModeSchema.parse(
-      campaignRow.execution_mode
-    ),
-    id: String(campaignRow.id),
-    includeOpenPositions: Boolean(campaignRow.include_open_positions),
-    includeSchoolOutreach: Boolean(campaignRow.include_school_outreach),
-    policy: AutomationPolicySchema.parse(
-      JSON.parse(String(campaignRow.policy_snapshot_json))
-    ),
-    status: String(campaignRow.status),
-    sweepStatus: nullableString(campaignRow.sweep_status),
-    targetCount: Number(campaignRow.target_count),
-    targetCounts,
-    targets: mappedTargets,
-  };
-}
-
-export async function decideCountryCampaignTarget(
-  db: D1Database,
-  userId: string,
-  campaignId: string,
-  targetId: string,
-  decision: CountryCampaignTargetDecision
-) {
-  const target = await db
-    .prepare(
-      `SELECT t.status
-         FROM country_campaign_targets t
-         JOIN country_campaigns c ON c.id=t.campaign_id
-        WHERE t.id=? AND t.campaign_id=? AND c.user_id=?`
-    )
-    .bind(targetId, campaignId, userId)
-    .first<{ status: string }>();
-  if (!target) {
-    throw new CountryMarketError("Campaign target was not found", 404);
-  }
-  if (!mutableCampaignTargetStatuses.has(target.status)) {
-    throw new CountryMarketError(
-      `A ${target.status} target can no longer be changed from campaign review`,
-      409
-    );
-  }
-  if (target.status === decision.status) {
-    return readCountryCampaign(db, userId, campaignId);
-  }
-  const timestamp = new Date().toISOString();
-  const reason = decision.status === "held" ? decision.reason : "";
-  await db.batch([
-    db
-      .prepare(
-        `UPDATE country_campaign_targets
-            SET status=?,hold_reason=?,updated_at=?
-          WHERE id=? AND campaign_id=?`
-      )
-      .bind(decision.status, reason, timestamp, targetId, campaignId),
-    db
-      .prepare(
-        `INSERT INTO country_campaign_target_events
-          (id,campaign_id,target_id,user_id,previous_status,next_status,
-           reason,created_at)
-         VALUES (?,?,?,?,?,?,?,?)`
-      )
-      .bind(
-        crypto.randomUUID(),
-        campaignId,
-        targetId,
-        userId,
-        target.status,
-        decision.status,
-        reason,
-        timestamp
-      ),
-  ]);
-  return readCountryCampaign(db, userId, campaignId);
-}
-
-function mapCampaignTarget(
-  rawRow: Record<string, unknown>
-): CountryCampaignTarget {
-  const row = D1_ROW_SCHEMA.parse(rawRow);
-  const isJob = Boolean(row.job_id);
-  const description = isJob
-    ? [row.company, row.location, row.board]
-        .map((value) => String(value ?? "").trim())
-        .filter(Boolean)
-        .join(" · ")
-    : [row.city, row.market_segment]
-        .map((value) =>
-          String(value ?? "")
-            .trim()
-            .replaceAll("_", " ")
-        )
-        .filter(Boolean)
-        .join(" · ");
-  return {
-    channel: z
-      .enum(["board_form", "email", "external_url", "manual"])
-      .parse(row.channel),
-    description,
-    destination: String(row.route_destination ?? row.contact_destination ?? ""),
-    holdReason: String(row.hold_reason),
-    id: String(row.id),
-    kind: isJob ? "job" : "organization",
-    label: String(isJob ? row.title : row.organization_name),
-    sourceUrl: String(isJob ? row.source_url : row.website_url),
-    status: CountryCampaignTargetStatusSchema.parse(row.status),
-    updatedAt: String(row.updated_at),
   };
 }
 
@@ -624,296 +406,4 @@ export async function createCountrySweep(
     reused: false,
     status: "queued",
   };
-}
-
-export async function launchCountryCampaign(
-  db: D1Database,
-  userId: string,
-  countryCode: string,
-  launch: CountryCampaignLaunch
-) {
-  const countryName = countryNameForCode(countryCode);
-  const policy = (await readAutomationPolicy(db, userId)).value;
-  if (launch.executionMode === "use_automation" && policy.paused) {
-    throw new CountryMarketError(
-      "Automation is paused. Resume it or choose review every message.",
-      409
-    );
-  }
-  const sweep = launch.includeSchoolOutreach
-    ? await createCountrySweep(db, userId, countryCode, {
-        includeDirectories: true,
-        includeKnownSources: true,
-        includeMaps: true,
-        includeSearch: true,
-      })
-    : null;
-  const campaignId = crypto.randomUUID();
-  const timestamp = new Date().toISOString();
-  await db
-    .prepare(
-      `INSERT INTO country_campaigns
-        (id,user_id,country_code,country_name,sweep_id,execution_mode,
-         include_open_positions,include_school_outreach,policy_snapshot_json,
-         status,created_at,updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?,'planned',?,?)`
-    )
-    .bind(
-      campaignId,
-      userId,
-      countryCode,
-      countryName,
-      sweep?.id ?? null,
-      launch.executionMode,
-      Number(launch.includeOpenPositions),
-      Number(launch.includeSchoolOutreach),
-      JSON.stringify(policy),
-      timestamp,
-      timestamp
-    )
-    .run();
-
-  await insertCampaignTargets(
-    db,
-    campaignId,
-    countryCode,
-    launch,
-    policy,
-    timestamp
-  );
-
-  const targetCount = await db
-    .prepare(
-      "SELECT COUNT(*) count FROM country_campaign_targets WHERE campaign_id=?"
-    )
-    .bind(campaignId)
-    .first<number>("count");
-  return {
-    campaignId,
-    executionMode: launch.executionMode,
-    status: "planned",
-    sweep,
-    targetCount: Number(targetCount ?? 0),
-  };
-}
-
-async function insertCampaignTargets(
-  db: D1Database,
-  campaignId: string,
-  countryCode: string,
-  launch: CountryCampaignLaunch,
-  policy: AutomationPolicy,
-  timestamp: string
-) {
-  if (launch.executionMode === "research_only") {
-    return;
-  }
-  const statements: D1PreparedStatement[] = [];
-  if (launch.includeOpenPositions) {
-    const targets = await readJobTargets(db, countryCode);
-    for (const target of targets) {
-      const decision = targetDecision(
-        launch.executionMode,
-        target.route_kind,
-        target,
-        policy
-      );
-      statements.push(
-        db
-          .prepare(
-            `INSERT INTO country_campaign_targets
-              (id,campaign_id,job_id,route_id,channel,status,hold_reason,
-               created_at,updated_at)
-             VALUES (?,?,?,?,?,?,?,?,?)`
-          )
-          .bind(
-            crypto.randomUUID(),
-            campaignId,
-            target.job_id,
-            target.route_id,
-            channelForRoute(target.route_kind),
-            decision.status,
-            decision.reason,
-            timestamp,
-            timestamp
-          )
-      );
-    }
-  }
-  if (launch.includeSchoolOutreach) {
-    const targets = await readOrganizationTargets(db, countryCode);
-    for (const target of targets) {
-      const decision =
-        launch.executionMode === "review_each"
-          ? { reason: "", status: "review" }
-          : automationDecision("email", policy);
-      statements.push(
-        db
-          .prepare(
-            `INSERT INTO country_campaign_targets
-              (id,campaign_id,organization_id,contact_point_id,channel,status,
-               hold_reason,created_at,updated_at)
-             VALUES (?,?,?,?,'email',?,?,?,?)`
-          )
-          .bind(
-            crypto.randomUUID(),
-            campaignId,
-            target.organization_id,
-            target.contact_point_id,
-            decision.status,
-            decision.reason,
-            timestamp,
-            timestamp
-          )
-      );
-    }
-  }
-  if (statements.length > 0) {
-    await db.batch(statements);
-  }
-}
-
-async function readJobTargets(db: D1Database, countryCode: string) {
-  const countryNames = countryNamesForCode(countryCode);
-  const placeholders = countryNames.map(() => "?").join(",");
-  const result = await db
-    .prepare(
-      `SELECT j.id job_id,j.board,j.market_segments_json,
-              j.compensation_confidence,ar.id route_id,ar.kind route_kind,
-              ar.last_verified_at route_last_verified_at
-         FROM jobs j
-         LEFT JOIN application_routes ar ON ar.id=(
-           SELECT candidate.id FROM application_routes candidate
-            WHERE candidate.job_id=j.id AND candidate.status='active'
-            ORDER BY CASE candidate.kind
-              WHEN 'email' THEN 0 WHEN 'board_form' THEN 1
-              WHEN 'external_url' THEN 2 ELSE 3 END,
-              candidate.last_verified_at DESC
-            LIMIT 1
-        )
-        WHERE lower(trim(j.country)) IN (${placeholders})
-        ORDER BY j.updated_at DESC
-        LIMIT 500`
-    )
-    .bind(...countryNames)
-    .all<JobTargetRow>();
-  return result.results;
-}
-
-async function readOrganizationTargets(db: D1Database, countryCode: string) {
-  const result = await db
-    .prepare(
-      `SELECT o.id organization_id,cp.id contact_point_id
-         FROM organizations o
-         JOIN organization_contact_points cp ON cp.id=(
-           SELECT candidate.id FROM organization_contact_points candidate
-            WHERE candidate.organization_id=o.id
-              AND candidate.kind='email' AND candidate.status='active'
-            ORDER BY candidate.last_verified_at DESC,candidate.updated_at DESC
-            LIMIT 1
-         )
-        WHERE o.country_code=? AND o.status='active'
-          AND o.outreach_eligibility='eligible'
-        ORDER BY o.name
-        LIMIT 500`
-    )
-    .bind(countryCode)
-    .all<OrganizationTargetRow>();
-  return result.results;
-}
-
-function targetDecision(
-  executionMode: CountryCampaignLaunch["executionMode"],
-  routeKind: string | null,
-  target: JobTargetRow,
-  policy: AutomationPolicy
-) {
-  if (executionMode === "review_each") {
-    return { reason: "", status: "review" };
-  }
-  const channel = channelForRoute(routeKind);
-  const channelDecision = automationDecision(channel, policy);
-  if (channelDecision.status !== "review") {
-    return channelDecision;
-  }
-  if (
-    policy.allowedBoards.length > 0 &&
-    !policy.allowedBoards.includes(target.board)
-  ) {
-    return {
-      reason: "Source is outside the saved automation policy",
-      status: "held",
-    };
-  }
-  const segments = JSON.parse(target.market_segments_json) as string[];
-  const excludedSegments = new Set<string>(policy.excludedMarketSegments);
-  if (segments.some((segment) => excludedSegments.has(segment))) {
-    return {
-      reason: "Organization type is excluded from automation",
-      status: "held",
-    };
-  }
-  if (
-    policy.requireKnownCompensation &&
-    target.compensation_confidence === "unknown"
-  ) {
-    return {
-      reason: "Compensation must be known before automatic execution",
-      status: "held",
-    };
-  }
-  if (!routeIsFresh(target.route_last_verified_at, policy.routeFreshnessDays)) {
-    return {
-      reason: "Application route needs fresh verification",
-      status: "held",
-    };
-  }
-  return {
-    reason: "Fit threshold must be evaluated before automatic execution",
-    status: "review",
-  };
-}
-
-function automationDecision(
-  channel: ReturnType<typeof channelForRoute>,
-  policy: AutomationPolicy
-) {
-  if (channel === "manual" || channel === "external_url") {
-    return { reason: "This route requires manual review", status: "held" };
-  }
-  const mode = channel === "email" ? policy.email.mode : policy.boardForm.mode;
-  if (mode === "off") {
-    return { reason: "This channel is disabled", status: "held" };
-  }
-  if (mode === "review") {
-    return { reason: "", status: "review" };
-  }
-  return {
-    reason: "Fit threshold must be evaluated before automatic execution",
-    status: "review",
-  };
-}
-
-function channelForRoute(routeKind: string | null) {
-  if (routeKind === "email") {
-    return "email" as const;
-  }
-  if (routeKind === "board_form") {
-    return "board_form" as const;
-  }
-  if (routeKind === "external_url") {
-    return "external_url" as const;
-  }
-  return "manual" as const;
-}
-
-function routeIsFresh(lastVerifiedAt: string | null, freshnessDays: number) {
-  if (!lastVerifiedAt) {
-    return false;
-  }
-  const verifiedAt = Date.parse(lastVerifiedAt);
-  return (
-    Number.isFinite(verifiedAt) &&
-    Date.now() - verifiedAt <= freshnessDays * 24 * 60 * 60 * 1000
-  );
 }

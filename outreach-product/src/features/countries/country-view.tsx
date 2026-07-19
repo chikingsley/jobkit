@@ -13,9 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LaunchCampaignSheet } from "@/features/countries/launch-campaign-sheet";
 import type {
-  CountryCampaignSummary,
+  CountryCampaignReference,
   CountryDetail,
   CountryOpportunitySummary,
   CountryOrganizationSummary,
@@ -83,12 +82,13 @@ export function CountryView({ request }: { request: ApiRequest }) {
           <Button onClick={() => void refresh()} variant="outline">
             <RefreshCw /> Refresh country
           </Button>
-          <LaunchCampaignSheet
-            countryCode={data.countryCode}
-            countryName={data.countryName}
-            onLaunched={() => mutate()}
-            request={request}
-          />
+          <Button
+            onClick={() =>
+              navigate(`/campaigns/new?country=${data.countryCode}`)
+            }
+          >
+            Start campaign
+          </Button>
         </div>
       </div>
       <Tabs defaultValue="positions">
@@ -123,11 +123,7 @@ export function CountryView({ request }: { request: ApiRequest }) {
           )}
         </TabsContent>
         <TabsContent className="grid gap-4 pt-3" value="activity">
-          <ActivitySection
-            campaigns={data.campaigns}
-            countryCode={data.countryCode}
-            sweeps={data.sweeps}
-          />
+          <ActivitySection campaigns={data.campaigns} sweeps={data.sweeps} />
         </TabsContent>
       </Tabs>
     </SettingsPage>
@@ -226,11 +222,9 @@ function OrganizationCard({
 
 function ActivitySection({
   campaigns,
-  countryCode,
   sweeps,
 }: {
-  campaigns: CountryCampaignSummary[];
-  countryCode: string;
+  campaigns: CountryCampaignReference[];
   sweeps: CountrySweepSummary[];
 }) {
   const navigate = useNavigate();
@@ -248,9 +242,7 @@ function ActivitySection({
             campaigns.map((campaign) => (
               <div className="rounded-lg border p-3" key={campaign.id}>
                 <div className="flex justify-between gap-3">
-                  <span className="font-medium">
-                    {campaign.executionMode.replaceAll("_", " ")}
-                  </span>
+                  <span className="font-medium">{campaign.name}</span>
                   <Badge variant="outline">{campaign.status}</Badge>
                 </div>
                 <div className="mt-1 text-muted-foreground text-sm">
@@ -261,15 +253,11 @@ function ActivitySection({
                 {campaign.targetCount > 0 ? (
                   <Button
                     className="mt-2"
-                    onClick={() =>
-                      navigate(
-                        `/countries/${countryCode}/campaigns/${campaign.id}`
-                      )
-                    }
+                    onClick={() => navigate(`/campaigns/${campaign.id}`)}
                     size="sm"
                     variant="outline"
                   >
-                    Review targets <ChevronRight />
+                    Open campaign <ChevronRight />
                   </Button>
                 ) : null}
               </div>

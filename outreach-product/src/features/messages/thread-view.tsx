@@ -126,6 +126,13 @@ function ThreadBubble({ message }: { message: ThreadMessage }) {
         ) : null}
         <MessageFooter>
           <span>{STATUS_LABELS[message.status] ?? message.status}</span>
+          {message.direction === "inbound" &&
+          message.classification &&
+          message.classification !== "human" ? (
+            <Badge className="ml-2" variant="outline">
+              {replyClassificationLabel(message.classification)}
+            </Badge>
+          ) : null}
           {message.error ? (
             <span className="ml-2 text-destructive">
               {message.error.detail}
@@ -135,6 +142,17 @@ function ThreadBubble({ message }: { message: ThreadMessage }) {
       </MessageContent>
     </Message>
   );
+}
+
+function replyClassificationLabel(
+  classification: Exclude<ThreadMessage["classification"], "human" | null>
+) {
+  const labels = {
+    automated: "Automated reply",
+    bounce: "Bounce",
+    vacation: "Vacation reply",
+  } as const;
+  return labels[classification];
 }
 
 function ThreadAttachmentCard({

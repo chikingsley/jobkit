@@ -3,6 +3,8 @@ import type { JobImport } from "../schemas";
 export const ANESL_CONTACT_NAME = "Mr. Corey Yang";
 export const ANESL_KIND = "anesl_positions";
 export const ANESL_RECIPIENT = "hr@anesl.com";
+export const ANESL_REQUIRED_QUESTION =
+  "Would you be open to talking about which of these positions and locations you are currently recruiting for?";
 const ANESL_BOARD = "anesl";
 const ANESL_SOURCE_URL =
   "https://cafe.anesl.com/jobdetail.aspx?id=20150312125411629";

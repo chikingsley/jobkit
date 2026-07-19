@@ -42,6 +42,26 @@ export const ApplicationMessageRequestInputSchema = z.discriminatedUnion(
       }),
     z
       .object({
+        dispatchId: z.string().min(1),
+        expectedMessageId: z.string().min(1).optional(),
+        instruction: z.string().trim().min(1).max(1000).optional(),
+        kind: z.literal("campaign_dispatch"),
+        mode: z.enum(["generate", "revise"]),
+      })
+      .strict()
+      .superRefine((value, context) => {
+        if (
+          value.mode === "revise" &&
+          !(value.expectedMessageId && value.instruction)
+        ) {
+          context.addIssue({
+            code: "custom",
+            message: "Campaign revision requires a message ID and instruction",
+          });
+        }
+      }),
+    z
+      .object({
         currentMessage: z.string().min(1).max(5000),
         instruction: z.string().trim().min(1).max(1000),
         kind: z.literal("message_preview"),
