@@ -14,6 +14,47 @@ const timestamp = "2026-07-15T00:00:00.000Z";
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("country markets and campaigns", () => {
+  it("imports historical Tajikistan research without presenting stale rows as open jobs", async () => {
+    const { cookie } = await createAuthenticatedUser(
+      "country-history@example.test"
+    );
+    const response = await request("/api/countries/TJ", cookie);
+    const payload = (await response.json()) as {
+      country: {
+        opportunities: unknown[];
+        organizations: Array<{
+          evidenceCount: number;
+          name: string;
+          roleSummary: string;
+        }>;
+      };
+    };
+
+    expect(response.status).toBe(200);
+    expect(payload.country.opportunities).toHaveLength(0);
+    expect(payload.country.organizations).toHaveLength(13);
+    expect(payload.country.organizations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          evidenceCount: 2,
+          name: "Modern International School",
+        }),
+        expect.objectContaining({
+          evidenceCount: 2,
+          name: "University of Central Asia / SPCE",
+        }),
+      ])
+    );
+    await expect(
+      testEnv.DB.prepare(
+        `SELECT COUNT(*) evidence_count,
+                SUM(evidence_status='active') active_count
+           FROM organization_evidence
+          WHERE source_kind='historical_workbook'`
+      ).first()
+    ).resolves.toEqual({ active_count: 2, evidence_count: 15 });
+  });
+
   it("creates a multi-market campaign from the full stored target pool", async () => {
     const { cookie } = await createAuthenticatedUser(
       "country-campaign@example.test"
@@ -39,15 +80,22 @@ describe("country markets and campaigns", () => {
     };
 
     expect(countries.status).toBe(200);
-    expect(await countries.json()).toMatchObject({
-      countries: [
-        {
+    const countriesPayload = (await countries.json()) as {
+      countries: Array<{
+        countryCode: string;
+        countryName: string;
+        openPositionCount: number;
+      }>;
+    };
+    expect(countriesPayload.countries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
           countryCode: "PL",
           countryName: "Poland",
           openPositionCount: 1,
-        },
-      ],
-    });
+        }),
+      ])
+    );
     expect(campaign.status).toBe(201);
     expect(campaignPayload).toMatchObject({
       campaign: {
@@ -222,7 +270,8 @@ describe("country markets and campaigns", () => {
       await testEnv.DB.prepare(
         `SELECT o.country_code,o.name,o.status,cp.kind,cp.value,cp.status contact_status
            FROM organizations o
-           JOIN organization_contact_points cp ON cp.organization_id=o.id`
+           JOIN organization_contact_points cp ON cp.organization_id=o.id
+          WHERE o.name='Example School'`
       ).first()
     ).toEqual({
       contact_status: "active",
@@ -236,6 +285,14 @@ describe("country markets and campaigns", () => {
       await testEnv.DB.prepare(
         `SELECT COUNT(*) count FROM country_sweep_tasks
           WHERE phase='verification'`
+      ).first<number>("count")
+    ).toBe(1);
+    expect(
+      await testEnv.DB.prepare(
+        `SELECT COUNT(*) count FROM organization_evidence evidence
+          JOIN organizations organization ON organization.id=evidence.organization_id
+         WHERE organization.name='Example School'
+           AND evidence.source_kind='country_sweep'`
       ).first<number>("count")
     ).toBe(1);
     expect(

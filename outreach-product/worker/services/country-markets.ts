@@ -103,6 +103,7 @@ export async function listCountryMarkets(
            FROM organization_contact_points cp
            JOIN organizations o ON o.id=cp.organization_id
           WHERE cp.status='active'
+            AND cp.kind IN ('email','phone','contact_form')
           GROUP BY o.country_code,o.country_name`
       ),
       db
@@ -217,10 +218,21 @@ export async function readCountryDetail(
         .prepare(
           `SELECT o.id,o.name,o.city,o.website_url,o.market_segment,o.status,
                   o.outreach_eligibility,o.last_verified_at,
-                  COUNT(cp.id) contact_count
+                  COUNT(cp.id) contact_count,
+                  (SELECT COUNT(*) FROM organization_evidence evidence
+                    WHERE evidence.organization_id=o.id) evidence_count,
+                  (SELECT evidence.evidence_status FROM organization_evidence evidence
+                    WHERE evidence.organization_id=o.id
+                    ORDER BY evidence.observed_at DESC,evidence.id DESC LIMIT 1)
+                    latest_evidence_status,
+                  (SELECT evidence.roles FROM organization_evidence evidence
+                    WHERE evidence.organization_id=o.id
+                    ORDER BY evidence.observed_at DESC,evidence.id DESC LIMIT 1)
+                    latest_roles
              FROM organizations o
              LEFT JOIN organization_contact_points cp
                ON cp.organization_id=o.id AND cp.status='active'
+              AND cp.kind IN ('email','phone','contact_form')
             WHERE o.country_code=?
             GROUP BY o.id
             ORDER BY o.outreach_eligibility,o.name`
@@ -301,11 +313,14 @@ export async function readCountryDetail(
         return {
           city: String(row.city),
           contactCount: Number(row.contact_count),
+          evidenceCount: Number(row.evidence_count),
           id: String(row.id),
           lastVerifiedAt: nullableString(row.last_verified_at),
+          latestEvidenceStatus: nullableString(row.latest_evidence_status),
           marketSegment: String(row.market_segment),
           name: String(row.name),
           outreachEligibility: String(row.outreach_eligibility),
+          roleSummary: String(row.latest_roles ?? ""),
           status: String(row.status),
           websiteUrl: String(row.website_url),
         };

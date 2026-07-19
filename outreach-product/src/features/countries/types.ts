@@ -22,11 +22,14 @@ export interface CountryOpportunitySummary {
 export interface CountryOrganizationSummary {
   city: string;
   contactCount: number;
+  evidenceCount: number;
   id: string;
   lastVerifiedAt: string | null;
+  latestEvidenceStatus: string | null;
   marketSegment: string;
   name: string;
   outreachEligibility: string;
+  roleSummary: string;
   status: string;
   websiteUrl: string;
 }

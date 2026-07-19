@@ -6,7 +6,7 @@ import type {
   InventorySourceScheduleSchema,
 } from "../../src/features/inventory/schema";
 import type { AgentRunnerContext } from "../app-types";
-import { InventoryRunError } from "./inventory-runs";
+import { InventoryRunError } from "./inventory-runs/contracts";
 
 type InventoryOperationCompletion = z.infer<
   typeof InventoryOperationCompletionSchema

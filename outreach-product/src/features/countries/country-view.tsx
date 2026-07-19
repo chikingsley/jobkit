@@ -182,6 +182,11 @@ function OrganizationCard({
               {organization.city || "Location unverified"} ·{" "}
               {organization.marketSegment.replaceAll("_", " ")}
             </CardDescription>
+            {organization.roleSummary ? (
+              <p className="mt-1 text-muted-foreground text-sm">
+                {organization.roleSummary}
+              </p>
+            ) : null}
           </div>
           <Badge
             variant={
@@ -195,10 +200,22 @@ function OrganizationCard({
         </div>
       </CardHeader>
       <CardContent className="flex items-center justify-between gap-3">
-        <span className="text-muted-foreground text-xs">
-          {organization.contactCount} verified contact
-          {organization.contactCount === 1 ? "" : "s"}
-        </span>
+        <div className="text-muted-foreground text-xs">
+          <span>
+            {organization.contactCount} verified direct contact
+            {organization.contactCount === 1 ? "" : "s"}
+          </span>
+          {organization.evidenceCount > 0 ? (
+            <span>
+              {" "}
+              · {organization.evidenceCount} research record
+              {organization.evidenceCount === 1 ? "" : "s"}
+              {organization.latestEvidenceStatus
+                ? ` · ${organization.latestEvidenceStatus}`
+                : ""}
+            </span>
+          ) : null}
+        </div>
         {organization.websiteUrl ? (
           <Button
             nativeButton={false}

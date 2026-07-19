@@ -293,15 +293,49 @@ async function upsertOrganizations(
     return id;
   });
 
-  const contactStatements: D1PreparedStatement[] = [];
+  const evidenceAndContactStatements: D1PreparedStatement[] = [];
   for (const [index, organization] of normalized.entries()) {
     const organizationId = ids[index];
+    const evidenceUrl =
+      organization.evidenceUrl.trim() || organization.websiteUrl.trim();
+    evidenceAndContactStatements.push(
+      db
+        .prepare(
+          `INSERT INTO organization_evidence
+            (id,organization_id,source_sweep_id,source_kind,evidence_kind,
+             evidence_status,roles,source_label,source_url,posting_context,
+             notes,observed_at,provenance_path,metadata_json,created_at)
+           VALUES (?,?,?,'country_sweep','organization_profile',?,'',?,?,?,
+                   '',?,?,?,?)
+           ON CONFLICT(organization_id,source_kind,source_url,roles) DO UPDATE SET
+             source_sweep_id=excluded.source_sweep_id,
+             evidence_status=excluded.evidence_status,
+             source_label=excluded.source_label,
+             posting_context=excluded.posting_context,
+             observed_at=excluded.observed_at,
+             provenance_path=excluded.provenance_path,
+             metadata_json=excluded.metadata_json`
+        )
+        .bind(
+          crypto.randomUUID(),
+          organizationId,
+          task.sweep_id,
+          organizationEvidenceStatus(organization.status),
+          `country_sweep.${task.phase}`,
+          evidenceUrl,
+          task.scope_key,
+          organization.lastVerifiedAt ?? timestamp,
+          `country_sweep:${task.sweep_id}/${task.id}`,
+          JSON.stringify({ phase: task.phase, scopeKey: task.scope_key }),
+          timestamp
+        )
+    );
     for (const contact of organization.contactPoints) {
       const value =
         contact.kind === "email"
           ? contact.value.trim().toLowerCase()
           : contact.value.trim();
-      contactStatements.push(
+      evidenceAndContactStatements.push(
         db
           .prepare(
             `INSERT INTO organization_contact_points
@@ -330,10 +364,20 @@ async function upsertOrganizations(
       );
     }
   }
-  if (contactStatements.length > 0) {
-    await db.batch(contactStatements);
+  if (evidenceAndContactStatements.length > 0) {
+    await db.batch(evidenceAndContactStatements);
   }
   return [...new Set(ids)];
+}
+
+function organizationEvidenceStatus(status: string) {
+  if (status === "active") {
+    return "active";
+  }
+  if (status === "stale" || status === "closed") {
+    return "stale";
+  }
+  return "unclear";
 }
 
 async function advanceSweep(

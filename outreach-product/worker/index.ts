@@ -47,7 +47,7 @@ import { EmailAttemptError } from "./services/email-attempts";
 import { GmailIntegrationError } from "./services/gmail-errors";
 import { renewExpiringGmailWatches } from "./services/gmail-integration";
 import { queueDueInventoryRefreshes } from "./services/inventory-refreshes";
-import { InventoryRunError } from "./services/inventory-runs";
+import { InventoryRunError } from "./services/inventory-runs/contracts";
 import { JobAnalysisRecordError } from "./services/job-analysis-records";
 import { approveAndSubmitApplication } from "./services/job-submission";
 import {
