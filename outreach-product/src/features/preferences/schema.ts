@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const PREFERENCES_SCHEMA_VERSION = 2;
+export const PREFERENCES_SCHEMA_VERSION = 3;
 
 export const RuleStrengthSchema = z.enum([
   "exclude",
@@ -40,6 +40,15 @@ export interface Preferences {
     partTime: RuleStrength;
   };
   minimumMonthlyUsd: number;
+  roles: {
+    early_childhood: RuleStrength;
+    english_language: RuleStrength;
+    homeroom: RuleStrength;
+    leadership: RuleStrength;
+    other: RuleStrength;
+    student_support: RuleStrength;
+    subject_specialist: RuleStrength;
+  };
 }
 
 const ruleGroup = z
@@ -80,6 +89,17 @@ export const PreferencesSchema: z.ZodType<Preferences> = z
       })
       .strict(),
     minimumMonthlyUsd: z.number().min(0).max(100_000),
+    roles: z
+      .object({
+        early_childhood: RuleStrengthSchema,
+        english_language: RuleStrengthSchema,
+        homeroom: RuleStrengthSchema,
+        leadership: RuleStrengthSchema,
+        other: RuleStrengthSchema,
+        student_support: RuleStrengthSchema,
+        subject_specialist: RuleStrengthSchema,
+      })
+      .strict(),
   })
   .strict();
 
@@ -110,4 +130,13 @@ export const defaultPreferences: Preferences = {
     partTime: "accept",
   },
   minimumMonthlyUsd: 0,
+  roles: {
+    early_childhood: "accept",
+    english_language: "prefer",
+    homeroom: "accept",
+    leadership: "exclude",
+    other: "avoid",
+    student_support: "exclude",
+    subject_specialist: "exclude",
+  },
 };

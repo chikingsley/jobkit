@@ -2,7 +2,9 @@
 .env.*
 !.env.example
 .dev.vars
+.jobkit/
 .secrets/
 .wrangler/
 dist/
 node_modules/
+test-results/

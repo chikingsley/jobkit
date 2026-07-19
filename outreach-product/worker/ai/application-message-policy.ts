@@ -1,13 +1,16 @@
 import { z } from "zod";
 import type { ApplicationMessageRoute } from "../schemas";
 
+const NON_ALPHABETIC_WORD_PATTERN = /[^a-z]+/u;
+const WHITESPACE_PATTERN = /\s+/u;
+
 export const APPLICATION_MESSAGE_INSTRUCTIONS = `You write concise, truthful job-application messages for the candidate.
 
 Message policy:
-- Begin with exactly "Hello," on its own line, followed by a blank line. Never use "Dear".
+- Begin with the exact requiredOpening on its own line, followed by a blank line. A named requiredOpening comes only from a structured job contact. Never invent or alter a recipient name. Never use "Dear".
 - Write in the candidate's first-person voice.
 - Use ordinary spoken English and common words. Sound like a capable person writing a normal email, not a résumé, formal statement, advertisement, or AI-generated cover letter.
-- approvedTemplate is the candidate's blessed message shape for this route, audience, and length. Keep its structure, order, and sentence character. Fill the bracketed slots from the job, adapt evidence details only where the profile supports something closer to this listing, and drop any line marked optional when nothing true supports it. Never restructure the template or add paragraphs it does not have.
+- approvedTemplate is the candidate's blessed message shape for this route, audience, and length. Keep its structure, order, and sentence character. Replace its generic opening with requiredOpening, fill the bracketed slots from the job, adapt evidence details only where the profile supports something closer to this listing, and drop any line marked optional when nothing true supports it. Never restructure the template or add paragraphs it does not have.
 - provenExamples are real emails the candidate sent that earned replies, interviews, or offers; use them to keep the voice honest. Never copy sentences or facts from them; the profile is the only source of facts.
 - Make the message unmistakably about this job: name the role or learner group from the listing where the template has a slot for it, and pair evidence with the workplace name when the profile provides one.
 - Never use "communicative" to describe teaching, lessons, or classes. State the plain meaning instead, such as conversation or speaking practice.
@@ -21,6 +24,8 @@ Message policy:
 - Keep the message concise, specific to the employer and role, and free of generic listing boilerplate.
 - Use the shortest complete version. Let useful content determine the length; never add detail or extra paragraphs to reach a preferred word count.
 - Ask exactly one useful question using the supplied questionGuidance for the messageRoute. The route determines whether the candidate is responding to a known position, contacting a school generally, or asking about a multi-position listing.
+- When requiredPositionReferences contains values, add one short paragraph after the qualifications and before the final question that lists every selected position ID exactly once. This is the only permitted addition to the approved template structure.
+- When requiredQuestion is supplied, use that exact sentence as the one question. It is calculated from the candidate's current calendar and replaces the template question.
 - Put that question in the final content paragraph immediately before the required ending. Do not place qualifications or other content after it.
 - Never mention attachments. Document-packet selection and delivery are handled separately from message generation.
 - End with the exact requiredEnding string supplied in the request.
@@ -85,11 +90,58 @@ export function messageTemplateKeyFor(
 
 export function applicationMessagePolicyFor(
   route: ApplicationMessageRoute,
-  approvedTemplate: string
+  approvedTemplate: string,
+  now: Date,
+  timeZone: string
 ) {
   return {
     approvedTemplate,
     questionGuidance: ROUTE_QUESTION_GUIDANCE[route],
+    requiredQuestion:
+      route === "advertised_position"
+        ? advertisedPositionQuestion(now, timeZone)
+        : null,
+  };
+}
+
+export function advertisedPositionQuestion(now: Date, timeZone: string) {
+  const local = localCalendarDate(now, timeZone);
+  const dayOfWeek = new Date(
+    Date.UTC(local.year, local.month - 1, local.day)
+  ).getUTCDay();
+  if (dayOfWeek <= 3) {
+    return "Would you be free to speak about the role this week?";
+  }
+  const daysUntilMonday = 8 - dayOfWeek;
+  const monday = new Date(
+    Date.UTC(local.year, local.month - 1, local.day + daysUntilMonday)
+  );
+  const weekOf = new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  }).format(monday);
+  return `Would you be free to speak about the role next week, the week of ${weekOf}?`;
+}
+
+function localCalendarDate(now: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "numeric",
+    timeZone,
+    year: "numeric",
+  }).formatToParts(now);
+  const valueFor = (type: "day" | "month" | "year") => {
+    const value = parts.find((part) => part.type === type)?.value;
+    if (!value) {
+      throw new Error(`Unable to resolve the local ${type}`);
+    }
+    return Number(value);
+  };
+  return {
+    day: valueFor("day"),
+    month: valueFor("month"),
+    year: valueFor("year"),
   };
 }
 
@@ -97,12 +149,19 @@ const MAX_MESSAGE_WORDS = 220;
 
 export function validateApplicationMessage(
   rawMessage: string,
+  requiredOpening: string,
   requiredEnding: string,
-  route: ApplicationMessageRoute
+  route: ApplicationMessageRoute,
+  requiredQuestion?: string | null
 ): string {
-  const message = validateApplicationMessageOpening(rawMessage);
+  const message = validateApplicationMessageOpening(
+    rawMessage,
+    requiredOpening
+  );
   const problems: string[] = [];
-  const normalizedWords = message.toLowerCase().split(/[^a-z]+/u);
+  const normalizedWords = message
+    .toLowerCase()
+    .split(NON_ALPHABETIC_WORD_PATTERN);
   if (normalizedWords.some((word) => word.startsWith("attach"))) {
     problems.push("message must not mention attachments");
   }
@@ -120,6 +179,11 @@ export function validateApplicationMessage(
   if (!contentBeforeEnding.endsWith("?")) {
     problems.push(
       "the route question must be the final content before the ending"
+    );
+  }
+  if (requiredQuestion && !contentBeforeEnding.endsWith(requiredQuestion)) {
+    problems.push(
+      `message must use the exact calendar-aware question ${JSON.stringify(requiredQuestion)}`
     );
   }
 
@@ -144,14 +208,11 @@ export function validateApplicationMessage(
   );
   const question = message.slice(questionStart + 1, questionEnd + 1);
   const questionWords = new Set(
-    question
-      .toLowerCase()
-      .split(/[^a-z]+/u)
-      .filter(Boolean)
+    question.toLowerCase().split(NON_ALPHABETIC_WORD_PATTERN).filter(Boolean)
   );
   validateRouteQuestion(route, questionWords, problems);
 
-  const wordCount = message.split(/\s+/u).filter(Boolean).length;
+  const wordCount = message.split(WHITESPACE_PATTERN).filter(Boolean).length;
   if (wordCount > MAX_MESSAGE_WORDS) {
     problems.push(
       `message must be at most ${MAX_MESSAGE_WORDS} words; found ${wordCount}`
@@ -166,26 +227,31 @@ export function validateApplicationMessage(
   return message;
 }
 
-export function validateApplicationMessageOpening(rawMessage: string) {
+export function validateApplicationMessageOpening(
+  rawMessage: string,
+  requiredOpening = "Hello,"
+) {
   const message = rawMessage.replaceAll("\r\n", "\n").trim();
-  const problem = applicationMessageOpeningProblem(message);
+  const problem = applicationMessageOpeningProblem(message, requiredOpening);
   if (problem) {
     throw new Error(problem);
   }
   return message;
 }
 
-export function applicationMessageOpeningProblem(rawMessage: string) {
+export function applicationMessageOpeningProblem(
+  rawMessage: string,
+  requiredOpening = "Hello,"
+) {
   const message = rawMessage.replaceAll("\r\n", "\n").trim();
   const problems: string[] = [];
-  if (!message.startsWith("Hello,\n\n")) {
-    problems.push('message must begin with exactly "Hello," and a blank line');
+  if (!message.startsWith(`${requiredOpening}\n\n`)) {
+    problems.push(
+      `message must begin with exactly ${JSON.stringify(requiredOpening)} and a blank line`
+    );
   }
   if (
-    message
-      .toLowerCase()
-      .split(/[^a-z]+/u)
-      .includes("dear")
+    message.toLowerCase().split(NON_ALPHABETIC_WORD_PATTERN).includes("dear")
   ) {
     problems.push('message must never contain "Dear"');
   }

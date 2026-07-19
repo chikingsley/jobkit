@@ -12,6 +12,38 @@ const testEnv = env as TestEnv;
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("candidate application settings", () => {
+  it("stores a valid browser time zone and rejects invalid names", async () => {
+    const { cookie, userId } = await createAuthenticatedUser(
+      "time-zone@example.test"
+    );
+    const saved = await exports.default.fetch(
+      "https://outreach.test/api/time-zone",
+      {
+        body: JSON.stringify({ timeZone: "America/Phoenix" }),
+        headers: { "content-type": "application/json", cookie },
+        method: "PUT",
+      }
+    );
+    const rejected = await exports.default.fetch(
+      "https://outreach.test/api/time-zone",
+      {
+        body: JSON.stringify({ timeZone: "Mars/Olympus_Mons" }),
+        headers: { "content-type": "application/json", cookie },
+        method: "PUT",
+      }
+    );
+
+    expect(saved.status).toBe(200);
+    expect(rejected.status).toBe(400);
+    expect(
+      await testEnv.DB.prepare(
+        "SELECT time_zone FROM user_time_zones WHERE user_id=?"
+      )
+        .bind(userId)
+        .first()
+    ).toEqual({ time_zone: "America/Phoenix" });
+  });
+
   it("creates explicit attachment presets without treating missing files as qualifications", async () => {
     const { cookie, userId } = await createAuthenticatedUser(
       "document-packets@example.test"

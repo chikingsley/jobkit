@@ -50,6 +50,9 @@ export function JobQueueItem({
     job.matchFacts?.benefits ?? [],
     job.matchFacts?.economics
   );
+  const contact = job.applicationRoutes.find(
+    (route) => route.kind === "email" && route.status === "active"
+  )?.contact;
   return (
     <button
       className={cn(
@@ -71,6 +74,11 @@ export function JobQueueItem({
             ) : null}
             {job.opportunityScope === "multi_position" ? (
               <Badge variant="outline">Multiple positions</Badge>
+            ) : null}
+            {contact?.role === "board_intermediary" ? (
+              <Badge variant="outline">
+                Shared inbox · {contact.relatedListingCount.toLocaleString()}
+              </Badge>
             ) : null}
             {job.marketSegments.some(
               (segment) =>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { JobPositionAnalysis } from "../src/features/jobs/position-variants";
 import type { Compensation } from "../src/features/jobs/types";
 
 export const MarketSegmentSchema = z.enum([
@@ -30,6 +31,7 @@ export const JobImportSchema = z.object({
   applyUrl: z.string().url(),
   board: z.string().default("seriousteachers"),
   company: z.string().default(""),
+  contactName: z.string().default(""),
   country: z.string().default(""),
   description: z.string().default(""),
   employerId: z.string().default(""),
@@ -40,6 +42,7 @@ export const JobImportSchema = z.object({
   opportunityScope: OpportunityScopeSchema.default("unknown"),
   priority: z.number().int().default(0),
   salary: z.string().default(""),
+  sourceReference: z.string().default(""),
   sourceUrl: z.string().default(""),
   title: z.string().min(1),
 });
@@ -50,6 +53,9 @@ export const ImportSchema = z.object({
 export const ReviseSchema = z.object({
   instruction: z.string().min(1).max(1000),
 });
+export const ManualDraftSchema = z.object({
+  message: z.string().min(100).max(5000),
+});
 export const SubmitSchema = z.object({ draftId: z.string().min(1) });
 
 export type JobImport = z.infer<typeof JobImportSchema>;
@@ -59,6 +65,13 @@ export type ApplicationMessageRoute = z.infer<
 
 export interface ReviewJob {
   applicationRoutes: Array<{
+    contact: null | {
+      displayName: string;
+      id: string;
+      organizationName: string;
+      relatedListingCount: number;
+      role: "board_intermediary" | "employer" | "recruiter" | "unknown";
+    };
     destination: string;
     id: string;
     kind: string;
@@ -80,7 +93,10 @@ export interface ReviewJob {
     version: number;
     message: string;
     changeSummary: string;
+    createdAt: string;
     status: string;
+    previousMessage: string;
+    revisionSource: "ai_revision" | "generated" | "manual_edit" | "undo";
   };
   emailAttempt: null | {
     attemptId: string;
@@ -97,7 +113,9 @@ export interface ReviewJob {
   marketSegments: z.infer<typeof MarketSegmentSchema>[];
   messageRoute: z.infer<typeof ApplicationMessageRouteSchema>;
   opportunityScope: z.infer<typeof OpportunityScopeSchema>;
+  positionAnalysis: JobPositionAnalysis | null;
   priority: number;
+  sourceReference: string;
   sourceUrl: string;
   status: string;
   title: string;

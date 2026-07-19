@@ -1,5 +1,6 @@
 import { Rocket } from "lucide-react";
 import { useId, useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -62,6 +63,7 @@ export function LaunchCampaignSheet({
     includeSchoolOutreach: true,
   });
   const [busy, setBusy] = useState(false);
+  const navigate = useNavigate();
   const groupId = useId();
   const positionsId = `${groupId}-positions`;
   const schoolsId = `${groupId}-schools`;
@@ -78,10 +80,18 @@ export function LaunchCampaignSheet({
           method: "POST",
         }
       );
-      const result = (await response.json()) as { message?: string };
+      const result = (await response.json()) as {
+        campaign: { campaignId: string; executionMode: CampaignExecutionMode };
+        message?: string;
+      };
       await onLaunched();
       setOpen(false);
       toast.success(result.message ?? "Campaign launched");
+      if (result.campaign.executionMode !== "research_only") {
+        navigate(
+          `/countries/${countryCode}/campaigns/${result.campaign.campaignId}`
+        );
+      }
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Campaign could not launch"
@@ -93,7 +103,11 @@ export function LaunchCampaignSheet({
 
   return (
     <Sheet onOpenChange={setOpen} open={open}>
-      <SheetTrigger render={<Button />}>
+      <SheetTrigger
+        aria-label="Open country campaign"
+        id="open-country-campaign"
+        render={<Button />}
+      >
         <Rocket /> Launch campaign
       </SheetTrigger>
       <SheetContent className="sm:max-w-md">
@@ -185,7 +199,12 @@ export function LaunchCampaignSheet({
           </Field>
         </div>
         <SheetFooter className="border-t">
-          <Button disabled={!canLaunch || busy} onClick={() => void submit()}>
+          <Button
+            aria-label="Create country campaign"
+            disabled={!canLaunch || busy}
+            id="create-country-campaign"
+            onClick={() => void submit()}
+          >
             <Rocket /> {busy ? "Launching…" : "Launch campaign"}
           </Button>
           <Button onClick={() => setOpen(false)} variant="outline">

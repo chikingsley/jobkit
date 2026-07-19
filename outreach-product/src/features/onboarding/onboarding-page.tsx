@@ -17,9 +17,9 @@ import type {
   ProfileImportProposal,
   ProfileImportResult,
 } from "@/features/onboarding/schema";
+import { PreferencesView } from "@/features/preferences/view";
+import { ProfileView } from "@/features/profile/view";
 import { apiRequest } from "@/lib/api";
-import { PreferencesView } from "@/views/preferences-view";
-import { ProfileView } from "@/views/profile-view";
 
 type OnboardingStep = "resume" | "profile" | "preferences" | "finish";
 

@@ -1,6 +1,5 @@
 import { format } from "date-fns";
 import { DownloadIcon, FileTextIcon } from "lucide-react";
-import { Streamdown } from "streamdown";
 import {
   Attachment,
   AttachmentAction,
@@ -13,6 +12,7 @@ import {
   AttachmentTrigger,
 } from "@/components/ui/attachment";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { Marker, MarkerContent } from "@/components/ui/marker";
 import {
@@ -41,6 +41,9 @@ const STATUS_LABELS: Record<string, string> = {
   sent: "Sent",
   uncertain: "Delivery unconfirmed",
 };
+const EMAIL_DOMAIN_PATTERN = /@.*$/u;
+const NAME_SEPARATOR_PATTERN = /[._-]+/gu;
+const WHITESPACE_PATTERN = /\s+/u;
 
 export function MessageThread({ detail }: { detail: MessageThreadDetail }) {
   return (
@@ -51,6 +54,20 @@ export function MessageThread({ detail }: { detail: MessageThreadDetail }) {
             <Marker variant="separator">
               <MarkerContent>{detail.subject}</MarkerContent>
             </Marker>
+            {detail.applicationTargets.length > 0 ? (
+              <div className="mb-4 rounded-lg border bg-background p-3">
+                <p className="font-medium text-xs">
+                  Positions in this application
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {detail.applicationTargets.map((target) => (
+                    <Badge key={target.jobId} variant="outline">
+                      {target.sourceReference} · {target.location}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             {detail.messages.map((message) => (
               <MessageScrollerItem
                 key={message.id}
@@ -92,9 +109,9 @@ function ThreadBubble({ message }: { message: ThreadMessage }) {
           variant={outbound ? "tinted" : "muted"}
         >
           <BubbleContent>
-            <Streamdown className="min-w-0 text-sm [&_*]:my-1 [&_:first-child]:mt-0 [&_:last-child]:mb-0">
+            <div className="min-w-0 whitespace-pre-wrap break-words text-sm leading-6">
               {message.body}
-            </Streamdown>
+            </div>
           </BubbleContent>
         </Bubble>
         {message.attachments.length > 0 ? (
@@ -140,6 +157,7 @@ function ThreadAttachmentCard({
       <AttachmentActions>
         <AttachmentAction
           aria-label={label}
+          nativeButton={false}
           render={<a href={attachment.url} rel="noreferrer" target="_blank" />}
         >
           <DownloadIcon />
@@ -190,10 +208,10 @@ function formatSentAt(value: string): string {
 
 function initialsOf(value: string): string {
   const cleaned = value
-    .replace(/@.*$/, "")
-    .replace(/[._-]+/g, " ")
+    .replace(EMAIL_DOMAIN_PATTERN, "")
+    .replace(NAME_SEPARATOR_PATTERN, " ")
     .trim();
-  const parts = cleaned.split(/\s+/).filter(Boolean);
+  const parts = cleaned.split(WHITESPACE_PATTERN).filter(Boolean);
   if (parts.length === 0) {
     return "?";
   }

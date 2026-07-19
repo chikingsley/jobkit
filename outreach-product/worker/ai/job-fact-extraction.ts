@@ -19,6 +19,7 @@ import {
   ProviderJobEconomicsSchema,
 } from "./job-economics-extraction";
 import {
+  type AiModelProvider,
   type AiModelSelection,
   type AiProviderEnv,
   createAiModel,
@@ -89,7 +90,7 @@ Rules:
 export interface GeneratedJobMatchFacts {
   facts: JobMatchFacts;
   modelId: string;
-  provider: "cerebras" | "mistral";
+  provider: AiModelProvider;
   sourceHash: string;
 }
 

@@ -12,6 +12,8 @@ export interface ApplicationSubmissionResult {
 
 const MAX_HTML_BYTES = 1_500_000;
 const SERIOUS_TEACHERS_ORIGIN = "https://www.seriousteachers.com";
+const APPLICATION_ROUTE_PATTERN = /\/te2\/respond\/(\d+)\/(\d+)/u;
+const LAST_APPLIED_PATTERN = /last applied on\s+(.+)/iu;
 const browserHeaders = {
   accept:
     "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
@@ -111,7 +113,7 @@ export async function submitApplication(
   message: string
 ): Promise<ApplicationSubmissionResult> {
   const session = await login(env);
-  const match = /\/te2\/respond\/(\d+)\/(\d+)/.exec(applyUrl);
+  const match = APPLICATION_ROUTE_PATTERN.exec(applyUrl);
   if (!(match?.[1] && match[2])) {
     throw new Error(
       "Application URL did not contain job and employer identifiers"
@@ -177,18 +179,24 @@ async function appliedDate(
   employerId: string
 ): Promise<string | null> {
   const target = `#_${jobId}${employerId}`;
-  for (const page of [0, 1]) {
-    const response = await fetch(
-      `https://www.seriousteachers.com/te2/seriousteachers_panel/${page}/0/0`,
-      { headers: { ...browserHeaders, cookie: session.cookie } }
-    );
-    if (!response.ok) {
-      throw new Error(`Private-board verification returned ${response.status}`);
-    }
-    const document = parse(await boundedHtml(response));
+  const documents = await Promise.all(
+    [0, 1].map(async (page) => {
+      const response = await fetch(
+        `https://www.seriousteachers.com/te2/seriousteachers_panel/${page}/0/0`,
+        { headers: { ...browserHeaders, cookie: session.cookie } }
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Private-board verification returned ${response.status}`
+        );
+      }
+      return parse(await boundedHtml(response));
+    })
+  );
+  for (const document of documents) {
     const button = document.querySelector(`[data-bs-target="${target}"]`);
     const text = button?.text.trim() ?? "";
-    const date = /last applied on\s+(.+)/i.exec(text)?.[1]?.trim();
+    const date = LAST_APPLIED_PATTERN.exec(text)?.[1]?.trim();
     if (date) {
       return date;
     }

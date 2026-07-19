@@ -1,14 +1,18 @@
 import { createCerebras } from "@ai-sdk/cerebras";
 import { createMistral } from "@ai-sdk/mistral";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type { LanguageModel } from "ai";
 import type { AppEnv } from "../env";
 
 export type AiProviderEnv = Pick<
   AppEnv,
-  "CEREBRAS_API_KEY" | "MISTRAL_API_KEY"
+  | "CEREBRAS_API_KEY"
+  | "LLAMACPP_API_KEY"
+  | "LLAMACPP_BASE_URL"
+  | "MISTRAL_API_KEY"
 >;
 
-export type AiModelProvider = "cerebras" | "mistral";
+export type AiModelProvider = "cerebras" | "llamacpp" | "mistral";
 export type AiPurpose =
   | "application_message"
   | "job_fact_extraction"
@@ -59,6 +63,12 @@ export const AI_MODELS = [
     label: "Mistral Large (latest)",
     modelId: "mistral-large-latest",
     provider: "mistral",
+    reasoning: false,
+  },
+  {
+    label: "Local Qwen 3.5 9B",
+    modelId: "qwen35-9b-ud-q4-k-xl",
+    provider: "llamacpp",
     reasoning: false,
   },
 ] as const satisfies readonly AiModelDefinition[];
@@ -121,5 +131,30 @@ export function createAiModel(
   if (model.provider === "cerebras") {
     return createCerebras({ apiKey: env.CEREBRAS_API_KEY })(model.modelId);
   }
-  return createMistral({ apiKey: env.MISTRAL_API_KEY })(model.modelId);
+  if (model.provider === "mistral") {
+    return createMistral({ apiKey: env.MISTRAL_API_KEY })(model.modelId);
+  }
+  if (!(env.LLAMACPP_API_KEY && env.LLAMACPP_BASE_URL)) {
+    throw new Error(
+      "llama.cpp requires LLAMACPP_BASE_URL and LLAMACPP_API_KEY"
+    );
+  }
+  const provider = createOpenAICompatible({
+    apiKey: env.LLAMACPP_API_KEY,
+    baseURL: env.LLAMACPP_BASE_URL,
+    name: "llamacpp",
+    supportsStructuredOutputs: true,
+    transformRequestBody: (body) => {
+      const existing =
+        typeof body.chat_template_kwargs === "object" &&
+        body.chat_template_kwargs !== null
+          ? body.chat_template_kwargs
+          : {};
+      return {
+        ...body,
+        chat_template_kwargs: { ...existing, enable_thinking: false },
+      };
+    },
+  });
+  return provider.chatModel(model.modelId);
 }

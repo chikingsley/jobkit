@@ -13,19 +13,6 @@
       "custom_domain": true
     }
   ],
-  "secrets": {
-    "required": [
-      "MAPBOX_ACCESS_TOKEN",
-      "BETTER_AUTH_SECRET",
-      "CEREBRAS_API_KEY",
-      "MISTRAL_API_KEY",
-      "GOOGLE_PUBSUB_AUDIENCE",
-      "GOOGLE_PUBSUB_SERVICE_ACCOUNT",
-      "GOOGLE_PUBSUB_TOPIC",
-      "SERIOUSTEACHERS_EMAIL",
-      "SERIOUSTEACHERS_PASSWORD"
-    ]
-  },
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist",

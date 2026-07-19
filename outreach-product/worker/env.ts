@@ -1,4 +1,12 @@
-export type AppEnv = Env & {
+export interface AppEnv extends Env {
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
-};
+  GOOGLE_PUBSUB_AUDIENCE?: string;
+  GOOGLE_PUBSUB_SERVICE_ACCOUNT?: string;
+  GOOGLE_PUBSUB_TOPIC?: string;
+  LLAMACPP_API_KEY?: string;
+  LLAMACPP_BASE_URL?: string;
+  MAPBOX_ACCESS_TOKEN?: string;
+  SERIOUSTEACHERS_EMAIL?: string;
+  SERIOUSTEACHERS_PASSWORD?: string;
+}

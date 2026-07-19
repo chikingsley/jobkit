@@ -1,7 +1,7 @@
 # Jobkit Product PRD
 
-Status: V1 implementation in progress
-Last updated: 2026-07-14
+Status: Canonical product direction; implementation status is tracked in the application README
+Last updated: 2026-07-17
 Scope: ESL/teaching job discovery, qualification matching, outreach, and verified application execution
 
 ## 1. Summary
@@ -15,12 +15,17 @@ Both paths feed the same user-specific qualification matching, message generatio
 
 ## 2. Why This Exists
 
-Current jobkit is useful but still CLI-shaped:
+JobKit began as a collection of local tools. The hosted product now provides the core review and
+application loop:
 
 - Jobs live in `job-search/job-data/jobs.sqlite`.
 - Refresh is now stateful and upserts by `(board, job_id)`.
 - Country counts, board counts, salary visibility, and application channels are queryable.
-- Outreach is draft-first, but there is no UI for selecting jobs, reviewing emails, or managing application state.
+- The web UI supports job selection, qualification review, immutable drafts, Gmail sending,
+  SeriousTeachers submission, message threads, and reply state.
+
+The inventory figures below are the dated source snapshot used to design the product. They are not
+live production counts.
 
 The pain is not "we need another CSV." The pain is deciding what is worth applying to, keeping that state clean, and moving from a scraped posting to a reviewed application action without losing context.
 
@@ -199,6 +204,11 @@ NativewindUI:
 - Do not make paid or license-restricted components part of the core product until licensing and source availability are checked.
 
 ## 10. Core User Flows
+
+The canonical route-by-route registry is in
+[`docs/user-flows/`](./user-flows/README.md). This section retains the broader
+product acceptance criteria; the registry defines journey order, terminal
+states, current implementation boundaries, and roadmap linkage.
 
 ### 10.1 Refresh inventory
 
@@ -397,6 +407,22 @@ to review with a specific reason.
 Non-response belongs to an outreach attempt, not permanently to the school. School/contact response
 rates are computed only after a defined response window and sufficient attempts; the initial
 display threshold is at least three independent sends.
+
+Country campaigns operate as paced searches rather than fixed item batches. A
+campaign exposes all currently eligible advertised opportunities and verified
+school contacts. It calibrates the first five messages, then executes at the
+user's configured daily pace until the pool is exhausted, the user stops it, or
+three person-authored replies pause it by default. Bounces, delivery failures,
+vacation responders, and automated acknowledgements do not count toward that
+reply threshold. Provider quotas and measured delivery backpressure may slow
+execution, but they do not truncate the eligible pool or create an unsupported
+product-level target cap.
+
+Campaigns may overlap in country and source inventory. Before execution, JobKit atomically claims
+the opportunity or canonical contact channel for that user. A verified send suppresses the same
+execution in every other campaign. Intermediary routes are composed automatically: for ANESL,
+JobKit ranks eligible references in the campaign markets and sends one instruction-compliant email
+covering the strongest one to five positions instead of requiring a separate ANESL workspace.
 
 ## 11. Data Model
 

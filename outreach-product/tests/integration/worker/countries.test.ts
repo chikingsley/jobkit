@@ -30,6 +30,14 @@ describe("country markets and campaigns", () => {
         includeSchoolOutreach: false,
       }
     );
+    const campaignPayload = (await campaign.json()) as {
+      campaign: {
+        campaignId: string;
+        executionMode: string;
+        targetCount: number;
+      };
+      ok: boolean;
+    };
 
     expect(countries.status).toBe(200);
     expect(await countries.json()).toMatchObject({
@@ -42,7 +50,7 @@ describe("country markets and campaigns", () => {
       ],
     });
     expect(campaign.status).toBe(200);
-    expect(await campaign.json()).toMatchObject({
+    expect(campaignPayload).toMatchObject({
       campaign: { executionMode: "review_each", targetCount: 1 },
       ok: true,
     });
@@ -57,6 +65,60 @@ describe("country markets and campaigns", () => {
       route_id: "route-poland",
       status: "review",
     });
+
+    const detail = await request(
+      `/api/country-campaigns/${campaignPayload.campaign.campaignId}`,
+      cookie
+    );
+    const detailPayload = (await detail.json()) as {
+      campaign: {
+        targetCounts: Record<string, number>;
+        targets: Array<{ id: string }>;
+      };
+    };
+    const [target] = detailPayload.campaign.targets;
+    expect(detail.status).toBe(200);
+    expect(detailPayload.campaign.targetCounts).toMatchObject({ review: 1 });
+    if (!target) {
+      throw new Error("Campaign target was not returned");
+    }
+
+    const approved = await request(
+      `/api/country-campaigns/${campaignPayload.campaign.campaignId}/targets/${target.id}`,
+      cookie,
+      "PATCH",
+      { reason: "", status: "approved" }
+    );
+    expect(approved.status).toBe(200);
+    expect(await approved.json()).toMatchObject({
+      campaign: { targetCounts: { approved: 1, review: 0 } },
+      ok: true,
+    });
+
+    const held = await request(
+      `/api/country-campaigns/${campaignPayload.campaign.campaignId}/targets/${target.id}`,
+      cookie,
+      "PATCH",
+      { reason: "Recipient needs verification", status: "held" }
+    );
+    expect(held.status).toBe(200);
+    expect(await held.json()).toMatchObject({
+      campaign: {
+        targetCounts: { approved: 0, held: 1 },
+        targets: [
+          { holdReason: "Recipient needs verification", status: "held" },
+        ],
+      },
+      ok: true,
+    });
+    expect(
+      await testEnv.DB.prepare(
+        `SELECT COUNT(*) count FROM country_campaign_target_events
+          WHERE target_id=?`
+      )
+        .bind(target.id)
+        .first<number>("count")
+    ).toBe(2);
   });
 
   it("claims discovery work and persists a verified school contact", async () => {
@@ -69,26 +131,42 @@ describe("country markets and campaigns", () => {
       includeMaps: false,
       includeSearch: true,
     });
-    const tokenResponse = await request(
-      "/api/country-sweep-runner-tokens",
+    const pairingResponse = await request(
+      "/api/agent-runner-pairings",
       cookie,
       "POST",
-      { name: "Integration runner" }
+      { capabilities: ["research"] }
     );
-    const tokenPayload = (await tokenResponse.json()) as {
-      token: { token: string };
+    const pairingPayload = (await pairingResponse.json()) as {
+      pairing: { code: string };
     };
+    const exchange = await publicRequest(
+      "/api/agent-runner-pairings/exchange",
+      {
+        code: pairingPayload.pairing.code,
+        codexVersion: "codex-cli test",
+        runnerName: "Integration runner",
+      }
+    );
+    const runnerPayload = (await exchange.json()) as {
+      runner: { token: string };
+    };
+    const forbidden = await runnerRequest(
+      "/api/jobs/not-a-runner-operation/approve",
+      runnerPayload.runner.token,
+      {}
+    );
     const claim = await runnerRequest(
-      "/api/country-sweep-tasks/claim",
-      tokenPayload.token.token,
-      { workerId: "integration-runner" }
+      "/api/agent-tasks/claim",
+      runnerPayload.runner.token,
+      { runnerVersion: "codex-cli test" }
     );
     const claimPayload = (await claim.json()) as {
-      task: { id: string; phase: string; sweepId: string };
+      task: { runId: string; taskType: string };
     };
     const completed = await runnerRequest(
-      `/api/country-sweep-tasks/${claimPayload.task.id}/complete`,
-      tokenPayload.token.token,
+      `/api/agent-tasks/${claimPayload.task.runId}/complete`,
+      runnerPayload.runner.token,
       {
         output: {
           coverageSummary: { source: "search" },
@@ -117,14 +195,17 @@ describe("country markets and campaigns", () => {
             },
           ],
         },
-        workerId: "integration-runner",
       }
     );
 
     expect(queued.status).toBe(200);
-    expect(tokenResponse.status).toBe(200);
+    expect(pairingResponse.status).toBe(200);
+    expect(exchange.status).toBe(200);
+    expect(forbidden.status).toBe(403);
     expect(claim.status).toBe(200);
-    expect(claimPayload.task).toMatchObject({ phase: "discovery" });
+    expect(claimPayload.task).toMatchObject({
+      taskType: "country_sweep.discovery",
+    });
     expect(completed.status).toBe(200);
     expect(
       await testEnv.DB.prepare(
@@ -143,11 +224,20 @@ describe("country markets and campaigns", () => {
     expect(
       await testEnv.DB.prepare(
         `SELECT COUNT(*) count FROM country_sweep_tasks
-          WHERE sweep_id=? AND phase='verification'`
-      )
-        .bind(claimPayload.task.sweepId)
-        .first<number>("count")
+          WHERE phase='verification'`
+      ).first<number>("count")
     ).toBe(1);
+    expect(
+      await testEnv.DB.prepare(
+        "SELECT status,prompt_version,model FROM agent_task_runs WHERE id=?"
+      )
+        .bind(claimPayload.task.runId)
+        .first()
+    ).toMatchObject({
+      model: "gpt-5.6-terra",
+      prompt_version: "country-sweep-v1",
+      status: "completed",
+    });
   });
 });
 
@@ -218,6 +308,14 @@ function runnerRequest(
       authorization: `Bearer ${token}`,
       "content-type": "application/json",
     },
+    method: "POST",
+  });
+}
+
+function publicRequest(path: string, body: Record<string, unknown>) {
+  return exports.default.fetch(`https://outreach.test${path}`, {
+    body: JSON.stringify(body),
+    headers: { "content-type": "application/json" },
     method: "POST",
   });
 }

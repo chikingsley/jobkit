@@ -1,13 +1,8 @@
 import { z } from "zod";
 import { JobMatchFactsSchema } from "../../src/features/matching/schema";
 import { JOB_MATCH_FACTS_SCHEMA_VERSION } from "../../src/features/matching/version";
-import {
-  jobFactSource,
-  jobSourceHash,
-  unsupportedEvidence,
-} from "../ai/job-fact-extraction";
 import type { JobKitApp } from "../app-types";
-import { jobMatchFactsStatement } from "../repositories/job-match-facts";
+import { recordJobMatchFacts } from "../services/job-analysis-records";
 
 const PENDING_LIMIT_MAX = 100;
 const PENDING_IDS_MAX = 100;
@@ -100,49 +95,13 @@ export function registerJobMatchFactRoutes(app: JobKitApp) {
       );
     }
     const { facts, jobId, modelId, provider, sourceHash } = body.data;
-    const job = await c.env.DB.prepare(
-      `SELECT j.title,j.salary,j.description
-         FROM jobs j
-         JOIN user_jobs uj ON uj.job_id=j.id AND uj.user_id=?1
-        WHERE j.id=?2`
-    )
-      .bind(c.get("user").id, jobId)
-      .first<{ description: string; salary: string; title: string }>();
-    if (!job) {
-      return c.json({ message: "Unknown job", ok: false }, 404);
-    }
-    const fields = {
-      description: String(job.description),
-      salary: String(job.salary),
-      title: String(job.title),
-    };
-    if ((await jobSourceHash(fields)) !== sourceHash) {
-      return c.json(
-        {
-          message:
-            "Source hash does not match the stored listing; re-fetch the job and analyze the current text",
-          ok: false,
-        },
-        409
-      );
-    }
-    const rejected = unsupportedEvidence(facts, jobFactSource(fields));
-    if (rejected.length > 0) {
-      return c.json(
-        {
-          message: `${rejected.length} evidence ${rejected.length === 1 ? "quote is" : "quotes are"} not present in the stored listing`,
-          ok: false,
-          rejectedEvidence: rejected.slice(0, 10),
-        },
-        422
-      );
-    }
-    await jobMatchFactsStatement(
-      c.env.DB,
+    await recordJobMatchFacts(c.env.DB, c.get("user").id, {
+      facts,
       jobId,
-      { facts, modelId, provider, sourceHash },
-      JOB_MATCH_FACTS_SCHEMA_VERSION
-    ).run();
+      modelId,
+      provider,
+      sourceHash,
+    });
     return c.json({ message: `Recorded match facts for ${jobId}`, ok: true });
   });
 }

@@ -4,12 +4,14 @@ import {
   ChevronsUpDown,
   Files,
   Globe2,
+  Layers3,
   LogOut,
   MessageSquareText,
   MessagesSquare,
   SlidersHorizontal,
   UserRound,
 } from "lucide-react";
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -45,6 +47,7 @@ import {
 
 const navigation = [
   { icon: BriefcaseBusiness, id: "jobs", label: "Jobs" },
+  { icon: Layers3, id: "anesl", label: "ANESL sets" },
   { icon: MessagesSquare, id: "messages", label: "Messages" },
   { icon: Globe2, id: "countries", label: "Countries" },
   { icon: Bot, id: "automation", label: "Automation" },
@@ -239,9 +242,16 @@ function NavUser({
   );
 }
 
-export function WorkspaceHeader({ activeView }: { activeView: WorkspaceView }) {
+export function WorkspaceHeader({
+  activeView,
+  toolbar,
+}: {
+  activeView: WorkspaceView;
+  toolbar?: ReactNode;
+}) {
   const navigate = useNavigate();
   const title = {
+    anesl: "ANESL application sets",
     automation: "Automation",
     countries: "Countries",
     documents: "Documents",
@@ -252,20 +262,21 @@ export function WorkspaceHeader({ activeView }: { activeView: WorkspaceView }) {
     profile: "Profile",
   }[activeView];
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-background px-4">
+    <header className="flex h-14 min-w-0 shrink-0 items-center gap-3 border-b bg-background px-4">
       <SidebarTrigger className="-ml-1" />
       <Separator
         className="mr-2 data-vertical:h-4 data-vertical:self-auto"
         orientation="vertical"
       />
       <h1 className="font-semibold text-sm">{title}</h1>
-      {activeView === "jobs" ? (
-        <span className="ml-auto hidden text-muted-foreground text-xs sm:block">
-          Review the facts, edit the message, then approve and send
-        </span>
-      ) : (
-        <span className="ml-auto" />
-      )}
+      {toolbar ??
+        (activeView === "jobs" ? (
+          <span className="ml-auto hidden text-muted-foreground text-xs sm:block">
+            Review the facts, edit the message, then approve and send
+          </span>
+        ) : (
+          <span className="ml-auto" />
+        ))}
       <Button
         aria-label="Messages"
         onClick={() => navigate(workspacePaths.messages)}

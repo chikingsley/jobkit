@@ -1,4 +1,5 @@
 import { generateText, Output } from "ai";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { z } from "zod";
 import type { Preferences } from "../../src/features/preferences/schema";
 import type { Profile } from "../../src/features/profile/schema";
@@ -13,6 +14,10 @@ import {
   validateApplicationMessage,
 } from "./application-message-policy";
 import { type AiModelSelection, createAiModel } from "./model-catalog";
+
+const WHITESPACE_PATTERN = /\s+/u;
+const TRAILING_COMMA_PATTERN = /,$/u;
+const TRAILING_PERIOD_PATTERN = /\.$/u;
 
 const DraftOutputSchema = z
   .object({
@@ -33,15 +38,19 @@ const ProviderDraftOutputSchema = z
 export interface GeneratedApplicationMessage
   extends z.infer<typeof DraftOutputSchema> {
   modelId: string;
-  provider: "cerebras" | "mistral";
+  provider: "cerebras" | "llamacpp" | "mistral";
 }
 
 export class ApplicationMessageGenerationError extends Error {}
 
 export interface MessageContext extends ActiveMessageFoundation {
   exemplars?: MessageExemplar[];
+  now?: Date;
   preferences?: Preferences | null;
+  requiredPositionReferences?: string[];
+  requiredQuestion?: string;
   shape?: MessageShape;
+  timeZone: string;
 }
 
 export function generateApplicationMessage(
@@ -53,11 +62,15 @@ export function generateApplicationMessage(
   context: MessageContext
 ): Promise<GeneratedApplicationMessage> {
   const signature = signatureFor(profile);
+  const requiredOpening = openingFor(job.contactName);
   const messageRoute = messageRouteFor(job);
   const policy = applicationMessagePolicyFor(
     messageRoute,
-    context.approvedTemplate
+    context.approvedTemplate,
+    context.now ?? new Date(),
+    context.timeZone
   );
+  const requiredQuestion = context.requiredQuestion ?? policy.requiredQuestion;
   return runModel(env, model, {
     approvedTemplate: policy.approvedTemplate,
     candidatePreferences: messagePreferences(context.preferences),
@@ -68,6 +81,9 @@ export function generateApplicationMessage(
     questionGuidance: policy.questionGuidance,
     request: "Write a new application message.",
     requiredEnding: `Best,\n${signature}`,
+    requiredOpening,
+    requiredPositionReferences: context.requiredPositionReferences ?? [],
+    requiredQuestion,
     styleGuidance: [...context.voiceRules, ...styleGuidance],
   });
 }
@@ -83,11 +99,15 @@ export function reviseApplicationMessage(
   context: MessageContext
 ): Promise<GeneratedApplicationMessage> {
   const signature = signatureFor(profile);
+  const requiredOpening = openingFor(job.contactName);
   const messageRoute = messageRouteFor(job);
   const policy = applicationMessagePolicyFor(
     messageRoute,
-    context.approvedTemplate
+    context.approvedTemplate,
+    context.now ?? new Date(),
+    context.timeZone
   );
+  const requiredQuestion = context.requiredQuestion ?? policy.requiredQuestion;
   return runModel(env, model, {
     approvedTemplate: policy.approvedTemplate,
     candidatePreferences: messagePreferences(context.preferences),
@@ -100,6 +120,9 @@ export function reviseApplicationMessage(
     request:
       "Revise the current message according to revisionInstruction while preserving every rule.",
     requiredEnding: `Best,\n${signature}`,
+    requiredOpening,
+    requiredPositionReferences: context.requiredPositionReferences ?? [],
+    requiredQuestion,
     revisionInstruction,
     styleGuidance: [...context.voiceRules, ...styleGuidance],
   });
@@ -111,6 +134,9 @@ async function runModel(
   input: Record<string, unknown> & {
     messageRoute: ApplicationMessageRoute;
     requiredEnding: string;
+    requiredOpening: string;
+    requiredPositionReferences: string[];
+    requiredQuestion?: string | null;
   }
 ): Promise<GeneratedApplicationMessage> {
   const model = createAiModel(env, selection);
@@ -122,6 +148,7 @@ async function runModel(
       generationAttempt += 1
     ) {
       try {
+        // biome-ignore lint/performance/noAwaitInLoops: Validation feedback from each failed generation is fed into the next attempt.
         const result = await generateText({
           instructions: APPLICATION_MESSAGE_INSTRUCTIONS,
           maxOutputTokens: 1200,
@@ -144,8 +171,14 @@ async function runModel(
         const output = DraftOutputSchema.parse(result.output);
         const message = validateApplicationMessage(
           output.message,
+          input.requiredOpening,
           input.requiredEnding,
-          input.messageRoute
+          input.messageRoute,
+          input.requiredQuestion
+        );
+        validateRequiredPositionReferences(
+          message,
+          input.requiredPositionReferences
         );
         return {
           message,
@@ -176,6 +209,20 @@ async function runModel(
     throw new ApplicationMessageGenerationError(
       `Application-message generation failed using ${selection.provider}/${selection.modelId}`,
       { cause: error }
+    );
+  }
+}
+
+function validateRequiredPositionReferences(
+  message: string,
+  references: string[]
+) {
+  const missing = references.filter(
+    (reference) => !message.includes(reference)
+  );
+  if (missing.length > 0) {
+    throw new Error(
+      `message must include every selected position ID; missing ${missing.join(", ")}`
     );
   }
 }
@@ -229,7 +276,54 @@ function exemplarPrompts(exemplars: MessageExemplar[] | undefined) {
   }));
 }
 
-function signatureFor(profile: Profile): string {
-  const surname = profile.fullName.trim().split(/\s+/).at(-1) ?? "";
-  return `${profile.preferredName} ${surname}`.trim();
+export function signatureFor(profile: Profile): string {
+  const surname =
+    profile.fullName.trim().split(WHITESPACE_PATTERN).at(-1) ?? "";
+  const lines = [`${profile.preferredName} ${surname}`.trim()];
+  const phone = formattedPhone(profile.phone);
+  if (phone) {
+    lines.push(`M: ${phone}`);
+  }
+  if (profile.email.trim()) {
+    lines.push(`E: ${profile.email.trim()}`);
+  }
+  return lines.join("\n");
+}
+
+function formattedPhone(value: string) {
+  const raw = value.trim();
+  if (!raw) {
+    return "";
+  }
+  const phone = parsePhoneNumberFromString(raw);
+  if (!phone) {
+    return raw;
+  }
+  if (phone.countryCallingCode === "1") {
+    return `+1 ${phone.formatNational()}`;
+  }
+  return phone.formatInternational();
+}
+
+const HONORIFICS = new Map([
+  ["dr", "Dr."],
+  ["miss", "Miss"],
+  ["mr", "Mr."],
+  ["mrs", "Mrs."],
+  ["ms", "Ms."],
+  ["prof", "Prof."],
+]);
+
+export function openingFor(contactName: string) {
+  const parts = contactName.trim().split(WHITESPACE_PATTERN).filter(Boolean);
+  const [first] = parts;
+  if (!first) {
+    return "Hello,";
+  }
+  const honorificKey = first.replace(TRAILING_PERIOD_PATTERN, "").toLowerCase();
+  const honorific = HONORIFICS.get(honorificKey);
+  if (honorific && parts.length > 1) {
+    return `Hello ${honorific} ${parts.at(-1)},`;
+  }
+  return `Hello ${first.replace(TRAILING_COMMA_PATTERN, "")},`;
 }

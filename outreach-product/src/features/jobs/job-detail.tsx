@@ -1,10 +1,4 @@
-import {
-  AlertTriangle,
-  Check,
-  CircleHelp,
-  ExternalLink,
-  FileText,
-} from "lucide-react";
+import { Check, CircleHelp, ExternalLink, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,12 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { curatedJobs, eligibilityNotes } from "@/curated-jobs";
 import { ApplicationAction } from "@/features/jobs/application-action";
 import { ApplicationDelivery } from "@/features/jobs/application-delivery";
 import { compensationDisplay } from "@/features/jobs/compensation";
-import { formatDescription, questionsFor } from "@/features/jobs/content";
+import { questionsFor } from "@/features/jobs/content";
+import { DraftEditor } from "@/features/jobs/draft-editor";
 import {
   formatStatedHourlyUsd,
   housingLabel,
@@ -30,7 +23,9 @@ import {
 import { humanize } from "@/features/jobs/format";
 import { JobMarketContext } from "@/features/jobs/market-context";
 import { MatchPanel } from "@/features/jobs/match";
-import type { FxData, Job } from "@/features/jobs/types";
+import { PositionAnalysis } from "@/features/jobs/position-analysis";
+import { SourceDescription } from "@/features/jobs/source-description";
+import type { DraftMutationResult, FxData, Job } from "@/features/jobs/types";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
 import type { JobMatch } from "@/profile-types";
 
@@ -61,6 +56,7 @@ export function JobDetail({
   job,
   match,
   onAction,
+  onDraftAction,
   onInstruction,
   onQualificationClaim,
 }: {
@@ -71,6 +67,10 @@ export function JobDetail({
   job: Job;
   match?: JobMatch;
   onAction: (path: string, body?: object) => Promise<void>;
+  onDraftAction: (
+    path: string,
+    options: { body?: object; method?: "POST" | "PUT" }
+  ) => Promise<DraftMutationResult | null>;
   onInstruction: (value: string) => void;
   onQualificationClaim: (input: {
     answer: QualificationClaimAnswer | null;
@@ -79,7 +79,6 @@ export function JobDetail({
     label: string;
   }) => Promise<void>;
 }) {
-  const sections = curatedJobs[job.id] ?? [];
   const salary = compensationDisplay(job.compensation, fx);
   const hourly =
     (job.matchFacts
@@ -89,8 +88,7 @@ export function JobDetail({
     job.matchFacts?.benefits ?? [],
     job.matchFacts?.economics
   );
-  const questions = questionsFor(job, sections);
-  const eligibility = eligibilityNotes[job.id] ?? [];
+  const questions = questionsFor(job);
   return (
     <div className="mx-auto w-full max-w-5xl p-4 sm:p-6 lg:p-8">
       <div className="flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-start sm:justify-between">
@@ -105,6 +103,7 @@ export function JobDetail({
           </p>
         </div>
         <Button
+          nativeButton={false}
           render={
             <a
               href={job.sourceUrl || job.applyUrl}
@@ -134,33 +133,16 @@ export function JobDetail({
 
       <JobMarketContext job={job} />
 
+      {job.positionAnalysis ? (
+        <PositionAnalysis analysis={job.positionAnalysis} />
+      ) : null}
+
       {match ? (
         <MatchPanel
           busyClaimKey={busyClaimKey}
           match={match}
           onQualificationClaim={onQualificationClaim}
         />
-      ) : null}
-
-      {eligibility.length ? (
-        <Card className="mt-5 border-amber-500/25 bg-amber-500/[0.04] ring-amber-500/20">
-          <CardHeader className="pb-0">
-            <CardTitle className="flex items-center gap-2 text-amber-900 text-sm dark:text-amber-200">
-              <AlertTriangle className="size-4" />
-              Check before applying
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-foreground/80 text-sm">
-              {eligibility.map((note) => (
-                <li className="flex gap-2" key={note}>
-                  <span className="mt-2 size-1 shrink-0 rounded-full bg-amber-500" />
-                  {note}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
       ) : null}
 
       {salary.warning ? (
@@ -187,26 +169,6 @@ export function JobDetail({
         </Card>
       ) : null}
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        {sections.map((section) => (
-          <Card key={section.title}>
-            <CardHeader>
-              <CardTitle>{section.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2.5 text-foreground/80 text-sm leading-6">
-                {section.items.map((item) => (
-                  <li className="flex gap-2.5" key={item}>
-                    <Check className="mt-1.5 size-3.5 shrink-0 text-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
       <Card className="mt-4">
         <CardHeader>
           <CardTitle>Open questions</CardTitle>
@@ -226,13 +188,17 @@ export function JobDetail({
         </CardContent>
       </Card>
 
-      <details className="mt-4 rounded-xl border bg-background px-4 py-3 text-sm">
+      <details
+        className="mt-4 rounded-xl border bg-background px-4 py-3 text-sm"
+        open
+      >
         <summary className="cursor-pointer font-medium">
           Full original job description
         </summary>
-        <p className="mt-4 whitespace-pre-line text-muted-foreground leading-7">
-          {formatDescription(job.description) || "No description was imported."}
-        </p>
+        <SourceDescription
+          description={job.description}
+          routes={job.applicationRoutes}
+        />
       </details>
 
       <Card className="mt-8">
@@ -258,42 +224,16 @@ export function JobDetail({
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <ApplicationDelivery job={job} />
-          <Textarea
-            aria-label="Tailored application message"
-            className="min-h-72 resize-y bg-background leading-7"
-            readOnly
-            value={job.draft?.message}
-          />
-          {job.draft?.changeSummary ? (
-            <div className="rounded-lg bg-muted/60 p-3 text-sm">
-              <div className="font-medium">What was tailored</div>
-              <p className="mt-1 text-muted-foreground">
-                {job.draft.changeSummary}
-              </p>
-            </div>
-          ) : null}
-          <div className="flex flex-col gap-2">
-            <Textarea
-              className="min-h-20 flex-1"
-              onChange={(event) => onInstruction(event.target.value)}
-              placeholder="Describe one change, for example: Ask only about the schedule and start date."
-              value={instruction}
+          {job.draft ? (
+            <DraftEditor
+              busy={Boolean(busy) || deliveryStatus(job) === "sending"}
+              draft={job.draft}
+              instruction={instruction}
+              onDraftAction={onDraftAction}
+              onInstruction={onInstruction}
+              resourcePath={`/api/jobs/${job.id}`}
             />
-            <Button
-              className="self-end"
-              disabled={
-                !instruction ||
-                Boolean(busy) ||
-                deliveryStatus(job) === "sending"
-              }
-              onClick={() =>
-                void onAction(`/api/jobs/${job.id}/revise`, { instruction })
-              }
-              variant="secondary"
-            >
-              Revise message
-            </Button>
-          </div>
+          ) : null}
         </CardContent>
         <CardFooter className="justify-end">
           <ApplicationAction busy={busy} job={job} onAction={onAction} />

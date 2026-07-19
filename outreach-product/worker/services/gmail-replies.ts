@@ -1,4 +1,5 @@
 import { parse } from "node-html-parser";
+import { z } from "zod";
 import type { AppEnv } from "../env";
 import {
   GmailApiError,
@@ -18,6 +19,22 @@ interface GmailWatchRow {
   history_id: string;
   user_id: string;
 }
+
+interface TrackedGmailRoute {
+  gmail_thread_id: string;
+  id: string;
+  kind: "attempt" | "test";
+  recipient: string;
+  subject: string;
+}
+
+const EMAIL_ADDRESS_PATTERN = /<([^<>]+)>/u;
+const REPLY_PREFIX_PATTERN = /^(?:(?:re|fw|fwd):\s*)+/iu;
+
+const GmailPushDataSchema = z.object({
+  emailAddress: z.string().trim().min(1),
+  historyId: z.string().regex(/^\d+$/u),
+});
 
 export async function processGmailPush(
   env: AppEnv,
@@ -42,9 +59,15 @@ export async function processGmailPush(
     .bind(input.emailAddress)
     .first<GmailWatchRow>();
   if (!watch) {
-    throw new GmailIntegrationError("Gmail notification mailbox is unknown", {
-      status: 400,
-    });
+    // The notification has already passed Google OIDC verification. Unknown
+    // mailboxes have no state to synchronize, so acknowledge them instead of
+    // making Pub/Sub retry an unprocessable event for the retention window.
+    return {
+      duplicate: false,
+      ignored: true,
+      messagesRecorded: 0,
+      ok: true as const,
+    };
   }
   if (compareHistoryIds(input.historyId, watch.history_id) <= 0) {
     await recordPubSubEvent(env.DB, input, 0);
@@ -102,17 +125,9 @@ export async function reconcileRecentReplies(
 
 export function decodeGmailPushData(data: string) {
   try {
-    const parsed = JSON.parse(decodeBase64(data)) as {
-      emailAddress?: unknown;
-      historyId?: unknown;
-    };
-    if (
-      typeof parsed.emailAddress !== "string" ||
-      typeof parsed.historyId !== "string" ||
-      !(parsed.emailAddress && parsed.historyId)
-    ) {
-      throw new Error("missing emailAddress or historyId");
-    }
+    const parsed = GmailPushDataSchema.parse(
+      JSON.parse(decodeBase64(data), preserveNumericHistoryId)
+    );
     return {
       emailAddress: parsed.emailAddress.toLowerCase(),
       historyId: parsed.historyId,
@@ -123,6 +138,23 @@ export function decodeGmailPushData(data: string) {
       { cause: error, status: 400 }
     );
   }
+}
+
+function preserveNumericHistoryId(
+  key: string,
+  value: unknown,
+  context?: { source: string }
+) {
+  if (key === "historyId" && typeof value === "number") {
+    // Gmail documents historyId as a JSON string, but live push delivery has
+    // also emitted an integer. Preserve the source token so an int64 is never
+    // rounded through JavaScript Number before it becomes our canonical string.
+    if (!context) {
+      throw new Error("JSON source context is unavailable");
+    }
+    return context.source;
+  }
+  return value;
 }
 
 export async function markWatchError(
@@ -175,53 +207,108 @@ async function syncInboundMessages(
   messageIds: string[]
 ) {
   const tracked = await env.DB.prepare(
-    `SELECT DISTINCT a.gmail_thread_id
+    `SELECT a.id,'attempt' kind,a.gmail_thread_id,'' recipient,'' subject
        FROM application_attempts a
        JOIN user_jobs uj ON uj.id=a.user_job_id
       WHERE uj.user_id=? AND a.gmail_thread_id<>''
-        AND a.status IN ('sent','sending','uncertain')`
+        AND a.status IN ('sent','sending','uncertain')
+      UNION ALL
+     SELECT test_send.id,'test' kind,test_send.gmail_thread_id,
+            test_send.recipient,test_send.subject
+       FROM application_bundle_test_sends test_send
+       JOIN application_bundles bundle ON bundle.id=test_send.bundle_id
+      WHERE bundle.user_id=? AND test_send.gmail_thread_id<>''
+        AND test_send.status='sent'`
   )
-    .bind(userId)
-    .all<{ gmail_thread_id: string }>();
-  const trackedThreads = new Set(
-    tracked.results.map((row) => row.gmail_thread_id)
-  );
-  if (trackedThreads.size === 0) {
+    .bind(userId, userId)
+    .all<TrackedGmailRoute>();
+  if (tracked.results.length === 0) {
     return 0;
   }
-  let recorded = 0;
-  for (const messageId of [...new Set(messageIds)]) {
-    const message = await getGmailMessage(accessToken, messageId, "full");
-    if (!isTrackedInboxReply(message, trackedThreads)) {
-      continue;
-    }
+  const attemptThreads = new Set(
+    tracked.results
+      .filter((route) => route.kind === "attempt")
+      .map((route) => route.gmail_thread_id)
+  );
+  const testSendsByThread = new Map(
+    tracked.results
+      .filter((route) => route.kind === "test")
+      .map((route) => [route.gmail_thread_id, route.id])
+  );
+  const testSendsByReply = new Map(
+    tracked.results
+      .filter((route) => route.kind === "test")
+      .map((route) => [testReplyKey(route.subject, route.recipient), route.id])
+  );
+  const messages = await Promise.all(
+    [...new Set(messageIds)].map((messageId) =>
+      getGmailMessage(accessToken, messageId, "full")
+    )
+  );
+  const inbound = messages.flatMap((message) => {
     const headers = messageHeaders(message);
-    if (automatedMessage(headers, emailAddress)) {
-      continue;
+    const testSendId = matchingTestSendId(
+      message,
+      headers,
+      testSendsByThread,
+      testSendsByReply
+    );
+    if (!(attemptThreads.has(message.threadId) || testSendId)) {
+      return [];
     }
-    const result = await recordInboundMessage(env.DB, userId, {
-      bodyText: messageText(message),
-      fromAddress: headers.get("from") ?? "",
-      gmailMessageId: message.id,
-      gmailThreadId: message.threadId,
-      sentAt: messageSentAt(message),
-      subject: headers.get("subject") ?? "",
-      toAddress: headers.get("to") ?? "",
-    });
-    recorded += result.created ? 1 : 0;
-  }
-  return recorded;
+    if (!isInboxReply(message)) {
+      return [];
+    }
+    if (automatedMessage(headers, emailAddress)) {
+      return [];
+    }
+    return [
+      {
+        bodyText: messageText(message),
+        fromAddress: headers.get("from") ?? "",
+        gmailMessageId: message.id,
+        gmailThreadId: message.threadId,
+        sentAt: messageSentAt(message),
+        subject: headers.get("subject") ?? "",
+        testSendId,
+        toAddress: headers.get("to") ?? "",
+      },
+    ];
+  });
+  const results = await Promise.all(
+    inbound.map((message) => recordInboundMessage(env.DB, userId, message))
+  );
+  return results.filter((result) => result.created).length;
 }
 
-function isTrackedInboxReply(
-  message: GmailMessage,
-  trackedThreads: Set<string>
-) {
+function isInboxReply(message: GmailMessage) {
   return (
-    trackedThreads.has(message.threadId) &&
     Boolean(message.labelIds?.includes("INBOX")) &&
     !message.labelIds?.includes("SENT")
   );
+}
+
+function matchingTestSendId(
+  message: GmailMessage,
+  headers: Map<string, string>,
+  byThread: Map<string, string>,
+  byReply: Map<string, string>
+) {
+  return (
+    byThread.get(message.threadId) ??
+    byReply.get(
+      testReplyKey(headers.get("subject") ?? "", headers.get("from") ?? "")
+    )
+  );
+}
+
+function testReplyKey(subject: string, address: string) {
+  const normalizedSubject = subject
+    .trim()
+    .replace(REPLY_PREFIX_PATTERN, "")
+    .toLowerCase();
+  const bracketedAddress = address.match(EMAIL_ADDRESS_PATTERN)?.[1];
+  return `${normalizedSubject}\u0000${(bracketedAddress ?? address).trim().toLowerCase()}`;
 }
 
 async function collectHistoryMessageIds(
@@ -233,6 +320,7 @@ async function collectHistoryMessageIds(
   let pageToken: string | undefined;
   let pageCount = 0;
   do {
+    // biome-ignore lint/performance/noAwaitInLoops: Gmail supplies the next page token only after the current history page is read.
     const page = await listGmailHistory(accessToken, startHistoryId, pageToken);
     for (const history of page.history ?? []) {
       for (const addition of history.messagesAdded ?? []) {
@@ -363,16 +451,12 @@ function latestHistoryId(left: string, right: string) {
 }
 
 function compareHistoryIds(left: string, right: string) {
-  try {
-    const leftId = BigInt(left);
-    const rightId = BigInt(right);
-    if (leftId === rightId) {
-      return 0;
-    }
-    return leftId > rightId ? 1 : -1;
-  } catch {
-    return left.localeCompare(right);
+  const leftId = BigInt(left);
+  const rightId = BigInt(right);
+  if (leftId === rightId) {
+    return 0;
   }
+  return leftId > rightId ? 1 : -1;
 }
 
 function requiredTopicName(env: AppEnv) {

@@ -1,4 +1,5 @@
 export const workspacePaths = {
+  anesl: "/anesl",
   automation: "/automation",
   countries: "/countries",
   documents: "/documents",
@@ -11,6 +12,8 @@ export const workspacePaths = {
 
 export type WorkspaceView = keyof typeof workspacePaths;
 
+const TRAILING_SLASH_PATTERN = /\/+$/u;
+
 const workspaceViewsByPath = new Map<string, WorkspaceView>(
   Object.entries(workspacePaths).map(([view, path]) => [
     path,
@@ -19,7 +22,8 @@ const workspaceViewsByPath = new Map<string, WorkspaceView>(
 );
 
 export function workspaceViewFromPathname(pathname: string): WorkspaceView {
-  const normalizedPathname = pathname.replace(/\/+$/, "") || "/";
+  const normalizedPathname =
+    pathname.replace(TRAILING_SLASH_PATTERN, "") || "/";
   if (normalizedPathname.startsWith(`${workspacePaths.countries}/`)) {
     return "countries";
   }

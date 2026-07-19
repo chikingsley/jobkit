@@ -1,10 +1,6 @@
-import { z } from "zod";
 import type { JobRequirement } from "@/features/matching/schema";
 
-export const QualificationClaimAnswerSchema = z.enum(["yes", "no"]);
-export type QualificationClaimAnswer = z.infer<
-  typeof QualificationClaimAnswerSchema
->;
+export type QualificationClaimAnswer = "yes" | "no";
 
 export interface QualificationClaim {
   answer: QualificationClaimAnswer;

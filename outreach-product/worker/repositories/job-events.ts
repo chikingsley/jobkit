@@ -3,11 +3,12 @@ export function jobEventStatement(
   userJobId: string,
   type: string,
   detail: string,
-  draftId?: string
+  draftId?: string,
+  metadata: Record<string, unknown> = {}
 ) {
   return db
     .prepare(
-      "INSERT INTO job_events (id,user_job_id,event_type,draft_id,detail,created_at) VALUES (?,?,?,?,?,?)"
+      "INSERT INTO job_events (id,user_job_id,event_type,draft_id,detail,metadata_json,created_at) VALUES (?,?,?,?,?,?,?)"
     )
     .bind(
       crypto.randomUUID(),
@@ -15,6 +16,7 @@ export function jobEventStatement(
       type,
       draftId ?? null,
       detail,
+      JSON.stringify(metadata),
       new Date().toISOString()
     );
 }

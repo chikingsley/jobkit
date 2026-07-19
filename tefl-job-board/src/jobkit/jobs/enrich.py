@@ -144,6 +144,7 @@ COUNTRY_TERMS: tuple[str, ...] = (
     "Colombia",
     "Turkey",
     "Russia",
+    "Tajikistan",
     "Poland",
     "Germany",
     "France",
@@ -276,9 +277,7 @@ class HeuristicExtractor:
         explicit = posting.fields.get("country", "").strip()
         if explicit:
             return explicit
-        if posting.location:
-            return posting.location.split(",")[0].strip()
-        return _first(haystack, COUNTRY_TERMS)
+        return _first(f"{posting.location}\n{haystack}", COUNTRY_TERMS)
 
     @staticmethod
     def _salary(fields: dict[str, str], haystack: str) -> tuple[str, str]:

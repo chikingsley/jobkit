@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ApplicationMessageGenerationError } from "./ai/application-messages";
 import { JobFactExtractionError } from "./ai/job-fact-extraction";
 import { ProfileExtractionError } from "./ai/profile-extraction";
-import type { AuthUser, JobKitApp } from "./app-types";
+import type { AgentRunnerContext, AuthUser, JobKitApp } from "./app-types";
 import { createAuth } from "./auth";
 import type { AppEnv } from "./env";
 import { OnboardingIncompleteError } from "./repositories/onboarding";
@@ -13,29 +13,37 @@ import {
   writePreferences,
   writeProfile,
 } from "./repositories/user-settings";
+import { registerAgentRunnerRoutes } from "./routes/agent-runners";
+import { registerApplicationBundleRoutes } from "./routes/application-bundles";
+import { registerApplicationDraftRoutes } from "./routes/application-drafts";
 import { registerCountryRoutes } from "./routes/countries";
 import { registerDocumentRoutes } from "./routes/documents";
 import { registerEmailAttemptRoutes } from "./routes/email-attempts";
 import { GMAIL_PUBSUB_WEBHOOK_PATH, registerGmailRoutes } from "./routes/gmail";
 import { registerJobMatchFactRoutes } from "./routes/job-match-facts";
+import { registerJobPositionAnalysisRoutes } from "./routes/job-position-analyses";
 import { registerJobRoutes } from "./routes/jobs";
+import { registerMessagePreviewRoutes } from "./routes/message-preview";
 import { registerMessageRoutes } from "./routes/messages";
 import { registerOnboardingRoutes } from "./routes/onboarding";
 import { registerUserSettingsRoutes } from "./routes/user-settings";
-import { ImportSchema, ReviseSchema, SubmitSchema } from "./schemas";
+import { ImportSchema, SubmitSchema } from "./schemas";
+import { authenticateAgentRunner } from "./services/agent-runners";
+import { AgentTaskError } from "./services/agent-task-broker";
+import { ApplicationBundleError } from "./services/application-bundle-model";
 import {
   DraftMessageFoundationRequiredError,
+  DraftMutationError,
   DraftProfileRequiredError,
   importJobsWithDrafts,
   regenerateDrafts,
-  reviseJobDraft,
 } from "./services/application-drafts";
 import { CountryMarketError } from "./services/country-markets";
-import { authenticateCountrySweepRunner } from "./services/country-sweep-runner-auth";
 import { DocumentConversionError } from "./services/document-text";
 import { EmailAttemptError } from "./services/email-attempts";
 import { GmailIntegrationError } from "./services/gmail-errors";
 import { renewExpiringGmailWatches } from "./services/gmail-integration";
+import { JobAnalysisRecordError } from "./services/job-analysis-records";
 import { approveAndSubmitApplication } from "./services/job-submission";
 import {
   fetchExchangeRates,
@@ -46,7 +54,7 @@ import { ResumeUploadError } from "./services/profile-imports";
 
 const app: JobKitApp = new OpenAPIHono<{
   Bindings: AppEnv;
-  Variables: { user: AuthUser };
+  Variables: { agentRunner: AgentRunnerContext | null; user: AuthUser };
 }>();
 const jsonMessage = z.object({
   message: z.string().optional(),
@@ -87,7 +95,13 @@ app.onError((error, c) => {
   if (error instanceof DraftMessageFoundationRequiredError) {
     return c.json({ message: error.message, ok: false }, 409);
   }
+  if (error instanceof DraftMutationError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
   if (error instanceof EmailAttemptError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
+  if (error instanceof ApplicationBundleError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
   if (error instanceof GmailIntegrationError) {
@@ -99,7 +113,22 @@ app.onError((error, c) => {
   if (error instanceof CountryMarketError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
-  return c.json({ message: error.message, ok: false }, 500);
+  if (error instanceof AgentTaskError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
+  if (error instanceof JobAnalysisRecordError) {
+    return c.json(
+      {
+        message: error.message,
+        ok: false,
+        ...(error.rejectedEvidence.length > 0
+          ? { rejectedEvidence: error.rejectedEvidence }
+          : {}),
+      },
+      error.status
+    );
+  }
+  return c.json({ message: "Internal server error", ok: false }, 500);
 });
 
 app.get("/api/health", (c) => c.json({ ok: true }));
@@ -108,44 +137,53 @@ app.on(["GET", "POST"], "/api/auth/*", (c) =>
   createAuth(c.env, c.req.raw).handler(c.req.raw)
 );
 
-const RUNNER_TOKEN_PATHS = [
-  "/api/country-sweep-tasks/",
-  "/api/job-match-facts",
-];
-// Draft generation (never approval or sending) is also runner-scoped so
-// campaign batches can stage drafts for human review.
-const RUNNER_GENERATE_PATH = /^\/api\/jobs\/[^/]+\/generate$/u;
+const AGENT_PAIRING_EXCHANGE_PATH = "/api/agent-runner-pairings/exchange";
+const AGENT_TASK_RESULT_PATH = /^\/api\/agent-tasks\/[^/]+\/(complete|fail)$/u;
+const AGENT_TASK_CLAIM_PATH = "/api/agent-tasks/claim";
+
+function runnerRequestAllowed(method: string, path: string) {
+  if (method !== "POST") {
+    return false;
+  }
+  return path === AGENT_TASK_CLAIM_PATH || AGENT_TASK_RESULT_PATH.test(path);
+}
 
 app.use("/api/*", async (c, next) => {
-  if (c.req.path === GMAIL_PUBSUB_WEBHOOK_PATH) {
+  if (
+    c.req.path === GMAIL_PUBSUB_WEBHOOK_PATH ||
+    (c.req.method === "POST" && c.req.path === AGENT_PAIRING_EXCHANGE_PATH)
+  ) {
     await next();
     return;
   }
   const authorization = c.req.header("authorization") ?? "";
   if (authorization.startsWith("Bearer ")) {
-    const allowed =
-      RUNNER_TOKEN_PATHS.some((path) => c.req.path.startsWith(path)) ||
-      RUNNER_GENERATE_PATH.test(c.req.path);
-    if (!allowed) {
+    if (!runnerRequestAllowed(c.req.method, c.req.path)) {
       return c.json(
         {
-          message:
-            "Runner token is limited to sweep tasks and match-facts recording",
+          message: "Runner token is limited to agent task execution",
           ok: false,
         },
         403
       );
     }
-    const user = await authenticateCountrySweepRunner(c.env.DB, authorization);
-    if (!user) {
+    const runner = await authenticateAgentRunner(c.env.DB, authorization);
+    if (!runner) {
       return c.json(
         { message: "Runner authentication failed", ok: false },
         401
       );
     }
-    c.set("user", user);
+    c.set("agentRunner", runner);
+    c.set("user", runner.user);
     await next();
     return;
+  }
+  if (runnerRequestAllowed(c.req.method, c.req.path)) {
+    return c.json(
+      { message: "Agent runner authentication is required", ok: false },
+      401
+    );
   }
   const session = await createAuth(c.env, c.req.raw).api.getSession({
     headers: c.req.raw.headers,
@@ -158,17 +196,23 @@ app.use("/api/*", async (c, next) => {
     id: session.user.id,
     name: session.user.name,
   });
+  c.set("agentRunner", null);
   await next();
 });
 
+registerAgentRunnerRoutes(app);
 registerOnboardingRoutes(app);
+registerApplicationBundleRoutes(app);
+registerApplicationDraftRoutes(app);
 registerJobRoutes(app);
 registerJobMatchFactRoutes(app);
+registerJobPositionAnalysisRoutes(app);
 registerDocumentRoutes(app);
 registerCountryRoutes(app);
 registerEmailAttemptRoutes(app);
 registerGmailRoutes(app);
 registerMessageRoutes(app);
+registerMessagePreviewRoutes(app);
 registerUserSettingsRoutes(app);
 
 app.get("/api/fx", async (c) => c.json(await fetchExchangeRates()));
@@ -248,42 +292,6 @@ app.put("/api/preferences", async (c) => {
   await writePreferences(c.env.DB, c.get("user").id, await c.req.json());
   return c.json({ message: "Preferences saved", ok: true });
 });
-
-app.openapi(
-  createRoute({
-    method: "post",
-    path: "/api/jobs/{id}/revise",
-    request: {
-      body: { content: { "application/json": { schema: ReviseSchema } } },
-      params: z.object({ id: z.string() }),
-    },
-    responses: {
-      200: {
-        content: { "application/json": { schema: jsonMessage } },
-        description: "Revised",
-      },
-      409: {
-        content: { "application/json": { schema: jsonMessage } },
-        description: "Profile required",
-      },
-      502: {
-        content: { "application/json": { schema: jsonMessage } },
-        description: "Draft model failed",
-      },
-    },
-  }),
-  async (c) => {
-    const { id } = c.req.valid("param");
-    const { instruction } = c.req.valid("json");
-    const revised = await reviseJobDraft(
-      c.env,
-      c.get("user").id,
-      id,
-      instruction
-    );
-    return c.json({ message: revised.message, ok: true });
-  }
-);
 
 app.openapi(
   createRoute({

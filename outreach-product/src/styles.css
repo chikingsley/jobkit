@@ -134,23 +134,40 @@
   }
 }
 
-.jobs-workspace {
-  container-type: inline-size;
+.split-workspace {
+  display: flex;
 }
 
-@container (min-width: 48rem) {
-  .jobs-list-pane {
-    display: flex !important;
+.split-workspace-list {
+  display: flex;
+  width: 100%;
+}
+
+.split-workspace-detail {
+  display: none;
+}
+
+.split-workspace[data-detail-open="true"] .split-workspace-list {
+  display: none;
+}
+
+.split-workspace[data-detail-open="true"] .split-workspace-detail {
+  display: flex;
+}
+
+@media (min-width: 40rem) {
+  .split-workspace[data-detail-open] .split-workspace-list {
+    display: flex;
     flex: none;
-    width: 21rem;
+    width: 20rem;
     border-right: 1px solid var(--border);
   }
 
-  .jobs-detail-pane {
-    display: block !important;
+  .split-workspace[data-detail-open] .split-workspace-detail {
+    display: flex;
   }
 
-  .jobs-back {
+  .split-workspace-back {
     display: none;
   }
 }

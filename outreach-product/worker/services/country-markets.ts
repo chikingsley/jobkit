@@ -1,11 +1,20 @@
 import { getCountries } from "libphonenumber-js";
-import type { AutomationPolicy } from "../../src/features/automation/schema";
-import type {
-  CountryCampaignLaunch,
-  CountrySweepRequest,
+import { z } from "zod";
+import {
+  type AutomationPolicy,
+  AutomationPolicySchema,
+} from "../../src/features/automation/schema";
+import {
+  CampaignExecutionModeSchema,
+  type CountryCampaignLaunch,
+  type CountryCampaignTargetDecision,
+  type CountryCampaignTargetStatus,
+  CountryCampaignTargetStatusSchema,
+  type CountrySweepRequest,
 } from "../../src/features/countries/schema";
 import type {
-  CountryCampaignSummary,
+  CountryCampaignDetail,
+  CountryCampaignTarget,
   CountryDetail,
   CountryMarketSummary,
   CountryOpportunitySummary,
@@ -22,28 +31,11 @@ interface CountryCountRow {
   latest_status?: string | null;
 }
 
-interface CampaignRow {
-  created_at: string;
-  execution_mode: CountryCampaignSummary["executionMode"];
-  id: string;
-  include_open_positions: number;
-  include_school_outreach: number;
-  status: string;
-  sweep_status: string | null;
-  target_count: number;
-}
-
 interface SweepRow {
   completed_at: string | null;
   id: string;
   requested_at: string;
   status: string;
-}
-
-interface SweepTaskCountRow {
-  count: number;
-  status: string;
-  sweep_id: string;
 }
 
 interface JobTargetRow {
@@ -61,28 +53,6 @@ interface OrganizationTargetRow {
   organization_id: string;
 }
 
-interface OpportunityRow {
-  board: string;
-  company: string;
-  id: string;
-  location: string;
-  source_url: string;
-  title: string;
-  user_status: string | null;
-}
-
-interface CountryOrganizationRow {
-  city: string;
-  contact_count: number;
-  id: string;
-  last_verified_at: string | null;
-  market_segment: string;
-  name: string;
-  outreach_eligibility: string;
-  status: string;
-  website_url: string;
-}
-
 const countryDisplayNames = new Intl.DisplayNames(["en"], { type: "region" });
 const countryNamesByCode = new Map(
   getCountries().map((code) => [code, countryDisplayNames.of(code) ?? code])
@@ -98,6 +68,18 @@ const COUNTRY_NAME_ALIASES = new Map([
   ["south korea", "KR"],
   ["taiwan", "TW"],
 ]);
+const D1_ROW_SCHEMA = z.record(z.string(), z.unknown());
+const mutableCampaignTargetStatuses = new Set([
+  "failed",
+  "held",
+  "pending",
+  "review",
+  "approved",
+]);
+
+function nullableString(value: unknown): string | null {
+  return value === null || value === undefined ? null : String(value);
+}
 
 export class CountryMarketError extends Error {
   readonly status: 400 | 404 | 409;
@@ -315,23 +297,25 @@ export async function readCountryDetail(
 
   const taskCountsBySweep = new Map<string, Record<string, number>>();
   for (const rawRow of taskCounts.results) {
-    const row = rawRow as unknown as SweepTaskCountRow;
-    const counts = taskCountsBySweep.get(row.sweep_id) ?? {};
-    counts[row.status] = Number(row.count);
-    taskCountsBySweep.set(row.sweep_id, counts);
+    const row = D1_ROW_SCHEMA.parse(rawRow);
+    const sweepId = String(row.sweep_id);
+    const status = String(row.status);
+    const counts = taskCountsBySweep.get(sweepId) ?? {};
+    counts[status] = Number(row.count);
+    taskCountsBySweep.set(sweepId, counts);
   }
 
   return {
     campaigns: campaigns.results.map((rawRow) => {
-      const row = rawRow as unknown as CampaignRow;
+      const row = D1_ROW_SCHEMA.parse(rawRow);
       return {
-        createdAt: row.created_at,
-        executionMode: row.execution_mode,
-        id: row.id,
+        createdAt: String(row.created_at),
+        executionMode: CampaignExecutionModeSchema.parse(row.execution_mode),
+        id: String(row.id),
         includeOpenPositions: Boolean(row.include_open_positions),
         includeSchoolOutreach: Boolean(row.include_school_outreach),
-        status: row.status,
-        sweepStatus: row.sweep_status,
+        status: String(row.status),
+        sweepStatus: nullableString(row.sweep_status),
         targetCount: Number(row.target_count),
       };
     }),
@@ -339,7 +323,7 @@ export async function readCountryDetail(
     countryName,
     opportunities: opportunities.results.map(
       (rawRow): CountryOpportunitySummary => {
-        const row = rawRow as OpportunityRow;
+        const row = D1_ROW_SCHEMA.parse(rawRow);
         return {
           board: String(row.board),
           company: String(row.company),
@@ -347,20 +331,18 @@ export async function readCountryDetail(
           location: String(row.location),
           sourceUrl: String(row.source_url),
           title: String(row.title),
-          userStatus: row.user_status ? String(row.user_status) : null,
+          userStatus: nullableString(row.user_status),
         };
       }
     ),
     organizations: organizations.results.map(
       (rawRow): CountryOrganizationSummary => {
-        const row = rawRow as CountryOrganizationRow;
+        const row = D1_ROW_SCHEMA.parse(rawRow);
         return {
           city: String(row.city),
           contactCount: Number(row.contact_count),
           id: String(row.id),
-          lastVerifiedAt: row.last_verified_at
-            ? String(row.last_verified_at)
-            : null,
+          lastVerifiedAt: nullableString(row.last_verified_at),
           marketSegment: String(row.market_segment),
           name: String(row.name),
           outreachEligibility: String(row.outreach_eligibility),
@@ -370,15 +352,192 @@ export async function readCountryDetail(
       }
     ),
     sweeps: sweeps.results.map((rawRow): CountrySweepSummary => {
-      const row = rawRow as unknown as SweepRow;
+      const row = D1_ROW_SCHEMA.parse(rawRow);
+      const id = String(row.id);
       return {
-        completedAt: row.completed_at,
-        id: row.id,
-        requestedAt: row.requested_at,
-        status: row.status,
-        taskCounts: taskCountsBySweep.get(row.id) ?? {},
+        completedAt: nullableString(row.completed_at),
+        id,
+        requestedAt: String(row.requested_at),
+        status: String(row.status),
+        taskCounts: taskCountsBySweep.get(id) ?? {},
       };
     }),
+  };
+}
+
+export async function readCountryCampaign(
+  db: D1Database,
+  userId: string,
+  campaignId: string
+): Promise<CountryCampaignDetail> {
+  const [campaign, targets] = await Promise.all([
+    db
+      .prepare(
+        `SELECT c.id,c.country_code,c.country_name,c.execution_mode,
+                c.include_open_positions,c.include_school_outreach,
+                c.policy_snapshot_json,c.status,c.created_at,
+                s.status sweep_status,
+                (SELECT COUNT(*) FROM country_campaign_targets t
+                  WHERE t.campaign_id=c.id) target_count
+           FROM country_campaigns c
+           LEFT JOIN country_sweeps s ON s.id=c.sweep_id
+          WHERE c.id=? AND c.user_id=?`
+      )
+      .bind(campaignId, userId)
+      .first(),
+    db
+      .prepare(
+        `SELECT t.id,t.job_id,t.organization_id,t.channel,t.status,
+                t.hold_reason,t.updated_at,
+                j.title,j.company,j.location,j.board,j.source_url,
+                o.name organization_name,o.city,o.market_segment,
+                o.website_url,
+                ar.destination route_destination,
+                cp.value contact_destination
+           FROM country_campaign_targets t
+           LEFT JOIN jobs j ON j.id=t.job_id
+           LEFT JOIN organizations o ON o.id=t.organization_id
+           LEFT JOIN application_routes ar ON ar.id=t.route_id
+           LEFT JOIN organization_contact_points cp ON cp.id=t.contact_point_id
+          WHERE t.campaign_id=?
+          ORDER BY CASE t.status
+            WHEN 'review' THEN 0 WHEN 'pending' THEN 1 WHEN 'approved' THEN 2
+            WHEN 'held' THEN 3 WHEN 'failed' THEN 4 WHEN 'sent' THEN 5
+            WHEN 'replied' THEN 6 ELSE 7 END,
+            COALESCE(j.title,o.name),t.created_at`
+      )
+      .bind(campaignId)
+      .all(),
+  ]);
+  if (!campaign) {
+    throw new CountryMarketError("Campaign was not found", 404);
+  }
+  const campaignRow = D1_ROW_SCHEMA.parse(campaign);
+  const mappedTargets = targets.results.map(mapCampaignTarget);
+  const targetCounts: Record<CountryCampaignTargetStatus, number> = {
+    approved: 0,
+    failed: 0,
+    held: 0,
+    pending: 0,
+    replied: 0,
+    review: 0,
+    sent: 0,
+    skipped: 0,
+  };
+  for (const target of mappedTargets) {
+    targetCounts[target.status] = (targetCounts[target.status] ?? 0) + 1;
+  }
+  return {
+    countryCode: String(campaignRow.country_code),
+    countryName: String(campaignRow.country_name),
+    createdAt: String(campaignRow.created_at),
+    executionMode: CampaignExecutionModeSchema.parse(
+      campaignRow.execution_mode
+    ),
+    id: String(campaignRow.id),
+    includeOpenPositions: Boolean(campaignRow.include_open_positions),
+    includeSchoolOutreach: Boolean(campaignRow.include_school_outreach),
+    policy: AutomationPolicySchema.parse(
+      JSON.parse(String(campaignRow.policy_snapshot_json))
+    ),
+    status: String(campaignRow.status),
+    sweepStatus: nullableString(campaignRow.sweep_status),
+    targetCount: Number(campaignRow.target_count),
+    targetCounts,
+    targets: mappedTargets,
+  };
+}
+
+export async function decideCountryCampaignTarget(
+  db: D1Database,
+  userId: string,
+  campaignId: string,
+  targetId: string,
+  decision: CountryCampaignTargetDecision
+) {
+  const target = await db
+    .prepare(
+      `SELECT t.status
+         FROM country_campaign_targets t
+         JOIN country_campaigns c ON c.id=t.campaign_id
+        WHERE t.id=? AND t.campaign_id=? AND c.user_id=?`
+    )
+    .bind(targetId, campaignId, userId)
+    .first<{ status: string }>();
+  if (!target) {
+    throw new CountryMarketError("Campaign target was not found", 404);
+  }
+  if (!mutableCampaignTargetStatuses.has(target.status)) {
+    throw new CountryMarketError(
+      `A ${target.status} target can no longer be changed from campaign review`,
+      409
+    );
+  }
+  if (target.status === decision.status) {
+    return readCountryCampaign(db, userId, campaignId);
+  }
+  const timestamp = new Date().toISOString();
+  const reason = decision.status === "held" ? decision.reason : "";
+  await db.batch([
+    db
+      .prepare(
+        `UPDATE country_campaign_targets
+            SET status=?,hold_reason=?,updated_at=?
+          WHERE id=? AND campaign_id=?`
+      )
+      .bind(decision.status, reason, timestamp, targetId, campaignId),
+    db
+      .prepare(
+        `INSERT INTO country_campaign_target_events
+          (id,campaign_id,target_id,user_id,previous_status,next_status,
+           reason,created_at)
+         VALUES (?,?,?,?,?,?,?,?)`
+      )
+      .bind(
+        crypto.randomUUID(),
+        campaignId,
+        targetId,
+        userId,
+        target.status,
+        decision.status,
+        reason,
+        timestamp
+      ),
+  ]);
+  return readCountryCampaign(db, userId, campaignId);
+}
+
+function mapCampaignTarget(
+  rawRow: Record<string, unknown>
+): CountryCampaignTarget {
+  const row = D1_ROW_SCHEMA.parse(rawRow);
+  const isJob = Boolean(row.job_id);
+  const description = isJob
+    ? [row.company, row.location, row.board]
+        .map((value) => String(value ?? "").trim())
+        .filter(Boolean)
+        .join(" · ")
+    : [row.city, row.market_segment]
+        .map((value) =>
+          String(value ?? "")
+            .trim()
+            .replaceAll("_", " ")
+        )
+        .filter(Boolean)
+        .join(" · ");
+  return {
+    channel: z
+      .enum(["board_form", "email", "external_url", "manual"])
+      .parse(row.channel),
+    description,
+    destination: String(row.route_destination ?? row.contact_destination ?? ""),
+    holdReason: String(row.hold_reason),
+    id: String(row.id),
+    kind: isJob ? "job" : "organization",
+    label: String(isJob ? row.title : row.organization_name),
+    sourceUrl: String(isJob ? row.source_url : row.website_url),
+    status: CountryCampaignTargetStatusSchema.parse(row.status),
+    updatedAt: String(row.updated_at),
   };
 }
 

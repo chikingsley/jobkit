@@ -9,13 +9,14 @@ export async function upsertJob(
   await db
     .prepare(
       `INSERT INTO jobs (
-        id,board,title,company,country,location,salary,description,
-        source_url,apply_url,employer_id,first_seen_at,updated_at
-        ,opportunity_scope,market_segments_json,message_route
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        id,board,title,company,contact_name,country,location,salary,description,
+        source_url,apply_url,employer_id,source_reference,first_seen_at,updated_at,
+        opportunity_scope,market_segments_json,message_route
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       ON CONFLICT(id) DO UPDATE SET
         title=excluded.title,
         company=excluded.company,
+        contact_name=excluded.contact_name,
         country=excluded.country,
         location=excluded.location,
         salary=excluded.salary,
@@ -23,6 +24,7 @@ export async function upsertJob(
         source_url=excluded.source_url,
         apply_url=excluded.apply_url,
         employer_id=excluded.employer_id,
+        source_reference=excluded.source_reference,
         opportunity_scope=excluded.opportunity_scope,
         market_segments_json=excluded.market_segments_json,
         message_route=excluded.message_route,
@@ -33,6 +35,7 @@ export async function upsertJob(
       job.board,
       job.title,
       job.company,
+      job.contactName,
       job.country,
       job.location,
       job.salary,
@@ -40,6 +43,7 @@ export async function upsertJob(
       job.sourceUrl,
       job.applyUrl,
       job.employerId,
+      job.sourceReference,
       timestamp,
       timestamp,
       job.opportunityScope,

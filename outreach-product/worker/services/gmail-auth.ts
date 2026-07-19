@@ -2,6 +2,8 @@ import { createAuth } from "../auth";
 import type { AppEnv } from "../env";
 import { GmailIntegrationError } from "./gmail-errors";
 
+const TRAILING_SLASH_PATTERN = /\/$/u;
+
 export const GMAIL_SCOPES = [
   "https://www.googleapis.com/auth/gmail.compose",
   "https://www.googleapis.com/auth/gmail.readonly",
@@ -43,5 +45,5 @@ export function gmailConfigurationIsAvailable(env: AppEnv) {
 function appOrigin(env: AppEnv) {
   return (
     env.APP_ORIGIN || "https://outreach-product.peacockery.studio"
-  ).replace(/\/$/u, "");
+  ).replace(TRAILING_SLASH_PATTERN, "");
 }

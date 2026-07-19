@@ -74,4 +74,25 @@ describe("hosted Gmail integration", () => {
       historyId: "987654321",
     });
   });
+
+  it("preserves Gmail's numeric history ID compatibility form", () => {
+    const data = btoa(
+      '{"emailAddress":"Candidate@Example.com","historyId":9007199254740993}'
+    );
+
+    expect(decodeGmailPushData(data)).toEqual({
+      emailAddress: "candidate@example.com",
+      historyId: "9007199254740993",
+    });
+  });
+
+  it("rejects non-decimal history IDs", () => {
+    const data = btoa(
+      '{"emailAddress":"candidate@example.com","historyId":1e3}'
+    );
+
+    expect(() => decodeGmailPushData(data)).toThrow(
+      "Invalid Gmail Pub/Sub data"
+    );
+  });
 });

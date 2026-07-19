@@ -53,6 +53,9 @@ export function MessageThreadItem({
       ) : null}
       <div className="mt-0.5 flex items-center gap-2">
         <Badge variant={badge.variant}>{badge.label}</Badge>
+        {thread.targetCount > 1 ? (
+          <Badge variant="outline">{thread.targetCount} positions</Badge>
+        ) : null}
         {thread.attachmentCount > 0 ? (
           <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
             <PaperclipIcon className="size-3" />

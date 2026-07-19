@@ -5,10 +5,19 @@ export interface JobDraft {
     sizeBytes: number;
   }>;
   changeSummary: string;
+  createdAt: string;
   id: string;
   message: string;
+  previousMessage: string;
+  revisionSource: "ai_revision" | "generated" | "manual_edit" | "undo";
   status: string;
   version: number;
+}
+
+export interface DraftMutationResult {
+  draft: Omit<JobDraft, "attachments">;
+  notice: string;
+  ok: true;
 }
 
 export interface EmailAttempt {
@@ -23,11 +32,20 @@ export interface EmailAttempt {
 }
 
 export interface ApplicationRoute {
+  contact: ContactSummary | null;
   destination: string;
   id: string;
   kind: string;
   lastVerifiedAt: string | null;
   status: string;
+}
+
+export interface ContactSummary {
+  displayName: string;
+  id: string;
+  organizationName: string;
+  relatedListingCount: number;
+  role: "board_intermediary" | "employer" | "recruiter" | "unknown";
 }
 
 export interface Job {
@@ -46,6 +64,8 @@ export interface Job {
   matchFacts: JobMatchFacts | null;
   messageRoute: "advertised_position" | "multi_position" | "school_outreach";
   opportunityScope: "direct" | "multi_position" | "unknown";
+  positionAnalysis: JobPositionAnalysis | null;
+  sourceReference: string;
   sourceUrl: string;
   status: string;
   title: string;
@@ -64,5 +84,6 @@ export type MarketSegment =
 
 import type { JobMatchFacts } from "@/features/matching/schema";
 import type { Compensation } from "./economics";
+import type { JobPositionAnalysis } from "./position-variants";
 
 export type { Compensation, FxData } from "./economics";

@@ -66,7 +66,10 @@ export async function searchUniversities(query: string, country: string) {
   }
 }
 
-export async function searchLocations(query: string, accessToken: string) {
+export async function searchLocations(query: string, accessToken?: string) {
+  if (!accessToken) {
+    return [query];
+  }
   const url = new URL("https://api.mapbox.com/search/geocode/v6/forward");
   url.searchParams.set("q", query);
   url.searchParams.set("access_token", accessToken);

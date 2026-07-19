@@ -1,0 +1,14 @@
+url: ${JOBKIT_URL}
+---
+- launchApp
+- runFlow:
+    label: Sign in when the browser has no active session
+    when:
+      visible: "Email"
+    commands:
+      - tapOn: "Email"
+      - inputText: ${JOBKIT_EMAIL}
+      - tapOn: "Password"
+      - inputText: ${JOBKIT_PASSWORD}
+      - tapOn: "Sign in"
+- assertVisible: "Job review"

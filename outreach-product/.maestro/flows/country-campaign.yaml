@@ -1,0 +1,21 @@
+url: ${JOBKIT_URL}
+name: Create and review a local country campaign
+tags:
+  - safe
+  - campaigns
+---
+- runFlow: ../sign-in.yaml
+- openLink: ${JOBKIT_URL}/countries/PL
+- assertVisible: "Poland"
+- tapOn:
+    id: "open-country-campaign"
+- assertVisible: "Review every message"
+- tapOn:
+    id: "create-country-campaign"
+- assertVisible: "Review target set"
+- assertVisible: "Maestro English Teacher"
+- assertVisible: "Maestro International School"
+- tapOn:
+    id: "approve-campaign-target-.*"
+    index: 0
+- assertVisible: "Approved 1"

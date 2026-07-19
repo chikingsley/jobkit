@@ -2,6 +2,7 @@ import type { AppEnv } from "../env";
 import {
   claimEmailAttempt,
   type EmailAttemptView,
+  prepareBundleEmailSend,
   prepareEmailSend,
   recordFailedEmailAttempt,
   recordGmailDraft,
@@ -27,6 +28,8 @@ import {
   gmailErrorMessage,
 } from "./gmail-errors";
 import { markWatchError, reconcileRecentReplies } from "./gmail-replies";
+
+const SCOPE_SEPARATOR_PATTERN = /[\s,]+/u;
 
 interface GmailWatchRow {
   email_address: string;
@@ -114,6 +117,29 @@ export async function sendApplicationEmailWithGmail(
   };
 }
 
+export async function sendApplicationBundleEmailWithGmail(
+  env: AppEnv,
+  userId: string,
+  bundleId: string,
+  draftId: string
+) {
+  const status = await readGmailConnectionStatus(env, userId);
+  if (status.watch?.status !== "active") {
+    throw new GmailIntegrationError(
+      "Finish Gmail setup in Messages before sending applications",
+      { status: 409 }
+    );
+  }
+  const accessToken = await getGoogleAccessToken(env, userId);
+  const attempt = await prepareBundleEmailSend(env, userId, bundleId, draftId);
+  const sent = await deliverEmailAttempt(env, userId, attempt, accessToken);
+  return {
+    attempt: sent,
+    message: `ANESL application set sent to ${sent.recipient}`,
+    ok: true as const,
+  };
+}
+
 export async function deliverEmailAttempt(
   env: AppEnv,
   userId: string,
@@ -162,10 +188,9 @@ export async function startOrRenewGmailWatch(env: AppEnv, userId: string) {
     });
   }
   const accessToken = await getGoogleAccessToken(env, userId);
-  const [profile, watchResult, existing] = await Promise.all([
+  const [profile, watchResult] = await Promise.all([
     getGmailProfile(accessToken),
     startGmailWatch(accessToken, env.GOOGLE_PUBSUB_TOPIC),
-    readWatchByUser(env.DB, userId),
   ]);
   const expirationAt = expirationIso(watchResult.expiration);
   const timestamp = new Date().toISOString();
@@ -190,14 +215,12 @@ export async function startOrRenewGmailWatch(env: AppEnv, userId: string) {
     )
     .run();
 
-  const messagesRecorded = existing
-    ? 0
-    : await reconcileRecentReplies(
-        env,
-        userId,
-        profile.emailAddress,
-        accessToken
-      );
+  const messagesRecorded = await reconcileRecentReplies(
+    env,
+    userId,
+    profile.emailAddress,
+    accessToken
+  );
   return {
     emailAddress: profile.emailAddress,
     expirationAt,
@@ -216,15 +239,18 @@ export async function renewExpiringGmailWatches(env: AppEnv) {
   )
     .bind(threshold)
     .all<{ user_id: string }>();
-  let renewed = 0;
-  for (const row of rows.results) {
-    try {
-      await startOrRenewGmailWatch(env, row.user_id);
-      renewed += 1;
-    } catch (error) {
-      await markWatchError(env.DB, row.user_id, gmailErrorMessage(error));
-    }
-  }
+  const results = await Promise.all(
+    rows.results.map(async (row) => {
+      try {
+        await startOrRenewGmailWatch(env, row.user_id);
+        return true;
+      } catch (error) {
+        await markWatchError(env.DB, row.user_id, gmailErrorMessage(error));
+        return false;
+      }
+    })
+  );
+  const renewed = results.filter(Boolean).length;
   return { renewed, total: rows.results.length };
 }
 
@@ -338,5 +364,5 @@ function expirationIso(expiration: string) {
 }
 
 function splitScopes(scope: string) {
-  return scope.split(/[\s,]+/u).filter(Boolean);
+  return scope.split(SCOPE_SEPARATOR_PATTERN).filter(Boolean);
 }

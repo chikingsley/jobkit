@@ -1,4 +1,8 @@
-import type { CampaignExecutionMode } from "./schema";
+import type { AutomationPolicy } from "@/features/automation/schema";
+import type {
+  CampaignExecutionMode,
+  CountryCampaignTargetStatus,
+} from "./schema";
 
 export interface CountryMarketSummary {
   campaignCount: number;
@@ -42,6 +46,27 @@ export interface CountryCampaignSummary {
   status: string;
   sweepStatus: string | null;
   targetCount: number;
+}
+
+export interface CountryCampaignTarget {
+  channel: "board_form" | "email" | "external_url" | "manual";
+  description: string;
+  destination: string;
+  holdReason: string;
+  id: string;
+  kind: "job" | "organization";
+  label: string;
+  sourceUrl: string;
+  status: CountryCampaignTargetStatus;
+  updatedAt: string;
+}
+
+export interface CountryCampaignDetail extends CountryCampaignSummary {
+  countryCode: string;
+  countryName: string;
+  policy: AutomationPolicy;
+  targetCounts: Record<CountryCampaignTargetStatus, number>;
+  targets: CountryCampaignTarget[];
 }
 
 export interface CountrySweepSummary {

@@ -6,6 +6,17 @@ export const CampaignExecutionModeSchema = z.enum([
   "use_automation",
 ]);
 
+export const CountryCampaignTargetStatusSchema = z.enum([
+  "pending",
+  "review",
+  "approved",
+  "sent",
+  "held",
+  "skipped",
+  "failed",
+  "replied",
+]);
+
 export const CountryCampaignLaunchSchema = z
   .object({
     executionMode: CampaignExecutionModeSchema,
@@ -17,6 +28,17 @@ export const CountryCampaignLaunchSchema = z
     (value) => value.includeOpenPositions || value.includeSchoolOutreach,
     { message: "Choose open positions, school outreach, or both" }
   );
+
+export const CountryCampaignTargetDecisionSchema = z
+  .object({
+    reason: z.string().trim().max(500).default(""),
+    status: z.enum(["approved", "held", "review"]),
+  })
+  .strict()
+  .refine((value) => value.status !== "held" || value.reason.length > 0, {
+    message: "A hold reason is required",
+    path: ["reason"],
+  });
 
 export const CountrySweepRequestSchema = z
   .object({
@@ -80,32 +102,14 @@ export const CountrySweepTaskOutputSchema = z
   })
   .strict();
 
-export const SweepTaskClaimSchema = z
-  .object({
-    workerId: z.string().min(1).max(160),
-  })
-  .strict();
-
-export const SweepTaskCompletionSchema = z
-  .object({
-    output: CountrySweepTaskOutputSchema,
-    workerId: z.string().min(1).max(160),
-  })
-  .strict();
-
-export const SweepTaskFailureSchema = z
-  .object({
-    error: z.string().min(1).max(4000),
-    workerId: z.string().min(1).max(160),
-  })
-  .strict();
-
-export const SweepRunnerTokenCreateSchema = z
-  .object({ name: z.string().trim().min(1).max(120) })
-  .strict();
-
 export type CampaignExecutionMode = z.infer<typeof CampaignExecutionModeSchema>;
+export type CountryCampaignTargetStatus = z.infer<
+  typeof CountryCampaignTargetStatusSchema
+>;
 export type CountryCampaignLaunch = z.infer<typeof CountryCampaignLaunchSchema>;
+export type CountryCampaignTargetDecision = z.infer<
+  typeof CountryCampaignTargetDecisionSchema
+>;
 export type CountrySweepRequest = z.infer<typeof CountrySweepRequestSchema>;
 export type CountrySweepTaskOutput = z.infer<
   typeof CountrySweepTaskOutputSchema

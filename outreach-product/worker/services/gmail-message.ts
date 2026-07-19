@@ -3,6 +3,9 @@ import type { AppEnv } from "../env";
 
 const CRLF = "\r\n";
 const MAX_RAW_ATTACHMENT_BYTES = 18 * 1024 * 1024;
+const ASCII_HEADER_PATTERN = /^[\x20-\x7E]*$/u;
+const BASE64_PADDING_PATTERN = /[=]+$/u;
+const HEADER_NEWLINE_PATTERN = /[\r\n]/u;
 
 interface DraftAttachmentRow {
   category: string;
@@ -14,6 +17,7 @@ interface DraftAttachmentRow {
   object_key: string;
   position: number;
   r2_version: string;
+  required_opening: string;
   size_bytes: number;
 }
 
@@ -44,7 +48,8 @@ export async function buildGmailMessagePayload(
   envelope: GmailEnvelope
 ): Promise<GmailMessagePayload> {
   const rows = await env.DB.prepare(
-    `SELECT d.message,d.document_packet_manifest_json,a.position,a.category,
+    `SELECT d.message,d.document_packet_manifest_json,d.required_opening,
+            a.position,a.category,
             a.filename,a.object_key,a.content_type,
             a.size_bytes,a.r2_version,a.etag
        FROM application_drafts d
@@ -58,7 +63,10 @@ export async function buildGmailMessagePayload(
   if (!first) {
     throw new GmailMessagePayloadError("Application draft not found");
   }
-  const applicationMessage = validateApplicationMessageOpening(first.message);
+  const applicationMessage = validateApplicationMessageOpening(
+    first.message,
+    first.required_opening
+  );
   const attachmentRows = rows.results.filter((row) => row.object_key);
   const expectedCategories = JSON.parse(
     first.document_packet_manifest_json
@@ -157,13 +165,13 @@ function buildMimeMessage(
 
 function encodedHeader(value: string): string {
   const safe = safeHeader(value);
-  return /^[\x20-\x7E]*$/u.test(safe)
+  return ASCII_HEADER_PATTERN.test(safe)
     ? safe
     : `=?UTF-8?B?${base64(new TextEncoder().encode(safe))}?=`;
 }
 
 function safeHeader(value: string): string {
-  if (/[\r\n]/u.test(value)) {
+  if (HEADER_NEWLINE_PATTERN.test(value)) {
     throw new GmailMessagePayloadError("Email headers cannot contain newlines");
   }
   return value.trim();
@@ -185,7 +193,7 @@ function base64Url(bytes: Uint8Array): string {
   return base64(bytes)
     .replaceAll("+", "-")
     .replaceAll("/", "_")
-    .replace(/[=]+$/u, "");
+    .replace(BASE64_PADDING_PATTERN, "");
 }
 
 function base64(bytes: Uint8Array): string {

@@ -71,6 +71,23 @@ describe("job matching facts", () => {
         "INSERT INTO user_jobs (id,user_id,job_id,created_at,updated_at) VALUES (?,?,?,?,?)"
       ).bind(crypto.randomUUID(), userId, jobId, timestamp, timestamp),
       testEnv.DB.prepare(
+        `INSERT INTO contacts
+          (id,display_name,organization_name,role,status,created_at,updated_at)
+         VALUES ('contact-test','Hiring Team','Test University','employer','active',?,?)`
+      ).bind(timestamp, timestamp),
+      testEnv.DB.prepare(
+        `INSERT INTO contact_channels
+          (id,contact_id,kind,value,normalized_value,status,created_at,updated_at)
+         VALUES ('contact-channel-test','contact-test','email','jobs@example.test',
+                 'jobs@example.test','active',?,?)`
+      ).bind(timestamp, timestamp),
+      testEnv.DB.prepare(
+        `INSERT INTO application_routes
+          (id,job_id,kind,destination,contact_channel_id,status,created_at,updated_at)
+         VALUES ('route-test',?,'email','jobs@example.test','contact-channel-test',
+                 'active',?,?)`
+      ).bind(jobId, timestamp, timestamp),
+      testEnv.DB.prepare(
         "INSERT INTO job_match_facts (job_id,facts_json,schema_version,model_provider,model_id,source_hash,updated_at) VALUES (?,?,?,?,?,?,?)"
       ).bind(
         jobId,
@@ -88,11 +105,21 @@ describe("job matching facts", () => {
       { headers: { cookie } }
     );
     const body = (await response.json()) as {
-      jobs: Array<{ id: string; matchFacts: typeof facts }>;
+      jobs: Array<{
+        applicationRoutes: Array<{
+          contact: { id: string; relatedListingCount: number };
+        }>;
+        id: string;
+        matchFacts: typeof facts;
+      }>;
     };
 
     expect(response.status).toBe(200);
     expect(body.jobs).toHaveLength(1);
     expect(body.jobs[0]).toMatchObject({ id: jobId, matchFacts: facts });
+    expect(body.jobs[0]?.applicationRoutes[0]?.contact).toMatchObject({
+      id: "contact-test",
+      relatedListingCount: 1,
+    });
   });
 });
