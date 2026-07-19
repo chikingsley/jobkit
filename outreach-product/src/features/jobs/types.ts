@@ -57,6 +57,13 @@ export interface Job {
   country: string;
   description: string;
   draft: JobDraft | null;
+  draftTask: {
+    error: string;
+    id: string;
+    mode: "generate" | "revise";
+    status: "cancelled" | "claimed" | "completed" | "failed" | "queued";
+    updatedAt: string;
+  } | null;
   emailAttempt: EmailAttempt | null;
   id: string;
   location: string;

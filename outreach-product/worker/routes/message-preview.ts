@@ -1,8 +1,8 @@
 import { z } from "zod";
 import type { JobKitApp } from "../app-types";
 import {
+  queueMessagePreviewRevision,
   readMessagePreviews,
-  reviseMessagePreview,
 } from "../services/message-preview";
 
 const PreviewRevisionSchema = z
@@ -20,20 +20,24 @@ export function registerMessagePreviewRoutes(app: JobKitApp) {
 
   app.post("/api/message-preview/revise", async (c) => {
     const input = PreviewRevisionSchema.parse(await c.req.json());
-    const revised = await reviseMessagePreview(
+    const taskRequest = await queueMessagePreviewRevision(
       c.env,
       c.get("user").id,
-      input.key,
-      input.currentMessage,
-      input.instruction
+      {
+        currentMessage: input.currentMessage,
+        instruction: input.instruction,
+        kind: "message_preview",
+        mode: "revise",
+        previewKey: input.key,
+      }
     );
-    return c.json({
-      changeSummary: revised.summary,
-      message: revised.message,
-      modelId: revised.modelId,
-      ok: true,
-      previousMessage: input.currentMessage,
-      provider: revised.provider,
-    });
+    return c.json(
+      {
+        message: "Preview revision queued for your Codex agent",
+        ok: true,
+        taskRequest,
+      },
+      202
+    );
   });
 }

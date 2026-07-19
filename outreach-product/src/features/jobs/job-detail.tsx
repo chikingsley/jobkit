@@ -226,7 +226,12 @@ export function JobDetail({
           <ApplicationDelivery job={job} />
           {job.draft ? (
             <DraftEditor
-              busy={Boolean(busy) || deliveryStatus(job) === "sending"}
+              busy={
+                Boolean(busy) ||
+                deliveryStatus(job) === "sending" ||
+                job.draftTask?.status === "queued" ||
+                job.draftTask?.status === "claimed"
+              }
               draft={job.draft}
               instruction={instruction}
               onDraftAction={onDraftAction}

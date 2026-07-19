@@ -290,6 +290,13 @@ function validateProviderProposal(
   });
 }
 
+export function normalizeProfileImportProposal(
+  output: ProfileImportProposal,
+  sourceText: string
+) {
+  return retainSupportedFacts(validateProviderProposal(output), sourceText);
+}
+
 function splitResumeText(text: string) {
   if (text.length <= MAX_CHUNK_CHARACTERS) {
     return [text];

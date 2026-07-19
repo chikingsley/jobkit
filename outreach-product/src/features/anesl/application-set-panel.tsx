@@ -1,6 +1,7 @@
 import {
   CheckCircle2,
   FileText,
+  LoaderCircle,
   MailCheck,
   RotateCcw,
   Send,
@@ -22,6 +23,48 @@ import { DraftEditor } from "@/features/jobs/draft-editor";
 import type { DraftMutationResult } from "@/features/jobs/types";
 import type { ApiRequest } from "@/lib/api";
 import type { AneslApplicationSet, AneslApplicationSetResponse } from "./types";
+
+function PendingApplicationSet({
+  applicationSet,
+  busy,
+  onCancel,
+}: {
+  applicationSet: AneslApplicationSet;
+  busy: boolean;
+  onCancel: () => void;
+}) {
+  const taskActive =
+    applicationSet.draftTask?.status === "queued" ||
+    applicationSet.draftTask?.status === "claimed";
+  return (
+    <div className="grid min-h-[30rem] place-items-center p-8 text-center">
+      <div className="max-w-md">
+        {taskActive ? (
+          <LoaderCircle className="mx-auto size-6 animate-spin text-muted-foreground" />
+        ) : null}
+        <h2 className="mt-4 font-semibold text-xl">
+          {taskActive
+            ? "Codex is drafting this application set"
+            : "Drafting stopped"}
+        </h2>
+        <p className="mt-2 text-muted-foreground text-sm leading-6">
+          {taskActive
+            ? "The selected position IDs and shared packet are saved. This page will update when the paired Codex runner completes the message."
+            : applicationSet.draftTask?.error ||
+              "The application set has no completed draft."}
+        </p>
+        <Button
+          className="mt-4"
+          disabled={busy}
+          onClick={onCancel}
+          variant="outline"
+        >
+          <RotateCcw /> Start over
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export function ApplicationSetPanel({
   applicationSet,
@@ -55,6 +98,9 @@ export function ApplicationSetPanel({
       await onChanged();
       setInstruction("");
       toast.success(result.notice ?? "ANESL draft updated");
+      if (result.taskRequest) {
+        return null;
+      }
       if (!result.applicationSet.draft) {
         return null;
       }
@@ -91,8 +137,17 @@ export function ApplicationSetPanel({
     }
   }
 
+  const taskActive =
+    applicationSet.draftTask?.status === "queued" ||
+    applicationSet.draftTask?.status === "claimed";
   if (!applicationSet.draft) {
-    return null;
+    return (
+      <PendingApplicationSet
+        applicationSet={applicationSet}
+        busy={Boolean(busy)}
+        onCancel={() => void action(`${resourcePath}/cancel`)}
+      />
+    );
   }
   const sent = applicationSet.status === "sent";
   return (
@@ -154,7 +209,7 @@ export function ApplicationSetPanel({
         </CardHeader>
         <CardContent>
           <DraftEditor
-            busy={Boolean(busy) || sent}
+            busy={Boolean(busy) || sent || taskActive}
             draft={applicationSet.draft}
             instruction={instruction}
             onDraftAction={draftAction}

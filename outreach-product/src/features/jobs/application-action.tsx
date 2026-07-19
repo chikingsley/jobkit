@@ -134,11 +134,17 @@ function GenerateApplicationAction({
   onAction: (path: string, body?: object) => Promise<void>;
 }) {
   const path = `/api/jobs/${job.id}/generate`;
-  const isGenerating = busy === path;
+  const isGenerating =
+    busy === path ||
+    job.draftTask?.status === "queued" ||
+    job.draftTask?.status === "claimed";
   return (
-    <Button disabled={Boolean(busy)} onClick={() => void onAction(path)}>
+    <Button
+      disabled={Boolean(busy) || isGenerating}
+      onClick={() => void onAction(path)}
+    >
       {isGenerating ? <LoaderCircle className="animate-spin" /> : <Sparkles />}
-      {isGenerating ? "Generating…" : "Generate application"}
+      {isGenerating ? "Waiting for Codex…" : "Generate application"}
     </Button>
   );
 }

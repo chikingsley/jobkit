@@ -1,24 +1,26 @@
+import {
+  APPLICATION_MESSAGE_TASK_TYPE,
+  type ApplicationMessageRequestInput,
+} from "../../src/agent-tasks/application-message";
 import type { Profile } from "../../src/features/profile/schema";
 import { validateApplicationMessage } from "../ai/application-message-policy";
 import {
-  generateApplicationMessage,
   type MessageContext,
   messageRouteFor,
   openingFor,
-  reviseApplicationMessage,
+  type PreparedApplicationMessage,
+  prepareApplicationMessageGeneration,
+  prepareApplicationMessageRevision,
   signatureFor,
+  validateCodexApplicationMessage,
 } from "../ai/application-messages";
 import type { AppEnv } from "../env";
-import {
-  readAiModel,
-  readApplicationMessageModel,
-} from "../repositories/ai-model-settings";
 import { upsertApplicationRoutes } from "../repositories/application-routes";
 import {
   copyPacketSnapshotStatements,
   defaultPacketSnapshotStatements,
 } from "../repositories/draft-attachments";
-import { recordJobEvent } from "../repositories/job-events";
+import { jobEventStatement } from "../repositories/job-events";
 import { upsertJob, upsertUserJob } from "../repositories/jobs";
 import { readMessageExemplars } from "../repositories/message-exemplars";
 import { readActiveMessageFoundation } from "../repositories/message-foundations";
@@ -26,7 +28,10 @@ import { readMessageStyleGuidance } from "../repositories/message-style";
 import { readPreferences, readProfile } from "../repositories/user-settings";
 import { readUserTimeZone } from "../repositories/user-time-zone";
 import { type JobImport, JobImportSchema } from "../schemas";
-import { ensureJobMatchFactsForImport } from "./job-analysis";
+import {
+  createAgentTaskRequest,
+  readActiveAgentTaskRequest,
+} from "./agent-task-requests";
 
 export class DraftProfileRequiredError extends Error {}
 export class DraftMessageFoundationRequiredError extends Error {}
@@ -38,6 +43,11 @@ export class DraftMutationError extends Error {
     this.status = status;
   }
 }
+
+export type JobDraftTaskInput = Extract<
+  ApplicationMessageRequestInput,
+  { kind: "job_draft" }
+>;
 
 export async function messageContext(
   env: AppEnv,
@@ -104,283 +114,234 @@ function audiencesFrom(factsJson: string | undefined): string[] {
   }
 }
 
-export async function regenerateDrafts(
-  env: AppEnv,
-  userId: string
-): Promise<number> {
-  const [model, profile, styleGuidance] = await Promise.all([
-    readApplicationMessageModel(env.DB),
-    savedProfile(env.DB, userId),
-    readMessageStyleGuidance(env.DB, userId),
-  ]);
-  const rows = await env.DB.prepare(
-    `SELECT j.*,uj.id user_job_id,uj.priority
-       FROM user_jobs uj
-       JOIN jobs j ON j.id=uj.job_id
-       WHERE uj.user_id=? AND uj.status IN ('new','review')`
-  )
-    .bind(userId)
-    .all();
-  let regenerated = 0;
-  for (const row of rows.results) {
-    const job = toJobImport(row);
-    const userJobId = String(row.user_job_id);
-    // biome-ignore lint/performance/noAwaitInLoops: Draft regeneration is deliberately sequential to bound model-provider load.
-    const latest = await env.DB.prepare(
-      "SELECT version FROM application_drafts WHERE user_job_id=? ORDER BY version DESC LIMIT 1"
-    )
-      .bind(userJobId)
-      .first<{ version: number }>();
-    const context = await messageContext(env, userId, job);
-    const draft = await generateApplicationMessage(
-      env,
-      model,
-      job,
-      profile,
-      styleGuidance,
-      context
-    );
-    const draftId = crypto.randomUUID();
-    const timestamp = new Date().toISOString();
-    const snapshotStatements = await defaultPacketSnapshotStatements(
-      env,
-      userId,
-      draftId,
-      timestamp
-    );
-    await env.DB.batch([
-      env.DB.prepare(
-        "UPDATE application_drafts SET status='superseded' WHERE user_job_id=? AND status='draft'"
-      ).bind(userJobId),
-      env.DB.prepare(
-        `INSERT INTO application_drafts
-          (id,user_job_id,version,message,required_opening,change_summary,
-           model_provider,model_id,message_foundation_id,message_template_key,
-           created_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?)`
-      ).bind(
-        draftId,
-        userJobId,
-        (latest?.version ?? 0) + 1,
-        draft.message,
-        openingFor(job.contactName),
-        draft.summary,
-        draft.provider,
-        draft.modelId,
-        context.foundationId,
-        context.templateKey,
-        timestamp
-      ),
-      ...snapshotStatements,
-      env.DB.prepare(
-        "UPDATE user_jobs SET status='review',updated_at=? WHERE id=? AND user_id=?"
-      ).bind(timestamp, userJobId, userId),
-    ]);
-    regenerated += 1;
-  }
-  return regenerated;
-}
-
-export async function importJobsWithDrafts(
+export async function importJobs(
   env: AppEnv,
   userId: string,
   jobs: JobImport[]
 ): Promise<void> {
-  const [model, factsModel, profile, styleGuidance] = await Promise.all([
-    readApplicationMessageModel(env.DB),
-    readAiModel(env.DB, "job_fact_extraction"),
-    savedProfile(env.DB, userId),
-    readMessageStyleGuidance(env.DB, userId),
-  ]);
   for (const job of jobs) {
     const timestamp = new Date().toISOString();
-    // biome-ignore lint/performance/noAwaitInLoops: Imports are ordered so each job's route, user row, facts, and draft remain a coherent unit.
+    // biome-ignore lint/performance/noAwaitInLoops: Each imported job's listing, routes, and user row form one ordered unit.
     await upsertJob(env.DB, job, timestamp);
     await upsertApplicationRoutes(env.DB, job, timestamp);
-    const userJobId = await upsertUserJob(
-      env.DB,
-      userId,
-      job.id,
-      job.priority,
-      timestamp
-    );
-    const existing = await env.DB.prepare(
-      "SELECT id FROM application_drafts WHERE user_job_id=? ORDER BY version DESC LIMIT 1"
-    )
-      .bind(userJobId)
-      .first();
-    if (existing) {
-      await ensureJobMatchFactsForImport(env, factsModel, job);
-      continue;
-    }
-    const context = await messageContext(env, userId, job);
-    const [draft] = await Promise.all([
-      generateApplicationMessage(
-        env,
-        model,
-        job,
-        profile,
-        styleGuidance,
-        context
-      ),
-      ensureJobMatchFactsForImport(env, factsModel, job),
-    ]);
-    const draftId = crypto.randomUUID();
-    const snapshotStatements = await defaultPacketSnapshotStatements(
-      env,
-      userId,
-      draftId,
-      timestamp
-    );
-    await env.DB.batch([
-      env.DB.prepare(
-        `INSERT INTO application_drafts
-          (id,user_job_id,version,message,required_opening,change_summary,
-           model_provider,model_id,message_foundation_id,message_template_key,
-           created_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?)`
-      ).bind(
-        draftId,
-        userJobId,
-        1,
-        draft.message,
-        openingFor(job.contactName),
-        draft.summary,
-        draft.provider,
-        draft.modelId,
-        context.foundationId,
-        context.templateKey,
-        timestamp
-      ),
-      ...snapshotStatements,
-    ]);
-    await recordJobEvent(
-      env.DB,
-      userJobId,
-      "draft_generated",
-      `Automatic tailored draft created with ${draft.provider}/${draft.modelId}`
-    );
+    await upsertUserJob(env.DB, userId, job.id, job.priority, timestamp);
   }
 }
 
 // On-demand draft creation for a single job that has none yet — the
 // "Generate application" button. Bulk-imported jobs deliberately skip
 // pre-generation; a draft is written only when the user asks for one.
-export async function generateJobDraft(
+export async function queueJobDraftGeneration(
   env: AppEnv,
   userId: string,
   jobId: string
 ) {
-  const [model, profile, styleGuidance] = await Promise.all([
-    readApplicationMessageModel(env.DB),
+  await readJobForDraftGeneration(env.DB, userId, jobId);
+  return queueJobDraftTask(env.DB, userId, jobId, {
+    jobId,
+    kind: "job_draft",
+    mode: "generate",
+  });
+}
+
+export async function queueJobDraftRevision(
+  env: AppEnv,
+  userId: string,
+  jobId: string,
+  instruction: string
+) {
+  const current = await currentJobAndDraft(env.DB, userId, jobId);
+  return queueJobDraftTask(env.DB, userId, jobId, {
+    expectedDraftId: current.draftId,
+    instruction,
+    jobId,
+    kind: "job_draft",
+    mode: "revise",
+  });
+}
+
+async function queueJobDraftTask(
+  db: D1Database,
+  userId: string,
+  jobId: string,
+  payload: JobDraftTaskInput
+) {
+  const active = await readActiveAgentTaskRequest(db, {
+    subjectId: jobId,
+    subjectType: "job",
+    taskType: APPLICATION_MESSAGE_TASK_TYPE,
+    userId,
+  });
+  if (active) {
+    return active;
+  }
+  return createAgentTaskRequest(db, {
+    payload,
+    subjectId: jobId,
+    subjectType: "job",
+    taskType: APPLICATION_MESSAGE_TASK_TYPE,
+    userId,
+  });
+}
+
+interface PreparedJobDraftTask {
+  context: MessageContext;
+  current: CurrentDraft | null;
+  job: JobImport;
+  latestVersion: number;
+  prepared: PreparedApplicationMessage;
+  userJobId: string;
+}
+
+export async function prepareJobDraftTask(
+  env: AppEnv,
+  userId: string,
+  input: JobDraftTaskInput
+): Promise<PreparedJobDraftTask> {
+  const [profile, styleGuidance] = await Promise.all([
     savedProfile(env.DB, userId),
     readMessageStyleGuidance(env.DB, userId),
   ]);
-  const row = await env.DB.prepare(
-    `SELECT j.*,uj.id user_job_id,uj.priority,
-            (SELECT MAX(version) FROM application_drafts d
-              WHERE d.user_job_id=uj.id) latest_version
-       FROM user_jobs uj
-       JOIN jobs j ON j.id=uj.job_id
-      WHERE uj.user_id=? AND j.id=?`
-  )
-    .bind(userId, jobId)
-    .first<Record<string, unknown>>();
-  if (!row) {
-    throw new Error("Job not found");
+  if (input.mode === "revise") {
+    const current = await currentJobAndDraft(env.DB, userId, input.jobId);
+    if (current.draftId !== input.expectedDraftId) {
+      throw new DraftMutationError(
+        "The draft changed before Codex could revise it",
+        {},
+        409
+      );
+    }
+    const context = await messageContext(env, userId, current.job);
+    return {
+      context,
+      current,
+      job: current.job,
+      latestVersion: current.version,
+      prepared: prepareApplicationMessageRevision(
+        current.job,
+        profile,
+        current.message,
+        input.instruction ?? "",
+        styleGuidance,
+        context
+      ),
+      userJobId: current.userJobId,
+    };
   }
+  const row = await readJobForDraftGeneration(env.DB, userId, input.jobId);
   const job = toJobImport(row);
-  const userJobId = String(row.user_job_id);
   const context = await messageContext(env, userId, job);
-  const draft = await generateApplicationMessage(
-    env,
-    model,
+  return {
+    context,
+    current: null,
     job,
-    profile,
-    styleGuidance,
-    context
+    latestVersion: Number(row.latest_version ?? 0),
+    prepared: prepareApplicationMessageGeneration(
+      job,
+      profile,
+      styleGuidance,
+      context
+    ),
+    userJobId: String(row.user_job_id),
+  };
+}
+
+export async function buildJobDraftTaskCompletion(
+  env: AppEnv,
+  userId: string,
+  input: JobDraftTaskInput,
+  rawOutput: unknown,
+  modelId: string
+) {
+  const state = await prepareJobDraftTask(env, userId, input);
+  const generated = validateCodexApplicationMessage(
+    rawOutput,
+    state.prepared,
+    modelId
   );
+  if (state.current) {
+    return buildDraftMutationPlan(env, userId, state.current, {
+      changeSummary: generated.summary,
+      eventType: "draft_revised",
+      foundationId: state.context.foundationId,
+      message: generated.message,
+      modelId: generated.modelId,
+      modelProvider: generated.provider,
+      revisionInstruction: input.instruction ?? "",
+      revisionSource: "ai_revision",
+      snapshotDraftId: state.current.draftId,
+      templateKey: state.context.templateKey,
+    });
+  }
+  return buildGeneratedJobDraftPlan(env, userId, state, generated);
+}
+
+async function buildGeneratedJobDraftPlan(
+  env: AppEnv,
+  userId: string,
+  state: PreparedJobDraftTask,
+  generated: ReturnType<typeof validateCodexApplicationMessage>
+) {
   const draftId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
+  const version = state.latestVersion + 1;
   const snapshotStatements = await defaultPacketSnapshotStatements(
     env,
     userId,
     draftId,
     timestamp
   );
-  await env.DB.batch([
+  const statements = [
     env.DB.prepare(
       "UPDATE application_drafts SET status='superseded' WHERE user_job_id=? AND status='draft'"
-    ).bind(userJobId),
+    ).bind(state.userJobId),
     env.DB.prepare(
       `INSERT INTO application_drafts
         (id,user_job_id,version,message,required_opening,change_summary,
          model_provider,model_id,message_foundation_id,message_template_key,
-         created_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+         revision_source,created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
     ).bind(
       draftId,
-      userJobId,
-      Number(row.latest_version ?? 0) + 1,
-      draft.message,
-      openingFor(job.contactName),
-      draft.summary,
-      draft.provider,
-      draft.modelId,
-      context.foundationId,
-      context.templateKey,
+      state.userJobId,
+      version,
+      generated.message,
+      openingFor(state.job.contactName),
+      generated.summary,
+      generated.provider,
+      generated.modelId,
+      state.context.foundationId,
+      state.context.templateKey,
+      "generated",
       timestamp
     ),
     ...snapshotStatements,
     env.DB.prepare(
       "UPDATE user_jobs SET status='review',updated_at=? WHERE id=? AND user_id=?"
-    ).bind(timestamp, userJobId, userId),
-  ]);
-  await recordJobEvent(
-    env.DB,
-    userJobId,
-    "draft_generated",
-    `On-demand draft created with ${draft.provider}/${draft.modelId}`,
-    draftId
-  );
-  return draft;
-}
-
-export async function reviseJobDraft(
-  env: AppEnv,
-  userId: string,
-  jobId: string,
-  instruction: string
-) {
-  const [model, profile, row, styleGuidance] = await Promise.all([
-    readApplicationMessageModel(env.DB),
-    savedProfile(env.DB, userId),
-    currentJobAndDraft(env.DB, userId, jobId),
-    readMessageStyleGuidance(env.DB, userId),
-  ]);
-  const context = await messageContext(env, userId, row.job);
-  const revised = await reviseApplicationMessage(
-    env,
-    model,
-    row.job,
-    profile,
-    row.message,
-    instruction,
-    styleGuidance,
-    context
-  );
-  return persistDraftMutation(env, userId, row, {
-    changeSummary: revised.summary,
-    eventType: "draft_revised",
-    foundationId: context.foundationId,
-    message: revised.message,
-    modelId: revised.modelId,
-    modelProvider: revised.provider,
-    revisionInstruction: instruction,
-    revisionSource: "ai_revision",
-    snapshotDraftId: row.draftId,
-    templateKey: context.templateKey,
-  });
+    ).bind(timestamp, state.userJobId, userId),
+    jobEventStatement(
+      env.DB,
+      state.userJobId,
+      "draft_generated",
+      generated.summary,
+      draftId
+    ),
+  ];
+  return {
+    result: {
+      draft: {
+        changeSummary: generated.summary,
+        createdAt: timestamp,
+        id: draftId,
+        message: generated.message,
+        previousMessage: "",
+        revisionSource: "generated" as const,
+        status: "draft" as const,
+        version,
+      },
+    },
+    statements,
+  };
 }
 
 export async function saveManualJobDraft(
@@ -499,10 +460,21 @@ async function persistDraftMutation(
   current: CurrentDraft,
   input: DraftMutationInput
 ) {
+  const plan = buildDraftMutationPlan(env, userId, current, input);
+  await env.DB.batch(plan.statements);
+  return plan.result;
+}
+
+function buildDraftMutationPlan(
+  env: AppEnv,
+  userId: string,
+  current: CurrentDraft,
+  input: DraftMutationInput
+) {
   const draftId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
   const version = current.version + 1;
-  await env.DB.batch([
+  const statements = [
     env.DB.prepare(
       `DELETE FROM application_attempts
        WHERE draft_id=? AND status='approved' AND send_requested_at IS NULL
@@ -541,25 +513,28 @@ async function persistDraftMutation(
     env.DB.prepare(
       "UPDATE user_jobs SET status='review',updated_at=? WHERE id=? AND user_id=?"
     ).bind(timestamp, current.userJobId, userId),
-  ]);
-  await recordJobEvent(
-    env.DB,
-    current.userJobId,
-    input.eventType,
-    input.changeSummary,
-    draftId
-  );
+    jobEventStatement(
+      env.DB,
+      current.userJobId,
+      input.eventType,
+      input.changeSummary,
+      draftId
+    ),
+  ];
   return {
-    draft: {
-      changeSummary: input.changeSummary,
-      createdAt: timestamp,
-      id: draftId,
-      message: input.message,
-      previousMessage: current.message,
-      revisionSource: input.revisionSource,
-      status: "draft" as const,
-      version,
+    result: {
+      draft: {
+        changeSummary: input.changeSummary,
+        createdAt: timestamp,
+        id: draftId,
+        message: input.message,
+        previousMessage: current.message,
+        revisionSource: input.revisionSource,
+        status: "draft" as const,
+        version,
+      },
     },
+    statements,
   };
 }
 
@@ -597,6 +572,28 @@ async function currentJobAndDraft(
     userJobId: String(row.user_job_id),
     version: Number(row.version),
   };
+}
+
+async function readJobForDraftGeneration(
+  db: D1Database,
+  userId: string,
+  jobId: string
+) {
+  const row = await db
+    .prepare(
+      `SELECT j.*,uj.id user_job_id,uj.priority,
+              (SELECT MAX(version) FROM application_drafts d
+                WHERE d.user_job_id=uj.id) latest_version
+         FROM user_jobs uj
+         JOIN jobs j ON j.id=uj.job_id
+        WHERE uj.user_id=? AND j.id=?`
+    )
+    .bind(userId, jobId)
+    .first<Record<string, unknown>>();
+  if (!row) {
+    throw new Error("Job not found");
+  }
+  return row;
 }
 
 export async function savedProfile(

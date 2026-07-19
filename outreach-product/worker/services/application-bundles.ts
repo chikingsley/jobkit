@@ -1,20 +1,31 @@
+import {
+  APPLICATION_MESSAGE_TASK_TYPE,
+  type ApplicationMessageRequestInput,
+} from "../../src/agent-tasks/application-message";
 import type { Profile } from "../../src/features/profile/schema";
 import { validateApplicationMessage } from "../ai/application-message-policy";
 import {
-  generateApplicationMessage,
+  type MessageContext,
   messageRouteFor,
   openingFor,
-  reviseApplicationMessage,
+  type PreparedApplicationMessage,
+  prepareApplicationMessageGeneration,
+  prepareApplicationMessageRevision,
   signatureFor,
+  validateCodexApplicationMessage,
 } from "../ai/application-messages";
 import type { AppEnv } from "../env";
-import { readApplicationMessageModel } from "../repositories/ai-model-settings";
 import {
   copyPacketSnapshotStatements,
   defaultPacketSnapshotStatements,
 } from "../repositories/draft-attachments";
 import { jobEventStatement } from "../repositories/job-events";
 import { readMessageStyleGuidance } from "../repositories/message-style";
+import {
+  buildAgentTaskRequestCreation,
+  createAgentTaskRequest,
+  readActiveAgentTaskRequest,
+} from "./agent-task-requests";
 import {
   ANESL_CONTACT_NAME,
   ANESL_KIND,
@@ -40,6 +51,11 @@ import {
 
 const REQUIRED_QUESTION =
   "Would you be open to talking about which of these positions and locations you are currently recruiting for?";
+
+export type AneslBundleTaskInput = Extract<
+  ApplicationMessageRequestInput,
+  { kind: "anesl_bundle" }
+>;
 
 export async function createAneslApplicationSet(
   env: AppEnv,
@@ -75,42 +91,23 @@ export async function createAneslApplicationSet(
   assertCompatibleAneslTargets(orderedTargets);
 
   const bundleId = crypto.randomUUID();
-  const job = aneslBundleJob(bundleId, orderedTargets);
-  const [model, profile, styleGuidance] = await Promise.all([
-    readApplicationMessageModel(env.DB),
-    savedProfile(env.DB, userId),
-    readMessageStyleGuidance(env.DB, userId),
-  ]);
-  const context = await messageContext(env, userId, job, {
-    audience: "general",
-    length: "long",
-  });
-  context.requiredPositionReferences = orderedTargets.map(
-    (target) => target.source_reference
-  );
-  context.requiredQuestion = REQUIRED_QUESTION;
-  const generated = await generateApplicationMessage(
-    env,
-    model,
-    job,
-    profile,
-    styleGuidance,
-    context
-  );
-
-  const draftId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
   const [first] = orderedTargets;
   if (!first) {
     throw new ApplicationBundleError("Select at least one position", 400);
   }
   const subject = aneslBundleSubject(orderedTargets);
-  const packetStatements = await defaultPacketSnapshotStatements(
-    env,
+  const taskCreation = buildAgentTaskRequestCreation(env.DB, {
+    payload: {
+      bundleId,
+      kind: "anesl_bundle",
+      mode: "generate",
+    } satisfies AneslBundleTaskInput,
+    subjectId: bundleId,
+    subjectType: "application_bundle",
+    taskType: APPLICATION_MESSAGE_TASK_TYPE,
     userId,
-    draftId,
-    timestamp
-  );
+  });
   await env.DB.batch([
     env.DB.prepare(
       `INSERT INTO application_bundles
@@ -142,31 +139,7 @@ export async function createAneslApplicationSet(
         target.location
       )
     ),
-    env.DB.prepare(
-      `UPDATE application_drafts SET status='superseded'
-        WHERE user_job_id=? AND status='draft'`
-    ).bind(first.user_job_id),
-    env.DB.prepare(
-      `INSERT INTO application_drafts
-        (id,user_job_id,application_bundle_id,version,message,required_opening,
-         change_summary,model_provider,model_id,message_foundation_id,
-         message_template_key,created_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
-    ).bind(
-      draftId,
-      first.user_job_id,
-      bundleId,
-      Number(first.latest_draft_version ?? 0) + 1,
-      generated.message,
-      openingFor(ANESL_CONTACT_NAME),
-      generated.summary,
-      generated.provider,
-      generated.modelId,
-      context.foundationId,
-      context.templateKey,
-      timestamp
-    ),
-    ...packetStatements,
+    taskCreation.statement,
     env.DB.prepare(
       `UPDATE user_jobs SET status='review',updated_at=?
         WHERE user_id=? AND id IN (${orderedTargets.map(() => "?").join(",")})`
@@ -179,14 +152,17 @@ export async function createAneslApplicationSet(
       jobEventStatement(
         env.DB,
         target.user_job_id,
-        "bundle_draft_generated",
-        `Added ${target.source_reference} to ANESL application set`,
-        draftId,
+        "bundle_draft_queued",
+        `Queued ${target.source_reference} in an ANESL application set`,
+        undefined,
         { applicationBundleId: bundleId }
       )
     ),
   ]);
-  return readAneslApplicationSet(env.DB, userId, bundleId);
+  return {
+    applicationSet: await readAneslApplicationSet(env.DB, userId, bundleId),
+    taskRequest: taskCreation.request,
+  };
 }
 
 export async function reviseAneslApplicationSet(
@@ -195,35 +171,217 @@ export async function reviseAneslApplicationSet(
   bundleId: string,
   instruction: string
 ) {
-  const [model, profile, current, styleGuidance] = await Promise.all([
-    readApplicationMessageModel(env.DB),
+  const current = await currentBundleDraft(env.DB, userId, bundleId);
+  const active = await readActiveAgentTaskRequest(env.DB, {
+    subjectId: bundleId,
+    subjectType: "application_bundle",
+    taskType: APPLICATION_MESSAGE_TASK_TYPE,
+    userId,
+  });
+  if (active) {
+    return {
+      applicationSet: await readAneslApplicationSet(env.DB, userId, bundleId),
+      taskRequest: active,
+    };
+  }
+  const taskRequest = await createAgentTaskRequest(env.DB, {
+    payload: {
+      bundleId,
+      expectedDraftId: current.draftId,
+      instruction,
+      kind: "anesl_bundle",
+      mode: "revise",
+    } satisfies AneslBundleTaskInput,
+    subjectId: bundleId,
+    subjectType: "application_bundle",
+    taskType: APPLICATION_MESSAGE_TASK_TYPE,
+    userId,
+  });
+  return {
+    applicationSet: await readAneslApplicationSet(env.DB, userId, bundleId),
+    taskRequest,
+  };
+}
+
+interface PreparedAneslBundleTask {
+  context: MessageContext;
+  current: CurrentBundleDraft | null;
+  job: ReturnType<typeof aneslBundleJob>;
+  latestVersion: number;
+  prepared: PreparedApplicationMessage;
+  targets: Awaited<ReturnType<typeof readAneslBundleTargets>>;
+  userJobId: string;
+}
+
+export async function prepareAneslBundleTask(
+  env: AppEnv,
+  userId: string,
+  input: AneslBundleTaskInput
+): Promise<PreparedAneslBundleTask> {
+  const [profile, styleGuidance] = await Promise.all([
     savedProfile(env.DB, userId),
-    currentBundleDraft(env.DB, userId, bundleId),
     readMessageStyleGuidance(env.DB, userId),
   ]);
-  const context = await bundleMessageContext(env, userId, current.job);
-  const revised = await reviseApplicationMessage(
-    env,
-    model,
-    current.job,
-    profile,
-    current.message,
-    instruction,
-    styleGuidance,
-    context
+  if (input.mode === "revise") {
+    const current = await currentBundleDraft(env.DB, userId, input.bundleId);
+    if (current.draftId !== input.expectedDraftId) {
+      throw new DraftMutationError(
+        "The bundle draft changed before Codex could revise it",
+        {},
+        409
+      );
+    }
+    const targets = await readAneslBundleTargets(
+      env.DB,
+      userId,
+      input.bundleId
+    );
+    const context = await bundleMessageContext(env, userId, current.job);
+    return {
+      context,
+      current,
+      job: current.job,
+      latestVersion: current.version,
+      prepared: prepareApplicationMessageRevision(
+        current.job,
+        profile,
+        current.message,
+        input.instruction ?? "",
+        styleGuidance,
+        context
+      ),
+      targets,
+      userJobId: current.userJobId,
+    };
+  }
+  const targets = await readAneslBundleTargets(env.DB, userId, input.bundleId);
+  const [first] = targets;
+  if (!first) {
+    throw new ApplicationBundleError("ANESL application set not found", 404);
+  }
+  assertCompatibleAneslTargets(targets);
+  const job = aneslBundleJob(input.bundleId, targets);
+  const context = await bundleMessageContext(env, userId, job);
+  const latest = await env.DB.prepare(
+    "SELECT COALESCE(MAX(version),0) version FROM application_drafts WHERE user_job_id=?"
+  )
+    .bind(first.user_job_id)
+    .first<{ version: number }>();
+  return {
+    context,
+    current: null,
+    job,
+    latestVersion: Number(latest?.version ?? 0),
+    prepared: prepareApplicationMessageGeneration(
+      job,
+      profile,
+      styleGuidance,
+      context
+    ),
+    targets,
+    userJobId: first.user_job_id,
+  };
+}
+
+export async function buildAneslBundleTaskCompletion(
+  env: AppEnv,
+  userId: string,
+  input: AneslBundleTaskInput,
+  rawOutput: unknown,
+  modelId: string
+) {
+  const state = await prepareAneslBundleTask(env, userId, input);
+  const generated = validateCodexApplicationMessage(
+    rawOutput,
+    state.prepared,
+    modelId
   );
-  await persistBundleDraftMutation(env, userId, current, {
-    changeSummary: revised.summary,
-    foundationId: context.foundationId,
-    message: revised.message,
-    modelId: revised.modelId,
-    modelProvider: revised.provider,
-    revisionInstruction: instruction,
-    revisionSource: "ai_revision",
-    snapshotDraftId: current.draftId,
-    templateKey: context.templateKey,
-  });
-  return readAneslApplicationSet(env.DB, userId, bundleId);
+  if (state.current) {
+    return buildBundleDraftMutationPlan(env, userId, state.current, {
+      changeSummary: generated.summary,
+      foundationId: state.context.foundationId,
+      message: generated.message,
+      modelId: generated.modelId,
+      modelProvider: generated.provider,
+      revisionInstruction: input.instruction ?? "",
+      revisionSource: "ai_revision",
+      snapshotDraftId: state.current.draftId,
+      templateKey: state.context.templateKey,
+    });
+  }
+
+  const draftId = crypto.randomUUID();
+  const timestamp = new Date().toISOString();
+  const version = state.latestVersion + 1;
+  const packetStatements = await defaultPacketSnapshotStatements(
+    env,
+    userId,
+    draftId,
+    timestamp
+  );
+  return {
+    result: {
+      applicationSetId: input.bundleId,
+      draft: {
+        changeSummary: generated.summary,
+        createdAt: timestamp,
+        id: draftId,
+        message: generated.message,
+        previousMessage: "",
+        revisionSource: "generated" as const,
+        status: "draft" as const,
+        version,
+      },
+    },
+    statements: [
+      env.DB.prepare(
+        `UPDATE application_drafts SET status='superseded'
+          WHERE user_job_id=? AND status='draft'`
+      ).bind(state.userJobId),
+      env.DB.prepare(
+        `INSERT INTO application_drafts
+          (id,user_job_id,application_bundle_id,version,message,required_opening,
+           change_summary,model_provider,model_id,message_foundation_id,
+           message_template_key,revision_source,created_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      ).bind(
+        draftId,
+        state.userJobId,
+        input.bundleId,
+        version,
+        generated.message,
+        openingFor(ANESL_CONTACT_NAME),
+        generated.summary,
+        generated.provider,
+        generated.modelId,
+        state.context.foundationId,
+        state.context.templateKey,
+        "generated",
+        timestamp
+      ),
+      ...packetStatements,
+      env.DB.prepare(
+        `UPDATE user_jobs SET status='review',updated_at=?
+          WHERE user_id=? AND id IN (
+            SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
+          )`
+      ).bind(timestamp, userId, input.bundleId),
+      env.DB.prepare(
+        `UPDATE application_bundles SET status='review',updated_at=?
+          WHERE id=? AND user_id=? AND status='review'`
+      ).bind(timestamp, input.bundleId, userId),
+      ...state.targets.map((target) =>
+        jobEventStatement(
+          env.DB,
+          target.user_job_id,
+          "bundle_draft_generated",
+          `Added ${target.source_reference} to an ANESL application set`,
+          draftId,
+          { applicationBundleId: input.bundleId }
+        )
+      ),
+    ],
+  };
 }
 
 export async function saveManualAneslApplicationSetDraft(
@@ -316,6 +474,18 @@ export async function cancelAneslApplicationSet(
       409
     );
   }
+  const activeDraftTask = await readActiveAgentTaskRequest(db, {
+    subjectId: bundleId,
+    subjectType: "application_bundle",
+    taskType: APPLICATION_MESSAGE_TASK_TYPE,
+    userId,
+  });
+  if (activeDraftTask?.status === "claimed") {
+    throw new ApplicationBundleError(
+      "Codex is currently drafting this application set",
+      409
+    );
+  }
   const activeAttempt = await db
     .prepare(
       `SELECT status FROM application_attempts
@@ -332,6 +502,20 @@ export async function cancelAneslApplicationSet(
   }
   const timestamp = new Date().toISOString();
   await db.batch([
+    db
+      .prepare(
+        `UPDATE agent_task_requests
+            SET status='cancelled',completed_at=?,updated_at=?
+          WHERE user_id=? AND subject_type='application_bundle'
+            AND subject_id=? AND task_type=? AND status='queued'`
+      )
+      .bind(
+        timestamp,
+        timestamp,
+        userId,
+        bundleId,
+        APPLICATION_MESSAGE_TASK_TYPE
+      ),
     db
       .prepare(
         `DELETE FROM application_attempts
@@ -435,58 +619,84 @@ async function persistBundleDraftMutation(
   current: CurrentBundleDraft,
   input: BundleDraftMutation
 ) {
+  const plan = buildBundleDraftMutationPlan(env, userId, current, input);
+  await env.DB.batch(plan.statements);
+  return plan.result;
+}
+
+function buildBundleDraftMutationPlan(
+  env: AppEnv,
+  userId: string,
+  current: CurrentBundleDraft,
+  input: BundleDraftMutation
+) {
   const draftId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
   const version = current.version + 1;
-  await env.DB.batch([
-    env.DB.prepare(
-      `DELETE FROM application_attempts
-        WHERE application_bundle_id=? AND draft_id=? AND status='approved'
-          AND send_requested_at IS NULL AND gmail_draft_id=''`
-    ).bind(current.bundleId, current.draftId),
-    env.DB.prepare(
-      `UPDATE application_drafts SET status='superseded'
-        WHERE id=? AND application_bundle_id=? AND status IN ('draft','approved')`
-    ).bind(current.draftId, current.bundleId),
-    env.DB.prepare(
-      `INSERT INTO application_drafts
-        (id,user_job_id,application_bundle_id,version,message,required_opening,
-         change_summary,revision_instruction,model_provider,model_id,
-         message_foundation_id,message_template_key,revision_source,created_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-    ).bind(
-      draftId,
-      current.userJobId,
-      current.bundleId,
-      version,
-      input.message,
-      current.requiredOpening,
-      input.changeSummary,
-      input.revisionInstruction,
-      input.modelProvider,
-      input.modelId,
-      input.foundationId,
-      input.templateKey,
-      input.revisionSource,
-      timestamp
-    ),
-    ...copyPacketSnapshotStatements(
-      env.DB,
-      input.snapshotDraftId,
-      draftId,
-      timestamp
-    ),
-    env.DB.prepare(
-      `UPDATE user_jobs SET status='review',updated_at=?
-        WHERE user_id=? AND id IN (
-          SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
-        ) AND status IN ('new','review','approved','failed')`
-    ).bind(timestamp, userId, current.bundleId),
-    env.DB.prepare(
-      `UPDATE application_bundles SET status='review',updated_at=?
-        WHERE id=? AND user_id=? AND status IN ('review','approved','failed')`
-    ).bind(timestamp, current.bundleId, userId),
-  ]);
+  return {
+    result: {
+      applicationSetId: current.bundleId,
+      draft: {
+        changeSummary: input.changeSummary,
+        createdAt: timestamp,
+        id: draftId,
+        message: input.message,
+        previousMessage: current.message,
+        revisionSource: input.revisionSource,
+        status: "draft" as const,
+        version,
+      },
+    },
+    statements: [
+      env.DB.prepare(
+        `DELETE FROM application_attempts
+          WHERE application_bundle_id=? AND draft_id=? AND status='approved'
+            AND send_requested_at IS NULL AND gmail_draft_id=''`
+      ).bind(current.bundleId, current.draftId),
+      env.DB.prepare(
+        `UPDATE application_drafts SET status='superseded'
+          WHERE id=? AND application_bundle_id=? AND status IN ('draft','approved')`
+      ).bind(current.draftId, current.bundleId),
+      env.DB.prepare(
+        `INSERT INTO application_drafts
+          (id,user_job_id,application_bundle_id,version,message,required_opening,
+           change_summary,revision_instruction,model_provider,model_id,
+           message_foundation_id,message_template_key,revision_source,created_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      ).bind(
+        draftId,
+        current.userJobId,
+        current.bundleId,
+        version,
+        input.message,
+        current.requiredOpening,
+        input.changeSummary,
+        input.revisionInstruction,
+        input.modelProvider,
+        input.modelId,
+        input.foundationId,
+        input.templateKey,
+        input.revisionSource,
+        timestamp
+      ),
+      ...copyPacketSnapshotStatements(
+        env.DB,
+        input.snapshotDraftId,
+        draftId,
+        timestamp
+      ),
+      env.DB.prepare(
+        `UPDATE user_jobs SET status='review',updated_at=?
+          WHERE user_id=? AND id IN (
+            SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
+          ) AND status IN ('new','review','approved','failed')`
+      ).bind(timestamp, userId, current.bundleId),
+      env.DB.prepare(
+        `UPDATE application_bundles SET status='review',updated_at=?
+          WHERE id=? AND user_id=? AND status IN ('review','approved','failed')`
+      ).bind(timestamp, current.bundleId, userId),
+    ],
+  };
 }
 
 async function bundleMessageContext(

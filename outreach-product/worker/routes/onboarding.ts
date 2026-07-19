@@ -45,7 +45,7 @@ export function registerOnboardingRoutes(app: JobKitApp) {
 
   app.put("/api/profile-imports", async (c) => {
     const result = await importResume(c.env, c.get("user"), c.req.raw);
-    return c.json(result, 201);
+    return c.json(result, 202);
   });
 
   app.post("/api/onboarding/complete", async (c) => {

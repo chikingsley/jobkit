@@ -7,6 +7,8 @@ interface ImportRow {
   error_message: string | null;
   id: string;
   proposal_json: string | null;
+  source_text_detail: string;
+  source_text_provider: string;
   status: "processing" | "ready" | "failed" | "applied";
 }
 
@@ -14,6 +16,8 @@ export interface StoredProfileImport {
   errorMessage: string | null;
   id: string;
   proposal: ProfileImportProposal | null;
+  sourceTextDetail: string;
+  sourceTextProvider: string;
   status: ImportRow["status"];
 }
 
@@ -92,6 +96,38 @@ export async function finishProfileImport(
   }
 }
 
+export async function recordProfileImportSource(
+  db: D1Database,
+  input: {
+    detail: string;
+    importId: string;
+    provider: string;
+    sourceTextKey: string;
+    updatedAt: string;
+    userId: string;
+  }
+) {
+  const result = await db
+    .prepare(
+      `UPDATE profile_imports
+          SET source_text_key=?,source_text_provider=?,source_text_detail=?,
+              updated_at=?
+        WHERE id=? AND user_id=? AND status='processing'`
+    )
+    .bind(
+      input.sourceTextKey,
+      input.provider,
+      input.detail,
+      input.updatedAt,
+      input.importId,
+      input.userId
+    )
+    .run();
+  if ((result.meta.changes ?? 0) !== 1) {
+    throw new Error("Profile import source could not be recorded");
+  }
+}
+
 export async function failProfileImport(
   db: D1Database,
   input: {
@@ -120,7 +156,7 @@ export async function readLatestProfileImport(
 ): Promise<StoredProfileImport | null> {
   const row = await db
     .prepare(
-      "SELECT id,status,proposal_json,error_message FROM profile_imports WHERE user_id=? ORDER BY created_at DESC LIMIT 1"
+      "SELECT id,status,proposal_json,error_message,source_text_provider,source_text_detail FROM profile_imports WHERE user_id=? ORDER BY created_at DESC LIMIT 1"
     )
     .bind(userId)
     .first<ImportRow>();
@@ -133,6 +169,8 @@ export async function readLatestProfileImport(
     proposal: row.proposal_json
       ? ProfileImportProposalSchema.parse(JSON.parse(row.proposal_json))
       : null,
+    sourceTextDetail: row.source_text_detail,
+    sourceTextProvider: row.source_text_provider,
     status: row.status,
   };
 }

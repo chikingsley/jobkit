@@ -1,6 +1,5 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
-import { ApplicationMessageGenerationError } from "./ai/application-messages";
 import { JobFactExtractionError } from "./ai/job-fact-extraction";
 import { ProfileExtractionError } from "./ai/profile-extraction";
 import type { AgentRunnerContext, AuthUser, JobKitApp } from "./app-types";
@@ -29,14 +28,13 @@ import { registerOnboardingRoutes } from "./routes/onboarding";
 import { registerUserSettingsRoutes } from "./routes/user-settings";
 import { ImportSchema, SubmitSchema } from "./schemas";
 import { authenticateAgentRunner } from "./services/agent-runners";
-import { AgentTaskError } from "./services/agent-task-broker";
+import { AgentTaskError } from "./services/agent-tasks/contracts";
 import { ApplicationBundleError } from "./services/application-bundle-model";
 import {
   DraftMessageFoundationRequiredError,
   DraftMutationError,
   DraftProfileRequiredError,
-  importJobsWithDrafts,
-  regenerateDrafts,
+  importJobs,
 } from "./services/application-drafts";
 import { CountryMarketError } from "./services/country-markets";
 import { DocumentConversionError } from "./services/document-text";
@@ -74,9 +72,6 @@ app.onError((error, c) => {
       path: c.req.path,
     })
   );
-  if (error instanceof ApplicationMessageGenerationError) {
-    return c.json({ message: error.message, ok: false }, 502);
-  }
   if (error instanceof JobFactExtractionError) {
     return c.json({ message: error.message, ok: false }, 502);
   }
@@ -237,11 +232,6 @@ app.get("/api/locations", async (c) => {
   });
 });
 
-app.post("/api/drafts/regenerate", async (c) => {
-  const regenerated = await regenerateDrafts(c.env, c.get("user").id);
-  return c.json({ message: `Regenerated ${regenerated} drafts`, ok: true });
-});
-
 app.openapi(
   createRoute({
     method: "post",
@@ -262,7 +252,7 @@ app.openapi(
   }),
   async (c) => {
     const { jobs } = c.req.valid("json");
-    await importJobsWithDrafts(c.env, c.get("user").id, jobs);
+    await importJobs(c.env, c.get("user").id, jobs);
     return c.json({ message: `Imported ${jobs.length} jobs`, ok: true });
   }
 );

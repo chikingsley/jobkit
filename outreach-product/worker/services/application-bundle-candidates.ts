@@ -97,6 +97,7 @@ function toAneslPosition(row: Record<string, unknown>): Job {
     country: String(row.country),
     description: String(row.description),
     draft: null,
+    draftTask: null,
     emailAttempt: null,
     id: String(row.id),
     location: String(row.location),

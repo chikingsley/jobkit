@@ -1,5 +1,6 @@
 import { FileText, Upload } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,7 +11,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import type { ProfileImportResult } from "@/features/onboarding/schema";
+import type {
+  OnboardingState,
+  ProfileImportQueuedResult,
+  ProfileImportResult,
+} from "@/features/onboarding/schema";
 import { apiRequest } from "@/lib/api";
 
 const acceptedTypes = new Set([
@@ -25,9 +30,11 @@ const acceptedTypes = new Set([
 ]);
 
 export function ResumeUploadStep({
+  initialImport,
   onImported,
   onManual,
 }: {
+  initialImport: OnboardingState["profileImport"];
   onImported: (result: ProfileImportResult) => void;
   onManual: () => void;
 }) {
@@ -35,6 +42,47 @@ export function ResumeUploadStep({
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [importId, setImportId] = useState<string | null>(() =>
+    initialImport?.status === "processing" ? initialImport.id : null
+  );
+  const { data: importState, error: importStatusError } = useSWR(
+    importId ? "/api/onboarding" : null,
+    async (path) => (await (await apiRequest(path)).json()) as OnboardingState,
+    { errorRetryInterval: 3000, refreshInterval: 1500 }
+  );
+
+  useEffect(() => {
+    if (!(importId && importState?.profileImport?.id === importId)) {
+      return;
+    }
+    const { profileImport, profile } = importState;
+    if (profileImport.status === "failed") {
+      setImportId(null);
+      setError(profileImport.errorMessage ?? "Resume extraction failed");
+      return;
+    }
+    if (profileImport.status !== "ready") {
+      return;
+    }
+    const { proposal } = profileImport;
+    if (!proposal) {
+      setImportId(null);
+      setError("The completed resume import had no proposal");
+      return;
+    }
+    setImportId(null);
+    onImported({ id: importId, profile, proposal, status: "ready" });
+  }, [importId, importState, onImported]);
+
+  useEffect(() => {
+    if (importStatusError) {
+      setError(
+        importStatusError instanceof Error
+          ? importStatusError.message
+          : "Resume status could not be checked"
+      );
+    }
+  }, [importStatusError]);
 
   function choose(next: File | null) {
     setError("");
@@ -71,7 +119,8 @@ export function ResumeUploadStep({
         },
         method: "PUT",
       });
-      onImported((await response.json()) as ProfileImportResult);
+      const result = (await response.json()) as ProfileImportQueuedResult;
+      setImportId(result.id);
     } catch (uploadError) {
       setError(
         uploadError instanceof Error
@@ -83,6 +132,8 @@ export function ResumeUploadStep({
     }
   }
 
+  const processing = importId !== null;
+  const actionLabel = resumeActionLabel(busy, processing);
   return (
     <div className="mx-auto grid w-full max-w-2xl gap-4 px-4 py-10 sm:px-6">
       <div className="text-center">
@@ -136,15 +187,29 @@ export function ResumeUploadStep({
           ) : null}
         </CardContent>
         <CardFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
-          <Button disabled={busy} onClick={onManual} variant="ghost">
+          <Button
+            disabled={busy || processing}
+            onClick={onManual}
+            variant="ghost"
+          >
             Build my profile manually
           </Button>
-          <Button disabled={busy} onClick={() => void upload()}>
+          <Button disabled={busy || processing} onClick={() => void upload()}>
             <Upload />
-            {busy ? "Reading and structuring…" : "Continue with resume"}
+            {actionLabel}
           </Button>
         </CardFooter>
       </Card>
     </div>
   );
+}
+
+function resumeActionLabel(busy: boolean, processing: boolean) {
+  if (busy) {
+    return "Reading document…";
+  }
+  if (processing) {
+    return "Waiting for your Codex agent…";
+  }
+  return "Continue with resume";
 }

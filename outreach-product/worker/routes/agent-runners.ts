@@ -14,13 +14,28 @@ import {
   updateAgentRunnerVersion,
 } from "../services/agent-runners";
 import {
-  AgentTaskError,
   claimAgentTask,
   completeAgentTask,
   failAgentTask,
 } from "../services/agent-task-broker";
+import { readAgentTaskRequest } from "../services/agent-task-requests";
+import { AgentTaskError } from "../services/agent-tasks/contracts";
 
 export function registerAgentRunnerRoutes(app: JobKitApp) {
+  app.get("/api/agent-task-requests/:requestId", async (c) => {
+    const taskRequest = await readAgentTaskRequest(c.env.DB, {
+      requestId: c.req.param("requestId"),
+      userId: c.get("user").id,
+    });
+    if (!taskRequest) {
+      return c.json(
+        { message: "Agent task request was not found", ok: false },
+        404
+      );
+    }
+    return c.json({ ok: true, taskRequest });
+  });
+
   app.get("/api/agent-runners", async (c) => {
     const runners = await listAgentRunners(c.env.DB, c.get("user").id);
     return c.json({ runners });
@@ -76,7 +91,7 @@ export function registerAgentRunnerRoutes(app: JobKitApp) {
     const runner = requireAgentRunner(c.get("agentRunner"));
     const { runnerVersion } = AgentTaskClaimSchema.parse(await c.req.json());
     await updateAgentRunnerVersion(c.env.DB, runner.id, runnerVersion);
-    const task = await claimAgentTask(c.env.DB, runner);
+    const task = await claimAgentTask(c.env, runner);
     return c.json({
       message: task
         ? "Agent task claimed"
@@ -90,7 +105,7 @@ export function registerAgentRunnerRoutes(app: JobKitApp) {
     const runner = requireAgentRunner(c.get("agentRunner"));
     const { output } = AgentTaskCompletionSchema.parse(await c.req.json());
     const result = await completeAgentTask(
-      c.env.DB,
+      c.env,
       runner,
       c.req.param("runId"),
       output
@@ -102,7 +117,7 @@ export function registerAgentRunnerRoutes(app: JobKitApp) {
     const runner = requireAgentRunner(c.get("agentRunner"));
     const { error } = AgentTaskFailureSchema.parse(await c.req.json());
     const result = await failAgentTask(
-      c.env.DB,
+      c.env,
       runner,
       c.req.param("runId"),
       error

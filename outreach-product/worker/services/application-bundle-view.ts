@@ -15,6 +15,7 @@ interface BundleRow {
   draft_created_at: string | null;
   draft_id: string | null;
   draft_status: string | null;
+  draft_task_json: string | null;
   draft_version: number | null;
   id: string;
   message: string | null;
@@ -67,6 +68,13 @@ export interface AneslApplicationSet {
   attempt: null | { id: string; status: string };
   createdAt: string;
   draft: AneslApplicationDraft | null;
+  draftTask: {
+    error: string;
+    id: string;
+    mode: "generate" | "revise";
+    status: "cancelled" | "claimed" | "completed" | "failed" | "queued";
+    updatedAt: string;
+  } | null;
   id: string;
   recipient: string;
   sentAt: string | null;
@@ -99,7 +107,22 @@ export async function listAneslApplicationSets(
               a.id attempt_id,a.status attempt_status,
               ts.recipient test_recipient,ts.status test_status,
               ts.sent_at test_sent_at,
-              ts.reply_received_at test_reply_received_at
+              ts.reply_received_at test_reply_received_at,
+              (
+                SELECT json_object(
+                  'id',atr.id,
+                  'status',atr.status,
+                  'mode',json_extract(atr.input_json,'$.mode'),
+                  'error',atr.error_detail,
+                  'updatedAt',atr.updated_at
+                )
+                FROM agent_task_requests atr
+                WHERE atr.user_id=b.user_id
+                  AND atr.task_type='application.message'
+                  AND atr.subject_type='application_bundle'
+                  AND atr.subject_id=b.id
+                ORDER BY atr.created_at DESC LIMIT 1
+              ) draft_task_json
          FROM application_bundles b
          LEFT JOIN application_drafts d ON d.id=(
            SELECT latest.id FROM application_drafts latest
@@ -211,6 +234,9 @@ function toApplicationSet(
           status: row.draft_status ?? "draft",
           version: row.draft_version ?? 1,
         }
+      : null,
+    draftTask: row.draft_task_json
+      ? (JSON.parse(row.draft_task_json) as AneslApplicationSet["draftTask"])
       : null,
     id: row.id,
     recipient: row.recipient,

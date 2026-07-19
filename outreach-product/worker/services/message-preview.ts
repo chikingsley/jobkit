@@ -1,14 +1,27 @@
+import {
+  APPLICATION_MESSAGE_TASK_TYPE,
+  type ApplicationMessageRequestInput,
+} from "../../src/agent-tasks/application-message";
 import { applicationMessagePolicyFor } from "../ai/application-message-policy";
 import {
   openingFor,
-  reviseApplicationMessage,
+  prepareApplicationMessageRevision,
   signatureFor,
+  validateCodexApplicationMessage,
 } from "../ai/application-messages";
 import type { AppEnv } from "../env";
-import { readApplicationMessageModel } from "../repositories/ai-model-settings";
 import { readMessageStyleGuidance } from "../repositories/message-style";
 import { type JobImport, JobImportSchema } from "../schemas";
+import {
+  createAgentTaskRequest,
+  readActiveAgentTaskRequest,
+} from "./agent-task-requests";
 import { messageContext, savedProfile } from "./application-drafts";
+
+export type MessagePreviewTaskInput = Extract<
+  ApplicationMessageRequestInput,
+  { kind: "message_preview" }
+>;
 
 const PREVIEW_SAMPLES = [
   {
@@ -95,34 +108,76 @@ export async function readMessagePreviews(env: AppEnv, userId: string) {
   );
 }
 
-export async function reviseMessagePreview(
+export async function queueMessagePreviewRevision(
   env: AppEnv,
   userId: string,
-  key: string,
-  currentMessage: string,
-  instruction: string
+  input: MessagePreviewTaskInput
 ) {
-  const sample = PREVIEW_SAMPLES.find((candidate) => candidate.key === key);
-  if (!sample) {
-    throw new Error("Unknown message preview sample");
+  requirePreviewSample(input.previewKey);
+  const active = await readActiveAgentTaskRequest(env.DB, {
+    subjectId: input.previewKey,
+    subjectType: "message_preview",
+    taskType: APPLICATION_MESSAGE_TASK_TYPE,
+    userId,
+  });
+  if (active) {
+    return active;
   }
+  return createAgentTaskRequest(env.DB, {
+    payload: input,
+    subjectId: input.previewKey,
+    subjectType: "message_preview",
+    taskType: APPLICATION_MESSAGE_TASK_TYPE,
+    userId,
+  });
+}
+
+export async function prepareMessagePreviewTask(
+  env: AppEnv,
+  userId: string,
+  input: MessagePreviewTaskInput
+) {
+  const sample = requirePreviewSample(input.previewKey);
   const job = JobImportSchema.parse(sample.job);
-  const [model, profile, styleGuidance, context] = await Promise.all([
-    readApplicationMessageModel(env.DB),
+  const [profile, styleGuidance, context] = await Promise.all([
     savedProfile(env.DB, userId),
     readMessageStyleGuidance(env.DB, userId),
     messageContext(env, userId, job, sample.shape),
   ]);
-  return reviseApplicationMessage(
-    env,
-    model,
+  return prepareApplicationMessageRevision(
     job,
     profile,
-    currentMessage,
-    instruction,
+    input.currentMessage,
+    input.instruction,
     styleGuidance,
     context
   );
+}
+
+export async function completeMessagePreviewTask(
+  env: AppEnv,
+  userId: string,
+  input: MessagePreviewTaskInput,
+  rawOutput: unknown,
+  modelId: string
+) {
+  const prepared = await prepareMessagePreviewTask(env, userId, input);
+  const revised = validateCodexApplicationMessage(rawOutput, prepared, modelId);
+  return {
+    changeSummary: revised.summary,
+    message: revised.message,
+    modelId: revised.modelId,
+    previousMessage: input.currentMessage,
+    provider: revised.provider,
+  };
+}
+
+function requirePreviewSample(key: string) {
+  const sample = PREVIEW_SAMPLES.find((candidate) => candidate.key === key);
+  if (!sample) {
+    throw new Error("Unknown message preview sample");
+  }
+  return sample;
 }
 
 function startingMessage(

@@ -96,6 +96,12 @@ export interface ProfileImportResult {
   status: z.infer<typeof ProfileImportStatusSchema>;
 }
 
+export interface ProfileImportQueuedResult {
+  id: string;
+  status: "processing";
+  taskRequestId: string;
+}
+
 export interface OnboardingState {
   completedAt: string | null;
   hasPreferences: boolean;
@@ -106,6 +112,8 @@ export interface OnboardingState {
     errorMessage: string | null;
     id: string;
     proposal: ProfileImportProposal | null;
+    sourceTextDetail: string;
+    sourceTextProvider: string;
     status: z.infer<typeof ProfileImportStatusSchema>;
   } | null;
 }

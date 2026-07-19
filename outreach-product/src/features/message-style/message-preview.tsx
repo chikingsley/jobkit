@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageChanges, MessageText } from "@/features/jobs/message-diff";
+import { waitForAgentTask } from "@/lib/agent-task-client";
 import type { ApiRequest } from "@/lib/api";
 
 interface PreviewSample {
@@ -88,7 +89,13 @@ export function MessagePreview({ request }: { request: ApiRequest }) {
         headers: { "content-type": "application/json" },
         method: "POST",
       });
-      const result = (await response.json()) as {
+      const queued = (await response.json()) as {
+        taskRequest: { id: string };
+      };
+      const result = (await waitForAgentTask(
+        request,
+        queued.taskRequest.id
+      )) as {
         changeSummary: string;
         message: string;
         modelId: string;

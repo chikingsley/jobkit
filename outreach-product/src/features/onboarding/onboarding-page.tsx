@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
@@ -38,11 +38,11 @@ export function OnboardingPage({
   const [step, setStep] = useState<OnboardingStep>(() => initialStep(state));
   const [completing, setCompleting] = useState(false);
 
-  function imported(result: ProfileImportResult) {
+  const imported = useCallback((result: ProfileImportResult) => {
     setProfile(result.profile);
     setProposal(result.proposal);
     setStep("profile");
-  }
+  }, []);
 
   async function complete() {
     setCompleting(true);
@@ -79,6 +79,7 @@ export function OnboardingPage({
       <OnboardingSteps step={step} />
       {step === "resume" ? (
         <ResumeUploadStep
+          initialImport={state.profileImport}
           onImported={imported}
           onManual={() => setStep("profile")}
         />

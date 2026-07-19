@@ -14,10 +14,10 @@ export const RESUME_CONTENT_TYPES = new Set([
 ]);
 
 const TEXT_CONTENT_TYPES = new Set(["text/markdown", "text/plain"]);
-const OFFICE_CONTENT_TYPES = new Set([
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-]);
+const DOCX_CONTENT_TYPE =
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const PPTX_CONTENT_TYPE =
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation";
 const MAX_RESUME_TEXT_CHARACTERS = 60_000;
 const MAX_PROVIDER_RESPONSE_CHARACTERS = 2_000_000;
 const MistralFileSchema = z.object({ id: z.string().min(1) }).passthrough();
@@ -40,27 +40,104 @@ const MistralOcrResponseSchema = z
 
 export class DocumentConversionError extends Error {}
 
-export function convertResumeToText(
+export interface DocumentTextConversion {
+  detail: string;
+  provider: "deterministic" | "mistral";
+  text: string;
+}
+
+export async function convertResumeToText(
   env: AppEnv,
   input: { bytes: ArrayBuffer; contentType: string; filename: string }
-): Promise<string> {
+) {
   assertFileSignature(input.bytes, input.contentType);
   if (TEXT_CONTENT_TYPES.has(input.contentType)) {
-    return Promise.resolve(readableText(new TextDecoder().decode(input.bytes)));
+    return {
+      detail: "plain-text",
+      provider: "deterministic" as const,
+      text: readableText(new TextDecoder().decode(input.bytes)),
+    };
   }
 
-  if (OFFICE_CONTENT_TYPES.has(input.contentType)) {
-    return convertUploadedDocument(env, input);
+  if (input.contentType === "application/pdf") {
+    const text = await deterministicPdfText(input);
+    if (text) {
+      return { detail: "unpdf", provider: "deterministic" as const, text };
+    }
+  } else if (input.contentType === DOCX_CONTENT_TYPE) {
+    const text = await deterministicDocxText(input);
+    if (text) {
+      return { detail: "mammoth", provider: "deterministic" as const, text };
+    }
+  }
+
+  if (
+    input.contentType === DOCX_CONTENT_TYPE ||
+    input.contentType === PPTX_CONTENT_TYPE
+  ) {
+    return {
+      detail: "mistral-ocr-latest",
+      provider: "mistral" as const,
+      text: await convertUploadedDocument(env, input),
+    };
   }
 
   const type = input.contentType.startsWith("image/")
     ? "image_url"
     : "document_url";
-  return convertDocumentUrl(
-    env,
-    input,
-    type,
-    `data:${input.contentType};base64,${Buffer.from(input.bytes).toString("base64")}`
+  return {
+    detail: "mistral-ocr-latest",
+    provider: "mistral" as const,
+    text: await convertDocumentUrl(
+      env,
+      input,
+      type,
+      `data:${input.contentType};base64,${Buffer.from(input.bytes).toString("base64")}`
+    ),
+  };
+}
+
+async function deterministicPdfText(input: {
+  bytes: ArrayBuffer;
+  filename: string;
+}) {
+  try {
+    const { extractText, getDocumentProxy } = await import("unpdf");
+    const document = await getDocumentProxy(new Uint8Array(input.bytes));
+    const result = await extractText(document, { mergePages: true });
+    return readableText(result.text);
+  } catch (error) {
+    logDeterministicFailure(input.filename, "unpdf", error);
+    return null;
+  }
+}
+
+async function deterministicDocxText(input: {
+  bytes: ArrayBuffer;
+  filename: string;
+}) {
+  try {
+    const mammoth = await import("mammoth");
+    const result = await mammoth.extractRawText({ arrayBuffer: input.bytes });
+    return readableText(result.value);
+  } catch (error) {
+    logDeterministicFailure(input.filename, "mammoth", error);
+    return null;
+  }
+}
+
+function logDeterministicFailure(
+  filename: string,
+  extractor: string,
+  error: unknown
+) {
+  console.info(
+    JSON.stringify({
+      error: error instanceof Error ? error.message : String(error),
+      event: "deterministic_document_extraction_unavailable",
+      extractor,
+      filename,
+    })
   );
 }
 

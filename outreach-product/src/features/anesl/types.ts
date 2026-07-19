@@ -13,6 +13,13 @@ export interface AneslApplicationSet {
   attempt: null | { id: string; status: string };
   createdAt: string;
   draft: JobDraft | null;
+  draftTask: {
+    error: string;
+    id: string;
+    mode: "generate" | "revise";
+    status: "cancelled" | "claimed" | "completed" | "failed" | "queued";
+    updatedAt: string;
+  } | null;
   id: string;
   recipient: string;
   sentAt: string | null;
@@ -32,4 +39,8 @@ export interface AneslApplicationSetResponse {
   applicationSet: AneslApplicationSet;
   notice?: string;
   ok: true;
+  taskRequest?: {
+    id: string;
+    status: "claimed" | "queued";
+  };
 }

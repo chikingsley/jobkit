@@ -14,21 +14,24 @@ import {
   writeAutomationPolicy,
 } from "../repositories/automation-policy";
 import { compensationFromRow } from "../repositories/jobs";
-import { generateJobDraft } from "../services/application-drafts";
+import { queueJobDraftGeneration } from "../services/application-drafts";
 import { analyzeUserJobs } from "../services/job-analysis";
 
 export function registerJobRoutes(app: JobKitApp) {
   app.post("/api/jobs/:id/generate", async (c) => {
-    const draft = await generateJobDraft(
+    const taskRequest = await queueJobDraftGeneration(
       c.env,
       c.get("user").id,
       c.req.param("id")
     );
-    return c.json({
-      message: `Draft generated with ${draft.provider}/${draft.modelId}`,
-      ok: true,
-      summary: draft.summary,
-    });
+    return c.json(
+      {
+        message: "Application queued for your Codex agent",
+        ok: true,
+        taskRequest,
+      },
+      202
+    );
   });
 
   app.get("/api/jobs", async (c) => {
@@ -117,7 +120,22 @@ export function registerJobRoutes(app: JobKitApp) {
                   LEFT JOIN contact_channels cc ON cc.id=ar.contact_channel_id
                   LEFT JOIN contacts c ON c.id=cc.contact_id
                   WHERE ar.job_id=j.id
-                ),'[]') application_routes_json
+                ),'[]') application_routes_json,
+                (
+                  SELECT json_object(
+                    'id',atr.id,
+                    'status',atr.status,
+                    'mode',json_extract(atr.input_json,'$.mode'),
+                    'error',atr.error_detail,
+                    'updatedAt',atr.updated_at
+                  )
+                  FROM agent_task_requests atr
+                  WHERE atr.user_id=uj.user_id
+                    AND atr.task_type='application.message'
+                    AND atr.subject_type='job'
+                    AND atr.subject_id=j.id
+                  ORDER BY atr.created_at DESC LIMIT 1
+                ) draft_task_json
          FROM user_jobs uj
          JOIN jobs j ON j.id=uj.job_id
          LEFT JOIN job_match_facts mf ON mf.job_id=j.id
@@ -197,6 +215,9 @@ function toReviewJob(row: Record<string, unknown>) {
           status: String(row.draft_status),
           version: Number(row.version),
         }
+      : null,
+    draftTask: row.draft_task_json
+      ? (JSON.parse(String(row.draft_task_json)) as unknown)
       : null,
     emailAttempt: row.email_attempt_json
       ? (JSON.parse(String(row.email_attempt_json)) as unknown)

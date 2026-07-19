@@ -18,6 +18,7 @@ import { AneslPositionItem } from "./position-item";
 import type { AneslApplicationSet } from "./types";
 
 const PAGE_SIZE = 100;
+const AGENT_TASK_REFRESH_INTERVAL_MS = 1000;
 
 interface AneslPositionPage {
   hasMore: boolean;
@@ -51,7 +52,17 @@ export function AneslWorkspace({
         (await (await request(path)).json()) as {
           applicationSets: AneslApplicationSet[];
         }
-      ).applicationSets
+      ).applicationSets,
+    {
+      refreshInterval: (sets) =>
+        sets?.some(
+          (set) =>
+            set.draftTask?.status === "queued" ||
+            set.draftTask?.status === "claimed"
+        )
+          ? AGENT_TASK_REFRESH_INTERVAL_MS
+          : 0,
+    }
   );
   const {
     data: positionPages,
@@ -134,7 +145,7 @@ export function AneslWorkspace({
       });
       setSelectedIds([]);
       await Promise.all([mutateSets(), mutatePositions()]);
-      toast.success("ANESL application set created");
+      toast.success("ANESL application set queued for Codex drafting");
     } catch (error) {
       toast.error(
         error instanceof Error

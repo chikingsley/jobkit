@@ -49,15 +49,19 @@ export function registerApplicationBundleRoutes(app: JobKitApp) {
 
   app.post("/api/anesl/application-sets", async (c) => {
     const { jobIds } = CreateSetSchema.parse(await c.req.json());
-    return c.json({
-      applicationSet: await createAneslApplicationSet(
-        c.env,
-        c.get("user").id,
-        jobIds
-      ),
-      message: "ANESL application set created",
-      ok: true as const,
-    });
+    const created = await createAneslApplicationSet(
+      c.env,
+      c.get("user").id,
+      jobIds
+    );
+    return c.json(
+      {
+        ...created,
+        message: "ANESL application set queued for Codex drafting",
+        ok: true as const,
+      },
+      202
+    );
   });
 
   app.put("/api/anesl/application-sets/:bundleId/draft", async (c) => {
@@ -76,16 +80,20 @@ export function registerApplicationBundleRoutes(app: JobKitApp) {
 
   app.post("/api/anesl/application-sets/:bundleId/revise", async (c) => {
     const { instruction } = ReviseSchema.parse(await c.req.json());
-    return c.json({
-      applicationSet: await reviseAneslApplicationSet(
-        c.env,
-        c.get("user").id,
-        c.req.param("bundleId"),
-        instruction
-      ),
-      notice: "Message revised",
-      ok: true as const,
-    });
+    const queued = await reviseAneslApplicationSet(
+      c.env,
+      c.get("user").id,
+      c.req.param("bundleId"),
+      instruction
+    );
+    return c.json(
+      {
+        ...queued,
+        notice: "Revision queued for Codex",
+        ok: true as const,
+      },
+      202
+    );
   });
 
   app.post("/api/anesl/application-sets/:bundleId/undo", async (c) =>

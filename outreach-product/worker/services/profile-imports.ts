@@ -1,13 +1,12 @@
-import { profileFromImport } from "../../src/features/onboarding/schema";
-import { extractProfileProposal } from "../ai/profile-extraction";
+import { PROFILE_IMPORT_TASK_TYPE } from "../../src/agent-tasks/profile-import";
 import type { AuthUser } from "../app-types";
 import type { AppEnv } from "../env";
-import { readAiModel } from "../repositories/ai-model-settings";
 import {
   createProfileImportRecords,
   failProfileImport,
-  finishProfileImport,
+  recordProfileImportSource,
 } from "../repositories/onboarding";
+import { createAgentTaskRequest } from "./agent-task-requests";
 import { convertResumeToText, RESUME_CONTENT_TYPES } from "./document-text";
 
 export const MAX_RESUME_BYTES = 5 * 1024 * 1024;
@@ -83,29 +82,34 @@ export async function importResume(
 
   let sourceTextStored = false;
   try {
-    const [sourceText, model] = await Promise.all([
-      convertResumeToText(env, { bytes, contentType, filename }),
-      readAiModel(env.DB, "profile_extraction"),
-    ]);
-    const extraction = await extractProfileProposal(env, model, sourceText);
-    await env.DOCUMENTS.put(sourceTextKey, sourceText, {
+    const conversion = await convertResumeToText(env, {
+      bytes,
+      contentType,
+      filename,
+    });
+    await env.DOCUMENTS.put(sourceTextKey, conversion.text, {
       httpMetadata: { contentType: "text/markdown; charset=utf-8" },
     });
     sourceTextStored = true;
-    await finishProfileImport(env.DB, {
+    await recordProfileImportSource(env.DB, {
+      detail: conversion.detail,
       importId,
-      modelId: extraction.modelId,
-      modelProvider: extraction.provider,
-      proposal: extraction.proposal,
+      provider: conversion.provider,
       sourceTextKey,
       updatedAt: new Date().toISOString(),
       userId: user.id,
     });
+    const task = await createAgentTaskRequest(env.DB, {
+      payload: { sourceTextKey },
+      subjectId: importId,
+      subjectType: "profile_import",
+      taskType: PROFILE_IMPORT_TASK_TYPE,
+      userId: user.id,
+    });
     return {
       id: importId,
-      profile: profileFromImport(extraction.proposal, user),
-      proposal: extraction.proposal,
-      status: "ready" as const,
+      status: "processing" as const,
+      taskRequestId: task.id,
     };
   } catch (error) {
     if (sourceTextStored) {

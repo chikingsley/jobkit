@@ -182,6 +182,16 @@ export function App() {
         headers: { "content-type": "application/json" },
         method: options.method ?? "POST",
       });
+      if (response.status === 202) {
+        const queued = (await response.json()) as {
+          notice: string;
+          ok: true;
+        };
+        setInstruction("");
+        await loadJobs({ quiet: true });
+        toast.success(queued.notice);
+        return null;
+      }
       const result = (await response.json()) as DraftMutationResult;
       applyDraftMutation(selected.id, result);
       setInstruction("");

@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { JobKitApp } from "../app-types";
 import { ManualDraftSchema, ReviseSchema } from "../schemas";
 import {
-  reviseJobDraft,
+  queueJobDraftRevision,
   saveManualJobDraft,
   undoJobDraft,
 } from "../services/application-drafts";
@@ -26,6 +26,11 @@ const ErrorResponseSchema = z.object({
   message: z.string(),
   ok: z.literal(false),
 });
+const DraftTaskQueuedResponseSchema = z.object({
+  notice: z.string(),
+  ok: z.literal(true),
+  taskRequest: z.object({ id: z.string(), status: z.string() }),
+});
 const JobIdSchema = z.object({ id: z.string() });
 
 export function registerApplicationDraftRoutes(app: JobKitApp) {
@@ -42,7 +47,7 @@ export function registerApplicationDraftRoutes(app: JobKitApp) {
     async (c) => {
       const { id } = c.req.valid("param");
       const { instruction } = c.req.valid("json");
-      const result = await reviseJobDraft(
+      const taskRequest = await queueJobDraftRevision(
         c.env,
         c.get("user").id,
         id,
@@ -50,11 +55,11 @@ export function registerApplicationDraftRoutes(app: JobKitApp) {
       );
       return c.json(
         {
-          ...result,
-          notice: "Message revised",
+          notice: "Revision queued for your Codex agent",
           ok: true as const,
+          taskRequest,
         },
-        200
+        202
       );
     }
   );
@@ -118,6 +123,12 @@ function draftMutationResponses(description: string) {
     200: {
       content: { "application/json": { schema: DraftMutationResponseSchema } },
       description,
+    },
+    202: {
+      content: {
+        "application/json": { schema: DraftTaskQueuedResponseSchema },
+      },
+      description: "Queued for the paired Codex agent",
     },
     409: {
       content: { "application/json": { schema: ErrorResponseSchema } },

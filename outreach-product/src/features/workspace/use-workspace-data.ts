@@ -18,6 +18,8 @@ interface QualificationClaimInput {
   label: string;
 }
 
+const AGENT_TASK_REFRESH_MS = 1500;
+
 export function useWorkspaceData() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,6 +55,21 @@ export function useWorkspaceData() {
   useEffect(() => {
     void loadJobs();
   }, [loadJobs]);
+
+  useEffect(() => {
+    const hasActiveDraftTask = jobs.some(
+      (job) =>
+        job.draftTask?.status === "queued" ||
+        job.draftTask?.status === "claimed"
+    );
+    if (!hasActiveDraftTask) {
+      return;
+    }
+    const interval = window.setInterval(() => {
+      void loadJobs({ quiet: true });
+    }, AGENT_TASK_REFRESH_MS);
+    return () => window.clearInterval(interval);
+  }, [jobs, loadJobs]);
 
   useEffect(() => {
     const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
