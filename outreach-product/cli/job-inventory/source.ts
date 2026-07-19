@@ -1,34 +1,12 @@
 import { Database } from "bun:sqlite";
 import { getCountries } from "libphonenumber-js";
+import {
+  type InventoryJob,
+  InventoryJobSchema,
+} from "../../src/features/inventory/schema";
+import { cloudflareEmailsFromHtml } from "../../src/features/jobs/protected-email";
 
-export interface InventoryCompensation {
-  amountMaximum: number | null;
-  amountMinimum: number | null;
-  confidence: "exact" | "inferred" | "unknown";
-  currency: string | null;
-  display: string;
-  period: "hour" | "month" | "year" | null;
-  qualifier: "exact" | "from" | "range" | "up-to" | null;
-}
-
-export interface InventoryJob {
-  applyEmail: string;
-  applyUrl: string;
-  board: string;
-  company: string;
-  compensation: InventoryCompensation;
-  contactName: string;
-  country: string;
-  description: string;
-  id: string;
-  lastSeenAt: string;
-  location: string;
-  marketSegments: string[];
-  salary: string;
-  sourceReference: string;
-  sourceUrl: string;
-  title: string;
-}
+type InventoryCompensation = InventoryJob["compensation"];
 
 interface SourceJobRow {
   apply_email: string;
@@ -159,8 +137,8 @@ function toInventoryJob(row: SourceJobRow): InventoryJob {
   const salary = payStatement(row, fields);
   const description =
     row.description || fields.description || fields.body || row.raw;
-  return {
-    applyEmail: row.apply_email.trim().toLocaleLowerCase("en"),
+  return InventoryJobSchema.parse({
+    applyEmail: applyEmailFor(row),
     applyUrl: row.apply_url || row.url,
     board: row.board,
     company: row.company || fields.company || "",
@@ -179,7 +157,15 @@ function toInventoryJob(row: SourceJobRow): InventoryJob {
     sourceReference: sourceReferenceFor(row, fields),
     sourceUrl: row.url,
     title: row.title,
-  };
+  });
+}
+
+function applyEmailFor(row: SourceJobRow) {
+  const stored = row.apply_email.trim().toLocaleLowerCase("en");
+  if (stored) {
+    return stored;
+  }
+  return cloudflareEmailsFromHtml(`${row.raw}\n${row.raw_json}`)[0] ?? "";
 }
 
 function sourceReferenceFor(
@@ -317,7 +303,7 @@ function parseCompensation(
   sourceValue: string,
   sourceCurrency: string,
   country: string
-): InventoryCompensation {
+): InventoryJob["compensation"] {
   const source = sourceValue.split("≈", 1)[0]?.trim() ?? "";
   if (!source) {
     return emptyCompensation("Salary not listed");

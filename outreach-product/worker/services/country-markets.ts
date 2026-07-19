@@ -88,7 +88,8 @@ export async function listCountryMarkets(
     await db.batch<CountryCountRow>([
       db.prepare(
         `SELECT country country_name,COUNT(*) count
-           FROM jobs WHERE trim(country)<>''
+           FROM jobs
+          WHERE inventory_status='active' AND trim(country)<>''
           GROUP BY lower(country),country`
       ),
       db.prepare(
@@ -207,7 +208,8 @@ export async function readCountryDetail(
                   uj.status user_status
              FROM jobs j
              LEFT JOIN user_jobs uj ON uj.job_id=j.id AND uj.user_id=?
-            WHERE lower(trim(j.country)) IN (${jobCountryPlaceholders})
+            WHERE j.inventory_status='active'
+              AND lower(trim(j.country)) IN (${jobCountryPlaceholders})
             ORDER BY j.updated_at DESC,j.title`
         )
         .bind(userId, ...jobCountryNames),

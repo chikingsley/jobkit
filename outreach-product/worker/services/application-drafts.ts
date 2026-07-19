@@ -136,12 +136,37 @@ export async function queueJobDraftGeneration(
   userId: string,
   jobId: string
 ) {
+  await ensureUserJobForDraftGeneration(env.DB, userId, jobId);
   await readJobForDraftGeneration(env.DB, userId, jobId);
   return queueJobDraftTask(env.DB, userId, jobId, {
     jobId,
     kind: "job_draft",
     mode: "generate",
   });
+}
+
+async function ensureUserJobForDraftGeneration(
+  db: D1Database,
+  userId: string,
+  jobId: string
+) {
+  const job = await db
+    .prepare("SELECT id FROM jobs WHERE id=? AND inventory_status='active'")
+    .bind(jobId)
+    .first<{ id: string }>();
+  if (!job) {
+    throw new Error("Job not found");
+  }
+  const timestamp = new Date().toISOString();
+  await db
+    .prepare(
+      `INSERT INTO user_jobs
+        (id,user_id,job_id,status,priority,created_at,updated_at)
+       VALUES (?,?,?,'new',0,?,?)
+       ON CONFLICT(user_id,job_id) DO NOTHING`
+    )
+    .bind(crypto.randomUUID(), userId, jobId, timestamp, timestamp)
+    .run();
 }
 
 export async function queueJobDraftRevision(

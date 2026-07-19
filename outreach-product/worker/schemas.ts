@@ -1,18 +1,9 @@
 import { z } from "zod";
+import { InventoryMarketSegmentSchema } from "../src/features/inventory/schema";
 import type { JobPositionAnalysis } from "../src/features/jobs/position-variants";
 import type { Compensation } from "../src/features/jobs/types";
 
-export const MarketSegmentSchema = z.enum([
-  "international_school",
-  "kindergarten",
-  "language_center",
-  "online",
-  "private_school",
-  "public_school",
-  "school",
-  "training_center",
-  "university",
-]);
+export const MarketSegmentSchema = InventoryMarketSegmentSchema;
 
 export const OpportunityScopeSchema = z.enum([
   "direct",

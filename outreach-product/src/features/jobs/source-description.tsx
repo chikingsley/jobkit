@@ -1,7 +1,6 @@
 import { formatDescription } from "./content";
+import { protectedEmailParts } from "./protected-email";
 import type { ApplicationRoute } from "./types";
-
-const PROTECTED_EMAIL = "[email protected]";
 
 function singleActiveEmailRoute(routes: ApplicationRoute[]) {
   const emailRoutes = routes.filter(
@@ -19,30 +18,25 @@ export function SourceDescription({
 }) {
   const formatted = formatDescription(description);
   const route = singleActiveEmailRoute(routes);
-  const parts = formatted.split(PROTECTED_EMAIL);
-  if (!route || parts.length === 1) {
+  const parts = protectedEmailParts(formatted);
+  if (!(route && parts.some((part) => part.kind === "placeholder"))) {
     return (
       <p className="mt-4 whitespace-pre-line text-muted-foreground leading-7">
         {formatted || "No description was imported."}
       </p>
     );
   }
-  let offset = 0;
-  const keyedParts = parts.map((part) => {
-    const start = offset;
-    offset += part.length + PROTECTED_EMAIL.length;
-    return { key: `${start}:${part.slice(0, 24)}`, part, showEmail: start > 0 };
-  });
   return (
     <p className="mt-4 whitespace-pre-line text-muted-foreground leading-7">
-      {keyedParts.map(({ key, part, showEmail }) => (
-        <span key={key}>
-          {showEmail ? (
+      {parts.map((part) => (
+        <span key={`${part.kind}:${part.offset}`}>
+          {part.kind === "placeholder" ? (
             <mark className="rounded bg-primary/15 px-1 font-medium text-foreground">
               {route.destination}
             </mark>
-          ) : null}
-          {part}
+          ) : (
+            part.value
+          )}
         </span>
       ))}
     </p>

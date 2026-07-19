@@ -19,6 +19,7 @@ import { registerCountryRoutes } from "./routes/countries";
 import { registerDocumentRoutes } from "./routes/documents";
 import { registerEmailAttemptRoutes } from "./routes/email-attempts";
 import { GMAIL_PUBSUB_WEBHOOK_PATH, registerGmailRoutes } from "./routes/gmail";
+import { registerInventoryRoutes } from "./routes/inventory";
 import { registerJobMatchFactRoutes } from "./routes/job-match-facts";
 import { registerJobPositionAnalysisRoutes } from "./routes/job-position-analyses";
 import { registerJobRoutes } from "./routes/jobs";
@@ -45,6 +46,7 @@ import { DocumentConversionError } from "./services/document-text";
 import { EmailAttemptError } from "./services/email-attempts";
 import { GmailIntegrationError } from "./services/gmail-errors";
 import { renewExpiringGmailWatches } from "./services/gmail-integration";
+import { InventoryRunError } from "./services/inventory-runs";
 import { JobAnalysisRecordError } from "./services/job-analysis-records";
 import { approveAndSubmitApplication } from "./services/job-submission";
 import {
@@ -131,6 +133,9 @@ app.onError((error, c) => {
   if (error instanceof TestLabError) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
+  if (error instanceof InventoryRunError) {
+    return c.json({ message: error.message, ok: false }, error.status);
+  }
   return c.json({ message: "Internal server error", ok: false }, 500);
 });
 
@@ -145,6 +150,9 @@ const AGENT_TASK_RESULT_PATH = /^\/api\/agent-tasks\/[^/]+\/(complete|fail)$/u;
 const AGENT_TASK_ARTIFACT_PATH =
   /^\/api\/agent-tasks\/[^/]+\/artifacts\/[^/]+$/u;
 const AGENT_TASK_CLAIM_PATH = "/api/agent-tasks/claim";
+const INVENTORY_RUN_CREATE_PATH = "/api/inventory/runs";
+const INVENTORY_RUN_MUTATION_PATH =
+  /^\/api\/inventory\/runs\/[^/]+\/(batches|complete|fail)$/u;
 
 function runnerRequestAllowed(method: string, path: string) {
   if (method === "GET") {
@@ -152,7 +160,10 @@ function runnerRequestAllowed(method: string, path: string) {
   }
   return (
     method === "POST" &&
-    (path === AGENT_TASK_CLAIM_PATH || AGENT_TASK_RESULT_PATH.test(path))
+    (path === AGENT_TASK_CLAIM_PATH ||
+      path === INVENTORY_RUN_CREATE_PATH ||
+      AGENT_TASK_RESULT_PATH.test(path) ||
+      INVENTORY_RUN_MUTATION_PATH.test(path))
   );
 }
 
@@ -213,6 +224,7 @@ registerOnboardingRoutes(app);
 registerApplicationBundleRoutes(app);
 registerApplicationDraftRoutes(app);
 registerCampaignRoutes(app);
+registerInventoryRoutes(app);
 registerJobRoutes(app);
 registerJobMatchFactRoutes(app);
 registerJobPositionAnalysisRoutes(app);

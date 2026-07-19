@@ -859,7 +859,8 @@ async function materializeCountryTargets(
               candidate.last_verified_at DESC,candidate.updated_at DESC
             LIMIT 1
          )
-         WHERE lower(trim(j.country)) IN (${placeholders})`
+         WHERE j.inventory_status='active'
+           AND lower(trim(j.country)) IN (${placeholders})`
       )
       .bind(
         campaignId,

@@ -5,6 +5,7 @@ export const AgentCapabilitySchema = z.enum([
   "extraction",
   "drafting",
   "evaluation",
+  "operations",
 ]);
 
 export const AgentPairingCreateSchema = z

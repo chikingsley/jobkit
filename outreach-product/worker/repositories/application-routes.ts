@@ -26,12 +26,28 @@ export async function upsertApplicationRoutes(
     );
     await refreshContactMetadata(db, contactChannelId, timestamp);
   }
-  if (job.board === "seriousteachers") {
+  if (job.applyUrl.trim()) {
     routeIds.push(
-      await upsertRoute(db, job, timestamp, "board_form", job.applyUrl, null)
+      await upsertRoute(
+        db,
+        job,
+        timestamp,
+        routeKind(job.board),
+        job.applyUrl,
+        null
+      )
     );
   }
   return routeIds;
+}
+
+function routeKind(
+  board: string
+): "board_form" | "external_url" | "login_gated_form" {
+  if (board === "seriousteachers") {
+    return "board_form";
+  }
+  return board === "tefl" ? "login_gated_form" : "external_url";
 }
 
 async function upsertEmailContactChannel(
@@ -170,7 +186,7 @@ async function upsertRoute(
   db: D1Database,
   job: JobImport,
   timestamp: string,
-  kind: "board_form" | "email",
+  kind: "board_form" | "email" | "external_url" | "login_gated_form",
   destination: string,
   contactChannelId: string | null
 ): Promise<string> {

@@ -44,7 +44,7 @@ export async function listAneslPositions(
          )
          LEFT JOIN user_jobs uj ON uj.user_id=? AND uj.job_id=j.id
          LEFT JOIN job_match_facts mf ON mf.job_id=j.id
-        WHERE lower(j.board)=?
+        WHERE j.inventory_status='active' AND lower(j.board)=?
           AND COALESCE(uj.status,'new') NOT IN ('applied','ignored')
           AND (?='' OR instr(lower(
             COALESCE(j.source_reference,'') || ' ' ||

@@ -29,6 +29,7 @@ import {
   type AutomationPolicy,
   defaultAutomationPolicy,
 } from "@/features/automation/schema";
+import { InventoryStatusCard } from "@/features/inventory/status-card";
 import type { ApiRequest } from "@/lib/api";
 
 const modeOptions = [
@@ -88,7 +89,7 @@ export function AutomationView({ request }: { request: ApiRequest }) {
   if (isLoading) {
     return (
       <SettingsPage
-        description="Choose what can run, which channels require review, and the maximum daily volume."
+        description="Choose what can run, which channels require review, and user-configured pacing."
         title="Automation"
       >
         <Card>
@@ -102,7 +103,7 @@ export function AutomationView({ request }: { request: ApiRequest }) {
 
   return (
     <SettingsPage
-      description="Choose what can run, which channels require review, and the maximum daily volume. Campaigns keep a snapshot of these settings."
+      description="Choose what can run, which channels require review, and user-configured pacing. Campaigns keep a snapshot of these settings."
       title="Automation"
     >
       <Card>
@@ -192,7 +193,6 @@ export function AutomationView({ request }: { request: ApiRequest }) {
             <FieldLabel htmlFor="route-freshness">Route freshness</FieldLabel>
             <Input
               id="route-freshness"
-              max={90}
               min={1}
               onChange={(event) =>
                 update({
@@ -247,6 +247,7 @@ export function AutomationView({ request }: { request: ApiRequest }) {
       </Card>
 
       <AgentRunnerCard request={request} />
+      <InventoryStatusCard request={request} />
       <AgentTaskHistory request={request} />
     </SettingsPage>
   );
@@ -283,7 +284,13 @@ function AgentRunnerCard({ request }: { request: ApiRequest }) {
     try {
       const response = await request("/api/agent-runner-pairings", {
         body: JSON.stringify({
-          capabilities: ["research", "extraction", "drafting", "evaluation"],
+          capabilities: [
+            "research",
+            "extraction",
+            "drafting",
+            "evaluation",
+            "operations",
+          ],
         }),
         headers: { "content-type": "application/json" },
         method: "POST",

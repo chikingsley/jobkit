@@ -34,6 +34,7 @@ export function registerJobRoutes(app: JobKitApp) {
   });
 
   app.get("/api/jobs", async (c) => {
+    const userId = c.get("user").id;
     const rows = await c.env.DB.prepare(
       `SELECT j.*,uj.status,uj.priority,
                 mf.facts_json,mf.schema_version match_facts_schema_version,
@@ -129,28 +130,28 @@ export function registerJobRoutes(app: JobKitApp) {
                     'updatedAt',atr.updated_at
                   )
                   FROM agent_task_requests atr
-                  WHERE atr.user_id=uj.user_id
+                  WHERE atr.user_id=?
                     AND atr.task_type='application.message'
                     AND atr.subject_type='job'
                     AND atr.subject_id=j.id
                   ORDER BY atr.created_at DESC LIMIT 1
                 ) draft_task_json
-         FROM user_jobs uj
-         JOIN jobs j ON j.id=uj.job_id
+         FROM jobs j
+         LEFT JOIN user_jobs uj ON uj.job_id=j.id AND uj.user_id=?
          LEFT JOIN job_match_facts mf ON mf.job_id=j.id
          LEFT JOIN application_drafts d ON d.id=(
            SELECT id FROM application_drafts
            WHERE user_job_id=uj.id ORDER BY version DESC LIMIT 1
          )
-         WHERE uj.user_id=?
-         ORDER BY uj.priority DESC,
-           CASE uj.status
+         WHERE j.inventory_status='active'
+         ORDER BY COALESCE(uj.priority,0) DESC,
+           CASE COALESCE(uj.status,'new')
              WHEN 'new' THEN 0 WHEN 'review' THEN 1 WHEN 'approved' THEN 2
              WHEN 'applied' THEN 4 ELSE 3
            END,
-           uj.updated_at DESC`
+           COALESCE(uj.updated_at,j.updated_at) DESC`
     )
-      .bind(c.get("user").id)
+      .bind(userId, userId)
       .all();
     return c.json({ jobs: rows.results.map(toReviewJob) });
   });
@@ -217,10 +218,10 @@ function toReviewJob(row: Record<string, unknown>) {
     messageRoute: String(row.message_route),
     opportunityScope: String(row.opportunity_scope),
     positionAnalysis: positionAnalysisFromRow(row),
-    priority: Number(row.priority),
+    priority: Number(row.priority ?? 0),
     sourceReference: String(row.source_reference),
     sourceUrl: String(row.source_url),
-    status: String(row.status),
+    status: String(row.status ?? "new"),
     title: String(row.title),
   };
 }

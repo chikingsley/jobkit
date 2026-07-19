@@ -1,137 +1,168 @@
-import { spawnSync } from "node:child_process";
-import { unlink, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { parseArgs } from "node:util";
+import { z } from "zod";
+import {
+  inventoryJobContentHash,
+  sha256,
+} from "../../src/features/inventory/content";
+import { InventoryJobSchema } from "../../src/features/inventory/schema";
+import { readAgentConfig } from "../agent/config";
 import { readSourceInventory } from "./source";
-import { inventorySql } from "./sql";
 
-interface WranglerResult<Row> {
-  results: Row[];
-  success: boolean;
-}
+const TRAILING_SLASH_PATTERN = /\/$/u;
 
-const remote = process.argv.includes("--remote");
-const databaseName = "jobkit-outreach";
-const sourcePath = resolve(
-  import.meta.dir,
-  "../../../job-search/job-data/jobs.sqlite"
-);
+const { values: args } = parseArgs({
+  options: {
+    apply: { default: false, type: "boolean" },
+    "batch-size": { default: "50", type: "string" },
+    source: { type: "string" },
+  },
+});
+
+const batchSize = z.coerce
+  .number()
+  .int()
+  .min(1)
+  .max(100)
+  .parse(args["batch-size"]);
+const sourcePath = args.source
+  ? resolve(args.source)
+  : resolve(import.meta.dir, "../../../job-search/job-data/jobs.sqlite");
 const inventory = readSourceInventory(sourcePath);
+const jobs = inventory.jobs.map((job) => InventoryJobSchema.parse(job));
+if (jobs.length !== inventory.active) {
+  throw new Error(
+    `Source reported ${inventory.active} active jobs but returned ${jobs.length}`
+  );
+}
 const economics = {
-  hourly: inventory.jobs.filter((job) => job.compensation.period === "hour")
-    .length,
-  monthly: inventory.jobs.filter((job) => job.compensation.period === "month")
-    .length,
-  structured: inventory.jobs.filter(
+  hourly: jobs.filter((job) => job.compensation.period === "hour").length,
+  monthly: jobs.filter((job) => job.compensation.period === "month").length,
+  structured: jobs.filter(
     (job) =>
       job.compensation.amountMinimum !== null ||
       job.compensation.amountMaximum !== null
   ).length,
 };
+const contentHashes = await Promise.all(
+  jobs.map(async (job) => ({
+    hash: await inventoryJobContentHash(job),
+    id: job.id,
+  }))
+);
+const snapshotKey = await sha256(
+  JSON.stringify({
+    active: inventory.active,
+    closed: inventory.closed,
+    jobs: contentHashes,
+    total: inventory.total,
+  })
+);
 
-if (!remote) {
+if (!args.apply) {
   console.log(
     JSON.stringify({
       active: inventory.active,
+      batchCount: Math.ceil(jobs.length / batchSize),
+      batchSize,
       closed: inventory.closed,
       economics,
       mode: "dry-run",
+      snapshotKey,
       total: inventory.total,
     })
   );
   process.exit(0);
 }
 
-const users = wranglerQuery<{ email: string; id: string }>(
-  databaseName,
-  "SELECT id,email FROM users ORDER BY created_at;"
+const config = await readAgentConfig();
+const client = inventoryClient(config.baseUrl, config.token);
+const start = await client.post("/api/inventory/runs", {
+  snapshotKey,
+  sourceActiveCount: inventory.active,
+  sourceClosedCount: inventory.closed,
+  sourceId: "job-search-sqlite",
+  sourceName: "Job search source inventory",
+  sourceTotalCount: inventory.total,
+});
+const { run } = z
+  .object({ run: z.object({ id: z.string().min(1) }) })
+  .parse(start);
+const batches = chunk(jobs, batchSize);
+const batchRequests = await Promise.all(
+  batches.map(async (batch, ordinal) => ({
+    batch,
+    batchKey: await sha256(
+      JSON.stringify(
+        contentHashes.slice(
+          ordinal * batchSize,
+          ordinal * batchSize + batch.length
+        )
+      )
+    ),
+    ordinal,
+  }))
 );
-if (users.length !== 1) {
-  throw new Error(
-    `Inventory sync expected one JobKit account and found ${users.length}`
+for (const { batch, batchKey, ordinal } of batchRequests) {
+  // biome-ignore lint/performance/noAwaitInLoops: Hosted inventory batches are ordered checkpoints and the next batch must wait for durable acknowledgement.
+  const response = await client.post(`/api/inventory/runs/${run.id}/batches`, {
+    batchKey,
+    jobs: batch,
+    ordinal,
+  });
+  const progress = z
+    .object({
+      run: z.object({
+        failedCount: z.number(),
+        processedCount: z.number(),
+        unchangedCount: z.number(),
+        upsertedCount: z.number(),
+      }),
+    })
+    .parse(response).run;
+  console.log(
+    JSON.stringify({
+      batch: ordinal + 1,
+      batches: batches.length,
+      ...progress,
+    })
   );
 }
-const [user] = users;
-if (!user) {
-  throw new Error("Inventory sync could not find the JobKit account");
-}
+const completed = await client.post(`/api/inventory/runs/${run.id}/complete`, {
+  expectedBatchCount: batches.length,
+});
+console.log(JSON.stringify({ economics, result: completed, snapshotKey }));
 
-const timestamp = new Date().toISOString();
-const sqlPath = `/tmp/jobkit-inventory-${Date.now()}.sql`;
-await writeFile(sqlPath, inventorySql(inventory.jobs, user.id, timestamp));
-try {
-  run([
-    "bunx",
-    "wrangler",
-    "d1",
-    "execute",
-    databaseName,
-    "--remote",
-    "--file",
-    sqlPath,
-    "--yes",
-  ]);
-} finally {
-  await unlink(sqlPath).catch(() => undefined);
-}
-
-const [verified] = wranglerQuery<{
-  jobs: number;
-  routes: number;
-  user_jobs: number;
-}>(
-  databaseName,
-  `SELECT
-     (SELECT COUNT(*) FROM jobs) jobs,
-     (SELECT COUNT(*) FROM user_jobs WHERE user_id=${sql(user.id)}) user_jobs,
-     (SELECT COUNT(*) FROM application_routes) routes;`
-);
-console.log(
-  JSON.stringify({
-    ...verified,
-    account: user.email,
-    activeSourceJobs: inventory.active,
-    closedSourceJobs: inventory.closed,
-    economics,
-    sourceJobs: inventory.total,
-  })
-);
-
-function wranglerQuery<Row>(database: string, command: string): Row[] {
-  const result = run([
-    "bunx",
-    "wrangler",
-    "d1",
-    "execute",
-    database,
-    "--remote",
-    "--json",
-    "--command",
-    command,
-  ]);
-  const payload = JSON.parse(result) as WranglerResult<Row>[];
-  const [first] = payload;
-  if (!first?.success) {
-    throw new Error("D1 query failed");
+function chunk<Value>(values: Value[], size: number) {
+  const chunks: Value[][] = [];
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
   }
-  return first.results;
+  return chunks;
 }
 
-function run(command: string[]) {
-  const [executable, ...args] = command;
-  if (!executable) {
-    throw new Error("A command is required");
-  }
-  const result = spawnSync(executable, args, {
-    cwd: resolve(import.meta.dir, "../.."),
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "inherit"],
-  });
-  if (result.status !== 0) {
-    throw new Error(`${command.slice(0, 4).join(" ")} failed`);
-  }
-  return result.stdout;
-}
-
-function sql(value: string) {
-  return `'${value.replaceAll("'", "''")}'`;
+function inventoryClient(baseUrl: string, token: string) {
+  return {
+    async post(path: string, body: unknown) {
+      const response = await fetch(
+        `${baseUrl.replace(TRAILING_SLASH_PATTERN, "")}${path}`,
+        {
+          body: JSON.stringify(body),
+          headers: {
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+          },
+          method: "POST",
+        }
+      );
+      const payload: unknown = await response.json();
+      if (!response.ok) {
+        const message = z.object({ message: z.string() }).safeParse(payload);
+        throw new Error(
+          `Inventory request failed (${response.status}): ${message.success ? message.data.message : "Unexpected response"}`
+        );
+      }
+      return payload;
+    },
+  };
 }

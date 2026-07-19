@@ -448,6 +448,12 @@ export async function deliverReadyCampaignDispatches(env: AppEnv) {
       WHERE d.status='ready' AND d.run_id IS NOT NULL AND d.channel='email'
         AND c.status='running'
         AND auth.enabled=1 AND auth.authorized_scope='campaigns'
+        AND NOT EXISTS (
+          SELECT 1 FROM campaign_dispatch_targets dt
+          JOIN campaign_targets target ON target.id=dt.target_id
+          JOIN jobs target_job ON target_job.id=target.job_id
+          WHERE dt.dispatch_id=d.id AND target_job.inventory_status<>'active'
+        )
       ORDER BY d.scheduled_for,d.created_at`
   ).all<{ id: string; user_id: string }>();
   const results = await Promise.allSettled(
