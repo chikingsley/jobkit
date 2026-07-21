@@ -187,13 +187,14 @@ Taught English to adult and teenage learners in group classes.`;
     await expect(outsiderDocuments.json()).resolves.toEqual({ documents: [] });
     await expect(
       testEnv.DB.prepare(
-        "SELECT model_provider,model_id,status FROM profile_imports WHERE id=? AND user_id=?"
+        "SELECT model_provider,model_id,proposal_schema_version,status FROM profile_imports WHERE id=? AND user_id=?"
       )
         .bind(uploadPayload.id, userId)
         .first()
     ).resolves.toEqual({
       model_id: "gpt-5.6-luna",
       model_provider: "codex",
+      proposal_schema_version: 2,
       status: "ready",
     });
   });

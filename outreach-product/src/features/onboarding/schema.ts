@@ -7,6 +7,8 @@ import {
   WorkExperienceEntrySchema,
 } from "../profile/schema";
 
+export const PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION = 2;
+
 const WHITESPACE_PATTERN = /\s+/u;
 
 export const ExtractionConfidenceSchema = z.enum(["high", "medium", "low"]);

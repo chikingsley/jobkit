@@ -6,7 +6,10 @@ import {
   PROFILE_IMPORT_TASK_TYPE,
   profileImportPrompt,
 } from "../../../src/agent-tasks/profile-import";
-import { ProfileImportProposalSchema } from "../../../src/features/onboarding/schema";
+import {
+  PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION,
+  ProfileImportProposalSchema,
+} from "../../../src/features/onboarding/schema";
 import { normalizeProfileImportProposal } from "../../ai/profile-extraction";
 import type { AgentRunnerContext } from "../../app-types";
 import type { AppEnv } from "../../env";
@@ -107,11 +110,13 @@ export async function completeProfileImportTask(
     env.DB.prepare(
       `UPDATE profile_imports
           SET status='ready',source_text_key=?,proposal_json=?,
+              proposal_schema_version=?,
               model_provider='codex',model_id=?,error_message=NULL,updated_at=?
         WHERE id=? AND user_id=? AND status='processing'`
     ).bind(
       sourceTextKey,
       JSON.stringify(proposal),
+      PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION,
       run.model,
       timestamp,
       request.subjectId,

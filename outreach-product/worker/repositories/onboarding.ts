@@ -1,4 +1,5 @@
 import {
+  PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION,
   type ProfileImportProposal,
   ProfileImportProposalSchema,
 } from "../../src/features/onboarding/schema";
@@ -7,6 +8,7 @@ interface ImportRow {
   error_message: string | null;
   id: string;
   proposal_json: string | null;
+  proposal_schema_version: number;
   source_text_detail: string;
   source_text_provider: string;
   status: "processing" | "ready" | "failed" | "applied";
@@ -79,11 +81,12 @@ export async function finishProfileImport(
 ) {
   const result = await db
     .prepare(
-      "UPDATE profile_imports SET status='ready',source_text_key=?,proposal_json=?,model_provider=?,model_id=?,error_message=NULL,updated_at=? WHERE id=? AND user_id=? AND status='processing'"
+      "UPDATE profile_imports SET status='ready',source_text_key=?,proposal_json=?,proposal_schema_version=?,model_provider=?,model_id=?,error_message=NULL,updated_at=? WHERE id=? AND user_id=? AND status='processing'"
     )
     .bind(
       input.sourceTextKey,
       JSON.stringify(input.proposal),
+      PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION,
       input.modelProvider,
       input.modelId,
       input.updatedAt,
@@ -156,23 +159,40 @@ export async function readLatestProfileImport(
 ): Promise<StoredProfileImport | null> {
   const row = await db
     .prepare(
-      "SELECT id,status,proposal_json,error_message,source_text_provider,source_text_detail FROM profile_imports WHERE user_id=? ORDER BY created_at DESC LIMIT 1"
+      "SELECT id,status,proposal_json,proposal_schema_version,error_message,source_text_provider,source_text_detail FROM profile_imports WHERE user_id=? ORDER BY created_at DESC LIMIT 1"
     )
     .bind(userId)
     .first<ImportRow>();
   if (!row) {
     return null;
   }
+  const proposal = parseStoredProposal(row);
   return {
     errorMessage: row.error_message,
     id: row.id,
-    proposal: row.proposal_json
-      ? ProfileImportProposalSchema.parse(JSON.parse(row.proposal_json))
-      : null,
+    proposal,
     sourceTextDetail: row.source_text_detail,
     sourceTextProvider: row.source_text_provider,
     status: row.status,
   };
+}
+
+function parseStoredProposal(row: ImportRow) {
+  if (!row.proposal_json) {
+    return null;
+  }
+  if (row.proposal_schema_version !== PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION) {
+    throw new Error(
+      `Unsupported profile import proposal schema version ${row.proposal_schema_version}; expected ${PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION}`
+    );
+  }
+  const parsed = ProfileImportProposalSchema.safeParse(
+    JSON.parse(row.proposal_json)
+  );
+  if (!parsed.success) {
+    throw new Error(`Stored profile import ${row.id} failed validation`);
+  }
+  return parsed.data;
 }
 
 export async function readOnboardingCompletion(db: D1Database, userId: string) {
