@@ -471,10 +471,23 @@ export function ProfileView({
           <CardHeader>
             <CardTitle>Qualifications and expertise</CardTitle>
             <CardDescription>
-              Add expertise tags and credentials as separate structured items.
+              Keep teachable subjects, broader skills, and credentials as
+              separate structured facts.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-[repeat(auto-fit,minmax(min(18rem,100%),1fr))] gap-5">
+            <Controller
+              control={control}
+              name="subjectQualifications"
+              render={({ field }) => (
+                <MultipleComboboxField
+                  items={expertiseOptions}
+                  label="Subjects qualified to teach"
+                  onChange={field.onChange}
+                  values={field.value}
+                />
+              )}
+            />
             <Controller
               control={control}
               name="fields"

@@ -35,6 +35,9 @@ function normalizeProposal(output: ProfileImportProposal) {
     languages: output.languages.filter((item) => item.language.trim()),
     reviewNotes,
     skills: output.skills.filter((item) => item.value.trim()),
+    subjectQualifications: output.subjectQualifications.filter((item) =>
+      item.value.trim()
+    ),
     workExperience,
   });
 }
@@ -67,6 +70,13 @@ function retainSupportedFacts(
     removed += supported ? 0 : 1;
     return supported;
   });
+  const subjectQualifications = proposal.subjectQualifications.filter(
+    (item) => {
+      const supported = supports(source, item.evidence, [item.value]);
+      removed += supported ? 0 : 1;
+      return supported;
+    }
+  );
   const languages = proposal.languages.filter((item) => {
     const supported = supports(source, item.evidence, [item.language]);
     removed += supported ? 0 : 1;
@@ -105,6 +115,7 @@ function retainSupportedFacts(
     phone: supportedText(proposal.phone),
     reviewNotes,
     skills,
+    subjectQualifications,
     workExperience,
   });
 }

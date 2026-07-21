@@ -42,6 +42,7 @@ describe("job matching facts", () => {
         },
       },
       employmentTypes: [],
+      marketSegments: [],
       requirements: [
         {
           alternativeGroup: null,

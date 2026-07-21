@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { OrganizationMarketSegmentSchema } from "../organizations/market-segments";
 
 export const CountryDiscoverySourceSchema = z.enum([
   "directories",
@@ -25,17 +26,6 @@ export const CountrySweepRequestSchema = z
     { message: "Choose at least one discovery source" }
   );
 
-const SweepMarketSegmentSchema = z.enum([
-  "international_school",
-  "kindergarten",
-  "language_center",
-  "private_school",
-  "public_school",
-  "school",
-  "training_center",
-  "university",
-]);
-
 const SweepContactPointSchema = z
   .object({
     evidenceUrl: z.string().url().or(z.literal("")),
@@ -53,7 +43,7 @@ const SweepOrganizationSchema = z
     contactPoints: z.array(SweepContactPointSchema),
     evidenceUrl: z.string().url().or(z.literal("")),
     lastVerifiedAt: z.iso.datetime().nullable(),
-    marketSegment: SweepMarketSegmentSchema,
+    marketSegment: OrganizationMarketSegmentSchema,
     name: z.string().min(1).max(240),
     outreachEligibility: z.enum(["eligible", "review", "excluded"]),
     region: z.string().max(160),

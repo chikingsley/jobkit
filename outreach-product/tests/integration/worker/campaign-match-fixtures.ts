@@ -25,6 +25,7 @@ export function seedStrongEnglishMatch(
     employmentTypes: [
       { evidence: "Full-time English teacher", value: "fullTime" },
     ],
+    marketSegments: [],
     requirements: [],
     reviewNotes: [],
   };

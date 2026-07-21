@@ -189,22 +189,10 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
         <div className="grid content-start gap-4">
           <Card>
             <CardHeader>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <CardTitle>Campaign plan</CardTitle>
-                  <CardDescription>
-                    Every value remains visible and editable before launch.
-                  </CardDescription>
-                </div>
-                <Button
-                  disabled={busy || selected.length === 0}
-                  id="create-campaign"
-                  onClick={() => void create()}
-                  size="sm"
-                >
-                  <Check /> {busy ? "Creating…" : "Create campaign"}
-                </Button>
-              </div>
+              <CardTitle>Campaign plan</CardTitle>
+              <CardDescription>
+                Every value remains visible and editable before launch.
+              </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
               <div className="grid gap-2">
@@ -278,6 +266,14 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
                   onCheckedChange={setFirstFive}
                 />
               </label>
+              <Button
+                className="w-full"
+                disabled={busy || selected.length === 0}
+                id="create-campaign"
+                onClick={() => void create()}
+              >
+                <Check /> {busy ? "Creating…" : "Create campaign"}
+              </Button>
             </CardContent>
           </Card>
 

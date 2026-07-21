@@ -87,7 +87,7 @@ export function CountryView({ request }: { request: ApiRequest }) {
       title={data.countryName}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button onClick={() => navigate("/countries")} variant="ghost">
+        <Button onClick={() => navigate("/campaigns/markets")} variant="ghost">
           <ArrowLeft /> Countries
         </Button>
         <div className="flex gap-2">

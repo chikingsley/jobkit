@@ -6,15 +6,16 @@ import {
   failProfileImport,
   recordProfileImportSource,
 } from "../repositories/onboarding";
+import { hasAgentRunnerCapability } from "./agent-runners";
 import { createAgentTaskRequest } from "./agent-task-requests";
 import { convertResumeToText, RESUME_CONTENT_TYPES } from "./document-text";
 
 export const MAX_RESUME_BYTES = 5 * 1024 * 1024;
 
 export class ResumeUploadError extends Error {
-  readonly status: 400 | 413 | 415;
+  readonly status: 400 | 409 | 413 | 415;
 
-  constructor(message: string, status: 400 | 413 | 415) {
+  constructor(message: string, status: 400 | 409 | 413 | 415) {
     super(message);
     this.status = status;
   }
@@ -37,6 +38,12 @@ export async function importResume(
     throw new ResumeUploadError(
       "Resume files must be between 1 byte and 5 MB",
       413
+    );
+  }
+  if (!(await hasAgentRunnerCapability(env.DB, user.id, "extraction"))) {
+    throw new ResumeUploadError(
+      "Pair a Codex agent before importing a resume",
+      409
     );
   }
   const filename = safeFilename(

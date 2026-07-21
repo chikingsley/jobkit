@@ -6,6 +6,5 @@ tags:
 ---
 - runFlow: ../sign-in.yaml
 - assertVisible: "Jobs"
-- assertVisible: "Countries"
-- assertVisible: "Profile"
-- assertVisible: "Preferences"
+- assertVisible: "Campaigns"
+- assertVisible: "Messages"

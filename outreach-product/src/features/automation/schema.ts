@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { OrganizationMarketSegmentSchema } from "../organizations/market-segments";
 
 export const AutomationModeSchema = z.enum(["off", "review", "auto"]);
 
@@ -9,23 +10,12 @@ export const AutomationChannelPolicySchema = z
   })
   .strict();
 
-const AutomationMarketSegmentSchema = z.enum([
-  "international_school",
-  "kindergarten",
-  "language_center",
-  "private_school",
-  "public_school",
-  "school",
-  "training_center",
-  "university",
-]);
-
 export const AutomationPolicySchema = z
   .object({
     allowedBoards: z.array(z.string().min(1).max(80)).max(20),
     boardForm: AutomationChannelPolicySchema,
     email: AutomationChannelPolicySchema,
-    excludedMarketSegments: z.array(AutomationMarketSegmentSchema).max(8),
+    excludedMarketSegments: z.array(OrganizationMarketSegmentSchema).max(8),
     followUpDelaysDays: z.array(z.number().int().min(1)),
     minimumFit: z.enum(["likely", "strong"]),
     paused: z.boolean(),

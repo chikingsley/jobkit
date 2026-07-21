@@ -1,8 +1,11 @@
-import { exports } from "cloudflare:workers";
+import { env, exports } from "cloudflare:workers";
 
 const password = "integration-test-password";
 
-export async function createAuthenticatedUser(email: string) {
+export async function createAuthenticatedUser(
+  email: string,
+  role: "member" | "operator" = "operator"
+) {
   const response = await exports.default.fetch(
     "https://outreach.test/api/auth/sign-up/email",
     {
@@ -15,6 +18,11 @@ export async function createAuthenticatedUser(email: string) {
     throw new Error(`Test user could not sign up (${response.status})`);
   }
   const data = (await response.json()) as { user: { id: string } };
+  if (role === "operator") {
+    await (env as Env).DB.prepare("UPDATE users SET role='operator' WHERE id=?")
+      .bind(data.user.id)
+      .run();
+  }
   const cookie = response.headers
     .getSetCookie()
     .map((value) => value.split(";", 1)[0])

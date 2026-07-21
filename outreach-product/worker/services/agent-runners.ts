@@ -7,6 +7,7 @@ import type { AgentRunnerContext } from "../app-types";
 
 const BEARER_PREFIX_PATTERN = /^Bearer\s+/iu;
 const PAIRING_LIFETIME_MS = 10 * 60 * 1000;
+const RUNNER_ONLINE_WINDOW_MS = 60 * 1000;
 const CAPABILITIES_SCHEMA = z.array(AgentCapabilitySchema).min(1);
 
 interface AgentRunnerRow {
@@ -15,6 +16,7 @@ interface AgentRunnerRow {
   email: string;
   id: string;
   name: string;
+  role: "member" | "operator";
   user_id: string;
   user_name: string;
 }
@@ -103,7 +105,7 @@ export async function authenticateAgentRunner(
   const row = await db
     .prepare(
       `SELECT r.id,r.user_id,r.name,r.capabilities_json,r.codex_version,
-              u.email,u.name user_name
+              u.email,u.name user_name,u.role
          FROM agent_runners r
          JOIN users u ON u.id=r.user_id
         WHERE r.token_hash=? AND r.revoked_at IS NULL`
@@ -119,7 +121,12 @@ export async function authenticateAgentRunner(
     codexVersion: row.codex_version,
     id: row.id,
     name: row.name,
-    user: { email: row.email, id: row.user_id, name: row.user_name },
+    user: {
+      email: row.email,
+      id: row.user_id,
+      name: row.user_name,
+      role: row.role,
+    },
   };
 }
 
@@ -150,6 +157,25 @@ export async function listAgentRunners(db: D1Database, userId: string) {
     name: row.name,
     revokedAt: row.revoked_at,
   }));
+}
+
+export async function hasAgentRunnerCapability(
+  db: D1Database,
+  userId: string,
+  capability: AgentCapability
+) {
+  const rows = await db
+    .prepare(
+      `SELECT capabilities_json FROM agent_runners
+        WHERE user_id=? AND revoked_at IS NULL AND last_seen_at>=?`
+    )
+    .bind(userId, new Date(Date.now() - RUNNER_ONLINE_WINDOW_MS).toISOString())
+    .all<{ capabilities_json: string }>();
+  return rows.results.some((row) =>
+    CAPABILITIES_SCHEMA.parse(JSON.parse(row.capabilities_json)).includes(
+      capability
+    )
+  );
 }
 
 export async function revokeAgentRunner(

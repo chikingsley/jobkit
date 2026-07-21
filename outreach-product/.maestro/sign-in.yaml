@@ -1,6 +1,7 @@
 url: ${JOBKIT_URL}
 ---
 - launchApp
+- openLink: ${JOBKIT_URL}
 - runFlow:
     label: Sign in when the browser has no active session
     when:

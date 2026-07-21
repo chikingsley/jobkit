@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { StoredDocument } from "../../profile-types";
 import type { Preferences } from "../preferences/schema";
 import {
   DegreeLevelSchema,
@@ -76,6 +77,7 @@ export const ProfileImportProposalSchema = z
     phone: supportedText(80),
     reviewNotes: z.array(z.string().max(300)).max(30),
     skills: z.array(ImportedListItemSchema).max(60),
+    subjectQualifications: z.array(ImportedListItemSchema).max(30),
     workExperience: z.array(ImportedWorkExperienceSchema).max(80),
   })
   .strict();
@@ -104,6 +106,7 @@ export interface ProfileImportQueuedResult {
 
 export interface OnboardingState {
   completedAt: string | null;
+  documents: StoredDocument[];
   hasPreferences: boolean;
   hasProfile: boolean;
   preferences: Preferences;
@@ -168,6 +171,9 @@ export function profileFromImport(
     phone,
     preferredName: fullName.split(WHITESPACE_PATTERN)[0] ?? fullName,
     profileReviewNotes: uniqueValues(reviewNotes).slice(0, 20),
+    subjectQualifications: uniqueValues(
+      proposal.subjectQualifications.map((subject) => subject.value)
+    ),
     workAuthorization: [],
     workExperience: proposal.workExperience.map((entry) => ({
       current: entry.current,

@@ -184,7 +184,7 @@ export async function readOnboardingCompletion(db: D1Database, userId: string) {
 }
 
 export async function completeOnboarding(db: D1Database, userId: string) {
-  const [profile, preferences] = await Promise.all([
+  const [profile, preferences, resume] = await Promise.all([
     db
       .prepare("SELECT 1 present FROM user_profiles WHERE user_id=?")
       .bind(userId)
@@ -193,10 +193,16 @@ export async function completeOnboarding(db: D1Database, userId: string) {
       .prepare("SELECT 1 present FROM user_preferences WHERE user_id=?")
       .bind(userId)
       .first<{ present: number }>(),
+    db
+      .prepare(
+        "SELECT 1 present FROM user_documents WHERE user_id=? AND category='resume' AND archived_at IS NULL LIMIT 1"
+      )
+      .bind(userId)
+      .first<{ present: number }>(),
   ]);
-  if (!(profile && preferences)) {
+  if (!(profile && preferences && resume)) {
     throw new OnboardingIncompleteError(
-      "Profile and preferences are required before onboarding"
+      "Profile, preferences, and a resume are required before onboarding"
     );
   }
   const timestamp = new Date().toISOString();

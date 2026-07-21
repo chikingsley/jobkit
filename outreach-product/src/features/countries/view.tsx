@@ -120,7 +120,7 @@ export function CountriesView({
           <CountryCard
             key={market.countryCode}
             market={market}
-            onOpen={() => navigate(`/countries/${market.countryCode}`)}
+            onOpen={() => navigate(`/campaigns/markets/${market.countryCode}`)}
             preference={countryPreference(market.countryName, preferences)}
           />
         ))}

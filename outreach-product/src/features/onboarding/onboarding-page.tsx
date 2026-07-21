@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { DocumentsView } from "@/features/documents/view";
 import { ImportReview } from "@/features/onboarding/import-review";
 import { ResumeUploadStep } from "@/features/onboarding/resume-upload-step";
 import type {
@@ -20,8 +21,14 @@ import type {
 import { PreferencesView } from "@/features/preferences/view";
 import { ProfileView } from "@/features/profile/view";
 import { apiRequest } from "@/lib/api";
+import type { StoredDocument } from "@/profile-types";
 
-type OnboardingStep = "resume" | "profile" | "preferences" | "finish";
+type OnboardingStep =
+  | "resume"
+  | "profile"
+  | "preferences"
+  | "documents"
+  | "finish";
 
 export function OnboardingPage({
   onComplete,
@@ -32,17 +39,28 @@ export function OnboardingPage({
 }) {
   const [profile, setProfile] = useState(state.profile);
   const [preferences, setPreferences] = useState(state.preferences);
+  const [documents, setDocuments] = useState(state.documents);
   const [proposal, setProposal] = useState<ProfileImportProposal | null>(
     state.profileImport?.proposal ?? null
   );
   const [step, setStep] = useState<OnboardingStep>(() => initialStep(state));
   const [completing, setCompleting] = useState(false);
 
-  const imported = useCallback((result: ProfileImportResult) => {
-    setProfile(result.profile);
-    setProposal(result.proposal);
-    setStep("profile");
+  const reloadDocuments = useCallback(async () => {
+    const response = await apiRequest("/api/documents");
+    const result = (await response.json()) as { documents: StoredDocument[] };
+    setDocuments(result.documents);
   }, []);
+
+  const imported = useCallback(
+    (result: ProfileImportResult) => {
+      setProfile(result.profile);
+      setProposal(result.proposal);
+      void reloadDocuments();
+      setStep("profile");
+    },
+    [reloadDocuments]
+  );
 
   async function complete() {
     setCompleting(true);
@@ -101,11 +119,31 @@ export function OnboardingPage({
         <PreferencesView
           onSaved={(next) => {
             setPreferences(next);
-            void complete();
+            setStep("documents");
           }}
           preferences={preferences}
           request={apiRequest}
         />
+      ) : null}
+      {step === "documents" ? (
+        <>
+          <DocumentsView
+            documents={documents}
+            onChanged={reloadDocuments}
+            request={apiRequest}
+          />
+          <div className="mx-auto flex w-full max-w-7xl justify-end px-4 pb-10 sm:px-6">
+            <Button
+              disabled={
+                completing ||
+                !documents.some((document) => document.category === "resume")
+              }
+              onClick={() => void complete()}
+            >
+              {completing ? "Finishing…" : "Open my workspace"}
+            </Button>
+          </div>
+        </>
       ) : null}
       {step === "finish" ? (
         <div className="mx-auto w-full max-w-xl px-4 py-10 sm:px-6">
@@ -113,12 +151,13 @@ export function OnboardingPage({
             <CardHeader>
               <CardTitle>Finish setting up JobKit</CardTitle>
               <CardDescription>
-                Your profile and preferences are saved. Finish to open your
-                matched-job workspace.
+                Your profile, preferences, and resume are saved. Finish to open
+                your matched-job workspace.
               </CardDescription>
             </CardHeader>
             <CardContent className="text-muted-foreground text-sm">
-              You can change either section later without repeating onboarding.
+              You can change any of these details later without repeating
+              onboarding.
             </CardContent>
             <CardFooter className="justify-end">
               <Button disabled={completing} onClick={() => void complete()}>
@@ -133,8 +172,14 @@ export function OnboardingPage({
 }
 
 function initialStep(state: OnboardingState): OnboardingStep {
-  if (state.hasProfile && state.hasPreferences) {
+  const hasResume = state.documents.some(
+    (document) => document.category === "resume"
+  );
+  if (state.hasProfile && state.hasPreferences && hasResume) {
     return "finish";
+  }
+  if (state.hasProfile && state.hasPreferences) {
+    return "documents";
   }
   if (state.hasProfile) {
     return "preferences";
@@ -147,7 +192,8 @@ function initialStep(state: OnboardingState): OnboardingStep {
 
 function OnboardingSteps({ step }: { step: OnboardingStep }) {
   const current = {
-    finish: 2,
+    documents: 3,
+    finish: 3,
     preferences: 2,
     profile: 1,
     resume: 0,
@@ -155,27 +201,29 @@ function OnboardingSteps({ step }: { step: OnboardingStep }) {
   return (
     <div className="border-b bg-muted/20 px-4 py-3 sm:px-6">
       <ol className="mx-auto flex max-w-xl items-center justify-center gap-2 text-xs sm:gap-4">
-        {["Resume", "Profile", "Preferences"].map((label, index) => (
-          <li
-            className={
-              index <= current
-                ? "flex items-center gap-2 font-medium text-foreground"
-                : "flex items-center gap-2 text-muted-foreground"
-            }
-            key={label}
-          >
-            <span
+        {["Resume", "Profile", "Preferences", "Documents"].map(
+          (label, index) => (
+            <li
               className={
                 index <= current
-                  ? "grid size-6 place-items-center rounded-full bg-primary text-primary-foreground"
-                  : "grid size-6 place-items-center rounded-full border bg-background"
+                  ? "flex items-center gap-2 font-medium text-foreground"
+                  : "flex items-center gap-2 text-muted-foreground"
               }
+              key={label}
             >
-              {index + 1}
-            </span>
-            <span className="hidden sm:inline">{label}</span>
-          </li>
-        ))}
+              <span
+                className={
+                  index <= current
+                    ? "grid size-6 place-items-center rounded-full bg-primary text-primary-foreground"
+                    : "grid size-6 place-items-center rounded-full border bg-background"
+                }
+              >
+                {index + 1}
+              </span>
+              <span className="hidden sm:inline">{label}</span>
+            </li>
+          )
+        )}
       </ol>
     </div>
   );

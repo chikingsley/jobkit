@@ -1,6 +1,8 @@
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
+import { defaultPreferences } from "../../../src/features/preferences/schema";
+import type { Profile } from "../../../src/features/profile/schema";
 import { createAuthenticatedUser } from "./auth";
 
 interface TestEnv extends Env {
@@ -14,7 +16,8 @@ beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 describe("Codex profile imports", () => {
   it("queues an uploaded resume and applies the schema-validated agent result", async () => {
     const { cookie, userId } = await createAuthenticatedUser(
-      "profile-agent@example.test"
+      "profile-agent@example.test",
+      "member"
     );
     const resume = `Alex Teacher
 alex@example.test
@@ -23,6 +26,7 @@ English teacher with five years of classroom experience.
 
 Teacher, Example School, 2021 to Present
 Taught English to adult and teenage learners in group classes.`;
+    const token = await pairAgent(cookie);
     const upload = await exports.default.fetch(
       "https://outreach.test/api/profile-imports",
       {
@@ -43,7 +47,6 @@ Taught English to adult and teenage learners in group classes.`;
     expect(upload.status).toBe(202);
     expect(uploadPayload.status).toBe("processing");
 
-    const token = await pairAgent(cookie);
     const claim = await agentPost("/api/agent-tasks/claim", token, {
       runnerVersion: "codex-cli test",
     });
@@ -86,6 +89,14 @@ Taught English to adult and teenage learners in group classes.`;
           phone: emptyText,
           reviewNotes: [],
           skills: [],
+          subjectQualifications: [
+            {
+              confidence: "high",
+              evidence:
+                "Taught English to adult and teenage learners in group classes.",
+              value: "English",
+            },
+          ],
           workExperience: [
             {
               confidence: "high",
@@ -110,7 +121,15 @@ Taught English to adult and teenage learners in group classes.`;
       "https://outreach.test/api/onboarding",
       { headers: { cookie } }
     );
-    await expect(onboarding.json()).resolves.toMatchObject({
+    const onboardingPayload = (await onboarding.json()) as {
+      documents: Array<{ category: string; filename: string }>;
+      profile: Profile;
+      profileImport: { id: string; status: string };
+    };
+    expect(onboardingPayload).toMatchObject({
+      documents: [
+        expect.objectContaining({ category: "resume", filename: "resume.txt" }),
+      ],
       profile: {
         email: "alex@example.test",
         fullName: "Alex Teacher",
@@ -123,6 +142,49 @@ Taught English to adult and teenage learners in group classes.`;
         status: "ready",
       },
     });
+
+    const settingsHeaders = {
+      "content-type": "application/json",
+      cookie,
+    };
+    const [savedProfile, savedPreferences] = await Promise.all([
+      exports.default.fetch("https://outreach.test/api/profile", {
+        body: JSON.stringify({
+          ...onboardingPayload.profile,
+          citizenship: "United States",
+          currentLocation: "Phoenix, United States",
+        }),
+        headers: settingsHeaders,
+        method: "PUT",
+      }),
+      exports.default.fetch("https://outreach.test/api/preferences", {
+        body: JSON.stringify(defaultPreferences),
+        headers: settingsHeaders,
+        method: "PUT",
+      }),
+    ]);
+    expect(savedProfile.status, await savedProfile.clone().text()).toBe(200);
+    expect(savedPreferences.status).toBe(200);
+
+    const finished = await exports.default.fetch(
+      "https://outreach.test/api/onboarding/complete",
+      { headers: { cookie }, method: "POST" }
+    );
+    expect(finished.status).toBe(200);
+    await expect(finished.json()).resolves.toMatchObject({
+      completedAt: expect.any(String),
+      ok: true,
+    });
+
+    const outsider = await createAuthenticatedUser(
+      "profile-agent-outsider@example.test",
+      "member"
+    );
+    const outsiderDocuments = await exports.default.fetch(
+      "https://outreach.test/api/documents",
+      { headers: { cookie: outsider.cookie } }
+    );
+    await expect(outsiderDocuments.json()).resolves.toEqual({ documents: [] });
     await expect(
       testEnv.DB.prepare(
         "SELECT model_provider,model_id,status FROM profile_imports WHERE id=? AND user_id=?"

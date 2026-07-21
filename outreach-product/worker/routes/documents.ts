@@ -5,6 +5,7 @@ import {
   listDocumentPackets,
   setDefaultDocumentPacket,
 } from "../repositories/document-packets";
+import { listUserDocuments } from "../repositories/user-documents";
 
 const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
 const allowedContentTypes = new Set([
@@ -18,21 +19,15 @@ const DefaultPacketSchema = z.object({ packetId: z.string().min(1) }).strict();
 export function registerDocumentRoutes(app: JobKitApp) {
   app.get("/api/documents", async (c) => {
     const scope = c.req.query("scope");
-    let categoryFilter = "AND category<>'test_lab'";
-    if (scope === "all") {
-      categoryFilter = "";
-    } else if (scope === "test_lab") {
-      categoryFilter = "AND category='test_lab'";
-    }
-    const rows = await c.env.DB.prepare(
-      `SELECT id,category,filename,content_type,size_bytes,is_default,created_at
-         FROM user_documents
-        WHERE user_id=? AND archived_at IS NULL ${categoryFilter}
-        ORDER BY category,created_at DESC`
-    )
-      .bind(c.get("user").id)
-      .all();
-    return c.json({ documents: rows.results });
+    const documentScope =
+      scope === "all" || scope === "test_lab" ? scope : "application";
+    return c.json({
+      documents: await listUserDocuments(
+        c.env.DB,
+        c.get("user").id,
+        documentScope
+      ),
+    });
   });
 
   app.put("/api/documents", async (c) => {

@@ -9,6 +9,7 @@ import {
   RequirementImportanceSchema,
   RequirementLanguageLevelSchema,
 } from "../../src/features/matching/schema";
+import { JobMarketSegmentSchema } from "../../src/features/organizations/market-segments";
 import { DegreeLevelSchema } from "../../src/features/profile/schema";
 import type { JobImport } from "../schemas";
 import {
@@ -32,6 +33,7 @@ export const ProviderJobMatchFactsSchema = z
     employmentTypes: z.array(
       ProviderEvidenceFactSchema(JobEmploymentTypeSchema)
     ),
+    marketSegments: z.array(ProviderEvidenceFactSchema(JobMarketSegmentSchema)),
     requirements: z.array(
       z
         .object({
@@ -70,6 +72,7 @@ Rules:
 - Employment type is not candidate availability. Do not emit full-time, part-time, or contract work as an availability requirement.
 - When any one of several requirements is sufficient, emit every alternative separately with the same short semantic alternativeGroup. This includes X or Y, X and/or Y, and an unqualified-candidate training path offered as a fallback to a qualified-candidate path. For example, "experience and/or certification" must produce two requirements with exactly the same alternativeGroup. Never use a number as the group name. Leave alternativeGroup null only for requirements that must all be met.
 - Extract benefits, learner audiences, and employment types only when the listing states them.
+- Classify the employer or hiring organization into marketSegments only when the title, organization name, or description explicitly supports the category. Use the shortest exact supporting quote. Return an empty list when the organization type is unclear. A language center or training center must retain that category even when it advertises a school placement.
 - For benefits, use provided only when the employer supplies or pays for it, allowance for an explicit cash allowance or reimbursement, and assistance for advice or logistical help only.
 - Classify housing only when the evidence explicitly identifies housing, accommodation, an apartment, lodging, or rent. Generic living, meal, utilities, furniture, and transportation allowances are not housing.
 - Housing-search help is assistance, not housing provided. Airport pickup is not airfare. Visa paperwork help is not visa sponsorship unless sponsorship is explicit.
@@ -98,6 +101,7 @@ export function unsupportedEvidence(facts: JobMatchFacts, source: string) {
     ...missing(facts.audiences),
     ...missing(facts.benefits),
     ...missing(facts.employmentTypes),
+    ...missing(facts.marketSegments),
     ...missing(facts.requirements),
   ];
 }
@@ -112,6 +116,7 @@ export function validateProviderJobMatchFacts(
     output.audiences.filter((value) => !supported(value)).length +
     output.benefits.filter((value) => !supported(value)).length +
     output.employmentTypes.filter((value) => !supported(value)).length +
+    output.marketSegments.filter((value) => !supported(value)).length +
     output.requirements.filter((value) => !supported(value)).length;
   const reviewNotes = output.reviewNotes
     .filter((note) => note.trim())
@@ -146,6 +151,10 @@ export function validateProviderJobMatchFacts(
     employmentTypes: output.employmentTypes
       .filter(supported)
       .slice(0, 10)
+      .map((fact) => ({ ...fact, evidence: clip(fact.evidence, 1200) })),
+    marketSegments: output.marketSegments
+      .filter(supported)
+      .slice(0, 8)
       .map((fact) => ({ ...fact, evidence: clip(fact.evidence, 1200) })),
     requirements: normalizeRequirements(
       output.requirements.filter(supported).slice(0, 60)
@@ -314,12 +323,13 @@ function clip(value: string, maximum: number) {
 
 export type JobFactSourceFields = Pick<
   JobImport,
-  "description" | "salary" | "title"
+  "company" | "description" | "salary" | "title"
 >;
 
 export function jobFactSource(job: JobFactSourceFields) {
   return [
     `Title: ${job.title}`,
+    `Organization: ${job.company || "Not supplied"}`,
     `Salary field: ${job.salary || "Not supplied"}`,
     "Description:",
     job.description,

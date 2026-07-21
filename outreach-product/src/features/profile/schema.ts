@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const PROFILE_SCHEMA_VERSION = 3;
+export const PROFILE_SCHEMA_VERSION = 4;
 
 export const DegreeLevelSchema = z.enum([
   "associate",
@@ -63,6 +63,7 @@ export interface Profile {
   phone: string;
   preferredName: string;
   profileReviewNotes: string[];
+  subjectQualifications: string[];
   workAuthorization: WorkAuthorizationEntry[];
   workExperience: WorkExperienceEntry[];
 }
@@ -129,6 +130,7 @@ export const ProfileSchema: z.ZodType<Profile> = z
     ]),
     preferredName: z.string().min(1, "Enter a preferred name").max(100),
     profileReviewNotes: z.array(z.string().max(240)).max(20),
+    subjectQualifications: z.array(z.string().max(100)).max(30),
     workAuthorization: z.array(WorkAuthorizationEntrySchema).max(30),
     workExperience: z.array(WorkExperienceEntrySchema).max(80),
   })
@@ -149,6 +151,7 @@ export const defaultProfile: Profile = {
   phone: "",
   preferredName: "",
   profileReviewNotes: [],
+  subjectQualifications: [],
   workAuthorization: [],
   workExperience: [],
 };

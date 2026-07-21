@@ -72,6 +72,12 @@ const JobsWorkspace = lazy(async () => ({
 const TestLabView = lazy(async () => ({
   default: (await import("@/features/test-lab/view")).TestLabView,
 }));
+const SettingsView = lazy(async () => ({
+  default: (await import("@/features/settings/view")).SettingsView,
+}));
+const OperatorView = lazy(async () => ({
+  default: (await import("@/features/operator/view")).OperatorView,
+}));
 
 function WorkspacePage({ children }: PropsWithChildren) {
   return (
@@ -223,6 +229,7 @@ export function App() {
         name={currentUser.name}
         onSignOut={() => authClient.signOut()}
         onViewChange={setActiveView}
+        role={currentUser.role}
         totalJobs={jobs.length}
       />
       <SidebarInset className="h-svh min-h-0 min-w-0 overflow-hidden">
@@ -250,10 +257,34 @@ export function App() {
           <Route
             element={
               <WorkspacePage>
-                <TestLabView request={apiRequest} />
+                {currentUser.role === "operator" ? (
+                  <TestLabView request={apiRequest} />
+                ) : (
+                  <Navigate replace to={workspacePaths.jobs} />
+                )}
               </WorkspacePage>
             }
             path={workspacePaths.testLab}
+          />
+          <Route
+            element={
+              <WorkspacePage>
+                <SettingsView request={apiRequest} />
+              </WorkspacePage>
+            }
+            path={workspacePaths.settings}
+          />
+          <Route
+            element={
+              <WorkspacePage>
+                {currentUser.role === "operator" ? (
+                  <OperatorView request={apiRequest} />
+                ) : (
+                  <Navigate replace to={workspacePaths.jobs} />
+                )}
+              </WorkspacePage>
+            }
+            path={workspacePaths.operator}
           />
           <Route
             element={

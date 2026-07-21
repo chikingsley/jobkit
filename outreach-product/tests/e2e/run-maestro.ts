@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { sleep, spawn } from "bun";
+import { file, Glob, sleep, spawn } from "bun";
 import { defaultPreferences } from "../../src/features/preferences/schema";
 import { defaultProfile } from "../../src/features/profile/schema";
 
@@ -9,8 +9,16 @@ const baseUrl = `http://${host}:${port}`;
 const email = "maestro.local@jobkit.test";
 const password = "maestro-local-password";
 const flowTag = process.argv[2] ?? "safe";
+const screenSize = process.env.JOBKIT_SCREEN_SIZE ?? "1366x900";
 const maestro = join(process.env.HOME ?? "", ".maestro", "bin", "maestro");
+const tagLinePattern = /^\s+-\s+(.+?)\s*$/;
+const yamlExtensionPattern = /\.yaml$/;
+const flowFiles = await matchingFlowFiles(flowTag);
 let server: ReturnType<typeof spawn> | null = null;
+
+if (flowFiles.length === 0) {
+  throw new Error(`No Maestro flows have the tag ${flowTag}`);
+}
 
 try {
   await command([
@@ -36,19 +44,55 @@ try {
     "tests/e2e/fixtures/maestro.sql",
   ]);
   await startServer();
+  await flowFiles.reduce(
+    (previous, flowFile) =>
+      previous.then(async () => {
+        await runFlow(flowFile);
+      }),
+    Promise.resolve()
+  );
+} finally {
+  await stopServer();
+}
+
+async function matchingFlowFiles(tag: string) {
+  const files = Array.from(
+    new Glob("*.yaml").scanSync({ cwd: ".maestro/flows" })
+  ).sort();
+  const candidates = await Promise.all(
+    files.map(async (fileName) => {
+      const flowFile = join(".maestro/flows", fileName);
+      const header = (await file(flowFile).text()).split("---", 1)[0] ?? "";
+      const tags = header
+        .split("\n")
+        .map((line) => tagLinePattern.exec(line)?.[1])
+        .filter((value): value is string => value !== undefined);
+      return { flowFile, tags };
+    })
+  );
+  return candidates
+    .filter(({ tags }) => tags.includes(tag))
+    .map(({ flowFile }) => flowFile);
+}
+
+function flowName(flowFile: string) {
+  return (
+    flowFile.split("/").at(-1)?.replace(yamlExtensionPattern, "") ?? "flow"
+  );
+}
+
+async function runFlow(flowFile: string) {
   await command([
     maestro,
     "test",
-    ".maestro/flows",
+    flowFile,
     "--config",
     ".maestro/config.yaml",
     "--headless",
     "--screen-size",
-    "1366x900",
-    "--include-tags",
-    flowTag,
+    screenSize,
     "--test-output-dir",
-    "test-results/maestro",
+    join("test-results/maestro", flowName(flowFile)),
     "-e",
     `JOBKIT_URL=${baseUrl}`,
     "-e",
@@ -56,8 +100,6 @@ try {
     "-e",
     `JOBKIT_PASSWORD=${password}`,
   ]);
-} finally {
-  await stopServer();
 }
 
 async function prepareAccount() {
@@ -114,6 +156,21 @@ async function prepareAccount() {
       "save the local fixture preferences"
     ),
   ]);
+  const resume = new TextEncoder().encode("%PDF-1.4 Maestro resume fixture");
+  await requireOk(
+    await fetch(`${baseUrl}/api/documents`, {
+      body: resume,
+      headers: {
+        "content-length": String(resume.byteLength),
+        "content-type": "application/pdf",
+        cookie,
+        "x-jobkit-category": "resume",
+        "x-jobkit-filename": "maestro-resume.pdf",
+      },
+      method: "PUT",
+    }),
+    "save the local fixture resume"
+  );
   await requireOk(
     await fetch(`${baseUrl}/api/onboarding/complete`, {
       headers: { cookie },

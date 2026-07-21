@@ -60,7 +60,7 @@ export async function claimJobPositionTask(
   }
   const candidates = await db
     .prepare(
-      `SELECT j.id,j.title,j.salary,j.description
+      `SELECT j.id,j.title,j.company,j.salary,j.description
          FROM user_jobs uj
          JOIN jobs j ON j.id=uj.job_id
          LEFT JOIN job_position_analyses pa ON pa.job_id=j.id
@@ -100,7 +100,7 @@ export async function claimJobMatchFactsTask(
   }
   const candidates = await db
     .prepare(
-      `SELECT j.id,j.title,j.salary,j.description
+      `SELECT j.id,j.title,j.company,j.salary,j.description
          FROM user_jobs uj
          JOIN jobs j ON j.id=uj.job_id
          LEFT JOIN job_match_facts mf ON mf.job_id=j.id

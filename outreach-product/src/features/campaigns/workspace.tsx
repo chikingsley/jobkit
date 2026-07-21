@@ -2,6 +2,7 @@ import {
   ChevronLeft,
   CirclePause,
   CirclePlay,
+  Globe2,
   MailCheck,
   Plus,
   RefreshCw,
@@ -75,13 +76,23 @@ export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
                   : "Choose markets and build a live outreach pool"}
               </p>
             </div>
-            <Button
-              aria-label="New campaign"
-              onClick={() => navigate("/campaigns/new")}
-              size="icon-sm"
-            >
-              <Plus />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                aria-label="Markets"
+                onClick={() => navigate("/campaigns/markets")}
+                size="icon-sm"
+                variant="ghost"
+              >
+                <Globe2 />
+              </Button>
+              <Button
+                aria-label="New campaign"
+                onClick={() => navigate("/campaigns/new")}
+                size="icon-sm"
+              >
+                <Plus />
+              </Button>
+            </div>
           </div>
           <ScrollArea className="min-h-0 flex-1">
             <div className="flex flex-col gap-1 p-2">

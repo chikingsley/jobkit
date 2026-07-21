@@ -11,6 +11,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  AgentRunnerConnectionCard,
+  useAgentRunners,
+} from "@/features/agents/runner-connection-card";
 import type {
   OnboardingState,
   ProfileImportQueuedResult,
@@ -45,6 +49,9 @@ export function ResumeUploadStep({
   const [importId, setImportId] = useState<string | null>(() =>
     initialImport?.status === "processing" ? initialImport.id : null
   );
+  const { hasCapability, isLoading: runnersLoading } =
+    useAgentRunners(apiRequest);
+  const canExtract = hasCapability("extraction");
   const { data: importState, error: importStatusError } = useSWR(
     importId ? "/api/onboarding" : null,
     async (path) => (await (await apiRequest(path)).json()) as OnboardingState,
@@ -145,6 +152,13 @@ export function ResumeUploadStep({
           application fact until you confirm it.
         </p>
       </div>
+      {runnersLoading || canExtract ? null : (
+        <AgentRunnerConnectionCard
+          description="Resume import runs through your Codex login. Pair it once, then this page can extract the resume into reviewable profile facts."
+          request={apiRequest}
+          title="Connect Codex before importing"
+        />
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Upload a resume</CardTitle>
@@ -194,7 +208,10 @@ export function ResumeUploadStep({
           >
             Build my profile manually
           </Button>
-          <Button disabled={busy || processing} onClick={() => void upload()}>
+          <Button
+            disabled={busy || processing || runnersLoading || !canExtract}
+            onClick={() => void upload()}
+          >
             <Upload />
             {actionLabel}
           </Button>

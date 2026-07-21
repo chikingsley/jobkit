@@ -6,6 +6,7 @@ import {
   readLatestProfileImport,
   readOnboardingCompletion,
 } from "../repositories/onboarding";
+import { listUserDocuments } from "../repositories/user-documents";
 import { readPreferences, readProfile } from "../repositories/user-settings";
 import { importResume } from "../services/profile-imports";
 
@@ -14,18 +15,20 @@ const WHITESPACE_PATTERN = /\s+/u;
 export function registerOnboardingRoutes(app: JobKitApp) {
   app.get("/api/onboarding", async (c) => {
     const user = c.get("user");
-    const [completedAt, profile, preferences, profileImport] =
+    const [completedAt, profile, preferences, profileImport, documents] =
       await Promise.all([
         readOnboardingCompletion(c.env.DB, user.id),
         readProfile(c.env.DB, user.id),
         readPreferences(c.env.DB, user.id),
         readLatestProfileImport(c.env.DB, user.id),
+        listUserDocuments(c.env.DB, user.id),
       ]);
     const importedProfile = profileImport?.proposal
       ? profileFromImport(profileImport.proposal, user)
       : null;
     return c.json({
       completedAt,
+      documents,
       hasPreferences: preferences.updatedAt !== null,
       hasProfile: profile.updatedAt !== null,
       preferences: preferences.value,

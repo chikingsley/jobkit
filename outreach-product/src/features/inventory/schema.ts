@@ -1,16 +1,7 @@
 import { z } from "zod";
+import { JobMarketSegmentSchema } from "../organizations/market-segments";
 
-export const InventoryMarketSegmentSchema = z.enum([
-  "international_school",
-  "kindergarten",
-  "language_center",
-  "online",
-  "private_school",
-  "public_school",
-  "school",
-  "training_center",
-  "university",
-]);
+export const InventoryMarketSegmentSchema = JobMarketSegmentSchema;
 
 export const InventoryCompensationSchema = z
   .object({

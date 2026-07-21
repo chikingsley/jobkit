@@ -10,6 +10,7 @@ import {
 import { humanize } from "@/features/jobs/format";
 import { MatchBadge } from "@/features/jobs/match";
 import type { FxData, Job } from "@/features/jobs/types";
+import { restrictedMarketSegments } from "@/features/organizations/market-segments";
 import { cn } from "@/lib/utils";
 import type { JobMatch } from "@/profile-types";
 
@@ -80,9 +81,8 @@ export function JobQueueItem({
                 Shared inbox · {contact.relatedListingCount.toLocaleString()}
               </Badge>
             ) : null}
-            {job.marketSegments.some(
-              (segment) =>
-                segment === "training_center" || segment === "language_center"
+            {job.marketSegments.some((segment) =>
+              restrictedMarketSegments.has(segment)
             ) ? (
               <Badge variant="destructive">Center placements</Badge>
             ) : null}

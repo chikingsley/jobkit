@@ -1,31 +1,28 @@
 # Jobkit Product PRD
 
-Status: Canonical product direction; implementation status is tracked in the application README
-Last updated: 2026-07-17
-Scope: ESL/teaching job discovery, qualification matching, outreach, and verified application execution
+- Status: Canonical product direction; implementation status is tracked in the application README.
+- Last updated: 2026-07-20.
+- Scope: ESL/teaching job discovery, qualification matching, outreach, and verified application execution.
 
 ## 1. Summary
 
 Jobkit is an application system for international teaching work. It combines two acquisition paths:
 
 1. normalized listings from job boards; and
-2. structured country sweeps that discover schools, contacts, vacancies, and cold-outreach routes.
+1. structured country sweeps that discover schools, contacts, vacancies, and cold-outreach routes.
 
 Both paths feed the same user-specific qualification matching, message generation, application-route execution, follow-up, and outcome tracking. The product should move safely from review to one-click and eventually policy-controlled automatic submission. Every external action must be idempotent, auditable, and verified against the authoritative destination rather than inferred from a request alone.
 
 ## 2. Why This Exists
 
-JobKit began as a collection of local tools. The hosted product now provides the core review and
-application loop:
+JobKit began as a collection of local tools. The hosted product now provides the core review and application loop:
 
 - Jobs live in `job-search/job-data/jobs.sqlite`.
 - Refresh is now stateful and upserts by `(board, job_id)`.
 - Country counts, board counts, salary visibility, and application channels are queryable.
-- The web UI supports job selection, qualification review, immutable drafts, Gmail sending,
-  SeriousTeachers submission, message threads, and reply state.
+- The web UI supports job selection, qualification review, immutable drafts, Gmail sending, SeriousTeachers submission, message threads, and reply state.
 
-The inventory figures below are the dated source snapshot used to design the product. They are not
-live production counts.
+The inventory figures below are the dated source snapshot used to design the product. They are not live production counts.
 
 The pain is not "we need another CSV." The pain is deciding what is worth applying to, keeping that state clean, and moving from a scraped posting to a reviewed application action without losing context.
 
@@ -42,28 +39,28 @@ Snapshot from `job-search/job-data/jobs.sqlite` on 2026-06-13:
 
 Board breakdown:
 
-| Board | Active | Salary rows | Email rows | URL rows |
-|---|---:|---:|---:|---:|
-| seriousteachers | 1,498 | 1,422 | 0 | 1,496 |
-| anesl | 502 | 502 | 502 | 0 |
-| eslcafe-modern | 439 | 366 | 351 | 178 |
-| ajarn | 159 | 136 | 159 | 24 |
-| tefl | 62 | 56 | 0 | 62 |
+| Board           | Active | Salary rows | Email rows | URL rows |
+| --------------- | -----: | ----------: | ---------: | -------: |
+| seriousteachers |  1,498 |       1,422 |          0 |    1,496 |
+| anesl           |    502 |         502 |        502 |        0 |
+| eslcafe-modern  |    439 |         366 |        351 |      178 |
+| ajarn           |    159 |         136 |        159 |       24 |
+| tefl            |     62 |          56 |          0 |       62 |
 
 Top active countries:
 
-| Country | Jobs |
-|---|---:|
-| China | 637 |
-| Thailand | 225 |
-| South Korea | 209 |
-| Taiwan | 83 |
-| Italy | 83 |
-| Japan | 80 |
-| United Kingdom | 73 |
-| Mexico | 67 |
-| Indonesia | 56 |
-| Hong Kong | 53 |
+| Country        | Jobs |
+| -------------- | ---: |
+| China          |  637 |
+| Thailand       |  225 |
+| South Korea    |  209 |
+| Taiwan         |   83 |
+| Italy          |   83 |
+| Japan          |   80 |
+| United Kingdom |   73 |
+| Mexico         |   67 |
+| Indonesia      |   56 |
+| Hong Kong      |   53 |
 
 Implications:
 
@@ -75,16 +72,16 @@ Implications:
 ## 4. Product Goals
 
 1. Review all active teaching jobs from one clean interface.
-2. Search and filter by the things that matter: country, location, source, salary visibility, apply method, recency, status, and teaching-specific fit.
-3. Sort by multiple fields, including country, first seen, salary-derived fields, source, and status.
-4. Keep scraped inventory separate from application state.
-5. Use one explicit, testable message policy across email, board forms, and future application routes.
-6. Create Gmail drafts with the selected application packet, send when the user's automation policy permits it, and reconcile sent/reply state from Gmail.
-7. Let users resolve qualification questions directly. A user-confirmed “yes” is a match; document storage is a separate convenience and submission concern.
-8. Track events: viewed, saved, ignored, drafted, approved, sent/submitted, replied, interviewed, offered, rejected, bounced, and closed.
-9. Support route-specific executors, beginning with Gmail and SeriousTeachers, with exact-message history, deduplication, and authoritative verification.
-10. Build a reusable global catalog of schools, contacts, evidence, and freshness state from bounded country sweeps.
-11. Make the web dashboard useful first, then provide a mobile client that consumes the same API and supports review, triage, and application status.
+1. Search and filter by the things that matter: country, location, source, salary visibility, apply method, recency, status, and teaching-specific fit.
+1. Sort by multiple fields, including country, first seen, salary-derived fields, source, and status.
+1. Keep scraped inventory separate from application state.
+1. Use one explicit, testable message policy across email, board forms, and future application routes.
+1. Create Gmail drafts with the selected application packet, send when the user's automation policy permits it, and reconcile sent/reply state from Gmail.
+1. Let users resolve qualification questions directly. A user-confirmed “yes” is a match; document storage is a separate convenience and submission concern.
+1. Track events: viewed, saved, ignored, drafted, approved, sent/submitted, replied, interviewed, offered, rejected, bounced, and closed.
+1. Support route-specific executors, beginning with Gmail and SeriousTeachers, with exact-message history, deduplication, and authoritative verification.
+1. Build a reusable global catalog of schools, contacts, evidence, and freshness state from bounded country sweeps.
+1. Make the web dashboard useful first, then provide a mobile client that consumes the same API and supports review, triage, and application status.
 
 ## 5. Non-Goals
 
@@ -205,10 +202,7 @@ NativewindUI:
 
 ## 10. Core User Flows
 
-The canonical route-by-route registry is in
-[`docs/user-flows/`](./user-flows/README.md). This section retains the broader
-product acceptance criteria; the registry defines journey order, terminal
-states, current implementation boundaries, and roadmap linkage.
+The canonical route-by-route registry is in [`docs/user-flows/`](./user-flows/README.md). This section retains the broader product acceptance criteria; the registry defines journey order, terminal states, current implementation boundaries, and roadmap linkage.
 
 ### 10.1 Refresh inventory
 
@@ -313,50 +307,27 @@ Acceptance criteria:
 
 ### 10.9 Candidate profile, preferences, and qualification matching
 
-The private beta stores an editable candidate profile and preference set in D1. Matching evaluates
-each mapped requirement as `match`, `conflict`, `unknown`, or `preference` and presents both the
-overall state and its evidence. Hard conflicts are hidden by default but remain available through
-“Show ineligible”; missing data remains visible as “Needs verification.”
+The private beta stores an editable candidate profile and preference set in D1. Matching evaluates each mapped requirement as `match`, `conflict`, `unknown`, or `preference` and presents both the overall state and its evidence. Hard conflicts are hidden by default but remain available through “Show ineligible”; missing data remains visible as “Needs verification.”
 
-Initial preference controls cover countries, audiences, full-time/part-time/contract work, benefits
-including visa sponsorship, and minimum monthly USD. Theme is a device-local interface setting,
-not matching data. Profile and preference JSON documents carry explicit schema versions; migrations
-upgrade and persist older documents instead of transforming them on every read. The initial 14
-Serious Teachers jobs use a manually reviewed criterion map; future ingestion should normalize
-requirements before expanding this beyond the specimen set.
+Initial preference controls cover countries, audiences, full-time/part-time/contract work, benefits including visa sponsorship, and minimum monthly USD. Theme is a device-local interface setting, not matching data. Profile and preference JSON documents carry explicit schema versions; migrations upgrade and persist older documents instead of transforming them on every read. The initial 14 Serious Teachers jobs use a manually reviewed criterion map; future ingestion should normalize requirements before expanding this beyond the specimen set.
 
-Job compensation is normalized at import into amount, currency, period, qualifier, source,
-confidence, and notes fields. Queue and detail views consume that single stored representation;
-manually reviewed corrections are preserved across later imports.
+Job compensation is normalized at import into amount, currency, period, qualifier, source, confidence, and notes fields. Queue and detail views consume that single stored representation; manually reviewed corrections are preserved across later imports.
 
-Each unresolved qualification can be answered directly from the job detail view with `Yes`, `No`,
-or `Not sure`. `Yes` immediately resolves that criterion as a match and saves the answer to the
-user's qualifications for later jobs. It does not require documentary proof. The answer remains
-editable from Profile / Qualifications.
+Each unresolved qualification can be answered directly from the job detail view with `Yes`, `No`, or `Not sure`. `Yes` immediately resolves that criterion as a match and saves the answer to the user's qualifications for later jobs. It does not require documentary proof. The answer remains editable from Profile / Qualifications.
 
-Documents are a parallel concern. A qualification can be satisfied without a file on the platform;
-the UI may recommend uploading proof so later attachment or form-upload steps are automatic. A
-missing file blocks execution only when the destination requires that file during the current
-submission, not merely because the listing mentions that the candidate may need it later.
+Documents are a parallel concern. A qualification can be satisfied without a file on the platform; the UI may recommend uploading proof so later attachment or form-upload steps are automatic. A missing file blocks execution only when the destination requires that file during the current submission, not merely because the listing mentions that the candidate may need it later.
 
 ### 10.10 Private application documents
 
-Candidate documents live in a private R2 bucket and are indexed by D1 metadata. Objects are never
-published as static assets. All upload, listing, view, and delete requests require the same private
-beta authorization as the rest of the API. Authenticated reads stream object bodies with private,
-no-store caching so the same files can later be attached to outbound email workflows.
+Candidate documents live in a private R2 bucket and are indexed by D1 metadata. Objects are never published as static assets. All upload, listing, view, and delete requests require the same private beta authorization as the rest of the API. Authenticated reads stream object bodies with private, no-store caching so the same files can later be attached to outbound email workflows.
 
-Email packets select specific document versions rather than attaching every file in a category.
-Initial presets:
+Email packets select specific document versions rather than attaching every file in a category. Initial presets:
 
 - `English teaching core`: default resume, degree/diploma, and TEFL certificate.
 - `Visa-market`: core packet plus passport and recent professional photo.
-- `Requested proof`: only documents explicitly required by the destination, such as a background
-  check, transcript, teaching credential, or reference letter.
+- `Requested proof`: only documents explicitly required by the destination, such as a background check, transcript, teaching credential, or reference letter.
 
-Packet presets are recommendations and user-editable. The personal profile may choose
-`Visa-market` as its normal packet. The product must not claim a file is attached unless the exact
-immutable draft records that attachment and the Gmail MIME payload contains it.
+Packet presets are recommendations and user-editable. The personal profile may choose `Visa-market` as its normal packet. The product must not claim a file is attached unless the exact immutable draft records that attachment and the Gmail MIME payload contains it.
 
 ### 10.11 Message policy and preference calibration
 
@@ -371,64 +342,35 @@ Every generated message is constrained by a platform policy before user-specific
 - use the profile-selected signature; and
 - pass deterministic validation before approval or automatic execution.
 
-Style calibration presents two outputs for the same context and lets the user choose A, B, or equal.
-Decisions can focus on a whole message or one changed sentence. Each decision stores the context,
-both variants, the chosen variant, optional reason tags, models/prompts, and timestamp. The selected
-examples become an editable style instruction plus a compact few-shot example set; this is prompt
-and evaluation data, not an RL-training requirement.
+Style calibration presents two outputs for the same context and lets the user choose A, B, or equal. Decisions can focus on a whole message or one changed sentence. Each decision stores the context, both variants, the chosen variant, optional reason tags, models/prompts, and timestamp. The selected examples become an editable style instruction plus a compact few-shot example set; this is prompt and evaluation data, not an RL-training requirement.
 
-The same calibration set evaluates candidate models and prompt revisions. Human pairwise choices
-are ground truth; deterministic rules score hard constraints; model judges may assist with soft
-rubrics only after they are calibrated against those human choices.
+The same calibration set evaluates candidate models and prompt revisions. Human pairwise choices are ground truth; deterministic rules score hard constraints; model judges may assist with soft rubrics only after they are calibrated against those human choices.
 
 ### 10.12 School catalog and country sweeps
 
-Country sweeps populate a global catalog, not user-specific fake jobs. The catalog stores schools,
-locations, domains, multiple contact points, evidence URLs, last-verified dates, career pages, and
-outreach eligibility. Active opportunities reference schools but remain distinct records.
+Country sweeps populate a global catalog, not user-specific fake jobs. The catalog stores schools, locations, domains, multiple contact points, evidence URLs, last-verified dates, career pages, and outreach eligibility. Active opportunities reference schools but remain distinct records.
 
 A bounded sweep has three phases:
 
 1. discovery across directories, search, maps, and known sources;
-2. verification of the official site, contacts, vacancies, and evidence; and
-3. a coverage audit for missed cities, school types, and duplicates.
+1. verification of the official site, contacts, vacancies, and evidence; and
+1. a coverage audit for missed cities, school types, and duplicates.
 
-The persisted result is reusable by every user. Applications, replies, and outcomes remain
-user-owned; later aggregate response metrics must preserve user privacy.
+The persisted result is reusable by every user. Applications, replies, and outcomes remain user-owned; later aggregate response metrics must preserve user privacy.
 
 ### 10.13 Policy-controlled execution
 
-Each user chooses an automation level per channel: preview only, one-click approve/send, or
-auto-submit. Auto-submit is allowed only when the route is fresh, the recipient is valid, hard
-requirements are not declined, any required-at-submission files are attached, message validation
-passes, deduplication passes, and daily/channel limits permit the action. Otherwise the item returns
-to review with a specific reason.
+Each user chooses an automation level per channel: preview only, one-click approve/send, or auto-submit. Auto-submit is allowed only when the route is fresh, the recipient is valid, hard requirements are not declined, any required-at-submission files are attached, message validation passes, deduplication passes, and daily/channel limits permit the action. Otherwise the item returns to review with a specific reason.
 
-Non-response belongs to an outreach attempt, not permanently to the school. School/contact response
-rates are computed only after a defined response window and sufficient attempts; the initial
-display threshold is at least three independent sends.
+Non-response belongs to an outreach attempt, not permanently to the school. School/contact response rates are computed only after a defined response window and sufficient attempts; the initial display threshold is at least three independent sends.
 
-Country campaigns operate as paced searches rather than fixed item batches. A
-campaign exposes all currently eligible advertised opportunities and verified
-school contacts. It calibrates the first five messages, then executes at the
-user's configured daily pace until the pool is exhausted, the user stops it, or
-three person-authored replies pause it by default. Bounces, delivery failures,
-vacation responders, and automated acknowledgements do not count toward that
-reply threshold. Provider quotas and measured delivery backpressure may slow
-execution, but they do not truncate the eligible pool or create an unsupported
-product-level target cap.
+Country campaigns operate as paced searches rather than fixed item batches. A campaign exposes all currently eligible advertised opportunities and verified school contacts. It calibrates the first five messages, then executes at the user's configured daily pace until the pool is exhausted, the user stops it, or three person-authored replies pause it by default. Bounces, delivery failures, vacation responders, and automated acknowledgements do not count toward that reply threshold. Provider quotas and measured delivery backpressure may slow execution, but they do not truncate the eligible pool or create an unsupported product-level target cap.
 
-Campaigns may overlap in country and source inventory. Before execution, JobKit atomically claims
-the opportunity or canonical contact channel for that user. A verified send suppresses the same
-execution in every other campaign. Intermediary routes are composed automatically: for ANESL,
-JobKit ranks eligible references in the campaign markets and sends one instruction-compliant email
-covering the strongest one to five positions instead of requiring a separate ANESL workspace.
+Campaigns may overlap in country and source inventory. Before execution, JobKit atomically claims the opportunity or canonical contact channel for that user. A verified send suppresses the same execution in every other campaign. Intermediary routes are composed automatically: for ANESL, JobKit ranks eligible references in the campaign markets and sends one instruction-compliant email covering the strongest one to five positions instead of requiring a separate ANESL workspace.
 
 ## 11. Data Model
 
-The existing `jobs` table remains the opportunity inventory root. Schools, contacts, qualification
-claims, application routes, messages, attempts, and events are separate entities rather than extra
-columns forced onto a job row.
+The existing `jobs` table remains the opportunity inventory root. Schools, contacts, qualification claims, application routes, messages, attempts, and events are separate entities rather than extra columns forced onto a job row.
 
 ### 11.1 Jobs
 
@@ -438,9 +380,7 @@ The local ingestion inventory is keyed by:
 PRIMARY KEY (board, job_id)
 ```
 
-The hosted D1 table currently uses the board's stable ID as `jobs.id`. Before importing multiple
-sources, use an unambiguous hosted identifier such as `${board}:${job_id}` or store `board` and
-`source_job_id` under a unique constraint. Do not assume two boards cannot emit the same numeric ID.
+The hosted D1 table currently uses the board's stable ID as `jobs.id`. Before importing multiple sources, use an unambiguous hosted identifier such as `${board}:${job_id}` or store `board` and `source_job_id` under a unique constraint. Do not assume two boards cannot emit the same numeric ID.
 
 Important existing fields:
 
@@ -483,8 +423,7 @@ Near-term derived fields:
 - `country_confidence`
 - `source_url_canonical`
 
-Application destinations belong in a related table because one opportunity may expose email, URL,
-board-form, phone, and manual routes simultaneously:
+Application destinations belong in a related table because one opportunity may expose email, URL, board-form, phone, and manual routes simultaneously:
 
 ```sql
 CREATE TABLE application_routes (
@@ -645,11 +584,7 @@ CREATE TABLE user_qualification_claims (
 );
 ```
 
-The matcher checks an exact normalized claim before falling back to structured profile fields and
-documents. `yes` resolves the requirement to `match`; `no` resolves a required criterion to
-`conflict`; deleting the answer restores `unknown`. Reuse is allowed only when the normalized
-concept is genuinely equivalent—for example, `document:grade_transcript` must not resolve an
-unrelated transcript or degree requirement.
+The matcher checks an exact normalized claim before falling back to structured profile fields and documents. `yes` resolves the requirement to `match`; `no` resolves a required criterion to `conflict`; deleting the answer restores `unknown`. Reuse is allowed only when the normalized concept is genuinely equivalent—for example, `document:grade_transcript` must not resolve an unrelated transcript or degree requirement.
 
 ### 11.8 Document packets
 
@@ -672,8 +607,7 @@ CREATE TABLE user_document_packet_items (
 );
 ```
 
-An application draft snapshots the selected document IDs so changing a packet later cannot change
-what an approved or sent draft claims to contain.
+An application draft snapshots the selected document IDs so changing a packet later cannot change what an approved or sent draft claims to contain.
 
 ## 12. API Requirements
 
@@ -837,41 +771,31 @@ Settings:
 
 ## 15. Gmail and Outreach
 
-Gmail supports preview, draft, explicit send, and policy-controlled automatic send. Drafting and
-sending remain separate executor actions even when automation advances directly from one to the
-other.
+Gmail supports preview, draft, explicit send, and policy-controlled automatic send. Drafting and sending remain separate executor actions even when automation advances directly from one to the other.
 
-- The hosted product uses per-user Google OAuth and the Gmail compose/read scopes required for
-  verified sends and reply sync.
-- MIME messages include the exact selected document versions; text that claims attachments must be
-  rejected if the MIME payload does not contain them.
-- Gmail is authoritative for sent state, thread membership, replies, bounces, and delivery-adjacent
-  signals available through the API.
-- Logs record exact recipient, subject, message version, attachment IDs, draft/message/thread IDs,
-  executor, automation policy, and result.
+- The hosted product uses per-user Google OAuth and the Gmail compose/read scopes required for verified sends and reply sync.
+- MIME messages include the exact selected document versions; text that claims attachments must be rejected if the MIME payload does not contain them.
+- Gmail is authoritative for sent state, thread membership, replies, bounces, and delivery-adjacent signals available through the API.
+- Logs record exact recipient, subject, message version, attachment IDs, draft/message/thread IDs, executor, automation policy, and result.
 - Per-user rate limits, deduplication, suppression, and pause controls apply before every send.
 
 ## 16. Ingestion and Refresh
 
-Current Python ingestion remains valid for MVP, but its architecture needs the phase-based,
-checkpointed model described in [ingestion-architecture.md](ingestion-architecture.md). The first
-Cloudflare product can import/sync from the local SQLite or from generated D1 migrations/imports.
+The JobKit-owned Go collector under `collectors/` is the canonical source-ingestion implementation. It writes source records to the local SQLite inventory with phase-based checkpoints, then the hosted runner publishes an immutable snapshot to D1.
 
 Short-term:
 
-- Keep `uv run jobs refresh` as the ingestion command.
-- Refresh and reconcile a source before importing its active rows; do not bulk-import the existing
-  SQLite snapshot as if every listing were current.
+- Use `jobkit-collect refresh <board>` as the source-ingestion command.
+- Refresh and reconcile a source before importing its active rows; do not bulk-import the existing SQLite snapshot as if every listing were current.
 - Add a D1 import/sync path that preserves source freshness and closure evidence.
 - Product reads from D1 after sync.
 - Normalize one or more application routes per opportunity instead of overloading a single URL.
 
 Medium-term:
 
-- Move simple board fetchers to Workers where appropriate.
-- Keep complicated authenticated/headless workflows outside Workers unless they are safe and reliable there.
+- Keep source collectors outside Workers while their complete-source and authenticated contracts depend on local execution.
 - Use Workers Cron for scheduled refresh where feasible.
-- Use Queues for polite board fan-out.
+- Keep requests sequential inside a source unless that source explicitly documents safe concurrency.
 
 Board-specific notes:
 
@@ -938,9 +862,7 @@ Product metrics later:
 ### Phase 3: School catalog and country sweeps
 
 - Add organizations, locations, contact points, evidence, and discovery-run state.
-- Import the recovered May 11 workbook from
-  `job-search/job-data/country-sweeps/tajikistan/2026-05-11/` as the first persisted sweep, keeping
-  dated vacancies separate from school-level outreach targets.
+- Import the recovered May 11 workbook from `job-search/job-data/country-sweeps/tajikistan/2026-05-11/` as the first persisted sweep, keeping dated vacancies separate from school-level outreach targets.
 - Run Georgia as the second market and use the coverage comparison to refine the workflow.
 - Add freshness scheduling and deduplication by canonical domain, organization, and location.
 
@@ -953,11 +875,9 @@ Product metrics later:
 
 ### Phase 5: Additional executors and mobile
 
-- Investigate TEFL.com login and application automation after credentials and destination behavior
-  are verified.
+- Investigate TEFL.com login and application automation after credentials and destination behavior are verified.
 - Add other board/ATS executors only when they can be made idempotent and observable.
-- Build the mobile client around triage, confirmations, approvals, and outcome notifications after
-  the web application flow is stable.
+- Build the mobile client around triage, confirmations, approvals, and outcome notifications after the web application flow is stable.
 
 ## 20. Risks
 
@@ -990,19 +910,17 @@ Cloudflare constraints:
 Safety:
 
 - The system must record the exact transition from preview to draft to send/submit.
-- User-confirmed qualifications are sufficient for matching; the platform must not represent them
-  as independently verified credentials.
+- User-confirmed qualifications are sufficient for matching; the platform must not represent them as independently verified credentials.
 - Official document contents and dates are never altered by the platform.
 - Automation must be pausable, rate-limited, deduplicated, and scoped per user and channel.
 
 ## 21. Open Questions
 
 1. Which document packet should be the personal default: `English teaching core` or `Visa-market`?
-2. Which Gmail actions should the first hosted OAuth consent request: compose only, or compose and
-   send?
-3. What route-specific daily send limits should apply during personal dogfooding?
-4. Which salary periods matter most for sorting: monthly, annual, hourly, or per contact hour?
-5. Should saved filters support alerts before country-sweep freshness notifications exist?
+1. Which Gmail actions should the first hosted OAuth consent request: compose only, or compose and send?
+1. What route-specific daily send limits should apply during personal dogfooding?
+1. Which salary periods matter most for sorting: monthly, annual, hourly, or per contact hour?
+1. Should saved filters support alerts before country-sweep freshness notifications exist?
 
 ## 22. Current Docs Checked
 

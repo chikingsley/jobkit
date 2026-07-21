@@ -1,26 +1,14 @@
 import { AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { Job, MarketSegment } from "@/features/jobs/types";
-
-const segmentLabels: Record<MarketSegment, string> = {
-  international_school: "International school",
-  kindergarten: "Kindergarten",
-  language_center: "Language center",
-  online: "Online",
-  private_school: "Private school",
-  public_school: "Public school",
-  school: "School",
-  training_center: "Training center",
-  university: "University",
-};
-const restrictedSegments = new Set<MarketSegment>([
-  "language_center",
-  "training_center",
-]);
+import type { Job } from "@/features/jobs/types";
+import {
+  marketSegmentLabels,
+  restrictedMarketSegments,
+} from "@/features/organizations/market-segments";
 
 export function JobMarketContext({ job }: { job: Job }) {
   const restricted = job.marketSegments.filter((segment) =>
-    restrictedSegments.has(segment)
+    restrictedMarketSegments.has(segment)
   );
   if (job.opportunityScope === "unknown" && job.marketSegments.length === 0) {
     return null;
@@ -38,10 +26,10 @@ export function JobMarketContext({ job }: { job: Job }) {
           <Badge
             key={segment}
             variant={
-              restrictedSegments.has(segment) ? "destructive" : "outline"
+              restrictedMarketSegments.has(segment) ? "destructive" : "outline"
             }
           >
-            {segmentLabels[segment]}
+            {marketSegmentLabels[segment]}
           </Badge>
         ))}
       </div>
@@ -49,7 +37,9 @@ export function JobMarketContext({ job }: { job: Job }) {
         <p className="mt-2 flex gap-2 text-destructive text-xs leading-5">
           <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
           Includes{" "}
-          {restricted.map((segment) => segmentLabels[segment]).join(" and ")}{" "}
+          {restricted
+            .map((segment) => marketSegmentLabels[segment])
+            .join(" and ")}{" "}
           placements. Listings limited to these segments are excluded from the
           normal queue.
         </p>

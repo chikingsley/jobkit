@@ -11,6 +11,7 @@ import { unsupportedPositionEvidence } from "../ai/job-position-extraction";
 import { jobMatchFactsStatement } from "../repositories/job-match-facts";
 
 export interface OwnedJobSource {
+  company: string;
   description: string;
   salary: string;
   title: string;
@@ -38,7 +39,7 @@ export async function readOwnedJobSource(
 ) {
   const job = await db
     .prepare(
-      `SELECT j.title,j.salary,j.description
+      `SELECT j.title,j.company,j.salary,j.description
          FROM jobs j
          JOIN user_jobs uj ON uj.job_id=j.id AND uj.user_id=?1
         WHERE j.id=?2`
@@ -49,6 +50,7 @@ export async function readOwnedJobSource(
     throw new JobAnalysisRecordError("Unknown job", 404);
   }
   return {
+    company: String(job.company),
     description: String(job.description),
     salary: String(job.salary),
     title: String(job.title),
@@ -76,17 +78,25 @@ export async function recordJobMatchFacts(
       rejectedEvidence.slice(0, 10)
     );
   }
-  await jobMatchFactsStatement(
-    db,
-    input.jobId,
-    {
-      facts: input.facts,
-      modelId: input.modelId,
-      provider: input.provider,
-      sourceHash: input.sourceHash,
-    },
-    JOB_MATCH_FACTS_SCHEMA_VERSION
-  ).run();
+  await db.batch([
+    jobMatchFactsStatement(
+      db,
+      input.jobId,
+      {
+        facts: input.facts,
+        modelId: input.modelId,
+        provider: input.provider,
+        sourceHash: input.sourceHash,
+      },
+      JOB_MATCH_FACTS_SCHEMA_VERSION
+    ),
+    db
+      .prepare("UPDATE jobs SET market_segments_json=? WHERE id=?")
+      .bind(
+        JSON.stringify(input.facts.marketSegments.map((fact) => fact.value)),
+        input.jobId
+      ),
+  ]);
   return { jobId: input.jobId, schemaVersion: JOB_MATCH_FACTS_SCHEMA_VERSION };
 }
 

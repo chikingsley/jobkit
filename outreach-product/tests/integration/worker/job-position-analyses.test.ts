@@ -19,6 +19,7 @@ describe("job position analyses", () => {
     );
     const timestamp = "2026-07-17T00:00:00.000Z";
     const job = {
+      company: "",
       description:
         "We are hiring an English teacher and a high school physics teacher. Salary is 25,000 RMB monthly.",
       salary: "25,000 RMB monthly",

@@ -7,6 +7,7 @@ import type {
   StoredDocument,
 } from "../../profile-types";
 import type { Job } from "../jobs/types";
+import { restrictedMarketSegments } from "../organizations/market-segments";
 import {
   alternativeQualificationClaimKey,
   type QualificationClaims,
@@ -43,10 +44,9 @@ export function evaluateJob(
   claims: QualificationClaims = {}
 ): JobMatch {
   const criteria: MatchCriterion[] = [];
-  const centerSegments = new Set(["language_center", "training_center"]);
   if (
     job.marketSegments.length > 0 &&
-    job.marketSegments.every((segment) => centerSegments.has(segment))
+    job.marketSegments.every((segment) => restrictedMarketSegments.has(segment))
   ) {
     criteria.push(
       criterion(
@@ -63,7 +63,7 @@ export function evaluateJob(
     criteria.push(criterion(`${job.country} is preferred`, "match"));
   }
 
-  criteria.push(...positionCriteria(job, preferences));
+  criteria.push(...positionCriteria(job, preferences, profile));
 
   if (job.matchFacts) {
     criteria.push(
@@ -477,13 +477,19 @@ function benefitCriteria(job: Job, preferences: Preferences) {
   return criteria;
 }
 
-function positionCriteria(job: Job, preferences: Preferences) {
+function positionCriteria(
+  job: Job,
+  preferences: Preferences,
+  profile: Profile
+) {
   const analysis = job.positionAnalysis;
   if (!analysis) {
     return [criterion("Advertised role has not been classified", "unknown")];
   }
   const positions = analysis.positions.map((position) => ({
     preference: preferences.roles[position.roleFamily],
+    roleFamily: position.roleFamily,
+    subjects: position.subjects,
     title: position.title,
   }));
   const available = positions.filter(
@@ -498,15 +504,68 @@ function positionCriteria(job: Job, preferences: Preferences) {
     ];
   }
   const preferred = available.find(({ preference }) => preference === "prefer");
-  if (preferred) {
-    return [
-      criterion(`Includes a preferred role: ${preferred.title}`, "match"),
-    ];
-  }
   if (available.every(({ preference }) => preference === "avoid")) {
     return [criterion("All advertised roles are marked Avoid", "preference")];
   }
-  return [];
+  const criteria = preferred
+    ? [criterion(`Includes a preferred role: ${preferred.title}`, "match")]
+    : [];
+  const subjectSpecialists = available.filter(
+    (position) => position.roleFamily === "subject_specialist"
+  );
+  if (subjectSpecialists.length === 0) {
+    return criteria;
+  }
+  if (subjectSpecialists.length < available.length) {
+    return criteria;
+  }
+  const advertisedSubjects = subjectSpecialists.flatMap(
+    (position) => position.subjects
+  );
+  if (advertisedSubjects.length === 0) {
+    return [
+      ...criteria,
+      criterion(
+        "The subject-specialist role does not identify a subject",
+        "unknown"
+      ),
+    ];
+  }
+  if (profile.subjectQualifications.length === 0) {
+    return [
+      ...criteria,
+      criterion(
+        `Confirm qualification for ${subjectList(advertisedSubjects.map((subject) => subject.value))}`,
+        "unknown",
+        advertisedSubjects.map((subject) => subject.evidence).join(" | ")
+      ),
+    ];
+  }
+  const qualified = advertisedSubjects.filter((subject) =>
+    hasConcept(profile.subjectQualifications, [subject.value])
+  );
+  if (qualified.length > 0) {
+    return [
+      ...criteria,
+      criterion(
+        `Qualified to teach ${subjectList(qualified.map((subject) => subject.value))}`,
+        "match",
+        qualified.map((subject) => subject.evidence).join(" | ")
+      ),
+    ];
+  }
+  return [
+    ...criteria,
+    criterion(
+      `No recorded qualification for ${subjectList(advertisedSubjects.map((subject) => subject.value))}`,
+      "conflict",
+      advertisedSubjects.map((subject) => subject.evidence).join(" | ")
+    ),
+  ];
+}
+
+function subjectList(subjects: string[]) {
+  return [...new Set(subjects)].join(", ");
 }
 
 function preferenceCriterion(

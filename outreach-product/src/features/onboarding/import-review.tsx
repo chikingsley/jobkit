@@ -18,6 +18,7 @@ export function ImportReview({
     ...proposal.education,
     ...proposal.languages,
     ...proposal.skills,
+    ...proposal.subjectQualifications,
     ...proposal.workExperience,
   ].filter((item) => item.confidence === "low").length;
   const facts =
@@ -25,6 +26,7 @@ export function ImportReview({
     proposal.education.length +
     proposal.languages.length +
     proposal.skills.length +
+    proposal.subjectQualifications.length +
     proposal.workExperience.length;
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pt-5 sm:px-6">

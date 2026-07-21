@@ -1,5 +1,9 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
+import {
+  localDevelopmentAuthEnabled,
+  localDevelopmentUser,
+} from "../src/features/auth/local-development";
 import type { AgentRunnerContext, AuthUser, JobKitApp } from "./app-types";
 import { createAuth } from "./auth";
 import type { AppEnv } from "./env";
@@ -51,6 +55,7 @@ import { queueDueInventoryRefreshes } from "./services/inventory-refreshes";
 import { InventoryRunError } from "./services/inventory-runs/contracts";
 import { JobAnalysisRecordError } from "./services/job-analysis-records";
 import { approveAndSubmitApplication } from "./services/job-submission";
+import { ensureLocalDevelopmentUser } from "./services/local-development-user";
 import { searchLocations, searchUniversities } from "./services/lookups";
 import { currentFxData } from "./services/matching-engine";
 import { ResumeUploadError } from "./services/profile-imports";
@@ -211,20 +216,33 @@ app.use("/api/*", async (c, next) => {
       401
     );
   }
+  if (localDevelopmentAuthEnabled) {
+    await ensureLocalDevelopmentUser(c.env.DB);
+    c.set("user", localDevelopmentUser);
+    c.set("agentRunner", null);
+    await next();
+    return;
+  }
   const session = await createAuth(c.env, c.req.raw).api.getSession({
     headers: c.req.raw.headers,
   });
   if (!session) {
     return c.json({ message: "Authentication required", ok: false }, 401);
   }
+  const account = await c.env.DB.prepare("SELECT role FROM users WHERE id=?")
+    .bind(session.user.id)
+    .first<{ role: "member" | "operator" }>();
   c.set("user", {
     email: session.user.email,
     id: session.user.id,
     name: session.user.name,
+    role: account?.role ?? "member",
   });
   c.set("agentRunner", null);
   await next();
 });
+
+app.get("/api/me", (c) => c.json({ user: c.get("user") }));
 
 registerAgentRunnerRoutes(app);
 registerOnboardingRoutes(app);

@@ -1,9 +1,8 @@
-import { Copy, Pause, Plus, Save, Terminal, Trash2, X } from "lucide-react";
+import { Pause, Plus, Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { SettingsPage } from "@/components/settings-page";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,12 +23,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { AgentTaskHistory } from "@/features/agents/task-history";
 import {
   type AutomationPolicy,
   defaultAutomationPolicy,
 } from "@/features/automation/schema";
-import { InventoryStatusCard } from "@/features/inventory/status-card";
 import type { ApiRequest } from "@/lib/api";
 
 const modeOptions = [
@@ -252,10 +249,6 @@ export function AutomationView({ request }: { request: ApiRequest }) {
           </Button>
         </CardFooter>
       </Card>
-
-      <AgentRunnerCard request={request} />
-      <InventoryStatusCard request={request} />
-      <AgentTaskHistory request={request} />
     </SettingsPage>
   );
 }
@@ -325,168 +318,6 @@ function FollowUpPolicyCard({
           <Plus /> Add follow-up
         </Button>
       </CardContent>
-    </Card>
-  );
-}
-
-interface AgentRunnerSummary {
-  capabilities: string[];
-  codexVersion: string;
-  createdAt: string;
-  id: string;
-  lastSeenAt: string | null;
-  name: string;
-  revokedAt: string | null;
-}
-
-interface AgentPairing {
-  code: string;
-  expiresAt: string;
-}
-
-function AgentRunnerCard({ request }: { request: ApiRequest }) {
-  const { data, mutate } = useSWR(
-    "/api/agent-runners",
-    async (path) =>
-      (await (await request(path)).json()) as {
-        runners: AgentRunnerSummary[];
-      }
-  );
-  const [pairing, setPairing] = useState<AgentPairing | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function createPairing() {
-    setBusy(true);
-    try {
-      const response = await request("/api/agent-runner-pairings", {
-        body: JSON.stringify({
-          capabilities: [
-            "research",
-            "extraction",
-            "drafting",
-            "evaluation",
-            "operations",
-          ],
-        }),
-        headers: { "content-type": "application/json" },
-        method: "POST",
-      });
-      const result = (await response.json()) as {
-        message: string;
-        pairing: AgentPairing;
-      };
-      setPairing(result.pairing);
-      toast.success(result.message);
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Agent pairing failed"
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function revoke(runnerId: string) {
-    try {
-      await request(`/api/agent-runners/${runnerId}`, {
-        method: "DELETE",
-      });
-      await mutate();
-      toast.success("Codex agent revoked");
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Agent revoke failed"
-      );
-    }
-  }
-
-  const pairingCommand = pairing
-    ? `bun run jobkit -- agent connect --code ${pairing.code}`
-    : "";
-
-  async function copyPairingCommand() {
-    await navigator.clipboard.writeText(pairingCommand);
-    toast.success("Pairing command copied");
-  }
-
-  const activeRunners = (data?.runners ?? []).filter(
-    (runner) => !runner.revokedAt
-  );
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Codex agent</CardTitle>
-        <CardDescription>
-          Pair a local Codex login with JobKit. The agent receives only queued
-          task inputs and returns schema-validated results over outbound HTTPS.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-3">
-        {pairing ? (
-          <div className="grid gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
-            <div className="font-medium">Run this from outreach-product</div>
-            <code className="break-all rounded bg-background p-2 text-xs">
-              {pairingCommand}
-            </code>
-            <div className="text-muted-foreground text-xs">
-              This one-time code expires at{" "}
-              {new Date(pairing.expiresAt).toLocaleTimeString()}.
-            </div>
-            <Button
-              className="justify-self-start"
-              onClick={() => void copyPairingCommand()}
-              variant="outline"
-            >
-              <Copy /> Copy command
-            </Button>
-          </div>
-        ) : null}
-        {(data?.runners ?? []).map((runner) => (
-          <div
-            className="flex items-center justify-between gap-3 rounded-lg border p-3"
-            key={runner.id}
-          >
-            <div>
-              <div className="flex items-center gap-2 font-medium">
-                <Terminal className="size-4" /> {runner.name}
-                <Badge variant={runner.revokedAt ? "outline" : "secondary"}>
-                  {runner.revokedAt ? "Revoked" : "Active"}
-                </Badge>
-              </div>
-              <div className="mt-1 text-muted-foreground text-xs">
-                {runner.lastSeenAt
-                  ? `Last seen ${new Date(runner.lastSeenAt).toLocaleString()}`
-                  : "Waiting for first connection"}
-                {runner.codexVersion ? ` · ${runner.codexVersion}` : ""}
-              </div>
-            </div>
-            {runner.revokedAt ? null : (
-              <Button
-                aria-label={`Revoke ${runner.name}`}
-                onClick={() => void revoke(runner.id)}
-                size="icon-sm"
-                variant="ghost"
-              >
-                <Trash2 />
-              </Button>
-            )}
-          </div>
-        ))}
-        {activeRunners.length === 0 && !pairing ? (
-          <div className="text-muted-foreground text-sm">
-            No Codex agent is paired.
-          </div>
-        ) : null}
-      </CardContent>
-      <CardFooter className="justify-end">
-        <Button
-          disabled={busy}
-          onClick={() => void createPairing()}
-          variant="outline"
-        >
-          <Terminal /> {busy ? "Creating…" : "Pair Codex agent"}
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

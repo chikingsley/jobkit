@@ -2,14 +2,10 @@ import {
   Bot,
   BriefcaseBusiness,
   ChevronsUpDown,
-  Files,
-  FlaskConical,
-  Globe2,
   LogOut,
-  MessageSquareText,
   MessagesSquare,
-  SlidersHorizontal,
-  UserRound,
+  Settings,
+  ShieldCheck,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router";
@@ -46,16 +42,9 @@ import {
 } from "@/features/workspace/routes";
 
 const navigation = [
-  { icon: BriefcaseBusiness, id: "jobs", label: "Jobs" },
   { icon: Bot, id: "campaigns", label: "Campaigns" },
+  { icon: BriefcaseBusiness, id: "jobs", label: "Jobs" },
   { icon: MessagesSquare, id: "messages", label: "Messages" },
-  { icon: Globe2, id: "countries", label: "Countries" },
-  { icon: SlidersHorizontal, id: "automation", label: "Automation" },
-  { icon: UserRound, id: "profile", label: "Profile" },
-  { icon: SlidersHorizontal, id: "preferences", label: "Preferences" },
-  { icon: Files, id: "documents", label: "Documents" },
-  { icon: MessageSquareText, id: "messageStyle", label: "Writing style" },
-  { icon: FlaskConical, id: "testLab", label: "Test Lab" },
 ] as const;
 
 export function ViewLoading() {
@@ -73,6 +62,7 @@ export function WorkspaceSidebar({
   name,
   onSignOut,
   onViewChange,
+  role,
   totalJobs,
 }: {
   activeView: WorkspaceView;
@@ -81,6 +71,7 @@ export function WorkspaceSidebar({
   name: string;
   onSignOut: () => Promise<unknown>;
   onViewChange: (view: WorkspaceView) => void;
+  role: "member" | "operator";
   totalJobs: number;
 }) {
   const { isMobile, setOpenMobile } = useSidebar();
@@ -138,6 +129,7 @@ export function WorkspaceSidebar({
           name={name}
           onSignOut={onSignOut}
           onViewChange={onViewChange}
+          role={role}
           summary={`${applied} of ${totalJobs} applications sent`}
         />
       </SidebarFooter>
@@ -150,12 +142,14 @@ function NavUser({
   name,
   onSignOut,
   onViewChange,
+  role,
   summary,
 }: {
   email: string;
   name: string;
   onSignOut: () => Promise<unknown>;
   onViewChange: (view: WorkspaceView) => void;
+  role: "member" | "operator";
   summary: string;
 }) {
   const { isMobile, setOpenMobile } = useSidebar();
@@ -213,27 +207,14 @@ function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => go("countries")}>
-                <Globe2 /> Countries
+              <DropdownMenuItem onClick={() => go("settings")}>
+                <Settings /> Settings
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => go("automation")}>
-                <Bot /> Automation
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => go("profile")}>
-                <UserRound /> Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => go("preferences")}>
-                <SlidersHorizontal /> Preferences
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => go("documents")}>
-                <Files /> Documents
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => go("messageStyle")}>
-                <MessageSquareText /> Writing style
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => go("testLab")}>
-                <FlaskConical /> Test Lab
-              </DropdownMenuItem>
+              {role === "operator" ? (
+                <DropdownMenuItem onClick={() => go("operator")}>
+                  <ShieldCheck /> Operator tools
+                </DropdownMenuItem>
+              ) : null}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => void onSignOut()}>
@@ -257,13 +238,15 @@ export function WorkspaceHeader({
   const title = {
     automation: "Automation",
     campaigns: "Campaigns",
-    countries: "Countries",
+    countries: "Markets",
     documents: "Documents",
     jobs: "Job review",
     messageStyle: "Writing style",
     messages: "Messages",
+    operator: "Operator tools",
     preferences: "Preferences",
     profile: "Profile",
+    settings: "Settings",
     testLab: "Test Lab",
   }[activeView];
   return (

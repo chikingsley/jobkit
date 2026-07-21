@@ -1,24 +1,18 @@
 # JobKit roadmap
 
-This is the canonical list of unfinished product work. Completed implementation
-belongs in Git history, not in this file.
-
-## Evaluation
-
-- [ ] Record blinded human preference votes in Test Lab before promoting any
-  provider for user-facing research or writing. Automated scores cannot stand
-  in for this user decision.
+The roadmap lists unfinished product work. Git history records completed implementation. Codex owns production reasoning, extraction, matching, ranking, research, and drafting as the single production AI dependency.
 
 ## Product verification and launch readiness
 
-- [ ] `[FLOW-001]` Validate onboarding with a fresh second account through resume
-  import, reviewed profile, preferences, documents, Gmail OAuth, and a test-only
-  first application.
-- [ ] Complete Google's production OAuth verification and security requirements
-  before onboarding public users.
+- [ ] `[RELEASE-001]` Track the deployed classification-adjudication migration, reconcile the dirty checkout into reviewable commits, run the full check/build/E2E suite, deploy the exact commit, and verify the production version.
+- [ ] `[CAMPAIGN-001]` Run one test-only campaign through target selection, first-five review, message generation, paced delivery, Gmail reply ingestion, and reply-driven pause before enabling live campaign delivery.
+- [ ] Complete Google's production OAuth verification and security requirements before onboarding public users.
+
+## Post-launch
+
+- [ ] `[SEO-001]` Build the public job-discovery surface with canonical job URLs, accurate `JobPosting` structured data, unique JobKit descriptions, source attribution, freshness and expiry handling, and a login-gated application flow.
+- [ ] `[JINA-001]` Revisit Jina only after SEO work is complete. Keep the existing experiments and benchmark evidence; future adoption requires a later evaluation that establishes a clear product advantage over Codex.
 
 ## Operator commands
 
-Run `bun run jobkit -- --help` for the canonical command surface. Durable
-operations belong behind that entry point; one-off migration and evaluation
-scripts do not stay in active product code.
+Run `bun run jobkit -- --help` for the canonical command surface. Durable operations belong behind that entry point; archive or delete one-off migration and evaluation scripts after use.

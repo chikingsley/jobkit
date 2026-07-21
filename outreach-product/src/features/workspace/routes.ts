@@ -1,13 +1,15 @@
 export const workspacePaths = {
   automation: "/automation",
   campaigns: "/campaigns",
-  countries: "/countries",
+  countries: "/campaigns/markets",
   documents: "/documents",
   jobs: "/",
   messageStyle: "/message-style",
   messages: "/messages",
+  operator: "/operator",
   preferences: "/preferences",
   profile: "/profile",
+  settings: "/settings",
   testLab: "/test-lab",
 } as const;
 

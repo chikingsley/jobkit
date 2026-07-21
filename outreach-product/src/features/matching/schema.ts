@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { JobEconomicsSchema } from "../jobs/economics";
+import { JobMarketSegmentSchema } from "../organizations/market-segments";
 import { DegreeLevelSchema } from "../profile/schema";
 
 export const JobAudienceSchema = z.enum([
@@ -82,6 +83,7 @@ export const JobMatchFactsSchema = z
     benefits: z.array(JobBenefitFactSchema).max(20),
     economics: JobEconomicsSchema,
     employmentTypes: z.array(evidenceFact(JobEmploymentTypeSchema)).max(10),
+    marketSegments: z.array(evidenceFact(JobMarketSegmentSchema)).max(8),
     requirements: z.array(JobRequirementSchema).max(60),
     reviewNotes: z.array(z.string().min(1).max(300)).max(20),
   })

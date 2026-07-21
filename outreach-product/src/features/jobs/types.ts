@@ -78,18 +78,10 @@ export interface Job {
   title: string;
 }
 
-export type MarketSegment =
-  | "international_school"
-  | "kindergarten"
-  | "language_center"
-  | "online"
-  | "private_school"
-  | "public_school"
-  | "school"
-  | "training_center"
-  | "university";
+export type MarketSegment = JobMarketSegment;
 
 import type { JobMatchFacts } from "@/features/matching/schema";
+import type { JobMarketSegment } from "@/features/organizations/market-segments";
 import type { Compensation } from "./economics";
 import type { JobPositionAnalysis } from "./position-variants";
 

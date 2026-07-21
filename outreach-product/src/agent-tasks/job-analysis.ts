@@ -8,7 +8,7 @@ import { JobMatchFactsSchema } from "../features/matching/schema";
 import { codexOutputJsonSchema } from "./json-schema";
 
 export const JOB_MATCH_FACTS_TASK_TYPE = "job.match_facts";
-export const JOB_MATCH_FACTS_PROMPT_VERSION = "job-match-facts-v2";
+export const JOB_MATCH_FACTS_PROMPT_VERSION = "job-match-facts-v3";
 export const JOB_POSITION_TASK_TYPE = "job.position_analysis";
 export const JOB_POSITION_PROMPT_VERSION = "job-position-analysis-v2";
 
@@ -19,6 +19,7 @@ export const JOB_POSITION_OUTPUT_JSON_SCHEMA = codexOutputJsonSchema(
 );
 
 export interface JobAnalysisTaskSource {
+  company: string;
   description: string;
   salary: string;
   title: string;
