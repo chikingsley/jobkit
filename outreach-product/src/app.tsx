@@ -160,6 +160,12 @@ export function App() {
     ? jobDetails.get(selectedListItem.id)
     : undefined;
   const selected = selectedDetail?.job;
+  const refreshJobs = useCallback(async () => {
+    await loadJobs();
+    if (selectedListItem) {
+      await loadJob(selectedListItem.id);
+    }
+  }, [loadJob, loadJobs, selectedListItem]);
 
   useEffect(() => {
     if (
@@ -266,7 +272,7 @@ export function App() {
                 fitFilter={fitFilter}
                 onCountryFilter={setCountryFilter}
                 onFitFilter={setFitFilter}
-                onRefresh={loadJobs}
+                onRefresh={refreshJobs}
                 onShowExcluded={setShowExcluded}
                 onSort={setSort}
                 refreshing={refreshing}
