@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "check": "wrangler types --check && ultracite check && tsc --noEmit && vitest run --config tests/vitest.config.ts",
+    "check": "wrangler types --check && ultracite check && tsc --noEmit && bun test tests/unit && vitest run --config tests/vitest.config.ts",
     "deploy": "bun run build && wrangler deploy",
     "deploy:dry-run": "bun run build && wrangler deploy --dry-run",
     "dev": "vite",
