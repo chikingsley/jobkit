@@ -28,7 +28,7 @@ async function seedSubmission({
   const userJobId = `user-job-${jobId}`;
   await env.DB.batch([
     env.DB.prepare(
-      `INSERT INTO jobs
+      `INSERT INTO job_listings
        (id,title,company,country,apply_url,employer_id,first_seen_at,updated_at)
        VALUES (?,?,?,?,?,?,?,?)`
     ).bind(
@@ -42,7 +42,7 @@ async function seedSubmission({
       timestamp
     ),
     env.DB.prepare(
-      `INSERT INTO user_jobs
+      `INSERT INTO user_listing_states
        (id,user_id,job_id,status,created_at,updated_at)
        VALUES (?,?,?,?,?,?)`
     ).bind(userJobId, userId, jobId, jobStatus, timestamp, timestamp),
@@ -184,7 +184,7 @@ describe("application submission", () => {
     expect(
       await env.DB.prepare(
         `SELECT uj.status job_status,d.status draft_status,d.submitted_at
-         FROM user_jobs uj
+         FROM user_listing_states uj
          JOIN application_drafts d ON d.user_job_id=uj.id
          WHERE uj.job_id=?`
       )
@@ -217,7 +217,7 @@ describe("application submission", () => {
     expect(
       await env.DB.prepare(
         `SELECT uj.status job_status,d.status draft_status
-         FROM user_jobs uj
+         FROM user_listing_states uj
          JOIN application_drafts d ON d.user_job_id=uj.id
          WHERE uj.job_id=?`
       )
@@ -252,7 +252,7 @@ describe("application submission", () => {
     expect(
       await env.DB.prepare(
         `SELECT uj.status job_status,d.status draft_status,d.submitted_at
-         FROM user_jobs uj
+         FROM user_listing_states uj
          JOIN application_drafts d ON d.user_job_id=uj.id
          WHERE uj.job_id=?`
       )

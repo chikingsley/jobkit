@@ -244,7 +244,7 @@ export function WorkspaceHeader({
     campaigns: "Campaigns",
     countries: "Markets",
     documents: "Documents",
-    jobs: "Job review",
+    jobs: "Jobs",
     messageStyle: "Writing style",
     messages: "Messages",
     operator: "Operator tools",
@@ -263,7 +263,7 @@ export function WorkspaceHeader({
         />
         <h1 className="shrink-0 font-semibold text-sm">{title}</h1>
         {toolbar ? (
-          <div className="ml-auto hidden min-w-0 flex-1 md:flex">{toolbar}</div>
+          <div className="ml-auto hidden min-w-0 flex-1 lg:flex">{toolbar}</div>
         ) : (
           <span className="ml-auto" />
         )}
@@ -278,7 +278,7 @@ export function WorkspaceHeader({
         <ModeToggle />
       </div>
       {toolbar ? (
-        <div className="border-t px-4 py-2 md:hidden">{toolbar}</div>
+        <div className="border-t px-4 py-2 lg:hidden">{toolbar}</div>
       ) : null}
     </header>
   );

@@ -91,7 +91,12 @@ export function evaluateJob(
     );
   } else {
     criteria.push(
-      criterion("Job requirements have not been analyzed", "unknown")
+      criterion(
+        "Job requirements have not been analyzed",
+        "unknown",
+        undefined,
+        "internal"
+      )
     );
   }
 
@@ -484,7 +489,14 @@ function positionCriteria(
 ) {
   const analysis = job.positionAnalysis;
   if (!analysis) {
-    return [criterion("Advertised role has not been classified", "unknown")];
+    return [
+      criterion(
+        "Advertised role has not been classified",
+        "unknown",
+        undefined,
+        "internal"
+      ),
+    ];
   }
   const positions = analysis.positions.map((position) => ({
     preference: preferences.roles[position.roleFamily],
@@ -628,9 +640,10 @@ function summarize(criteria: MatchCriterion[]): JobMatch {
 function criterion(
   label: string,
   state: MatchState,
-  evidence?: string
+  evidence?: string,
+  visibility?: MatchCriterion["visibility"]
 ): MatchCriterion {
-  return { evidence, label, state };
+  return { evidence, label, state, visibility };
 }
 
 function audienceLabel(value: string) {

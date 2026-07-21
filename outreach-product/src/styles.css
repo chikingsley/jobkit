@@ -173,8 +173,14 @@
 }
 
 @media (pointer: coarse), (hover: none) {
-  [data-slot="button"][data-size="icon-sm"] {
+  [data-slot="button"],
+  [data-slot="select-trigger"] {
+    min-height: 2.75rem;
+  }
+
+  [data-slot="button"][data-size^="icon"] {
     width: 2.75rem;
+    min-width: 2.75rem;
     height: 2.75rem;
   }
 }

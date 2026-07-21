@@ -1,30 +1,15 @@
 import { CheckCircle2, CircleHelp, Minus, XCircle } from "lucide-react";
 import { useId } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
-import type { JobMatch, JobMatchSummary, MatchState } from "@/profile-types";
-
-export function MatchBadge({ match }: { match?: JobMatchSummary }) {
-  return (
-    <Badge className={matchBadgeClass(match?.tone)} variant="outline">
-      {match?.label ?? "Evaluating…"}
-    </Badge>
-  );
-}
+import type { JobMatch, MatchState } from "@/profile-types";
 
 export function MatchPanel({
   busyClaimKey,
   match,
   onQualificationClaim,
+  summary,
 }: {
   busyClaimKey: string;
   match: JobMatch;
@@ -34,58 +19,56 @@ export function MatchPanel({
     kind: string;
     label: string;
   }) => Promise<void>;
+  summary: string;
 }) {
-  const matched = match.criteria.filter(
-    (item) => item.state === "match"
-  ).length;
-  const blockers = match.criteria.filter(
-    (item) => item.state === "conflict"
-  ).length;
-  const unknown = match.criteria.filter(
-    (item) => item.state === "unknown"
-  ).length;
+  const visible = match.criteria.filter(
+    (item) => item.visibility !== "internal"
+  );
+  const requirements = visible.filter((item) => item.importance !== undefined);
+  const otherConflicts = visible.filter(
+    (item) => item.importance === undefined && item.state !== "match"
+  );
+  const displayed = [...requirements, ...otherConflicts];
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardDescription>Candidate fit</CardDescription>
-            <CardTitle className="mt-1">{match.label}</CardTitle>
-          </div>
-          <p className="text-muted-foreground text-xs">
-            {matched} matched · {blockers} blockers · {unknown} unknown
-          </p>
-        </div>
-      </CardHeader>
-      <CardContent className="grid gap-2 sm:grid-cols-2">
-        {match.criteria.map((item) => (
-          <div
-            className="grid gap-3 rounded-lg border bg-muted/20 p-3 text-sm"
-            key={item.label}
-          >
-            <div className="flex items-start gap-2">
-              <CriterionIcon state={item.state} />
-              <span className="leading-5">{item.label}</span>
+    <section className="mt-7 border-t pt-6">
+      <h3 className="font-semibold">Match overview</h3>
+      <p className="mt-1 text-muted-foreground text-sm">{summary}</p>
+      {displayed.length > 0 ? (
+        <div className="mt-3 divide-y">
+          {displayed.map((item) => (
+            <div
+              className="grid gap-3 py-3 text-sm sm:grid-cols-[minmax(0,1fr)_12rem] sm:items-center"
+              key={`${item.label}:${item.evidence ?? ""}`}
+            >
+              <div className="flex items-start gap-2">
+                <CriterionIcon state={item.state} />
+                <span className="leading-5">
+                  {item.label}
+                  {item.importance === "preferred" ? (
+                    <span className="text-muted-foreground"> (preferred)</span>
+                  ) : null}
+                </span>
+              </div>
+              {item.claimKey && item.state !== "match" ? (
+                <QualificationAnswer
+                  answer={item.claimAnswer ?? null}
+                  busy={busyClaimKey === item.claimKey}
+                  onChange={(answer) =>
+                    onQualificationClaim({
+                      answer,
+                      claimKey: item.claimKey ?? "",
+                      kind: item.claimKind ?? "other",
+                      label: item.label,
+                    })
+                  }
+                  state={item.state}
+                />
+              ) : null}
             </div>
-            {item.claimKey ? (
-              <QualificationAnswer
-                answer={item.claimAnswer ?? null}
-                busy={busyClaimKey === item.claimKey}
-                onChange={(answer) =>
-                  onQualificationClaim({
-                    answer,
-                    claimKey: item.claimKey ?? "",
-                    kind: item.claimKind ?? "other",
-                    label: item.label,
-                  })
-                }
-                state={item.state}
-              />
-            ) : null}
-          </div>
-        ))}
-      </CardContent>
-    </Card>
+          ))}
+        </div>
+      ) : null}
+    </section>
   );
 }
 
@@ -120,7 +103,7 @@ function QualificationAnswer({
       >
         {options.map((option) => (
           <label
-            className="flex min-h-8 min-w-0 cursor-pointer items-center justify-center border-input border-l px-2 font-medium text-muted-foreground text-xs transition-colors first:border-l-0 hover:bg-muted hover:text-foreground has-focus-visible:z-10 has-data-checked:bg-primary has-data-checked:text-primary-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring has-data-checked:hover:bg-primary/90 has-data-checked:hover:text-primary-foreground"
+            className="flex min-h-11 min-w-0 cursor-pointer items-center justify-center border-input border-l px-2 font-medium text-muted-foreground text-xs transition-colors first:border-l-0 hover:bg-muted hover:text-foreground has-focus-visible:z-10 has-data-checked:bg-primary has-data-checked:text-primary-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring has-data-checked:hover:bg-primary/90 has-data-checked:hover:text-primary-foreground"
             htmlFor={`${groupId}-${option.value}`}
             key={option.value}
           >
@@ -182,17 +165,4 @@ function CriterionIcon({ state }: { state: MatchState }) {
   return (
     <CircleHelp className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
   );
-}
-
-function matchBadgeClass(tone?: JobMatch["tone"]) {
-  if (tone === "positive") {
-    return "border-emerald-600/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
-  }
-  if (tone === "warning") {
-    return "border-amber-600/20 bg-amber-500/10 text-amber-700 dark:text-amber-300";
-  }
-  if (tone === "negative") {
-    return "border-destructive/20 bg-destructive/10 text-destructive";
-  }
-  return "bg-muted text-muted-foreground";
 }

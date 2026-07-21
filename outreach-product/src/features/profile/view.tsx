@@ -14,15 +14,8 @@ import {
 } from "react-hook-form";
 import { toast } from "sonner";
 import { SettingsPage } from "@/components/settings-page";
+import { SettingsSection } from "@/components/settings-section";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Field,
   FieldError,
@@ -127,141 +120,128 @@ export function ProfileView({
   });
 
   return (
-    <SettingsPage
-      description="Structured facts used to evaluate qualifications and prepare applications."
-      title="Candidate profile"
-    >
+    <SettingsPage>
       <form className="flex flex-col gap-4" onSubmit={save}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Identity and availability</CardTitle>
-            <CardDescription>
-              Date of birth is intentionally not stored.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FieldGroup className="grid grid-cols-[repeat(auto-fit,minmax(min(17rem,100%),1fr))] gap-4">
-              <TextField
-                error={errors.fullName?.message}
-                label="Full legal name"
-                registration={register("fullName")}
-              />
-              <TextField
-                error={errors.preferredName?.message}
-                label="Preferred name"
-                registration={register("preferredName")}
-              />
-              <TextField
-                description="Used for applications."
-                error={errors.email?.message}
-                label="Email"
-                registration={register("email")}
-                type="email"
-              />
-              <Controller
-                control={control}
-                name="phone"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel>Phone</FieldLabel>
-                    <div className="grid grid-cols-1 gap-2">
-                      <CountryCodePicker
-                        onChange={setPhoneCountry}
-                        value={phoneCountry}
-                      />
-                      <Input
-                        aria-invalid={fieldState.invalid}
-                        inputMode="tel"
-                        onBlur={field.onBlur}
-                        onChange={(event) => {
-                          const raw = event.target.value;
-                          const digits = raw.replace(/\D/g, "");
-                          const callingCode =
-                            countryOptions.find(
-                              (item) => item.code === phoneCountry
-                            )?.callingCode ?? "+1";
-                          const international = raw.startsWith("+")
-                            ? `+${digits}`
-                            : `${callingCode}${digits}`;
-                          field.onChange(international);
-                        }}
-                        value={formatIncompletePhoneNumber(
-                          field.value || "",
-                          phoneCountry
-                        )}
-                      />
-                    </div>
-                    <FieldError
-                      errors={fieldState.error ? [fieldState.error] : undefined}
+        <SettingsSection
+          className="border-t-0 pt-0"
+          title="Identity and availability"
+        >
+          <FieldGroup className="grid grid-cols-[repeat(auto-fit,minmax(min(17rem,100%),1fr))] gap-4">
+            <TextField
+              error={errors.fullName?.message}
+              label="Full legal name"
+              registration={register("fullName")}
+            />
+            <TextField
+              error={errors.preferredName?.message}
+              label="Preferred name"
+              registration={register("preferredName")}
+            />
+            <TextField
+              error={errors.email?.message}
+              label="Email"
+              registration={register("email")}
+              type="email"
+            />
+            <Controller
+              control={control}
+              name="phone"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Phone</FieldLabel>
+                  <div className="grid grid-cols-1 gap-2">
+                    <CountryCodePicker
+                      onChange={setPhoneCountry}
+                      value={phoneCountry}
                     />
-                  </Field>
-                )}
-              />
-              <Controller
-                control={control}
-                name="currentLocation"
-                render={({ field, fieldState }) => (
-                  <LocationField
-                    error={fieldState.error?.message}
-                    onBlur={field.onBlur}
-                    onChange={field.onChange}
-                    request={request}
-                    value={field.value}
+                    <Input
+                      aria-invalid={fieldState.invalid}
+                      inputMode="tel"
+                      onBlur={field.onBlur}
+                      onChange={(event) => {
+                        const raw = event.target.value;
+                        const digits = raw.replace(/\D/g, "");
+                        const callingCode =
+                          countryOptions.find(
+                            (item) => item.code === phoneCountry
+                          )?.callingCode ?? "+1";
+                        const international = raw.startsWith("+")
+                          ? `+${digits}`
+                          : `${callingCode}${digits}`;
+                        field.onChange(international);
+                      }}
+                      value={formatIncompletePhoneNumber(
+                        field.value || "",
+                        phoneCountry
+                      )}
+                    />
+                  </div>
+                  <FieldError
+                    errors={fieldState.error ? [fieldState.error] : undefined}
                   />
-                )}
-              />
-              <Controller
-                control={control}
-                name="citizenship"
-                render={({ field, fieldState }) => (
-                  <SearchComboboxField
-                    error={fieldState.error?.message}
-                    items={countryNamesOnly}
-                    label="Citizenship"
-                    onChange={(value) => field.onChange(value ?? "")}
-                    placeholder="Search countries"
+                </Field>
+              )}
+            />
+            <Controller
+              control={control}
+              name="currentLocation"
+              render={({ field, fieldState }) => (
+                <LocationField
+                  error={fieldState.error?.message}
+                  onBlur={field.onBlur}
+                  onChange={field.onChange}
+                  request={request}
+                  value={field.value}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="citizenship"
+              render={({ field, fieldState }) => (
+                <SearchComboboxField
+                  error={fieldState.error?.message}
+                  items={countryNamesOnly}
+                  label="Citizenship"
+                  onChange={(value) => field.onChange(value ?? "")}
+                  placeholder="Search countries"
+                  value={field.value}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="availability"
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>Availability</FieldLabel>
+                  <Select
+                    items={[...availabilityOptions]}
+                    onValueChange={(value) => field.onChange(String(value))}
                     value={field.value}
-                  />
-                )}
-              />
-              <Controller
-                control={control}
-                name="availability"
-                render={({ field }) => (
-                  <Field>
-                    <FieldLabel>Availability</FieldLabel>
-                    <Select
-                      items={[...availabilityOptions]}
-                      onValueChange={(value) => field.onChange(String(value))}
-                      value={field.value}
-                    >
-                      <SelectTrigger
-                        aria-label="Availability"
-                        className="w-full"
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {availabilityOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                )}
-              />
-              <TextField
-                description="Used in applications."
-                label="Experience label"
-                registration={register("experienceLabel")}
-              />
-            </FieldGroup>
-          </CardContent>
-        </Card>
+                  >
+                    <SelectTrigger aria-label="Availability" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {availabilityOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+            />
+            <TextField
+              label="Experience label"
+              registration={register("experienceLabel")}
+            />
+          </FieldGroup>
+        </SettingsSection>
 
         <WorkExperienceSection
           control={control}
@@ -269,14 +249,8 @@ export function ProfileView({
           register={register}
         />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Education</CardTitle>
-            <CardDescription>
-              Add each degree as structured information.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+        <SettingsSection title="Education">
+          <div className="flex flex-col gap-4">
             {education.fields.map((entry, index) => (
               <FieldSet
                 className="border-b pb-5 last:border-b-0 last:pb-0"
@@ -385,17 +359,11 @@ export function ProfileView({
             >
               <Plus /> Add education
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </SettingsSection>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Languages</CardTitle>
-            <CardDescription>
-              Use CEFR levels, with Native as a separate option.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+        <SettingsSection title="Languages">
+          <div className="flex flex-col gap-4">
             {languages.fields.map((entry, index) => (
               <div
                 className="flex flex-wrap items-end gap-3 border-b pb-4 last:border-b-0 last:pb-0"
@@ -464,18 +432,11 @@ export function ProfileView({
             >
               <Plus /> Add language
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </SettingsSection>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Qualifications and expertise</CardTitle>
-            <CardDescription>
-              Keep teachable subjects, broader skills, and credentials as
-              separate structured facts.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-[repeat(auto-fit,minmax(min(18rem,100%),1fr))] gap-5">
+        <SettingsSection title="Qualifications and expertise">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(18rem,100%),1fr))] gap-5">
             <Controller
               control={control}
               name="subjectQualifications"
@@ -506,24 +467,17 @@ export function ProfileView({
               render={({ field }) => (
                 <StringListField
                   addLabel="Add credential"
-                  description="Qualifications and certificates that can be included with applications."
                   label="Credentials"
                   onChange={field.onChange}
                   values={field.value}
                 />
               )}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </SettingsSection>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Work authorization</CardTitle>
-            <CardDescription>
-              Country, legal status, and expiration where applicable.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+        <SettingsSection title="Work authorization">
+          <div className="flex flex-col gap-4">
             {authorization.fields.map((entry, index) => {
               const status = watch(`workAuthorization.${index}.status`);
               const hasExpiration = status !== "citizen";
@@ -624,37 +578,30 @@ export function ProfileView({
             >
               <Plus /> Add authorization
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </SettingsSection>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Application introduction</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Field>
-              <FieldLabel htmlFor="introduction">Introduction</FieldLabel>
-              <Textarea
-                className="min-h-32"
-                id="introduction"
-                {...register("introduction")}
-              />
-            </Field>
-          </CardContent>
-        </Card>
+        <SettingsSection title="Application introduction">
+          <Field>
+            <FieldLabel htmlFor="introduction">Introduction</FieldLabel>
+            <Textarea
+              className="min-h-32"
+              id="introduction"
+              {...register("introduction")}
+            />
+          </Field>
+        </SettingsSection>
 
-        <Card>
-          <CardFooter className="justify-end gap-3">
-            {isDirty ? (
-              <span className="text-muted-foreground text-sm">
-                Unsaved changes
-              </span>
-            ) : null}
-            <Button disabled={!isDirty || isSubmitting} type="submit">
-              {isSubmitting ? "Saving…" : "Save profile"}
-            </Button>
-          </CardFooter>
-        </Card>
+        <div className="sticky bottom-0 flex justify-end gap-3 border-t bg-background/95 py-3 backdrop-blur-sm">
+          {isDirty ? (
+            <span className="text-muted-foreground text-sm">
+              Unsaved changes
+            </span>
+          ) : null}
+          <Button disabled={!isDirty || isSubmitting} type="submit">
+            {isSubmitting ? "Saving…" : "Save profile"}
+          </Button>
+        </div>
       </form>
     </SettingsPage>
   );

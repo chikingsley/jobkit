@@ -131,19 +131,44 @@ export function canonicalizeJobPositionEvidence(
   };
 }
 
-function canonicalEvidenceQuote(source: string, evidence: string) {
+export function canonicalEvidenceQuote(source: string, evidence: string) {
   const quote = evidence.trim();
-  if (source.includes(quote)) {
-    return quote;
+  const candidates = [quote, unwrappedQuote(quote)];
+  for (const candidate of candidates) {
+    if (source.includes(candidate)) {
+      return candidate;
+    }
   }
   const normalizedSource = source.toLocaleLowerCase("en");
-  const normalizedQuote = quote.toLocaleLowerCase("en");
-  if (
-    normalizedSource.length !== source.length ||
-    normalizedQuote.length !== quote.length
-  ) {
+  if (normalizedSource.length !== source.length) {
     return quote;
   }
-  const index = normalizedSource.indexOf(normalizedQuote);
-  return index < 0 ? quote : source.slice(index, index + quote.length);
+  for (const candidate of candidates) {
+    const normalizedCandidate = candidate.toLocaleLowerCase("en");
+    if (normalizedCandidate.length !== candidate.length) {
+      continue;
+    }
+    const index = normalizedSource.indexOf(normalizedCandidate);
+    if (index >= 0) {
+      return source.slice(index, index + candidate.length);
+    }
+  }
+  return quote;
+}
+
+function unwrappedQuote(value: string) {
+  const pairs = [
+    ['"', '"'],
+    ["“", "”"],
+    ["‘", "’"],
+    ["'", "'"],
+    ["`", "`"],
+  ] as const;
+  const pair = pairs.find(
+    ([opening, closing]) =>
+      value.length > opening.length + closing.length &&
+      value.startsWith(opening) &&
+      value.endsWith(closing)
+  );
+  return pair ? value.slice(pair[0].length, -pair[1].length).trim() : value;
 }

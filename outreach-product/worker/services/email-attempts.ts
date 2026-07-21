@@ -112,9 +112,9 @@ export async function createApprovedEmailAttempt(
             COALESCE(c.role,'unknown') contact_role,
             ar.status route_status,j.board,j.title,j.location,j.country,
             j.source_reference,u.email from_email
-       FROM user_jobs uj
+       FROM user_listing_states uj
        JOIN users u ON u.id=uj.user_id
-       JOIN jobs j ON j.id=uj.job_id
+       JOIN job_listings j ON j.id=uj.job_id
        JOIN application_drafts d ON d.user_job_id=uj.id
        JOIN application_routes ar ON ar.job_id=j.id
        LEFT JOIN contact_channels cc ON cc.id=ar.contact_channel_id
@@ -174,7 +174,7 @@ export async function createApprovedEmailAttempt(
   try {
     results = await env.DB.batch([
       env.DB.prepare(
-        `UPDATE user_jobs
+        `UPDATE user_listing_states
           SET status='approved',updated_at=?
         WHERE id=? AND user_id=? AND status IN ('new','review','approved','failed')`
       ).bind(timestamp, source.user_job_id, userId),
@@ -246,8 +246,8 @@ async function assertNoExistingContactAttempt(
     .prepare(
       `SELECT a.status,j.title
        FROM application_attempts a
-       JOIN user_jobs uj ON uj.id=a.user_job_id
-       JOIN jobs j ON j.id=uj.job_id
+       JOIN user_listing_states uj ON uj.id=a.user_job_id
+       JOIN job_listings j ON j.id=uj.job_id
        JOIN application_routes previous_route ON previous_route.id=a.route_id
        WHERE uj.user_id=?
          AND COALESCE(
@@ -317,9 +317,9 @@ export async function createApprovedBundleEmailAttempt(
        FROM application_bundles b
        JOIN application_bundle_targets bt
          ON bt.bundle_id=b.id AND bt.ordinal=0
-       JOIN user_jobs uj ON uj.id=bt.user_job_id
+       JOIN user_listing_states uj ON uj.id=bt.user_job_id
        JOIN users u ON u.id=uj.user_id
-       JOIN jobs j ON j.id=uj.job_id
+       JOIN job_listings j ON j.id=uj.job_id
        JOIN application_routes ar ON ar.id=bt.route_id
        JOIN application_drafts d ON d.application_bundle_id=b.id
        LEFT JOIN contact_channels cc ON cc.id=ar.contact_channel_id
@@ -372,7 +372,7 @@ export async function createApprovedBundleEmailAttempt(
   try {
     results = await env.DB.batch([
       env.DB.prepare(
-        `UPDATE user_jobs SET status='approved',updated_at=?
+        `UPDATE user_listing_states SET status='approved',updated_at=?
         WHERE user_id=? AND id IN (
           SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
         ) AND status IN ('new','review','approved','failed')`
@@ -449,8 +449,8 @@ export async function listEmailAttempts(
     .prepare(
       `SELECT a.*,uj.job_id,j.title,j.company
          FROM application_attempts a
-         JOIN user_jobs uj ON uj.id=a.user_job_id
-         JOIN jobs j ON j.id=uj.job_id
+         JOIN user_listing_states uj ON uj.id=a.user_job_id
+         JOIN job_listings j ON j.id=uj.job_id
         WHERE uj.user_id=? AND a.status IN (${placeholders})
           AND (?=0 OR a.send_requested_at IS NOT NULL)
         ORDER BY a.updated_at DESC,a.created_at DESC`
@@ -488,7 +488,7 @@ export async function prepareEmailSend(
     `UPDATE application_attempts
         SET send_requested_at=?,updated_at=?
       WHERE id=? AND status IN ('approved','drafted')
-        AND user_job_id IN (SELECT id FROM user_jobs WHERE user_id=?)`
+        AND user_job_id IN (SELECT id FROM user_listing_states WHERE user_id=?)`
   )
     .bind(timestamp, timestamp, attempt.attemptId, userId)
     .run();
@@ -528,7 +528,7 @@ export async function prepareBundleEmailSend(
     `UPDATE application_attempts SET send_requested_at=?,updated_at=?
       WHERE id=? AND application_bundle_id=?
         AND status IN ('approved','drafted')
-        AND user_job_id IN (SELECT id FROM user_jobs WHERE user_id=?)`
+        AND user_job_id IN (SELECT id FROM user_listing_states WHERE user_id=?)`
   )
     .bind(timestamp, timestamp, attempt.attemptId, bundleId, userId)
     .run();
@@ -566,7 +566,7 @@ export async function claimEmailAttempt(
     `UPDATE application_attempts
         SET status='claimed',claimed_at=?,updated_at=?
       WHERE id=? AND status='approved'
-        AND user_job_id IN (SELECT id FROM user_jobs WHERE user_id=?)`
+        AND user_job_id IN (SELECT id FROM user_listing_states WHERE user_id=?)`
   )
     .bind(claimedAt, claimedAt, attemptId, userId)
     .run();
@@ -688,7 +688,7 @@ export async function recordGmailSent(
         `UPDATE application_attempts
           SET status='sent',gmail_message_id=?,gmail_thread_id=?,sent_at=?,updated_at=?
         WHERE id=? AND status='sending' AND gmail_draft_id=?
-          AND user_job_id IN (SELECT id FROM user_jobs WHERE user_id=?)`
+          AND user_job_id IN (SELECT id FROM user_listing_states WHERE user_id=?)`
       )
       .bind(
         gmailMessageId,
@@ -710,7 +710,7 @@ export async function recordGmailSent(
     sentStatements.push(
       db
         .prepare(
-          `UPDATE user_jobs SET status='applied',updated_at=?
+          `UPDATE user_listing_states SET status='applied',updated_at=?
         WHERE user_id=? AND id IN (
           SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
         )
@@ -748,7 +748,7 @@ export async function recordGmailSent(
     sentStatements.push(
       db
         .prepare(
-          `UPDATE user_jobs SET status='applied',updated_at=?
+          `UPDATE user_listing_states SET status='applied',updated_at=?
         WHERE id=? AND user_id=?
           AND EXISTS (
             SELECT 1 FROM application_attempts
@@ -893,7 +893,7 @@ async function transitionAttempt(
       `UPDATE application_attempts
           SET status=?,${assignments},updated_at=?
         WHERE id=? AND status=? AND ${extraCondition}
-          AND user_job_id IN (SELECT id FROM user_jobs WHERE user_id=?)`
+          AND user_job_id IN (SELECT id FROM user_listing_states WHERE user_id=?)`
     )
     .bind(to, ...values, timestamp, attemptId, from, ...conditionValues, userId)
     .run();
@@ -927,7 +927,7 @@ async function failClaimedAttempt(
       `UPDATE application_attempts
         SET status='failed',error_stage=?,error_detail=?,updated_at=?
       WHERE id=? AND status='claimed'
-        AND user_job_id IN (SELECT id FROM user_jobs WHERE user_id=?)`
+        AND user_job_id IN (SELECT id FROM user_listing_states WHERE user_id=?)`
     )
     .bind(stage, detail.slice(0, 1000), timestamp, attemptId, userId)
     .run();
@@ -945,8 +945,8 @@ function readAttemptBySelection(
     .prepare(
       `SELECT a.*,uj.job_id,j.title,j.company
          FROM application_attempts a
-         JOIN user_jobs uj ON uj.id=a.user_job_id
-         JOIN jobs j ON j.id=uj.job_id
+         JOIN user_listing_states uj ON uj.id=a.user_job_id
+         JOIN job_listings j ON j.id=uj.job_id
         WHERE uj.user_id=? AND a.user_job_id=? AND a.draft_id=? AND a.route_id=?`
     )
     .bind(userId, userJobId, draftId, routeId)
@@ -963,8 +963,8 @@ function readAttemptByBundleSelection(
     .prepare(
       `SELECT a.*,uj.job_id,j.title,j.company
          FROM application_attempts a
-         JOIN user_jobs uj ON uj.id=a.user_job_id
-         JOIN jobs j ON j.id=uj.job_id
+         JOIN user_listing_states uj ON uj.id=a.user_job_id
+         JOIN job_listings j ON j.id=uj.job_id
         WHERE uj.user_id=? AND a.application_bundle_id=? AND a.draft_id=?`
     )
     .bind(userId, bundleId, draftId)
@@ -976,9 +976,9 @@ function readOwnedAttempt(db: D1Database, userId: string, attemptId: string) {
     .prepare(
       `SELECT a.*,uj.job_id,j.title,j.company,u.email from_email
          FROM application_attempts a
-         JOIN user_jobs uj ON uj.id=a.user_job_id
+         JOIN user_listing_states uj ON uj.id=a.user_job_id
          JOIN users u ON u.id=uj.user_id
-         JOIN jobs j ON j.id=uj.job_id
+         JOIN job_listings j ON j.id=uj.job_id
         WHERE a.id=? AND uj.user_id=?`
     )
     .bind(attemptId, userId)

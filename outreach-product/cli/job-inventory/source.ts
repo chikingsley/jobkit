@@ -46,7 +46,7 @@ export function readSourceInventory(databasePath: string): SourceInventory {
         `SELECT COUNT(*) total,
                 COALESCE(SUM(status='active'), 0) active,
                 COALESCE(SUM(status<>'active'), 0) closed
-           FROM jobs`
+           FROM job_listings`
       )
       .get() as { active: number; closed: number; total: number };
     const rows = database
@@ -54,7 +54,7 @@ export function readSourceInventory(databasePath: string): SourceInventory {
         `SELECT apply_email,apply_url,board,company,country,
                 description,job_id,last_seen_at,location,raw,raw_json,
                 salary,title,url
-           FROM jobs
+           FROM job_listings
           WHERE status='active'
           ORDER BY board,job_id`
       )

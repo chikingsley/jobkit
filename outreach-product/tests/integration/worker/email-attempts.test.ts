@@ -39,7 +39,7 @@ async function seedEmailFixture(
   const routeId = `route-${suffix}`;
   await env.DB.batch([
     env.DB.prepare(
-      `INSERT INTO jobs
+      `INSERT INTO job_listings
         (id,board,title,company,country,location,source_url,apply_url,
          first_seen_at,updated_at)
        VALUES (?,?,?,?,?,?,?,?,?,?)`
@@ -56,7 +56,7 @@ async function seedEmailFixture(
       timestamp
     ),
     env.DB.prepare(
-      `INSERT INTO user_jobs
+      `INSERT INTO user_listing_states
         (id,user_id,job_id,status,created_at,updated_at)
        VALUES (?,?,?,'review',?,?)`
     ).bind(userJobId, userId, jobId, timestamp, timestamp),
@@ -115,7 +115,7 @@ describe("email application attempts", () => {
       "hr@anesl.com"
     );
     await env.DB.prepare(
-      "UPDATE jobs SET board='anesl',source_reference='HUN8932' WHERE id=?"
+      "UPDATE job_listings SET board='anesl',source_reference='HUN8932' WHERE id=?"
     )
       .bind(fixture.jobId)
       .run();
@@ -198,7 +198,7 @@ describe("email application attempts", () => {
         `SELECT a.status,a.gmail_message_id,a.gmail_thread_id,
                 uj.status user_job_status,d.status draft_status
            FROM application_attempts a
-           JOIN user_jobs uj ON uj.id=a.user_job_id
+           JOIN user_listing_states uj ON uj.id=a.user_job_id
            JOIN application_drafts d ON d.id=a.draft_id
           WHERE a.id=?`
       )

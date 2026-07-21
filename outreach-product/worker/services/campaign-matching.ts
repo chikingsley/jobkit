@@ -97,16 +97,12 @@ export async function matchCampaignTargets(
   return { campaignId, matched: updates.length };
 }
 
-export async function refreshCampaignMatchesForJob(
-  env: AppEnv,
-  userId: string,
-  jobId: string
-) {
+export async function refreshCampaignMatchesForJob(env: AppEnv, jobId: string) {
   const campaigns = await env.DB.prepare(
-    `SELECT DISTINCT c.id
+    `SELECT DISTINCT c.id,c.user_id
          FROM campaigns c
          JOIN campaign_targets t ON t.campaign_id=c.id
-        WHERE c.user_id=? AND t.job_id=?
+        WHERE t.job_id=?
           AND c.status NOT IN ('completed','canceled')
           AND (
             t.status='eligible'
@@ -117,12 +113,14 @@ export async function refreshCampaignMatchesForJob(
           )
         ORDER BY c.created_at`
   )
-    .bind(userId, jobId)
-    .all<{ id: string }>();
+    .bind(jobId)
+    .all<{ id: string; user_id: string }>();
   const results: Array<{ campaignId: string; matched: number }> = [];
   for (const campaign of campaigns.results) {
-    // biome-ignore lint/performance/noAwaitInLoops: One job update must serialize D1 batches across every campaign that owns it.
-    results.push(await matchCampaignTargets(env, userId, campaign.id, jobId));
+    results.push(
+      // biome-ignore lint/performance/noAwaitInLoops: One job update serializes D1 batches across every campaign that owns it.
+      await matchCampaignTargets(env, campaign.user_id, campaign.id, jobId)
+    );
   }
   return results;
 }
@@ -173,7 +171,7 @@ function readCampaignMatchingRows(
               ) position_analysis_json
          FROM campaign_targets t
          JOIN campaigns c ON c.id=t.campaign_id
-         JOIN jobs j ON j.id=t.job_id
+         JOIN job_listings j ON j.id=t.job_id
          LEFT JOIN job_match_facts mf ON mf.job_id=j.id
         WHERE t.campaign_id=? AND c.user_id=?
           AND t.source_kind='advertised'
@@ -190,15 +188,22 @@ function readCampaignMatchingRows(
 
 function matchingJobFromRow(row: CampaignMatchingRow): Job {
   const matchFacts = matchFactsFromRow(row);
+  const positionAnalysis = positionAnalysisFromRow(row);
   const compensation = matchFacts
     ? compensationFromEconomics(matchFacts.economics)
     : compensationFromRow(row);
   return {
+    analysisStatus: {
+      content: "pending",
+      matchFacts: matchFacts ? "current" : "pending",
+      positions: positionAnalysis ? "current" : "pending",
+    },
     applicationRoutes: [],
     applyUrl: String(row.apply_url),
     board: String(row.board),
     company: String(row.company),
     compensation,
+    contentAnalysis: null,
     country: String(row.country),
     description: String(row.description),
     draft: null,
@@ -212,7 +217,7 @@ function matchingJobFromRow(row: CampaignMatchingRow): Job {
     matchFacts,
     messageRoute: String(row.message_route) as Job["messageRoute"],
     opportunityScope: String(row.opportunity_scope) as Job["opportunityScope"],
-    positionAnalysis: positionAnalysisFromRow(row),
+    positionAnalysis,
     sourceReference: String(row.source_reference),
     sourceUrl: String(row.source_url),
     status: "new",

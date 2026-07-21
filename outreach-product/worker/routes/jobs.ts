@@ -1,9 +1,15 @@
 import {
+  JOB_CONTENT_ANALYSIS_SCHEMA_VERSION,
+  type JobContentAnalysis,
+  JobContentAnalysisSchema,
+} from "../../src/features/jobs/content-analysis";
+import {
   compensationFromEconomics,
   housingLabel,
   statedHourlyValueUsd,
 } from "../../src/features/jobs/economics";
 import {
+  JOB_POSITION_ANALYSIS_SCHEMA_VERSION,
   type JobPositionAnalysis,
   JobPositionAnalysisSchema,
 } from "../../src/features/jobs/position-variants";
@@ -16,6 +22,7 @@ import {
   JOB_MATCH_FACTS_SCHEMA_VERSION,
   MATCHING_ENGINE_VERSION,
 } from "../../src/features/matching/version";
+import type { JobMatch } from "../../src/profile-types";
 import type { JobKitApp } from "../app-types";
 import {
   readAutomationPolicy,
@@ -85,6 +92,23 @@ export function registerJobRoutes(app: JobKitApp) {
                 j.compensation_notes_json,
                 uj.status,uj.priority,
                 mf.facts_json,mf.schema_version match_facts_schema_version,
+                CASE
+                  WHEN mf.job_id IS NULL THEN 'pending'
+                  WHEN mf.schema_version<>? OR mf.updated_at<j.updated_at THEN 'stale'
+                  ELSE 'current'
+                END match_facts_analysis_status,
+                CASE
+                  WHEN pa_status.job_id IS NULL THEN 'pending'
+                  WHEN pa_status.schema_version<>? OR pa_status.updated_at<j.updated_at THEN 'stale'
+                  ELSE 'current'
+                END position_analysis_status,
+                CASE
+                  WHEN content.job_id IS NULL THEN 'pending'
+                  WHEN content.schema_version<>? OR content.updated_at<j.updated_at THEN 'stale'
+                  ELSE 'current'
+                END content_analysis_status,
+                (SELECT COUNT(*) FROM job_position_variants pv_count
+                  WHERE pv_count.job_id=j.id) position_count,
                 (
                   SELECT json_object(
                     'scope',pa.scope,
@@ -141,9 +165,11 @@ export function registerJobRoutes(app: JobKitApp) {
                     AND atr.subject_id=j.id
                   ORDER BY atr.created_at DESC LIMIT 1
                 ) draft_task_json
-         FROM jobs j
-         LEFT JOIN user_jobs uj ON uj.job_id=j.id AND uj.user_id=?
+         FROM job_listings j
+         LEFT JOIN user_listing_states uj ON uj.job_id=j.id AND uj.user_id=?
          LEFT JOIN job_match_facts mf ON mf.job_id=j.id
+         LEFT JOIN job_position_analyses pa_status ON pa_status.job_id=j.id
+         LEFT JOIN job_content_analyses content ON content.job_id=j.id
          LEFT JOIN active_email_routes routes ON routes.job_id=j.id
          WHERE j.inventory_status='active'
          ORDER BY COALESCE(uj.priority,0) DESC,
@@ -153,7 +179,13 @@ export function registerJobRoutes(app: JobKitApp) {
            END,
            COALESCE(uj.updated_at,j.updated_at) DESC`
     )
-      .bind(userId, userId)
+      .bind(
+        JOB_MATCH_FACTS_SCHEMA_VERSION,
+        JOB_POSITION_ANALYSIS_SCHEMA_VERSION,
+        JOB_CONTENT_ANALYSIS_SCHEMA_VERSION,
+        userId,
+        userId
+      )
       .all();
     const context = await readMatchingContext(c.env, userId);
     const evaluated = rows.results.map((row) => {
@@ -161,11 +193,7 @@ export function registerJobRoutes(app: JobKitApp) {
       const match = evaluateJobWithContext(job, context);
       return {
         job: toListJob(job, row, context.fx),
-        match: {
-          label: match.label,
-          score: match.score,
-          tone: match.tone,
-        },
+        match: summarizeMatch(match),
       };
     });
     return c.json({
@@ -218,6 +246,22 @@ function readReviewJob(db: D1Database, userId: string, jobId: string) {
     .prepare(
       `SELECT j.*,uj.status,uj.priority,
               mf.facts_json,mf.schema_version match_facts_schema_version,
+              CASE
+                WHEN mf.job_id IS NULL THEN 'pending'
+                WHEN mf.schema_version<>? OR mf.updated_at<j.updated_at THEN 'stale'
+                ELSE 'current'
+              END match_facts_analysis_status,
+              CASE
+                WHEN pa_status.job_id IS NULL THEN 'pending'
+                WHEN pa_status.schema_version<>? OR pa_status.updated_at<j.updated_at THEN 'stale'
+                ELSE 'current'
+              END position_analysis_status,
+              CASE
+                WHEN content.job_id IS NULL THEN 'pending'
+                WHEN content.schema_version<>? OR content.updated_at<j.updated_at THEN 'stale'
+                ELSE 'current'
+              END content_analysis_status,
+              content.content_json,content.schema_version content_analysis_schema_version,
               (
                 SELECT json_object(
                   'scope',pa.scope,
@@ -318,22 +362,32 @@ function readReviewJob(db: D1Database, userId: string, jobId: string) {
                   AND atr.subject_id=j.id
                 ORDER BY atr.created_at DESC LIMIT 1
               ) draft_task_json
-       FROM jobs j
-       LEFT JOIN user_jobs uj ON uj.job_id=j.id AND uj.user_id=?
+       FROM job_listings j
+       LEFT JOIN user_listing_states uj ON uj.job_id=j.id AND uj.user_id=?
        LEFT JOIN job_match_facts mf ON mf.job_id=j.id
+       LEFT JOIN job_position_analyses pa_status ON pa_status.job_id=j.id
+       LEFT JOIN job_content_analyses content ON content.job_id=j.id
        LEFT JOIN application_drafts d ON d.id=(
          SELECT id FROM application_drafts
          WHERE user_job_id=uj.id ORDER BY version DESC LIMIT 1
        )
        WHERE j.inventory_status='active' AND j.id=?`
     )
-    .bind(userId, userId, jobId)
+    .bind(
+      JOB_MATCH_FACTS_SCHEMA_VERSION,
+      JOB_POSITION_ANALYSIS_SCHEMA_VERSION,
+      JOB_CONTENT_ANALYSIS_SCHEMA_VERSION,
+      userId,
+      userId,
+      jobId
+    )
     .first<Record<string, unknown>>();
 }
 
 function toListEvaluationJob(row: Record<string, unknown>): Job {
   const matchFacts = matchFactsFromRow(row);
   return {
+    analysisStatus: analysisStatusFromRow(row),
     applicationRoutes: JSON.parse(String(row.application_routes_json)),
     applyUrl: "",
     board: String(row.board),
@@ -341,6 +395,7 @@ function toListEvaluationJob(row: Record<string, unknown>): Job {
     compensation: matchFacts
       ? compensationFromEconomics(matchFacts.economics)
       : compensationFromRow(row),
+    contentAnalysis: null,
     country: String(row.country),
     description: "",
     draft: null,
@@ -370,6 +425,7 @@ function toListJob(
   fx: Parameters<typeof statedHourlyValueUsd>[1]
 ): JobListItem {
   return {
+    analysisStatus: evaluationJob.analysisStatus,
     applicationRoutes: evaluationJob.applicationRoutes,
     board: evaluationJob.board,
     company: evaluationJob.company,
@@ -386,6 +442,7 @@ function toListJob(
     marketSegments: evaluationJob.marketSegments,
     messageRoute: evaluationJob.messageRoute,
     opportunityScope: evaluationJob.opportunityScope,
+    positionCount: Number(row.position_count ?? 0),
     statedHourly: evaluationJob.matchFacts
       ? statedHourlyValueUsd(evaluationJob.matchFacts.economics, fx)
       : null,
@@ -397,6 +454,7 @@ function toListJob(
 function toReviewJob(row: Record<string, unknown>) {
   const matchFacts = matchFactsFromRow(row);
   return {
+    analysisStatus: analysisStatusFromRow(row),
     applicationRoutes: JSON.parse(
       String(row.application_routes_json)
     ) as unknown,
@@ -406,6 +464,7 @@ function toReviewJob(row: Record<string, unknown>) {
     compensation: matchFacts
       ? compensationFromEconomics(matchFacts.economics)
       : compensationFromRow(row),
+    contentAnalysis: contentAnalysisFromRow(row),
     country: String(row.country),
     description: String(row.description),
     draft: row.draft_id
@@ -467,4 +526,58 @@ function matchFactsFromRow(row: Record<string, unknown>): JobMatchFacts | null {
     JSON.parse(String(row.facts_json)) as unknown
   );
   return parsed.success ? parsed.data : null;
+}
+
+function contentAnalysisFromRow(
+  row: Record<string, unknown>
+): JobContentAnalysis | null {
+  if (
+    !row.content_json ||
+    Number(row.content_analysis_schema_version) !==
+      JOB_CONTENT_ANALYSIS_SCHEMA_VERSION
+  ) {
+    return null;
+  }
+  const parsed = JobContentAnalysisSchema.safeParse(
+    JSON.parse(String(row.content_json)) as unknown
+  );
+  return parsed.success ? parsed.data : null;
+}
+
+function analysisStatusFromRow(
+  row: Record<string, unknown>
+): Job["analysisStatus"] {
+  return {
+    content: String(
+      row.content_analysis_status
+    ) as Job["analysisStatus"]["content"],
+    matchFacts: String(
+      row.match_facts_analysis_status
+    ) as Job["analysisStatus"]["matchFacts"],
+    positions: String(
+      row.position_analysis_status
+    ) as Job["analysisStatus"]["positions"],
+  };
+}
+
+function summarizeMatch(match: JobMatch) {
+  const visible = match.criteria.filter(
+    (criterion) => criterion.visibility !== "internal"
+  );
+  const requirements = visible.filter(
+    (criterion) => criterion.importance !== undefined
+  );
+  return {
+    confirmedRequirements: requirements.filter(
+      (criterion) => criterion.state === "match"
+    ).length,
+    conflicts: visible.filter((criterion) => criterion.state === "conflict")
+      .length,
+    label: match.label,
+    score: match.score,
+    tone: match.tone,
+    totalRequirements: requirements.length,
+    unknowns: visible.filter((criterion) => criterion.state === "unknown")
+      .length,
+  };
 }

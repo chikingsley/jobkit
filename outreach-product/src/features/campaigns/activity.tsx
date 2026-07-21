@@ -1,11 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import type {
   CampaignReplyEvent,
   CampaignRun,
@@ -31,14 +24,9 @@ export function CampaignActivity({
 
 function RunHistory({ runs }: { runs: CampaignRun[] }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Delivery runs</CardTitle>
-        <CardDescription>
-          Each row is one scheduled day using the saved pace and source mix.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-3">
+    <section className="grid content-start gap-3 border-t pt-4">
+      <h2 className="font-semibold">Delivery runs</h2>
+      <div className="grid gap-3">
         {runs.length === 0 ? (
           <p className="text-muted-foreground text-sm">
             No delivery run has started.
@@ -68,22 +56,16 @@ function RunHistory({ runs }: { runs: CampaignRun[] }) {
             </div>
           ))
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
 function ReplyHistory({ replies }: { replies: CampaignReplyEvent[] }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Reply outcomes</CardTitle>
-        <CardDescription>
-          Human replies affect the stop rule. Automated mail, vacation replies,
-          and bounces remain visible without counting.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-3">
+    <section className="grid content-start gap-3 border-t pt-4">
+      <h2 className="font-semibold">Reply outcomes</h2>
+      <div className="grid gap-3">
         {replies.length === 0 ? (
           <p className="text-muted-foreground text-sm">
             No reply event has arrived.
@@ -111,8 +93,8 @@ function ReplyHistory({ replies }: { replies: CampaignReplyEvent[] }) {
             </div>
           ))
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 

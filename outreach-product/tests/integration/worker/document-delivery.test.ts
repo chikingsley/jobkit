@@ -69,11 +69,11 @@ describe("versioned document delivery", () => {
     const draftId = crypto.randomUUID();
     await testEnv.DB.batch([
       testEnv.DB.prepare(
-        `INSERT INTO jobs (id,title,apply_url,first_seen_at,updated_at)
+        `INSERT INTO job_listings (id,title,apply_url,first_seen_at,updated_at)
          VALUES (?,'English Teacher','mailto:school@example.test',?,?)`
       ).bind(jobId, timestamp, timestamp),
       testEnv.DB.prepare(
-        `INSERT INTO user_jobs (id,user_id,job_id,status,created_at,updated_at)
+        `INSERT INTO user_listing_states (id,user_id,job_id,status,created_at,updated_at)
          VALUES (?,?,?,'review',?,?)`
       ).bind(userJobId, userId, jobId, timestamp, timestamp),
     ]);

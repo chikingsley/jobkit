@@ -444,7 +444,7 @@ async function followUpCandidates(db: D1Database) {
           SELECT 'application' source_kind,a.id source_attempt_id,uj.user_id,
                  a.gmail_thread_id,a.sent_at
             FROM application_attempts a
-            JOIN user_jobs uj ON uj.id=a.user_job_id
+            JOIN user_listing_states uj ON uj.id=a.user_job_id
             JOIN user_automation_policies policy ON policy.user_id=uj.user_id
            WHERE a.status='sent' AND a.gmail_thread_id<>''
              AND policy.follow_up_delays_json<>'[]' AND policy.paused=0
@@ -602,10 +602,10 @@ async function readFollowUpSource(
                j.title,j.company,j.country,j.location,j.message_route route
           FROM outreach_followups f
           JOIN application_attempts a ON a.id=f.source_attempt_id
-          JOIN user_jobs uj ON uj.id=a.user_job_id AND uj.user_id=f.user_id
+          JOIN user_listing_states uj ON uj.id=a.user_job_id AND uj.user_id=f.user_id
           JOIN users u ON u.id=uj.user_id
           JOIN application_drafts d ON d.id=a.draft_id
-          JOIN jobs j ON j.id=uj.job_id
+          JOIN job_listings j ON j.id=uj.job_id
          WHERE f.source_kind='application'
         UNION ALL
         SELECT f.id,f.user_id,f.source_kind,f.source_attempt_id,f.status,
@@ -633,7 +633,7 @@ async function readFollowUpSource(
           JOIN campaign_targets target ON target.id=dispatch_target.target_id
           JOIN campaign_markets market ON market.campaign_id=c.id
            AND market.country_code=target.country_code
-          LEFT JOIN jobs j ON j.id=target.job_id
+          LEFT JOIN job_listings j ON j.id=target.job_id
           LEFT JOIN organizations o ON o.id=target.organization_id
          WHERE f.source_kind='campaign'
            AND message.version=(

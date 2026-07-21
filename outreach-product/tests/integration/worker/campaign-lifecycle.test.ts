@@ -58,7 +58,7 @@ describe("campaign lifecycle", () => {
 
     await seedStrongEnglishMatch(testEnv.DB, job.id, timestamp);
     await expect(
-      refreshCampaignMatchesForJob(testEnv, userId, job.id)
+      refreshCampaignMatchesForJob(testEnv, job.id)
     ).resolves.toEqual([{ campaignId: payload.campaign.id, matched: 1 }]);
     const target = await readOnlyCampaignTarget(payload.campaign.id);
     expect(target).toMatchObject({

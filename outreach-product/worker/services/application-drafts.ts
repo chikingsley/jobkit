@@ -151,7 +151,9 @@ async function ensureUserJobForDraftGeneration(
   jobId: string
 ) {
   const job = await db
-    .prepare("SELECT id FROM jobs WHERE id=? AND inventory_status='active'")
+    .prepare(
+      "SELECT id FROM job_listings WHERE id=? AND inventory_status='active'"
+    )
     .bind(jobId)
     .first<{ id: string }>();
   if (!job) {
@@ -160,7 +162,7 @@ async function ensureUserJobForDraftGeneration(
   const timestamp = new Date().toISOString();
   await db
     .prepare(
-      `INSERT INTO user_jobs
+      `INSERT INTO user_listing_states
         (id,user_id,job_id,status,priority,created_at,updated_at)
        VALUES (?,?,?,'new',0,?,?)
        ON CONFLICT(user_id,job_id) DO NOTHING`
@@ -342,7 +344,7 @@ async function buildGeneratedJobDraftPlan(
     ),
     ...snapshotStatements,
     env.DB.prepare(
-      "UPDATE user_jobs SET status='review',updated_at=? WHERE id=? AND user_id=?"
+      "UPDATE user_listing_states SET status='review',updated_at=? WHERE id=? AND user_id=?"
     ).bind(timestamp, state.userJobId, userId),
     jobEventStatement(
       env.DB,
@@ -546,7 +548,7 @@ function buildDraftMutationPlan(
       timestamp
     ),
     env.DB.prepare(
-      "UPDATE user_jobs SET status='review',updated_at=? WHERE id=? AND user_id=?"
+      "UPDATE user_listing_states SET status='review',updated_at=? WHERE id=? AND user_id=?"
     ).bind(timestamp, current.userJobId, userId),
     jobEventStatement(
       env.DB,
@@ -582,8 +584,8 @@ async function currentJobAndDraft(
     .prepare(
       `SELECT j.*,uj.id user_job_id,uj.priority,d.id draft_id,d.version,d.message,
               d.required_opening,d.message_foundation_id,d.message_template_key
-       FROM user_jobs uj
-       JOIN jobs j ON j.id=uj.job_id
+       FROM user_listing_states uj
+       JOIN job_listings j ON j.id=uj.job_id
        JOIN application_drafts d ON d.user_job_id=uj.id
        WHERE uj.user_id=? AND j.id=?
        ORDER BY d.version DESC LIMIT 1`
@@ -619,8 +621,8 @@ async function readJobForDraftGeneration(
       `SELECT j.*,uj.id user_job_id,uj.priority,
               (SELECT MAX(version) FROM application_drafts d
                 WHERE d.user_job_id=uj.id) latest_version
-         FROM user_jobs uj
-         JOIN jobs j ON j.id=uj.job_id
+         FROM user_listing_states uj
+         JOIN job_listings j ON j.id=uj.job_id
         WHERE uj.user_id=? AND j.id=?`
     )
     .bind(userId, jobId)

@@ -29,8 +29,8 @@ export async function approveAndSubmitApplication(
   const row = await env.DB.prepare(
     `SELECT ar.destination apply_url,uj.id user_job_id,uj.status job_status,
             d.id draft_id,d.status draft_status,d.message
-     FROM user_jobs uj
-     JOIN jobs j ON j.id=uj.job_id
+     FROM user_listing_states uj
+     JOIN job_listings j ON j.id=uj.job_id
      JOIN application_routes ar ON ar.id=(
        SELECT id FROM application_routes
        WHERE job_id=j.id AND kind='board_form' AND status='active'
@@ -71,7 +71,7 @@ export async function approveAndSubmitApplication(
   const timestamp = new Date().toISOString();
   const approvalStatements = [
     env.DB.prepare(
-      "UPDATE user_jobs SET status='submitting',updated_at=? WHERE id=? AND user_id=? AND status IN ('review','approved','failed')"
+      "UPDATE user_listing_states SET status='submitting',updated_at=? WHERE id=? AND user_id=? AND status IN ('review','approved','failed')"
     ).bind(timestamp, row.user_job_id, userId),
     env.DB.prepare(
       "UPDATE application_drafts SET status='approved',approved_at=COALESCE(approved_at,?) WHERE id=? AND status IN ('draft','approved')"
@@ -105,7 +105,7 @@ export async function approveAndSubmitApplication(
     const failedAt = new Date().toISOString();
     await env.DB.batch([
       env.DB.prepare(
-        "UPDATE user_jobs SET status='failed',updated_at=? WHERE id=? AND user_id=?"
+        "UPDATE user_listing_states SET status='failed',updated_at=? WHERE id=? AND user_id=?"
       ).bind(failedAt, row.user_job_id, userId),
       jobEventStatement(
         env.DB,
@@ -122,7 +122,7 @@ export async function approveAndSubmitApplication(
   if (!submission.submittedNow) {
     await env.DB.batch([
       env.DB.prepare(
-        "UPDATE user_jobs SET status='applied',updated_at=? WHERE id=? AND user_id=?"
+        "UPDATE user_listing_states SET status='applied',updated_at=? WHERE id=? AND user_id=?"
       ).bind(submittedAt, row.user_job_id, userId),
       jobEventStatement(
         env.DB,
@@ -139,7 +139,7 @@ export async function approveAndSubmitApplication(
 
   await env.DB.batch([
     env.DB.prepare(
-      "UPDATE user_jobs SET status='applied',updated_at=? WHERE id=? AND user_id=?"
+      "UPDATE user_listing_states SET status='applied',updated_at=? WHERE id=? AND user_id=?"
     ).bind(submittedAt, row.user_job_id, userId),
     env.DB.prepare(
       "UPDATE application_drafts SET status='submitted',submitted_at=? WHERE id=?"

@@ -467,7 +467,7 @@ export function StringListField({
   values,
 }: {
   addLabel: string;
-  description: string;
+  description?: string;
   label: string;
   onChange: (values: string[]) => void;
   values: string[];
@@ -515,7 +515,7 @@ export function StringListField({
           <Plus /> {addLabel}
         </Button>
       </div>
-      <FieldDescription>{description}</FieldDescription>
+      {description ? <FieldDescription>{description}</FieldDescription> : null}
     </Field>
   );
 }

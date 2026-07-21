@@ -48,12 +48,22 @@ export interface ContactSummary {
   role: "board_intermediary" | "employer" | "recruiter" | "unknown";
 }
 
+export type JobAnalysisState = "current" | "pending" | "stale";
+
+export interface JobAnalysisStatus {
+  content: JobAnalysisState;
+  matchFacts: JobAnalysisState;
+  positions: JobAnalysisState;
+}
+
 export interface Job {
+  analysisStatus: JobAnalysisStatus;
   applicationRoutes: ApplicationRoute[];
   applyUrl: string;
   board: string;
   company: string;
   compensation: Compensation;
+  contentAnalysis: JobContentAnalysis | null;
   country: string;
   description: string;
   draft: JobDraft | null;
@@ -79,6 +89,7 @@ export interface Job {
 }
 
 export interface JobListItem {
+  analysisStatus: JobAnalysisStatus;
   applicationRoutes: ApplicationRoute[];
   board: string;
   company: string;
@@ -92,6 +103,7 @@ export interface JobListItem {
   marketSegments: MarketSegment[];
   messageRoute: Job["messageRoute"];
   opportunityScope: Job["opportunityScope"];
+  positionCount: number;
   statedHourly: StatedHourlyValue | null;
   status: string;
   title: string;
@@ -101,6 +113,7 @@ export type MarketSegment = JobMarketSegment;
 
 import type { JobMatchFacts } from "@/features/matching/schema";
 import type { JobMarketSegment } from "@/features/organizations/market-segments";
+import type { JobContentAnalysis } from "./content-analysis";
 import type { Compensation, StatedHourlyValue } from "./economics";
 import type { JobPositionAnalysis } from "./position-variants";
 

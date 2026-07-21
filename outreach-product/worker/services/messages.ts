@@ -153,8 +153,8 @@ export async function listMessageThreads(
               COALESCE(tm.last_inbound_at,'') last_inbound_at,
               COALESCE(tm.last_inbound_body,'') last_inbound_body
          FROM application_attempts a
-         JOIN user_jobs uj ON uj.id=a.user_job_id
-         JOIN jobs j ON j.id=uj.job_id
+         JOIN user_listing_states uj ON uj.id=a.user_job_id
+         JOIN job_listings j ON j.id=uj.job_id
          JOIN application_drafts d ON d.id=a.draft_id
          LEFT JOIN (
            SELECT t1.gmail_thread_id,
@@ -196,7 +196,7 @@ export async function listMessageThreads(
                   )
                     FROM campaign_dispatch_targets refs
                     JOIN campaign_targets target ON target.id=refs.target_id
-                    LEFT JOIN jobs target_job ON target_job.id=target.job_id
+                    LEFT JOIN job_listings target_job ON target_job.id=target.job_id
                     LEFT JOIN organizations target_org
                       ON target_org.id=target.organization_id
                    WHERE refs.dispatch_id=d.id ORDER BY refs.ordinal
@@ -218,7 +218,7 @@ export async function listMessageThreads(
            JOIN campaign_markets market
              ON market.campaign_id=c.id
             AND market.country_code=first_target.country_code
-           LEFT JOIN jobs first_job ON first_job.id=first_target.job_id
+           LEFT JOIN job_listings first_job ON first_job.id=first_target.job_id
            LEFT JOIN organizations first_organization
              ON first_organization.id=first_target.organization_id
            JOIN campaign_messages message ON message.dispatch_id=d.id
@@ -279,9 +279,9 @@ export async function getMessageThread(
                   a.error_detail,d.message,u.email from_email,uj.job_id,
                   j.title,j.company
              FROM application_attempts a
-             JOIN user_jobs uj ON uj.id=a.user_job_id
+             JOIN user_listing_states uj ON uj.id=a.user_job_id
              JOIN users u ON u.id=uj.user_id
-             JOIN jobs j ON j.id=uj.job_id
+             JOIN job_listings j ON j.id=uj.job_id
              JOIN application_drafts d ON d.id=a.draft_id
             WHERE uj.user_id=? AND a.channel='email'
               AND ((?<>'' AND a.id=?) OR (?<>'' AND a.gmail_thread_id=?))
@@ -368,7 +368,7 @@ async function getCampaignMessageThread(
           AND first_dispatch_target.ordinal=0
          JOIN campaign_targets first_target
            ON first_target.id=first_dispatch_target.target_id
-         LEFT JOIN jobs first_job ON first_job.id=first_target.job_id
+         LEFT JOIN job_listings first_job ON first_job.id=first_target.job_id
          LEFT JOIN organizations first_organization
            ON first_organization.id=first_target.organization_id
         WHERE c.user_id=?
@@ -435,7 +435,7 @@ async function loadCampaignTargets(db: D1Database, attemptId: string) {
          JOIN campaign_dispatch_targets dispatch_target
            ON dispatch_target.dispatch_id=attempt.dispatch_id
          JOIN campaign_targets target ON target.id=dispatch_target.target_id
-         LEFT JOIN jobs j ON j.id=target.job_id
+         LEFT JOIN job_listings j ON j.id=target.job_id
          LEFT JOIN organizations o ON o.id=target.organization_id
         WHERE attempt.id=? ORDER BY dispatch_target.ordinal`
     )
@@ -454,7 +454,7 @@ async function loadBundleTargets(db: D1Database, bundleId: string) {
     .prepare(
       `SELECT uj.job_id,bt.source_reference,bt.title,bt.location
          FROM application_bundle_targets bt
-         JOIN user_jobs uj ON uj.id=bt.user_job_id
+         JOIN user_listing_states uj ON uj.id=bt.user_job_id
         WHERE bt.bundle_id=? ORDER BY bt.ordinal`
     )
     .bind(bundleId)
@@ -480,7 +480,7 @@ export async function recordInboundMessage(
     .prepare(
       `SELECT tracked.id FROM (
          SELECT a.id FROM application_attempts a
-         JOIN user_jobs uj ON uj.id=a.user_job_id
+         JOIN user_listing_states uj ON uj.id=a.user_job_id
           WHERE uj.user_id=? AND a.channel='email' AND a.gmail_thread_id=?
          UNION ALL
          SELECT test_send.id FROM application_bundle_test_sends test_send
@@ -675,7 +675,7 @@ async function resolveOwnedGmailThreadId(
     .prepare(
       `SELECT gmail_thread_id FROM (
         SELECT a.gmail_thread_id FROM application_attempts a
-        JOIN user_jobs uj ON uj.id=a.user_job_id
+        JOIN user_listing_states uj ON uj.id=a.user_job_id
          WHERE uj.user_id=?
            AND ((?<>'' AND a.id=?) OR (?<>'' AND a.gmail_thread_id=?))
         UNION ALL
@@ -715,7 +715,7 @@ export async function getThreadAttachment(
       SELECT att.filename,att.content_type,att.object_key,att.r2_version,att.etag
        FROM application_draft_attachments att
        JOIN application_attempts a ON a.draft_id=att.draft_id
-       JOIN user_jobs uj ON uj.id=a.user_job_id
+       JOIN user_listing_states uj ON uj.id=a.user_job_id
       WHERE a.id=? AND att.position=? AND uj.user_id=?
       UNION ALL
       SELECT att.filename,att.content_type,att.object_key,att.r2_version,att.etag
@@ -766,7 +766,7 @@ async function loadThreadAttachments(
        SELECT a.id attempt_id,att.position,att.filename,att.content_type,
               att.size_bytes,att.category
          FROM application_attempts a
-         JOIN user_jobs uj ON uj.id=a.user_job_id
+         JOIN user_listing_states uj ON uj.id=a.user_job_id
          JOIN application_draft_attachments att ON att.draft_id=a.draft_id
         WHERE uj.user_id=? AND a.id IN (${placeholders})
        UNION ALL

@@ -12,25 +12,20 @@ const testEnv = env as TestEnv;
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("Codex job analysis tasks", () => {
-  it("round-robins position and match-fact work through one runner protocol", async () => {
+  it("round-robins global position, match-fact, and content work", async () => {
     const { cookie, userId } = await createAuthenticatedUser(
       "agent-analysis@example.test"
     );
     const timestamp = "2026-07-18T00:00:00.000Z";
-    await testEnv.DB.batch([
-      testEnv.DB.prepare(
-        `INSERT INTO jobs
-          (id,title,salary,description,apply_url,first_seen_at,updated_at)
-         VALUES ('agent-analysis-job','English teacher','25,000 CNY monthly',
-                 'We need an English teacher. Salary is 25,000 CNY monthly.',
-                 'https://example.test/apply',?,?)`
-      ).bind(timestamp, timestamp),
-      testEnv.DB.prepare(
-        `INSERT INTO user_jobs
-          (id,user_id,job_id,created_at,updated_at)
-         VALUES ('agent-analysis-user-job',?,'agent-analysis-job',?,?)`
-      ).bind(userId, timestamp, timestamp),
-    ]);
+    await testEnv.DB.prepare(
+      `INSERT INTO job_listings
+        (id,title,salary,description,apply_url,first_seen_at,updated_at)
+       VALUES ('agent-analysis-job','English teacher','25,000 CNY monthly',
+               'We need an English teacher. Salary is 25,000 CNY monthly.',
+               'https://example.test/apply',?,?)`
+    )
+      .bind(timestamp, timestamp)
+      .run();
     const token = await pairAgent(cookie);
 
     const positionClaim = await agentPost("/api/agent-tasks/claim", token, {
@@ -113,6 +108,20 @@ describe("Codex job analysis tasks", () => {
     );
     expect(factsComplete.status).toBe(200);
 
+    const contentClaim = await agentPost("/api/agent-tasks/claim", token, {
+      runnerVersion: "codex-cli test",
+    });
+    const contentPayload = (await contentClaim.json()) as {
+      task: { runId: string; taskType: string };
+    };
+    expect(contentPayload.task.taskType).toBe("job.content_analysis");
+    const contentComplete = await agentPost(
+      `/api/agent-tasks/${contentPayload.task.runId}/complete`,
+      token,
+      { output: contentOutput() }
+    );
+    expect(contentComplete.status).toBe(200);
+
     const analyses = await testEnv.DB.prepare(
       `SELECT task_type,status,model FROM agent_task_runs
         WHERE user_id=? ORDER BY started_at`
@@ -121,7 +130,7 @@ describe("Codex job analysis tasks", () => {
       .all();
     expect(analyses.results).toEqual([
       {
-        model: "gpt-5.6-luna",
+        model: "gpt-5.6-terra",
         status: "completed",
         task_type: "job.position_analysis",
       },
@@ -129,6 +138,11 @@ describe("Codex job analysis tasks", () => {
         model: "gpt-5.6-luna",
         status: "completed",
         task_type: "job.match_facts",
+      },
+      {
+        model: "gpt-5.6-terra",
+        status: "completed",
+        task_type: "job.content_analysis",
       },
     ]);
     await expect(
@@ -139,6 +153,33 @@ describe("Codex job analysis tasks", () => {
       model_id: "gpt-5.6-luna",
       model_provider: "codex",
     });
+    await expect(
+      testEnv.DB.prepare(
+        "SELECT model_provider,model_id,content_json FROM job_content_analyses WHERE job_id='agent-analysis-job'"
+      ).first()
+    ).resolves.toEqual({
+      content_json: JSON.stringify(contentOutput()),
+      model_id: "gpt-5.6-terra",
+      model_provider: "codex",
+    });
+
+    const detailResponse = await exports.default.fetch(
+      "https://outreach.test/api/jobs/agent-analysis-job",
+      { headers: { cookie } }
+    );
+    const detail = (await detailResponse.json()) as {
+      job: {
+        analysisStatus: Record<string, string>;
+        contentAnalysis: ReturnType<typeof contentOutput>;
+      };
+    };
+    expect(detailResponse.status).toBe(200);
+    expect(detail.job.analysisStatus).toEqual({
+      content: "current",
+      matchFacts: "current",
+      positions: "current",
+    });
+    expect(detail.job.contentAnalysis).toEqual(contentOutput());
   });
 
   it("retries a deterministically rejected analysis with correction guidance", async () => {
@@ -148,14 +189,14 @@ describe("Codex job analysis tasks", () => {
     const timestamp = "2026-07-18T00:00:00.000Z";
     await testEnv.DB.batch([
       testEnv.DB.prepare(
-        `INSERT INTO jobs
+        `INSERT INTO job_listings
           (id,title,salary,description,apply_url,first_seen_at,updated_at)
          VALUES ('agent-analysis-retry-job','English teacher','25,000 CNY monthly',
                  'We need an English teacher. Salary is 25,000 CNY monthly.',
                  'https://example.test/apply',?,?)`
       ).bind(timestamp, timestamp),
       testEnv.DB.prepare(
-        `INSERT INTO user_jobs
+        `INSERT INTO user_listing_states
           (id,user_id,job_id,created_at,updated_at)
          VALUES ('agent-analysis-retry-user-job',?,'agent-analysis-retry-job',?,?)`
       ).bind(userId, timestamp, timestamp),
@@ -240,6 +281,20 @@ describe("Codex job analysis tasks", () => {
     );
     expect(factsComplete.status).toBe(200);
 
+    const contentClaim = await agentPost("/api/agent-tasks/claim", token, {
+      runnerVersion: "codex-cli test",
+    });
+    const contentTask = (await contentClaim.json()) as {
+      task: { runId: string; taskType: string };
+    };
+    expect(contentTask.task.taskType).toBe("job.content_analysis");
+    const contentComplete = await agentPost(
+      `/api/agent-tasks/${contentTask.task.runId}/complete`,
+      token,
+      { output: contentOutput() }
+    );
+    expect(contentComplete.status).toBe(200);
+
     const retryClaim = await agentPost("/api/agent-tasks/claim", token, {
       runnerVersion: "codex-cli test",
     });
@@ -252,6 +307,23 @@ describe("Codex job analysis tasks", () => {
     );
   });
 });
+
+function contentOutput() {
+  return {
+    additionalSections: [],
+    applicationProcess: [],
+    overview: [
+      {
+        evidence: ["We need an English teacher"],
+        text: "The employer is seeking an English teacher.",
+      },
+    ],
+    responsibilities: [],
+    scheduleAndContract: [],
+    teachingContext: [],
+    unplacedEvidence: [],
+  };
+}
 
 async function pairAgent(cookie: string) {
   const pairing = await sessionPost("/api/agent-runner-pairings", cookie, {

@@ -157,7 +157,7 @@ export async function listAneslApplicationSets(
                 bt.source_reference,bt.title,bt.location,bt.route_id,
                 uj.job_id
            FROM application_bundle_targets bt
-           JOIN user_jobs uj ON uj.id=bt.user_job_id
+           JOIN user_listing_states uj ON uj.id=bt.user_job_id
           WHERE bt.bundle_id IN (${placeholders})
           ORDER BY bt.bundle_id,bt.ordinal`
       )

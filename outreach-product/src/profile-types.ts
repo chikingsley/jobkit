@@ -27,6 +27,7 @@ export interface MatchCriterion {
   importance?: "required" | "preferred";
   label: string;
   state: MatchState;
+  visibility?: "internal" | "member";
 }
 
 export interface JobMatch {
@@ -41,4 +42,10 @@ export interface JobMatch {
   tone: "positive" | "neutral" | "warning" | "negative";
 }
 
-export type JobMatchSummary = Pick<JobMatch, "label" | "score" | "tone">;
+export interface JobMatchSummary
+  extends Pick<JobMatch, "label" | "score" | "tone"> {
+  confirmedRequirements: number;
+  conflicts: number;
+  totalRequirements: number;
+  unknowns: number;
+}

@@ -402,7 +402,7 @@ async function campaignDispatchJob(
         `SELECT j.*,0 priority,j.source_reference,j.title,j.location
            FROM campaign_dispatch_targets dt
            JOIN campaign_targets t ON t.id=dt.target_id
-           JOIN jobs j ON j.id=t.job_id
+           JOIN job_listings j ON j.id=t.job_id
           WHERE dt.dispatch_id=? ORDER BY dt.ordinal`
       )
       .bind(dispatch.id)
@@ -414,7 +414,7 @@ async function campaignDispatchJob(
   }
   if (dispatch.job_id) {
     const row = await db
-      .prepare("SELECT *,0 priority FROM jobs WHERE id=?")
+      .prepare("SELECT *,0 priority FROM job_listings WHERE id=?")
       .bind(dispatch.job_id)
       .first<Record<string, unknown>>();
     if (!row) {
@@ -476,7 +476,7 @@ async function campaignDispatchReferences(db: D1Database, dispatchId: string) {
       `SELECT j.source_reference
          FROM campaign_dispatch_targets dt
          JOIN campaign_targets t ON t.id=dt.target_id
-         JOIN jobs j ON j.id=t.job_id
+         JOIN job_listings j ON j.id=t.job_id
         WHERE dt.dispatch_id=? ORDER BY dt.ordinal`
     )
     .bind(dispatchId)

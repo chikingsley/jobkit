@@ -21,13 +21,13 @@ export function SourceDescription({
   const parts = protectedEmailParts(formatted);
   if (!(route && parts.some((part) => part.kind === "placeholder"))) {
     return (
-      <p className="mt-4 whitespace-pre-line text-muted-foreground leading-7">
+      <p className="mt-3 whitespace-pre-line text-foreground/85 leading-6">
         {formatted || "No description was imported."}
       </p>
     );
   }
   return (
-    <p className="mt-4 whitespace-pre-line text-muted-foreground leading-7">
+    <p className="mt-3 whitespace-pre-line text-foreground/85 leading-6">
       {parts.map((part) => (
         <span key={`${part.kind}:${part.offset}`}>
           {part.kind === "placeholder" ? (

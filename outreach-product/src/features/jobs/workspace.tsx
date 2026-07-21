@@ -58,7 +58,7 @@ export function JobsWorkspace({
   jobs: JobListItem[];
   jobsError: string;
   jobsLoading: boolean;
-  matches: Map<string, JobMatchSummary>;
+  matches: ReadonlyMap<string, JobMatchSummary>;
   onAction: (path: string, body?: object) => Promise<void>;
   onDraftAction: (
     path: string,
@@ -102,7 +102,7 @@ export function JobsWorkspace({
       <>
         <div className="split-workspace-back border-b bg-background px-4 py-2">
           <Button onClick={() => setDetailOpen(false)} variant="ghost">
-            <ChevronLeft /> Review queue
+            <ChevronLeft /> Jobs
           </Button>
         </div>
         <JobDetail
@@ -143,17 +143,13 @@ export function JobsWorkspace({
       list={
         <>
           <div className="border-b px-4 py-3">
-            <div>
-              <h2 className="font-semibold text-sm">Review queue</h2>
-              {jobsLoading ? (
-                <Skeleton className="mt-1 h-3 w-28" />
-              ) : (
-                <p className="text-muted-foreground text-xs">
-                  Showing {queueJobs.length.toLocaleString()} of{" "}
-                  {jobs.length.toLocaleString()} jobs
-                </p>
-              )}
-            </div>
+            {jobsLoading ? (
+              <Skeleton className="h-3 w-20" />
+            ) : (
+              <p className="text-muted-foreground text-xs">
+                {jobs.length.toLocaleString()} jobs
+              </p>
+            )}
           </div>
           <ScrollArea className="min-h-0 flex-1">
             <div className="p-2">

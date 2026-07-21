@@ -6,14 +6,8 @@ import {
   type UseFormRegister,
   useFieldArray,
 } from "react-hook-form";
+import { SettingsSection } from "@/components/settings-section";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
@@ -36,15 +30,8 @@ export function WorkExperienceSection({
 }) {
   const experience = useFieldArray({ control, name: "workExperience" });
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Work experience</CardTitle>
-        <CardDescription>
-          This is the complete career history used to build job-specific
-          resumes.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+    <SettingsSection title="Work experience">
+      <div className="flex flex-col gap-5">
         {experience.fields.map((entry, index) => (
           <FieldSet
             className="border-b pb-5 last:border-b-0 last:pb-0"
@@ -136,7 +123,7 @@ export function WorkExperienceSection({
         >
           <Plus /> Add role
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </SettingsSection>
   );
 }

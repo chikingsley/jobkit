@@ -8,7 +8,7 @@ export async function upsertJob(
 ) {
   await db
     .prepare(
-      `INSERT INTO jobs (
+      `INSERT INTO job_listings (
         id,board,title,company,contact_name,country,location,salary,description,
         source_url,apply_url,employer_id,source_reference,first_seen_at,updated_at,
         opportunity_scope,market_segments_json,message_route
@@ -64,7 +64,7 @@ export async function upsertUserJob(
 ): Promise<string> {
   const row = await db
     .prepare(
-      `INSERT INTO user_jobs
+      `INSERT INTO user_listing_states
         (id,user_id,job_id,status,priority,created_at,updated_at)
        VALUES (?,?,?,'new',?,?,?)
        ON CONFLICT(user_id,job_id) DO UPDATE SET

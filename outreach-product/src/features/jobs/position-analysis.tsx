@@ -1,11 +1,3 @@
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { humanize } from "@/features/jobs/format";
 import type { JobPositionAnalysis } from "@/features/jobs/position-variants";
 
@@ -14,53 +6,35 @@ export function PositionAnalysis({
 }: {
   analysis: JobPositionAnalysis;
 }) {
+  if (analysis.positions.length <= 1) {
+    return null;
+  }
   return (
-    <Card className="mt-5">
-      <CardHeader>
-        <CardTitle>Advertised positions</CardTitle>
-        <CardDescription>
-          Distinct roles found in this listing. Matching uses each role rather
-          than treating the whole post as one job.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-3">
+    <section className="mt-7 border-t pt-6">
+      <h3 className="font-semibold text-sm">
+        Positions ({analysis.positions.length})
+      </h3>
+      <div className="mt-3 divide-y">
         {analysis.positions.map((position) => (
           <div
-            className="rounded-lg border bg-muted/20 p-3"
+            className="py-3"
             key={`${position.title}:${position.evidence[0]}`}
           >
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-medium text-sm">{position.title}</h3>
-              <Badge
-                variant={
-                  position.roleFamily === "subject_specialist"
-                    ? "destructive"
-                    : "outline"
-                }
-              >
-                {humanize(position.roleFamily)}
-              </Badge>
-              {position.certainty === "ambiguous" ? (
-                <Badge variant="secondary">Ambiguous</Badge>
-              ) : null}
-            </div>
-            {position.subjects.length > 0 ? (
-              <p className="mt-2 text-muted-foreground text-xs">
-                Subjects:{" "}
-                {position.subjects.map(({ value }) => value).join(", ")}
-              </p>
-            ) : null}
-            <p className="mt-2 text-muted-foreground text-xs leading-5">
-              {position.evidence.join(" · ")}
+            <h4 className="font-medium text-sm">{position.title}</h4>
+            <p className="mt-1 text-muted-foreground text-xs leading-5">
+              {[
+                humanize(position.roleFamily),
+                position.subjects.length > 0
+                  ? position.subjects.map(({ value }) => value).join(", ")
+                  : null,
+                position.certainty === "ambiguous" ? "Details vary" : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
           </div>
         ))}
-        {analysis.reviewNotes.map((note) => (
-          <p className="text-muted-foreground text-xs" key={note}>
-            {note}
-          </p>
-        ))}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }

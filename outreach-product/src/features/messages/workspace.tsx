@@ -112,14 +112,14 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
       list={
         <>
           <div className="flex items-center justify-between px-4 py-3">
-            <div>
-              <h2 className="font-semibold text-sm">Messages</h2>
+            {threads?.length ? (
               <p className="text-muted-foreground text-xs">
-                {threads?.length
-                  ? `${threads.length.toLocaleString()} conversation${threads.length === 1 ? "" : "s"}`
-                  : "Sent applications appear here"}
+                {threads.length.toLocaleString()} conversation
+                {threads.length === 1 ? "" : "s"}
               </p>
-            </div>
+            ) : (
+              <span />
+            )}
             <Button
               aria-label="Refresh messages"
               onClick={() => void mutate()}

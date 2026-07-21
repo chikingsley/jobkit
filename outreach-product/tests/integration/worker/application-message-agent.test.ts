@@ -534,7 +534,7 @@ async function seedSentApplication(
   const routeId = `route:${jobId}`;
   await testEnv.DB.batch([
     testEnv.DB.prepare(
-      `INSERT INTO jobs
+      `INSERT INTO job_listings
         (id,board,title,company,country,location,description,source_url,
          apply_url,message_route,first_seen_at,updated_at)
        VALUES (?,'test','English instructor','Example University','Poland',
@@ -548,7 +548,7 @@ async function seedSentApplication(
       timestamp
     ),
     testEnv.DB.prepare(
-      `INSERT INTO user_jobs
+      `INSERT INTO user_listing_states
         (id,user_id,job_id,status,created_at,updated_at)
        VALUES (?,?,?,'applied',?,?)`
     ).bind(userJobId, userId, jobId, timestamp, timestamp),
@@ -623,7 +623,7 @@ function latestDraft(jobId: string, userId: string) {
   return testEnv.DB.prepare(
     `SELECT d.version,d.message,d.model_provider,d.model_id,d.revision_source
        FROM application_drafts d
-       JOIN user_jobs uj ON uj.id=d.user_job_id
+       JOIN user_listing_states uj ON uj.id=d.user_job_id
       WHERE uj.user_id=? AND uj.job_id=?
       ORDER BY d.version DESC LIMIT 1`
   )
@@ -658,7 +658,7 @@ async function seedAneslPosition(reference: string, timestamp: string) {
        VALUES (?,?,'email','hr@anesl.com','hr@anesl.com','active',?,?)`
     ).bind(channelId, contactId, timestamp, timestamp),
     testEnv.DB.prepare(
-      `INSERT INTO jobs
+      `INSERT INTO job_listings
         (id,board,title,company,country,location,description,source_url,
          apply_url,contact_name,source_reference,market_segments_json,
          message_route,opportunity_scope,first_seen_at,updated_at)

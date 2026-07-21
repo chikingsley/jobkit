@@ -216,7 +216,7 @@ async function syncInboundMessages(
     `SELECT a.id,'attempt' kind,a.gmail_thread_id,'' recipient,'' subject,
             '' campaign_id,'' dispatch_id
        FROM application_attempts a
-       JOIN user_jobs uj ON uj.id=a.user_job_id
+       JOIN user_listing_states uj ON uj.id=a.user_job_id
       WHERE uj.user_id=? AND a.gmail_thread_id<>''
         AND a.status IN ('sent','sending','uncertain')
       UNION ALL

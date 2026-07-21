@@ -29,7 +29,7 @@ export function JobQueueGroup({
 }: {
   fx: FxData;
   group: JobContactGroup;
-  matches: Map<string, JobMatchSummary>;
+  matches: ReadonlyMap<string, JobMatchSummary>;
   onSelect: (id: string) => void;
   selectedId?: string;
 }) {
@@ -50,13 +50,8 @@ export function JobQueueGroup({
   }
   const selectedRelated = related.some((job) => job.id === selectedId);
   return (
-    <div className="relative mb-2 pb-1">
-      <div
-        aria-hidden
-        className="absolute inset-x-2 bottom-0 h-3 rounded-b-xl border bg-muted/60"
-      />
+    <div className="mb-2">
       <Collapsible.Root
-        className="relative rounded-xl border bg-background p-1 shadow-sm"
         defaultOpen={selectedRelated}
         key={`${group.id}:${selectedId ?? "none"}`}
       >
@@ -67,7 +62,7 @@ export function JobQueueGroup({
           match={matches.get(primary.id)}
           onSelect={() => onSelect(primary.id)}
         />
-        <Collapsible.Trigger className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-muted-foreground text-xs hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <Collapsible.Trigger className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-muted-foreground text-xs hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <span className="flex min-w-0 items-center gap-2">
             <Mail className="size-3.5 shrink-0" />
             <span className="truncate">

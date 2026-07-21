@@ -1,15 +1,9 @@
-import { ExternalLink, MailCheck } from "lucide-react";
+import { MailCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -101,9 +95,9 @@ export function CampaignDispatchCard({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <CardTitle>Message {index + 1}</CardTitle>
-            <CardDescription>
+            <p className="mt-1 text-muted-foreground text-sm">
               {dispatch.targets.map((target) => target.label).join(" · ")}
-            </CardDescription>
+            </p>
           </div>
           <div className="flex gap-2">
             {dispatch.routeStrategy === "anesl_bundle" ? (
@@ -141,22 +135,6 @@ export function CampaignDispatchCard({
             Waiting for the paired Codex runner to prepare this message.
           </div>
         )}
-        <div className="flex flex-wrap gap-2">
-          {dispatch.targets.map((target) =>
-            target.sourceUrl ? (
-              <Button
-                key={target.id}
-                render={
-                  <a href={target.sourceUrl} rel="noreferrer" target="_blank" />
-                }
-                size="sm"
-                variant="outline"
-              >
-                <ExternalLink /> Open source
-              </Button>
-            ) : null
-          )}
-        </div>
         {dispatch.message && dispatch.status === "review" ? (
           <div className="grid gap-3 rounded-lg border p-3">
             <Textarea

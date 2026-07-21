@@ -159,7 +159,7 @@ async function refreshContactMetadata(
            END
            FROM contact_channels related_cc
            JOIN application_routes ar ON ar.contact_channel_id=related_cc.id
-           JOIN jobs j ON j.id=ar.job_id
+           JOIN job_listings j ON j.id=ar.job_id
            WHERE related_cc.contact_id=contacts.id
          ),''),
          organization_name=COALESCE((
@@ -170,7 +170,7 @@ async function refreshContactMetadata(
            END
            FROM contact_channels related_cc
            JOIN application_routes ar ON ar.contact_channel_id=related_cc.id
-           JOIN jobs j ON j.id=ar.job_id
+           JOIN job_listings j ON j.id=ar.job_id
            WHERE related_cc.contact_id=contacts.id
          ),''),
          updated_at=?

@@ -25,9 +25,9 @@ export function ApplicationDelivery({ job }: { job: Job }) {
   const { contact } = emailRoute;
 
   return (
-    <div className="grid gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:grid-cols-2">
+    <div className="grid gap-x-8 gap-y-4 text-sm lg:grid-cols-2">
       <div className="min-w-0">
-        <div className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+        <div className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs">
           <Mail className="size-3.5" /> To
         </div>
         <p className="mt-1 break-all">{recipient}</p>
@@ -40,13 +40,11 @@ export function ApplicationDelivery({ job }: { job: Job }) {
         ) : null}
       </div>
       <div className="min-w-0">
-        <div className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-          Subject
-        </div>
+        <div className="font-medium text-muted-foreground text-xs">Subject</div>
         <p className="mt-1">{subject}</p>
       </div>
-      <div className="sm:col-span-2">
-        <div className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wide">
+      <div className="lg:col-span-2">
+        <div className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs">
           <Paperclip className="size-3.5" /> Attachments
         </div>
         <div className="mt-2 flex flex-wrap gap-1.5">

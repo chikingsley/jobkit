@@ -163,7 +163,7 @@ async function closeMissingInventoryJobs(
 ) {
   const row = await db
     .prepare(
-      `SELECT COUNT(*) count FROM jobs j
+      `SELECT COUNT(*) count FROM job_listings j
         WHERE j.inventory_source_id=? AND j.inventory_status='active'
           AND NOT EXISTS (
             SELECT 1 FROM inventory_run_items item
@@ -188,7 +188,7 @@ async function closeMissingInventoryJobs(
                 FROM campaign_dispatches d
                 JOIN campaign_dispatch_targets dt ON dt.dispatch_id=d.id
                 JOIN campaign_targets t ON t.id=dt.target_id
-                JOIN jobs j ON j.id=t.job_id
+                JOIN job_listings j ON j.id=t.job_id
                WHERE j.inventory_source_id=? AND j.inventory_status='active'
                  AND NOT EXISTS (
                    SELECT 1 FROM inventory_run_items item
@@ -211,7 +211,7 @@ async function closeMissingInventoryJobs(
             SELECT DISTINCT dt.dispatch_id
               FROM campaign_dispatch_targets dt
               JOIN campaign_targets t ON t.id=dt.target_id
-              JOIN jobs j ON j.id=t.job_id
+              JOIN job_listings j ON j.id=t.job_id
              WHERE j.inventory_source_id=? AND j.inventory_status='active'
                AND NOT EXISTS (
                  SELECT 1 FROM inventory_run_items item
@@ -226,7 +226,7 @@ async function closeMissingInventoryJobs(
         `UPDATE campaign_targets
             SET status='held',hold_reason='Source listing closed',updated_at=?
           WHERE job_id IN (
-            SELECT j.id FROM jobs j
+            SELECT j.id FROM job_listings j
              WHERE j.inventory_source_id=? AND j.inventory_status='active'
                AND NOT EXISTS (
                  SELECT 1 FROM inventory_run_items item
@@ -241,7 +241,7 @@ async function closeMissingInventoryJobs(
         `UPDATE application_routes
             SET status='closed',updated_at=?
           WHERE status<>'closed' AND job_id IN (
-            SELECT j.id FROM jobs j
+            SELECT j.id FROM job_listings j
              WHERE j.inventory_source_id=? AND j.inventory_status='active'
                AND NOT EXISTS (
                  SELECT 1 FROM inventory_run_items item
@@ -253,11 +253,11 @@ async function closeMissingInventoryJobs(
       .bind(timestamp, run.source_id, run.id),
     db
       .prepare(
-        `UPDATE jobs SET inventory_status='closed',inventory_run_id=?
+        `UPDATE job_listings SET inventory_status='closed',inventory_run_id=?
           WHERE inventory_source_id=? AND inventory_status='active'
             AND NOT EXISTS (
               SELECT 1 FROM inventory_run_items item
-               WHERE item.run_id=? AND item.job_id=jobs.id
+               WHERE item.run_id=? AND item.job_id=job_listings.id
                  AND item.status IN ('upserted','unchanged')
             )`
       )

@@ -2,15 +2,8 @@ import { Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { SettingsPage } from "@/components/settings-page";
+import { SettingsSection } from "@/components/settings-section";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import {
   Select,
@@ -98,18 +91,9 @@ export function PreferencesView({
   }
 
   return (
-    <SettingsPage
-      description="Rank suitable jobs, mark soft mismatches, and keep hard blockers out of the main queue."
-      title="Job preferences"
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle>Countries</CardTitle>
-          <CardDescription>
-            Search and add countries. A country can appear in only one group.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-[repeat(auto-fit,minmax(min(17rem,100%),1fr))] gap-5">
+    <SettingsPage>
+      <SettingsSection className="border-t-0 pt-0" title="Countries">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(17rem,100%),1fr))] gap-5">
           <CountryMulti
             description="Prioritize these destinations."
             label="Preferred"
@@ -128,11 +112,10 @@ export function PreferencesView({
             onChange={(values) => updateCountries("excluded", values)}
             values={draft.countries.excluded}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </SettingsSection>
 
       <PreferenceSection
-        description="The age groups and learning contexts you want to teach."
         labels={[
           ["preschool", "Preschool"],
           ["primary", "Primary / elementary"],
@@ -151,7 +134,6 @@ export function PreferencesView({
       />
 
       <PreferenceSection
-        description="How you want to be employed."
         labels={[
           ["fullTime", "Full-time"],
           ["partTime", "Part-time"],
@@ -168,7 +150,6 @@ export function PreferencesView({
       />
 
       <PreferenceSection
-        description="The kinds of roles you want the application queue to include."
         labels={[
           ["english_language", "English language"],
           ["homeroom", "Homeroom / classroom"],
@@ -189,7 +170,6 @@ export function PreferencesView({
       />
 
       <BenefitSection
-        description="Rank what an employer provides with the job."
         labels={[
           ["housing", "Housing included"],
           ["airfare", "Airfare / flight allowance"],
@@ -205,59 +185,44 @@ export function PreferencesView({
         values={draft.benefits}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Pay</CardTitle>
-          <CardDescription>
-            Set the lowest monthly pay worth considering, converted to USD.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Field className="max-w-sm">
-            <FieldLabel>Minimum monthly pay</FieldLabel>
-            <Select
-              items={salaryOptions}
-              onValueChange={(value) =>
-                update({ ...draft, minimumMonthlyUsd: Number(value) })
-              }
-              value={String(draft.minimumMonthlyUsd)}
-            >
-              <SelectTrigger
-                aria-label="Minimum monthly pay"
-                className="w-full"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {salaryOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <FieldDescription>
-              Jobs without a listed salary remain visible for verification.
-            </FieldDescription>
-          </Field>
-        </CardContent>
-      </Card>
+      <SettingsSection title="Pay">
+        <Field className="max-w-sm">
+          <FieldLabel>Minimum monthly pay (USD)</FieldLabel>
+          <Select
+            items={salaryOptions}
+            onValueChange={(value) =>
+              update({ ...draft, minimumMonthlyUsd: Number(value) })
+            }
+            value={String(draft.minimumMonthlyUsd)}
+          >
+            <SelectTrigger aria-label="Minimum monthly pay" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {salaryOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <FieldDescription>
+            Jobs without listed pay remain visible.
+          </FieldDescription>
+        </Field>
+      </SettingsSection>
 
-      <Card>
-        <CardFooter className="justify-end gap-3">
-          {dirty ? (
-            <span className="text-muted-foreground text-sm">
-              Unsaved changes
-            </span>
-          ) : null}
-          <Button disabled={!dirty || saving} onClick={() => void save()}>
-            <Save />
-            {saving ? "Saving…" : "Save preferences"}
-          </Button>
-        </CardFooter>
-      </Card>
+      <div className="sticky bottom-0 flex justify-end gap-3 border-t bg-background/95 py-3 backdrop-blur-sm">
+        {dirty ? (
+          <span className="text-muted-foreground text-sm">Unsaved changes</span>
+        ) : null}
+        <Button disabled={!dirty || saving} onClick={() => void save()}>
+          <Save />
+          {saving ? "Saving…" : "Save preferences"}
+        </Button>
+      </div>
     </SettingsPage>
   );
 }

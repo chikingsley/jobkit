@@ -27,7 +27,7 @@ describe("job position analyses", () => {
     };
     await testEnv.DB.batch([
       testEnv.DB.prepare(
-        `INSERT INTO jobs
+        `INSERT INTO job_listings
           (id,title,salary,description,apply_url,first_seen_at,updated_at)
          VALUES ('position-job',?,?,?,?,?,?)`
       ).bind(
@@ -39,17 +39,17 @@ describe("job position analyses", () => {
         timestamp
       ),
       testEnv.DB.prepare(
-        `INSERT INTO user_jobs
+        `INSERT INTO user_listing_states
           (id,user_id,job_id,created_at,updated_at)
          VALUES ('position-user-job',?,'position-job',?,?)`
       ).bind(userId, timestamp, timestamp),
       testEnv.DB.prepare(
-        `INSERT INTO jobs
+        `INSERT INTO job_listings
           (id,board,title,salary,description,apply_url,first_seen_at,updated_at)
          VALUES ('position-e2e-job','jobkit-e2e','Delivery test','','',?,?,?)`
       ).bind("https://example.test/test", timestamp, timestamp),
       testEnv.DB.prepare(
-        `INSERT INTO user_jobs
+        `INSERT INTO user_listing_states
           (id,user_id,job_id,created_at,updated_at)
          VALUES ('position-e2e-user-job',?,'position-e2e-job',?,?)`
       ).bind(userId, timestamp, timestamp),

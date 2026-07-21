@@ -13,13 +13,6 @@ import { toast } from "sonner";
 import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { CampaignActivity } from "@/features/campaigns/activity";
@@ -68,14 +61,11 @@ export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
       list={
         <>
           <div className="flex items-center justify-between border-b px-4 py-3">
-            <div>
-              <h2 className="font-semibold text-sm">Campaigns</h2>
-              <p className="text-muted-foreground text-xs">
-                {campaigns?.length
-                  ? `${campaigns.length} active and past campaign${campaigns.length === 1 ? "" : "s"}`
-                  : "Choose markets and build a live outreach pool"}
-              </p>
-            </div>
+            <p className="text-muted-foreground text-xs">
+              {campaigns?.length
+                ? `${campaigns.length} campaign${campaigns.length === 1 ? "" : "s"}`
+                : "No campaigns"}
+            </p>
             <div className="flex items-center gap-1">
               <Button
                 aria-label="Markets"
@@ -152,9 +142,6 @@ function CampaignListItem({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="truncate font-medium text-sm">{campaign.name}</div>
-          <div className="mt-0.5 truncate text-muted-foreground text-xs">
-            {campaign.markets.map((market) => market.countryName).join(" · ")}
-          </div>
         </div>
         <StatusBadge status={campaign.status} />
       </div>
@@ -296,10 +283,7 @@ function CampaignDetailView({
                 <StatusBadge status={campaign.status} />
               </div>
               <p className="mt-1 text-muted-foreground text-sm">
-                {campaign.markets
-                  .map((market) => market.countryName)
-                  .join(" · ")}{" "}
-                · up to {campaign.dailyPace.toLocaleString()} per day · pause
+                Up to {campaign.dailyPace.toLocaleString()} per day · pause
                 after {campaign.stopAfterHumanReplies.toLocaleString()} human
                 replies
               </p>
@@ -314,17 +298,9 @@ function CampaignDetailView({
           ) : null}
 
           {campaign.liveDeliveryEnabled ? null : (
-            <Card>
-              <CardHeader>
-                <CardTitle>Live delivery is locked</CardTitle>
-                <CardDescription>
-                  Campaign setup, target review, Codex generation, revision,
-                  packet capture, and simulated replies remain available. A
-                  separate database authorization is required before JobKit can
-                  start or resume Gmail delivery.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <p className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950 text-sm dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+              Live delivery is locked. Review and simulation remain available.
+            </p>
           )}
 
           <dl
@@ -355,51 +331,37 @@ function CampaignDetailView({
           <CampaignActivity replies={campaign.replies} runs={campaign.runs} />
 
           {campaign.status === "preparing" ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Evaluating the campaign pool</CardTitle>
-                <CardDescription>
-                  JobKit is applying the same profile, preference,
-                  qualification, and requirement evaluator used in Jobs. The
-                  campaign becomes reviewable when every posted opportunity has
-                  a stored match result.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <p
+              className="border-y py-4 text-muted-foreground text-sm"
+              role="status"
+            >
+              Evaluating the campaign pool…
+            </p>
           ) : null}
 
           {campaign.status === "draft" ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Ready for calibration</CardTitle>
-                <CardDescription>
-                  {campaign.firstFiveRequired
-                    ? "JobKit will sample up to five distinct deliveries across the selected markets and routes. Nothing is sent during calibration."
-                    : "This campaign does not require first-five review. Prepare it for launch without sending anything."}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  disabled={Boolean(busy)}
-                  onClick={() => void action("begin_calibration")}
-                >
-                  <MailCheck />
-                  {campaign.firstFiveRequired
-                    ? "Review the first five"
-                    : "Prepare campaign"}
-                </Button>
-              </CardContent>
-            </Card>
+            <section className="flex flex-wrap items-center justify-between gap-3 border-y py-4">
+              <p className="text-muted-foreground text-sm">
+                {campaign.firstFiveRequired
+                  ? "Review sample messages before launch."
+                  : "Prepare this campaign for launch."}
+              </p>
+              <Button
+                disabled={Boolean(busy)}
+                onClick={() => void action("begin_calibration")}
+              >
+                <MailCheck />
+                {campaign.firstFiveRequired
+                  ? "Review the first five"
+                  : "Prepare campaign"}
+              </Button>
+            </section>
           ) : null}
 
           {campaign.dispatches.length > 0 ? (
             <section className="grid gap-3">
               <div>
                 <h2 className="font-semibold">Calibration and delivery</h2>
-                <p className="text-muted-foreground text-sm">
-                  Each dispatch is one recipient interaction. ANESL references
-                  are bundled into one instruction-compliant email.
-                </p>
               </div>
               {campaign.dispatches.map((dispatch, index) => (
                 <CampaignDispatchCard
@@ -426,12 +388,11 @@ function CampaignDetailView({
               <div>
                 <h2 className="font-semibold">Campaign pool</h2>
                 <p className="text-muted-foreground text-sm">
-                  Showing {targets.length.toLocaleString()} of{" "}
+                  {targets.length.toLocaleString()} of{" "}
                   {(
                     targetPage?.total ?? campaign.counts.total
                   ).toLocaleString()}{" "}
-                  stored targets. Pagination changes the view, never the
-                  campaign pool.
+                  targets
                 </p>
               </div>
               <Button
@@ -443,21 +404,19 @@ function CampaignDetailView({
                 <RefreshCw />
               </Button>
             </div>
-            <Card>
-              <CardContent className="p-0">
-                {targets.map((target, index) => (
-                  <div key={target.id}>
-                    {index > 0 ? <Separator /> : null}
-                    <TargetRow target={target} />
-                  </div>
-                ))}
-                {targets.length === 0 ? (
-                  <p className="px-4 py-10 text-center text-muted-foreground text-sm">
-                    No targets are stored in this campaign.
-                  </p>
-                ) : null}
-              </CardContent>
-            </Card>
+            <div className="overflow-hidden rounded-lg border">
+              {targets.map((target, index) => (
+                <div key={target.id}>
+                  {index > 0 ? <Separator /> : null}
+                  <TargetRow target={target} />
+                </div>
+              ))}
+              {targets.length === 0 ? (
+                <p className="px-4 py-10 text-center text-muted-foreground text-sm">
+                  No targets are stored in this campaign.
+                </p>
+              ) : null}
+            </div>
             {targetPage?.hasMore ? (
               <Button
                 disabled={busy === "targets"}
@@ -520,6 +479,9 @@ function CampaignActions({
 }
 
 function TargetRow({ target }: { target: CampaignTarget }) {
+  const holdReason = target.holdReason.startsWith("Campaign matching result:")
+    ? null
+    : target.holdReason;
   return (
     <div className="flex items-start justify-between gap-4 px-4 py-3">
       <div className="min-w-0">
@@ -531,19 +493,13 @@ function TargetRow({ target }: { target: CampaignTarget }) {
           {target.routeStrategy === "anesl_bundle" ? (
             <Badge variant="outline">ANESL</Badge>
           ) : null}
-          {target.matchLabel ? (
-            <Badge variant="outline">
-              {target.matchLabel}
-              {target.matchScore === null ? "" : ` · ${target.matchScore}`}
-            </Badge>
-          ) : null}
         </div>
         <p className="mt-1 text-muted-foreground text-xs">
           {target.description || target.destination || target.countryCode}
         </p>
-        {target.holdReason ? (
+        {holdReason ? (
           <p className="mt-1 text-amber-700 text-xs dark:text-amber-300">
-            {target.holdReason}
+            {holdReason}
           </p>
         ) : null}
       </div>

@@ -1,38 +1,16 @@
-import { Check, CircleHelp, ExternalLink, FileText } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Banknote, BriefcaseBusiness, Gift, MapPin } from "lucide-react";
+import type { ComponentType } from "react";
 import { ApplicationAction } from "@/features/jobs/application-action";
 import { ApplicationDelivery } from "@/features/jobs/application-delivery";
-import { compensationDisplay } from "@/features/jobs/compensation";
-import { questionsFor } from "@/features/jobs/content";
+import { createJobDisplayFacts } from "@/features/jobs/display-facts";
 import { DraftEditor } from "@/features/jobs/draft-editor";
-import {
-  formatStatedHourlyUsd,
-  housingLabel,
-  listedHourlyValueUsd,
-  statedHourlyValueUsd,
-} from "@/features/jobs/economics";
 import { humanize } from "@/features/jobs/format";
-import { JobMarketContext } from "@/features/jobs/market-context";
 import { MatchPanel } from "@/features/jobs/match";
+import { NormalizedJobDescription } from "@/features/jobs/normalized-description";
 import { PositionAnalysis } from "@/features/jobs/position-analysis";
-import { SourceDescription } from "@/features/jobs/source-description";
 import type { DraftMutationResult, FxData, Job } from "@/features/jobs/types";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
 import type { JobMatch } from "@/profile-types";
-
-const boardLabels: Record<string, string> = {
-  "eslcafe-modern": "ESL Cafe",
-  seriousteachers: "Serious Teachers",
-};
 
 function deliveryStatus(job: Job) {
   const attempt = job.emailAttempt;
@@ -46,6 +24,66 @@ function deliveryStatus(job: Job) {
     return attempt.status;
   }
   return job.draft ? job.draft.status : "not generated";
+}
+
+function ApplicationSection({
+  busy,
+  instruction,
+  job,
+  onAction,
+  onDraftAction,
+  onInstruction,
+}: {
+  busy: string;
+  instruction: string;
+  job: Job;
+  onAction: (path: string, body?: object) => Promise<void>;
+  onDraftAction: (
+    path: string,
+    options: { body?: object; method?: "POST" | "PUT" }
+  ) => Promise<DraftMutationResult | null>;
+  onInstruction: (value: string) => void;
+}) {
+  const hasEmailRoute = job.applicationRoutes.some(
+    (route) => route.kind === "email"
+  );
+  if (!job.draft) {
+    return (
+      <section className="mt-7 flex justify-end border-t pt-6">
+        <ApplicationAction busy={busy} job={job} onAction={onAction} />
+      </section>
+    );
+  }
+
+  return (
+    <section className="mt-7 border-t pt-6">
+      <div className="flex items-center justify-between gap-4">
+        <h3 className="font-semibold">Application message</h3>
+        <span className="text-muted-foreground text-xs">
+          {humanize(deliveryStatus(job))}
+        </span>
+      </div>
+      <div className="mt-3 flex flex-col gap-4">
+        {hasEmailRoute ? <ApplicationDelivery job={job} /> : null}
+        <DraftEditor
+          busy={
+            Boolean(busy) ||
+            deliveryStatus(job) === "sending" ||
+            job.draftTask?.status === "queued" ||
+            job.draftTask?.status === "claimed"
+          }
+          draft={job.draft}
+          instruction={instruction}
+          onDraftAction={onDraftAction}
+          onInstruction={onInstruction}
+          resourcePath={`/api/jobs/${job.id}`}
+        />
+        <div className="flex justify-end pt-1">
+          <ApplicationAction busy={busy} job={job} onAction={onAction} />
+        </div>
+      </div>
+    </section>
+  );
 }
 
 export function JobDetail({
@@ -79,171 +117,115 @@ export function JobDetail({
     label: string;
   }) => Promise<void>;
 }) {
-  const salary = compensationDisplay(job.compensation, fx);
-  const hourly =
-    (job.matchFacts
-      ? statedHourlyValueUsd(job.matchFacts.economics, fx)
-      : null) ?? listedHourlyValueUsd(job.compensation, fx);
-  const housing = housingLabel(
-    job.matchFacts?.benefits ?? [],
-    job.matchFacts?.economics
-  );
-  const questions = questionsFor(job);
+  const facts = createJobDisplayFacts(job, fx, match);
   return (
-    <div className="mx-auto w-full max-w-5xl p-4 sm:p-6 lg:p-8">
-      <div className="flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <p className="font-medium text-primary text-xs">{job.country}</p>
-          <h2 className="mt-1 text-balance font-semibold text-2xl tracking-tight sm:text-3xl">
-            {job.title}
-          </h2>
-          <p className="mt-2 text-muted-foreground text-sm">
-            {job.company || "Employer not named"}
-            {job.location ? ` · ${job.location}` : ""}
-          </p>
-        </div>
-        <Button
-          nativeButton={false}
-          render={
-            <a
-              href={job.sourceUrl || job.applyUrl}
-              rel="noreferrer"
-              target="_blank"
-            />
-          }
-          variant="outline"
-        >
-          View original
-          <ExternalLink />
-        </Button>
-      </div>
+    <div className="mx-auto w-full max-w-4xl px-4 py-5 sm:px-6 sm:py-6">
+      <header className="min-w-0">
+        <h2 className="text-balance font-semibold text-2xl tracking-tight">
+          {job.title}
+        </h2>
+        <p className="mt-1 text-muted-foreground text-sm">{facts.employer}</p>
+      </header>
 
-      <div className="flex flex-wrap gap-2 py-4">
-        <Badge variant="secondary">{salary.primary}</Badge>
-        {salary.usd ? <Badge variant="outline">{salary.usd}</Badge> : null}
-        {hourly ? (
-          <Badge variant="outline">{formatStatedHourlyUsd(hourly)}</Badge>
-        ) : null}
-        {housing ? <Badge variant="outline">{housing}</Badge> : null}
-        <Badge variant="outline">
-          {boardLabels[job.board] ?? humanize(job.board)}
-        </Badge>
-        <Badge variant="outline">Draft v{job.draft?.version}</Badge>
-      </div>
-
-      <JobMarketContext job={job} />
-
-      {job.positionAnalysis ? (
-        <PositionAnalysis analysis={job.positionAnalysis} />
+      {facts.compensationWarning ? (
+        <p className="mt-5 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
+          {facts.compensationWarning}
+        </p>
       ) : null}
+
+      <JobDetails facts={facts} job={job} />
 
       {match ? (
         <MatchPanel
           busyClaimKey={busyClaimKey}
           match={match}
           onQualificationClaim={onQualificationClaim}
+          summary={facts.matchSummary}
         />
       ) : null}
 
-      {salary.warning ? (
-        <p className="mt-5 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm">
-          {salary.warning}
-        </p>
+      {job.positionAnalysis ? (
+        <PositionAnalysis analysis={job.positionAnalysis} />
       ) : null}
 
-      {job.compensation.notes.length ? (
-        <Card className="mt-5">
-          <CardHeader>
-            <CardTitle>Compensation details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2.5 text-foreground/80 text-sm leading-6">
-              {job.compensation.notes.map((note) => (
-                <li className="flex gap-2.5" key={note}>
-                  <Check className="mt-1.5 size-3.5 shrink-0 text-primary" />
-                  {note}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle>Open questions</CardTitle>
-          <CardDescription>
-            Details worth confirming with the employer.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2.5 text-foreground/80 text-sm leading-6">
-            {questions.map((question) => (
-              <li className="flex gap-2.5" key={question}>
-                <CircleHelp className="mt-1.5 size-3.5 shrink-0 text-muted-foreground" />
-                {question}
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
-
-      <details
-        className="mt-4 rounded-xl border bg-background px-4 py-3 text-sm"
-        open
-      >
-        <summary className="cursor-pointer font-medium">
-          Full original job description
-        </summary>
-        <SourceDescription
+      <section className="mt-5 border-t pt-4 text-sm">
+        <h3 className="font-semibold">Full job description</h3>
+        <NormalizedJobDescription
+          analysis={
+            job.analysisStatus.content === "current"
+              ? job.contentAnalysis
+              : null
+          }
           description={job.description}
           routes={job.applicationRoutes}
         />
-      </details>
+      </section>
 
-      <Card className="mt-8">
-        <CardHeader>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="size-4 text-muted-foreground" />
-                Application message
-              </CardTitle>
-              <CardDescription className="mt-1">
-                Review the exact message that will be submitted.
-              </CardDescription>
-            </div>
-            <Badge
-              variant={
-                job.draft?.status === "approved" ? "default" : "secondary"
-              }
-            >
-              {humanize(deliveryStatus(job))}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <ApplicationDelivery job={job} />
-          {job.draft ? (
-            <DraftEditor
-              busy={
-                Boolean(busy) ||
-                deliveryStatus(job) === "sending" ||
-                job.draftTask?.status === "queued" ||
-                job.draftTask?.status === "claimed"
-              }
-              draft={job.draft}
-              instruction={instruction}
-              onDraftAction={onDraftAction}
-              onInstruction={onInstruction}
-              resourcePath={`/api/jobs/${job.id}`}
-            />
-          ) : null}
-        </CardContent>
-        <CardFooter className="justify-end">
-          <ApplicationAction busy={busy} job={job} onAction={onAction} />
-        </CardFooter>
-      </Card>
+      <ApplicationSection
+        busy={busy}
+        instruction={instruction}
+        job={job}
+        onAction={onAction}
+        onDraftAction={onDraftAction}
+        onInstruction={onInstruction}
+      />
     </div>
+  );
+}
+
+function JobDetails({
+  facts,
+  job,
+}: {
+  facts: ReturnType<typeof createJobDisplayFacts>;
+  job: Job;
+}) {
+  const employment = job.matchFacts?.employmentTypes
+    .map((item) => humanize(item.value))
+    .join(", ");
+  const benefits = job.matchFacts?.benefits
+    .map((item) => `${humanize(item.value)} ${item.level}`)
+    .join(", ");
+  const items: Array<{
+    icon: ComponentType<{ className?: string }>;
+    label: string;
+    value: string;
+  }> = [
+    {
+      icon: Banknote,
+      label: "Compensation",
+      value: [facts.compensationPrimary, ...facts.compensationSecondary].join(
+        " · "
+      ),
+    },
+    { icon: MapPin, label: "Location", value: facts.location },
+  ];
+  if (employment) {
+    items.push({
+      icon: BriefcaseBusiness,
+      label: "Employment",
+      value: employment,
+    });
+  }
+  if (benefits) {
+    items.push({ icon: Gift, label: "Benefits", value: benefits });
+  }
+  return (
+    <section className="mt-6 border-t pt-5">
+      <h3 className="font-semibold">Job details</h3>
+      <dl className="mt-2 grid gap-x-10 sm:grid-cols-2">
+        {items.map((item) => (
+          <div className="flex gap-3 border-b py-3" key={item.label}>
+            <item.icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+            <div className="min-w-0">
+              <dt className="font-medium text-muted-foreground text-xs">
+                {item.label}
+              </dt>
+              <dd className="mt-1 text-sm leading-5">{item.value}</dd>
+            </div>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }

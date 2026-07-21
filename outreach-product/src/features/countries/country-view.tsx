@@ -68,10 +68,7 @@ export function CountryView({ request }: { request: ApiRequest }) {
 
   if (isLoading || !data) {
     return (
-      <SettingsPage
-        description="Loading jobs, schools, and campaign activity."
-        title="Country"
-      >
+      <SettingsPage title="Country">
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
             Loading country…
@@ -82,13 +79,10 @@ export function CountryView({ request }: { request: ApiRequest }) {
   }
 
   return (
-    <SettingsPage
-      description="Open positions and direct school outreach stay separate while sharing one campaign policy."
-      title={data.countryName}
-    >
+    <SettingsPage title={data.countryName}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Button onClick={() => navigate("/campaigns/markets")} variant="ghost">
-          <ArrowLeft /> Countries
+          <ArrowLeft /> Markets
         </Button>
         <div className="flex gap-2">
           <Input
@@ -168,20 +162,10 @@ function OpportunityCard({
           <Badge variant="outline">{opportunity.board}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="flex items-center justify-between gap-3">
+      <CardContent className="flex items-center gap-3">
         <span className="text-muted-foreground text-xs">
           {opportunity.userStatus ?? "Not reviewed"}
         </span>
-        <Button
-          nativeButton={false}
-          render={
-            <a href={opportunity.sourceUrl} rel="noreferrer" target="_blank" />
-          }
-          size="sm"
-          variant="ghost"
-        >
-          Source <ExternalLink />
-        </Button>
       </CardContent>
     </Card>
   );
@@ -267,14 +251,9 @@ function ActivitySection({
   const navigate = useNavigate();
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Campaigns</CardTitle>
-          <CardDescription>
-            Saved target sets and execution mode.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3">
+      <section className="grid content-start gap-3 border-t pt-4">
+        <h2 className="font-semibold">Campaigns</h2>
+        <div className="grid gap-3">
           {campaigns.length > 0 ? (
             campaigns.map((campaign) => (
               <div className="rounded-lg border p-3" key={campaign.id}>
@@ -304,16 +283,11 @@ function ActivitySection({
               No campaigns yet.
             </div>
           )}
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Country refreshes</CardTitle>
-          <CardDescription>
-            Discovery, verification, and coverage audit.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3">
+        </div>
+      </section>
+      <section className="grid content-start gap-3 border-t pt-4">
+        <h2 className="font-semibold">Country refreshes</h2>
+        <div className="grid gap-3">
           {sweeps.length > 0 ? (
             sweeps.map((sweep) => (
               <div className="rounded-lg border p-3" key={sweep.id}>
@@ -338,8 +312,8 @@ function ActivitySection({
               No refreshes yet.
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }

@@ -172,10 +172,7 @@ export function DocumentsView({
   }
 
   return (
-    <SettingsPage
-      description="Private files stored in R2 for applications and future email attachments."
-      title="Application documents"
-    >
+    <SettingsPage>
       {selected ? null : (
         <div className="mb-4 grid gap-3 md:grid-cols-2">
           {packets.map((packet) => (
@@ -214,10 +211,6 @@ export function DocumentsView({
                     <span>{documentCategoryLabel(missing)} missing</span>
                   </div>
                 ))}
-                <p className="pt-2 text-muted-foreground text-xs">
-                  This preset chooses email attachments. It does not decide
-                  whether you qualify for a job.
-                </p>
                 {packet.isDefault ? null : (
                   <Button
                     className="mt-1 w-fit"
@@ -235,58 +228,56 @@ export function DocumentsView({
       )}
 
       {selected ? null : (
-        <Card className="mb-4">
-          <CardContent className="py-3">
-            <Field orientation="responsive">
-              <FieldContent>
-                <FieldTitle>Upload document</FieldTitle>
-                <FieldDescription>
-                  PDF, DOCX, JPG, or PNG · maximum 10 MB.
-                </FieldDescription>
-              </FieldContent>
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-                <Select
-                  items={[...documentCategories]}
-                  onValueChange={(value) => setCategory(String(value))}
-                  value={category}
+        <div className="mb-4 border-y py-3">
+          <Field orientation="responsive">
+            <FieldContent>
+              <FieldTitle>Upload document</FieldTitle>
+              <FieldDescription>
+                PDF, DOCX, JPG, or PNG · maximum 10 MB.
+              </FieldDescription>
+            </FieldContent>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <Select
+                items={[...documentCategories]}
+                onValueChange={(value) => setCategory(String(value))}
+                value={category}
+              >
+                <SelectTrigger
+                  aria-label="Document category"
+                  className="w-full sm:w-60"
                 >
-                  <SelectTrigger
-                    aria-label="Document category"
-                    className="w-full sm:w-60"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {documentCategories.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <label className={buttonVariants()} htmlFor="document-upload">
-                  <Upload />
-                  {uploading ? "Uploading…" : "Choose file"}
-                  <input
-                    accept=".pdf,.docx,.jpg,.jpeg,.png"
-                    className="sr-only"
-                    disabled={uploading}
-                    id="document-upload"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) {
-                        void upload(file);
-                      }
-                    }}
-                    type="file"
-                  />
-                </label>
-              </div>
-            </Field>
-          </CardContent>
-        </Card>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {documentCategories.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <label className={buttonVariants()} htmlFor="document-upload">
+                <Upload />
+                {uploading ? "Uploading…" : "Choose file"}
+                <input
+                  accept=".pdf,.docx,.jpg,.jpeg,.png"
+                  className="sr-only"
+                  disabled={uploading}
+                  id="document-upload"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) {
+                      void upload(file);
+                    }
+                  }}
+                  type="file"
+                />
+              </label>
+            </div>
+          </Field>
+        </div>
       )}
 
       <div>

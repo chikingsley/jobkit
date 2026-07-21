@@ -32,7 +32,7 @@ export async function ingestInventoryJob(
   const existing = await db
     .prepare(
       `SELECT source_content_hash,inventory_source_id
-         FROM jobs WHERE id=?`
+         FROM job_listings WHERE id=?`
     )
     .bind(job.id)
     .first<{
@@ -54,7 +54,7 @@ export async function ingestInventoryJob(
   if (outcome === "unchanged") {
     await db
       .prepare(
-        `UPDATE jobs
+        `UPDATE job_listings
             SET inventory_source_id=?,inventory_status='active',
                 source_last_seen_at=?,inventory_run_id=?
           WHERE id=?`
@@ -91,7 +91,7 @@ async function upsertInventoryJob(
   const compensationSource = compensationSourceFor(job);
   await db
     .prepare(
-      `INSERT INTO jobs (
+      `INSERT INTO job_listings (
         id,board,title,company,contact_name,country,location,salary,description,
         source_url,apply_url,employer_id,source_reference,first_seen_at,updated_at,
         compensation_display,compensation_amount_min,compensation_amount_max,

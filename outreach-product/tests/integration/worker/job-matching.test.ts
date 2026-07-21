@@ -13,8 +13,8 @@ const testEnv = env as TestEnv;
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("job matching facts", () => {
-  it("returns versioned evidence facts through the owned job workspace", async () => {
-    const { cookie, userId } = await createAuthenticatedUser(
+  it("returns global listing facts with profile-specific match summaries", async () => {
+    const { cookie } = await createAuthenticatedUser(
       "job-matching@example.test"
     );
     const jobId = "matching-job";
@@ -60,7 +60,7 @@ describe("job matching facts", () => {
     };
     await testEnv.DB.batch([
       testEnv.DB.prepare(
-        "INSERT INTO jobs (id,title,apply_url,first_seen_at,updated_at) VALUES (?,?,?,?,?)"
+        "INSERT INTO job_listings (id,title,apply_url,first_seen_at,updated_at) VALUES (?,?,?,?,?)"
       ).bind(
         jobId,
         "English Teacher",
@@ -68,9 +68,6 @@ describe("job matching facts", () => {
         timestamp,
         timestamp
       ),
-      testEnv.DB.prepare(
-        "INSERT INTO user_jobs (id,user_id,job_id,created_at,updated_at) VALUES (?,?,?,?,?)"
-      ).bind(crypto.randomUUID(), userId, jobId, timestamp, timestamp),
       testEnv.DB.prepare(
         `INSERT INTO contacts
           (id,display_name,organization_name,role,status,created_at,updated_at)
@@ -110,15 +107,40 @@ describe("job matching facts", () => {
         applicationRoutes: Array<{
           contact: { id: string; relatedListingCount: number };
         }>;
+        analysisStatus: {
+          content: string;
+          matchFacts: string;
+          positions: string;
+        };
         id: string;
+        positionCount: number;
       }>;
-      matches: Record<string, { label: string }>;
+      matches: Record<
+        string,
+        {
+          confirmedRequirements: number;
+          label: string;
+          totalRequirements: number;
+        }
+      >;
     };
 
     expect(response.status).toBe(200);
     expect(body.jobs).toHaveLength(1);
-    expect(body.jobs[0]).toMatchObject({ id: jobId });
-    expect(body.matches[jobId]?.label).toBe("Needs verification");
+    expect(body.jobs[0]).toMatchObject({
+      analysisStatus: {
+        content: "pending",
+        matchFacts: "current",
+        positions: "pending",
+      },
+      id: jobId,
+      positionCount: 0,
+    });
+    expect(body.matches[jobId]).toMatchObject({
+      confirmedRequirements: 0,
+      label: "Needs verification",
+      totalRequirements: 1,
+    });
     expect(body.jobs[0]?.applicationRoutes[0]?.contact).toMatchObject({
       id: "contact-test",
       relatedListingCount: 1,
@@ -129,9 +151,23 @@ describe("job matching facts", () => {
       { headers: { cookie } }
     );
     const detail = (await detailResponse.json()) as {
-      job: { matchFacts: typeof facts };
+      job: {
+        analysisStatus: {
+          content: string;
+          matchFacts: string;
+          positions: string;
+        };
+        contentAnalysis: unknown;
+        matchFacts: typeof facts;
+      };
     };
     expect(detailResponse.status).toBe(200);
     expect(detail.job.matchFacts).toEqual(facts);
+    expect(detail.job.contentAnalysis).toBeNull();
+    expect(detail.job.analysisStatus).toEqual({
+      content: "pending",
+      matchFacts: "current",
+      positions: "pending",
+    });
   });
 });

@@ -34,7 +34,7 @@ export async function listAneslPositions(
               COALESCE(uj.priority,0) priority,
               mf.facts_json,mf.schema_version match_facts_schema_version,
               COUNT(*) OVER() total_count
-         FROM jobs j
+         FROM job_listings j
          JOIN application_routes ar ON ar.id=(
            SELECT candidate.id FROM application_routes candidate
             WHERE candidate.job_id=j.id AND candidate.kind='email'
@@ -42,7 +42,7 @@ export async function listAneslPositions(
               AND lower(trim(candidate.destination))=?
             ORDER BY candidate.updated_at DESC LIMIT 1
          )
-         LEFT JOIN user_jobs uj ON uj.user_id=? AND uj.job_id=j.id
+         LEFT JOIN user_listing_states uj ON uj.user_id=? AND uj.job_id=j.id
          LEFT JOIN job_match_facts mf ON mf.job_id=j.id
         WHERE j.inventory_status='active' AND lower(j.board)=?
           AND COALESCE(uj.status,'new') NOT IN ('applied','ignored')
@@ -54,7 +54,7 @@ export async function listAneslPositions(
             SELECT 1 FROM application_bundle_targets existing_target
             JOIN application_bundles existing_bundle
               ON existing_bundle.id=existing_target.bundle_id
-            JOIN user_jobs existing_user_job
+            JOIN user_listing_states existing_user_job
               ON existing_user_job.id=existing_target.user_job_id
             WHERE existing_target.user_job_id=uj.id
               AND existing_bundle.user_id=?
@@ -88,12 +88,19 @@ export async function listAneslPositions(
 }
 
 function toAneslPosition(row: Record<string, unknown>): Job {
+  const matchFacts = matchFactsFromRow(row);
   return {
+    analysisStatus: {
+      content: "pending",
+      matchFacts: matchFacts ? "current" : "pending",
+      positions: "pending",
+    },
     applicationRoutes: [],
     applyUrl: String(row.apply_url),
     board: String(row.board),
     company: String(row.company),
     compensation: compensationFromRow(row),
+    contentAnalysis: null,
     country: String(row.country),
     description: String(row.description),
     draft: null,
@@ -102,7 +109,7 @@ function toAneslPosition(row: Record<string, unknown>): Job {
     id: String(row.id),
     location: String(row.location),
     marketSegments: JSON.parse(String(row.market_segments_json)),
-    matchFacts: matchFactsFromRow(row),
+    matchFacts,
     messageRoute: String(row.message_route) as Job["messageRoute"],
     opportunityScope: String(row.opportunity_scope) as Job["opportunityScope"],
     positionAnalysis: null,

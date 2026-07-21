@@ -484,7 +484,7 @@ function emptySweepOutput() {
 async function seedPolandJob() {
   await testEnv.DB.batch([
     testEnv.DB.prepare(
-      `INSERT INTO jobs
+      `INSERT INTO job_listings
         (id,board,title,company,country,location,source_url,apply_url,
          first_seen_at,updated_at,opportunity_scope,market_segments_json,
          message_route)

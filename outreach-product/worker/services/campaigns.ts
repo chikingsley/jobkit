@@ -711,7 +711,7 @@ function campaignTargetSelect() {
                  ar.destination route_destination,
                  cp.value contact_destination
             FROM campaign_targets t
-            LEFT JOIN jobs j ON j.id=t.job_id
+            LEFT JOIN job_listings j ON j.id=t.job_id
             LEFT JOIN organizations o ON o.id=t.organization_id
             LEFT JOIN application_routes ar ON ar.id=t.route_id
             LEFT JOIN organization_contact_points cp ON cp.id=t.contact_point_id`;
@@ -833,7 +833,7 @@ async function materializeCountryTargets(
            END,
            CASE
              WHEN ar.id IS NULL THEN 'No active application route'
-             WHEN ar.kind<>'email' THEN 'Manual application route; open it from Jobs'
+             WHEN ar.kind<>'email' THEN 'Manual application route; open it from job_listings'
              WHEN json_array_length(?)>0 AND lower(j.board) NOT IN (
                SELECT lower(value) FROM json_each(?)
              ) THEN 'Board is outside the saved automation policy'
@@ -853,7 +853,7 @@ async function materializeCountryTargets(
              ELSE ''
            END,
            ?,?
-         FROM jobs j
+         FROM job_listings j
          LEFT JOIN application_routes ar ON ar.id=(
            SELECT candidate.id FROM application_routes candidate
             WHERE candidate.job_id=j.id AND candidate.status='active'

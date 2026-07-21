@@ -370,9 +370,9 @@ Campaigns may overlap in country and source inventory. Before execution, JobKit 
 
 ## 11. Data Model
 
-The existing `jobs` table remains the opportunity inventory root. Schools, contacts, qualification claims, application routes, messages, attempts, and events are separate entities rather than extra columns forced onto a job row.
+The hosted `job_listings` table is the global opportunity inventory root. `user_listing_states` stores each user's workflow status and priority for a listing. Schools, contacts, qualification claims, application routes, messages, attempts, and events remain separate entities rather than extra columns forced onto a listing row.
 
-### 11.1 Jobs
+### 11.1 Job listings
 
 The local ingestion inventory is keyed by:
 
@@ -380,7 +380,7 @@ The local ingestion inventory is keyed by:
 PRIMARY KEY (board, job_id)
 ```
 
-The hosted D1 table currently uses the board's stable ID as `jobs.id`. Before importing multiple sources, use an unambiguous hosted identifier such as `${board}:${job_id}` or store `board` and `source_job_id` under a unique constraint. Do not assume two boards cannot emit the same numeric ID.
+The hosted D1 table uses an unambiguous `job_listings.id`, normally `${board}:${job_id}` for board inventory. The board and source reference remain explicit fields because separate boards can emit the same native identifier.
 
 Important existing fields:
 

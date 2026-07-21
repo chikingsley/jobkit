@@ -77,7 +77,7 @@ export async function buildGmailMessagePayload(
             a.filename,a.object_key,a.content_type,
             a.size_bytes,a.r2_version,a.etag
        FROM application_drafts d
-       JOIN user_jobs uj ON uj.id=d.user_job_id
+       JOIN user_listing_states uj ON uj.id=d.user_job_id
        LEFT JOIN application_draft_attachments a ON a.draft_id=d.id
       WHERE d.id=? AND uj.user_id=? ORDER BY a.position`
   )

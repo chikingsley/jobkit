@@ -1,5 +1,6 @@
 import { APPLICATION_MESSAGE_TASK_TYPE } from "../../src/agent-tasks/application-message";
 import {
+  JOB_CONTENT_TASK_TYPE,
   JOB_MATCH_FACTS_TASK_TYPE,
   JOB_POSITION_TASK_TYPE,
 } from "../../src/agent-tasks/job-analysis";
@@ -26,8 +27,10 @@ import {
   failCountryTask,
 } from "./agent-tasks/country-sweep-adapter";
 import {
+  claimJobContentTask,
   claimJobMatchFactsTask,
   claimJobPositionTask,
+  completeJobContentTask,
   completeJobMatchFactsTask,
   completeJobPositionTask,
 } from "./agent-tasks/job-analysis-adapter";
@@ -77,6 +80,10 @@ export async function claimAgentTask(env: AppEnv, runner: AgentRunnerContext) {
     {
       claim: () => claimJobMatchFactsTask(env.DB, runner),
       family: "job_match_facts",
+    },
+    {
+      claim: () => claimJobContentTask(env.DB, runner),
+      family: "job_content",
     },
   ];
   const previousTaskType = await readLastAgentTaskType(env.DB, runner.id);
@@ -149,6 +156,14 @@ export async function completeAgentTask(
       runId,
       rawOutput
     );
+  } else if (run.task_type === JOB_CONTENT_TASK_TYPE) {
+    domainResult = await completeJobContentTask(
+      env,
+      runner,
+      run,
+      runId,
+      rawOutput
+    );
   } else if (
     run.task_type === TEST_LAB_TASK_TYPE ||
     run.task_type === TEST_LAB_DOCUMENT_OCR_TASK_TYPE
@@ -198,7 +213,8 @@ export async function failAgentTask(
     return { domainResult, runId };
   } else if (
     run.task_type !== JOB_POSITION_TASK_TYPE &&
-    run.task_type !== JOB_MATCH_FACTS_TASK_TYPE
+    run.task_type !== JOB_MATCH_FACTS_TASK_TYPE &&
+    run.task_type !== JOB_CONTENT_TASK_TYPE
   ) {
     throw new AgentTaskError("Agent task type is not supported", 409);
   }
@@ -218,6 +234,9 @@ function taskFamilyForType(taskType: string | null): AgentTaskFamily | null {
   }
   if (taskType === JOB_MATCH_FACTS_TASK_TYPE) {
     return "job_match_facts";
+  }
+  if (taskType === JOB_CONTENT_TASK_TYPE) {
+    return "job_content";
   }
   if (taskType === PROFILE_IMPORT_TASK_TYPE) {
     return "profile_import";

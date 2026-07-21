@@ -3,15 +3,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { SettingsPage } from "@/components/settings-page";
+import { SettingsSection } from "@/components/settings-section";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -85,53 +78,34 @@ export function AutomationView({ request }: { request: ApiRequest }) {
 
   if (isLoading) {
     return (
-      <SettingsPage
-        description="Choose what can run, which channels require review, and user-configured pacing."
-        title="Automation"
-      >
-        <Card>
-          <CardContent className="py-10 text-center text-muted-foreground">
-            Loading automation policy…
-          </CardContent>
-        </Card>
+      <SettingsPage>
+        <p className="py-10 text-center text-muted-foreground" role="status">
+          Loading automation policy…
+        </p>
       </SettingsPage>
     );
   }
 
   return (
-    <SettingsPage
-      description="Choose what can run, which channels require review, and user-configured pacing. Campaigns keep a snapshot of these settings."
-      title="Automation"
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle>Global pause</CardTitle>
-          <CardDescription>
-            Pausing prevents new campaigns from using the automatic policy.
-            Existing drafts remain available for review.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <label
-            className="flex items-center justify-between gap-4 rounded-lg border p-3"
-            htmlFor="automation-paused"
-          >
-            <span>
-              <span className="block font-medium">Pause automation</span>
-              <span className="block text-muted-foreground text-sm">
-                Require an explicit review for new activity.
-              </span>
+    <SettingsPage>
+      <SettingsSection title="Global pause">
+        <label
+          className="flex items-center justify-between gap-4 rounded-lg border p-3"
+          htmlFor="automation-paused"
+        >
+          <span>
+            <span className="block font-medium">Pause automation</span>
+            <span className="block text-muted-foreground text-sm">
+              Require an explicit review for new activity.
             </span>
-            <Switch
-              checked={draft.paused}
-              id="automation-paused"
-              onCheckedChange={(checked) =>
-                update({ ...draft, paused: checked })
-              }
-            />
-          </label>
-        </CardContent>
-      </Card>
+          </span>
+          <Switch
+            checked={draft.paused}
+            id="automation-paused"
+            onCheckedChange={(checked) => update({ ...draft, paused: checked })}
+          />
+        </label>
+      </SettingsSection>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ChannelPolicyCard
@@ -157,14 +131,8 @@ export function AutomationView({ request }: { request: ApiRequest }) {
         }
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Automatic-send requirements</CardTitle>
-          <CardDescription>
-            These checks apply before any campaign target can leave review.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-5 md:grid-cols-2">
+      <SettingsSection title="Automatic-send requirements">
+        <div className="grid gap-5 md:grid-cols-2">
           <Field>
             <FieldLabel>Minimum match</FieldLabel>
             <Select
@@ -232,23 +200,21 @@ export function AutomationView({ request }: { request: ApiRequest }) {
               })
             }
           />
-        </CardContent>
-        <CardFooter className="justify-end gap-3">
-          {dirty ? (
-            <span className="text-muted-foreground text-sm">
-              Unsaved changes
-            </span>
-          ) : null}
-          <Button
-            disabled={!dirty || saving}
-            id="save-automation-policy"
-            onClick={() => void save()}
-          >
-            {draft.paused ? <Pause /> : <Save />}
-            {saving ? "Saving…" : "Save policy"}
-          </Button>
-        </CardFooter>
-      </Card>
+        </div>
+      </SettingsSection>
+      <div className="sticky bottom-0 z-10 flex justify-end gap-3 border-t bg-background/95 py-3 backdrop-blur">
+        {dirty ? (
+          <span className="text-muted-foreground text-sm">Unsaved changes</span>
+        ) : null}
+        <Button
+          disabled={!dirty || saving}
+          id="save-automation-policy"
+          onClick={() => void save()}
+        >
+          {draft.paused ? <Pause /> : <Save />}
+          {saving ? "Saving…" : "Save policy"}
+        </Button>
+      </div>
     </SettingsPage>
   );
 }
@@ -261,16 +227,12 @@ function FollowUpPolicyCard({
   onChange: (delays: number[]) => void;
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Follow-up drafts</CardTitle>
-        <CardDescription>
-          Choose each wait after the last sent message. When a wait is due and
-          no person has replied, Codex prepares an in-thread draft for review.
-          Leave the list empty to keep follow-ups off.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <SettingsSection title="Follow-up drafts">
+      <p className="mb-4 text-muted-foreground text-sm">
+        Choose each wait after the last sent message. When a wait is due and no
+        person has replied, Codex prepares a draft for review.
+      </p>
+      <div className="space-y-3">
         {delays.map((delay, index) => (
           <div
             className="flex items-end gap-3"
@@ -317,8 +279,8 @@ function FollowUpPolicyCard({
         >
           <Plus /> Add follow-up
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </SettingsSection>
   );
 }
 
@@ -336,12 +298,9 @@ function ChannelPolicyCard({
   title: string;
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-5 sm:grid-cols-2">
+    <SettingsSection title={title}>
+      <p className="mb-4 text-muted-foreground text-sm">{description}</p>
+      <div className="grid gap-5 sm:grid-cols-2">
         <Field>
           <FieldLabel>Behavior</FieldLabel>
           <Select
@@ -378,8 +337,8 @@ function ChannelPolicyCard({
             value={dailyLimit}
           />
         </Field>
-      </CardContent>
-    </Card>
+      </div>
+    </SettingsSection>
   );
 }
 

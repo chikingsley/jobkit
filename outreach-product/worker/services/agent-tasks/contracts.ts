@@ -34,6 +34,7 @@ export interface PreparedAgentTaskArtifact {
 export type AgentTaskFamily =
   | "application_message"
   | "country_sweep"
+  | "job_content"
   | "job_match_facts"
   | "job_position"
   | "profile_import"

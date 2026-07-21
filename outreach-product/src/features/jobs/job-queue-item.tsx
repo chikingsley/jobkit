@@ -1,30 +1,8 @@
 import { ChevronRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { compensationDisplay } from "@/features/jobs/compensation";
-import {
-  formatStatedHourlyUsd,
-  listedHourlyValueUsd,
-} from "@/features/jobs/economics";
-import { humanize } from "@/features/jobs/format";
-import { MatchBadge } from "@/features/jobs/match";
+import { createJobDisplayFacts } from "@/features/jobs/display-facts";
 import type { FxData, JobListItem } from "@/features/jobs/types";
-import { restrictedMarketSegments } from "@/features/organizations/market-segments";
 import { cn } from "@/lib/utils";
 import type { JobMatchSummary } from "@/profile-types";
-
-function currentEmailStatus(job: JobListItem) {
-  const attempt = job.emailAttempt;
-  if (!attempt) {
-    return;
-  }
-  if (
-    attempt.sendRequestedAt &&
-    ["approved", "claimed", "drafted", "sending"].includes(attempt.status)
-  ) {
-    return "sending";
-  }
-  return attempt.status;
-}
 
 export function JobQueueItem({
   active,
@@ -39,16 +17,11 @@ export function JobQueueItem({
   match?: JobMatchSummary;
   onSelect: () => void;
 }) {
-  const salary = compensationDisplay(job.compensation, fx);
-  const emailStatus = currentEmailStatus(job);
-  const hourly = job.statedHourly ?? listedHourlyValueUsd(job.compensation, fx);
-  const contact = job.applicationRoutes.find(
-    (route) => route.kind === "email" && route.status === "active"
-  )?.contact;
+  const facts = createJobDisplayFacts(job, fx, match);
   return (
     <button
       className={cn(
-        "group relative mb-1 w-full rounded-lg border border-transparent p-3 text-left transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "group relative mb-1 min-h-11 w-full rounded-lg border border-transparent p-3 text-left transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         active && "border-primary/30 bg-accent shadow-sm hover:bg-accent"
       )}
       onClick={onSelect}
@@ -56,47 +29,28 @@ export function JobQueueItem({
     >
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <MatchBadge match={match} />
-            {job.status === "new" ? null : (
-              <Badge variant="outline">{humanize(job.status)}</Badge>
-            )}
-            {emailStatus ? (
-              <Badge variant="secondary">Email {humanize(emailStatus)}</Badge>
-            ) : null}
-            {job.opportunityScope === "multi_position" ? (
-              <Badge variant="outline">Multiple positions</Badge>
-            ) : null}
-            {contact?.role === "board_intermediary" ? (
-              <Badge variant="outline">
-                Shared inbox · {contact.relatedListingCount.toLocaleString()}
-              </Badge>
-            ) : null}
-            {job.marketSegments.some((segment) =>
-              restrictedMarketSegments.has(segment)
-            ) ? (
-              <Badge variant="destructive">Center placements</Badge>
-            ) : null}
-          </div>
-          <h3 className="mt-2 line-clamp-2 font-semibold text-sm leading-snug">
+          <h3 className="line-clamp-2 font-semibold text-sm leading-snug">
             {job.title}
           </h3>
           <p className="mt-1 truncate text-muted-foreground text-xs">
-            {job.company || "Employer not named"}
+            {facts.employer}
           </p>
-          <p className="mt-2 text-muted-foreground text-xs">
-            {[job.location, job.country].filter(Boolean).join(" · ")}
+          <p className="mt-1 truncate text-muted-foreground text-xs">
+            {facts.location}
           </p>
-          <p className="mt-1 truncate font-medium text-xs">
-            {salary.usd ?? salary.primary}
+          <p className="mt-2 truncate font-medium text-xs">
+            {facts.compensationPrimary}
           </p>
-          {hourly || job.housing ? (
-            <p className="mt-1 truncate font-medium text-primary text-xs">
-              {[hourly ? formatStatedHourlyUsd(hourly) : null, job.housing]
-                .filter(Boolean)
-                .join(" ")}
+          {facts.compensationSecondary.length > 0 ? (
+            <p className="mt-1 truncate text-muted-foreground text-xs">
+              {facts.compensationSecondary.join(" · ")}
             </p>
           ) : null}
+          <p className="mt-2 truncate text-foreground/80 text-xs">
+            {[facts.matchSummary, facts.positionSummary, facts.applicationState]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
         </div>
         <ChevronRight
           className={cn(

@@ -96,7 +96,7 @@ describe("hosted inventory runs", () => {
     expect(generate.status).toBe(202);
     await expect(
       testEnv.DB.prepare(
-        "SELECT status FROM user_jobs WHERE user_id=? AND job_id=?"
+        "SELECT status FROM user_listing_states WHERE user_id=? AND job_id=?"
       )
         .bind(viewer.userId, firstJob.id)
         .first()
@@ -106,7 +106,7 @@ describe("hosted inventory runs", () => {
       "inventory-state-owner@example.test"
     );
     await testEnv.DB.prepare(
-      `INSERT INTO user_jobs
+      `INSERT INTO user_listing_states
         (id,user_id,job_id,status,priority,created_at,updated_at)
        VALUES (?,?,?,'review',0,?,?)`
     )
@@ -139,7 +139,7 @@ describe("hosted inventory runs", () => {
 
     expect(await jobUpdatedAt(firstJob.id)).toBe(firstTimestamp);
     await expect(
-      testEnv.DB.prepare("SELECT inventory_status FROM jobs WHERE id=?")
+      testEnv.DB.prepare("SELECT inventory_status FROM job_listings WHERE id=?")
         .bind(removedJob.id)
         .first()
     ).resolves.toEqual({ inventory_status: "closed" });
@@ -150,7 +150,7 @@ describe("hosted inventory runs", () => {
     ).resolves.toEqual({ status: "closed" });
     await expect(
       testEnv.DB.prepare(
-        "SELECT status FROM user_jobs WHERE user_id=? AND job_id=?"
+        "SELECT status FROM user_listing_states WHERE user_id=? AND job_id=?"
       )
         .bind(userId, removedJob.id)
         .first()
@@ -166,7 +166,7 @@ describe("hosted inventory runs", () => {
     await completeRun(runner.token, thirdRun, 1);
     expect(await jobUpdatedAt(firstJob.id)).not.toBe(firstTimestamp);
     await expect(
-      testEnv.DB.prepare("SELECT title FROM jobs WHERE id=?")
+      testEnv.DB.prepare("SELECT title FROM job_listings WHERE id=?")
         .bind(firstJob.id)
         .first()
     ).resolves.toEqual({ title: "Changed inventory title" });
@@ -190,7 +190,7 @@ describe("hosted inventory runs", () => {
     const emptyRun = await startRun(runner.token, sourceId, "append-2", 0, 0);
     await completeRun(runner.token, emptyRun, 0);
     await expect(
-      testEnv.DB.prepare("SELECT inventory_status FROM jobs WHERE id=?")
+      testEnv.DB.prepare("SELECT inventory_status FROM job_listings WHERE id=?")
         .bind(job.id)
         .first()
     ).resolves.toEqual({ inventory_status: "active" });
@@ -273,7 +273,9 @@ async function completeRun(
 }
 
 async function jobUpdatedAt(jobId: string) {
-  const row = await testEnv.DB.prepare("SELECT updated_at FROM jobs WHERE id=?")
+  const row = await testEnv.DB.prepare(
+    "SELECT updated_at FROM job_listings WHERE id=?"
+  )
     .bind(jobId)
     .first<{ updated_at: string }>();
   return row?.updated_at;

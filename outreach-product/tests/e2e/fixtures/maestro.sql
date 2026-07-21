@@ -10,7 +10,7 @@ WHERE user_id=(
   SELECT id FROM users WHERE email='maestro.local@jobkit.test'
 );
 
-INSERT INTO jobs (
+INSERT INTO job_listings (
   id, board, title, company, country, location, salary, description, source_url,
   apply_url, employer_id, first_seen_at, updated_at, compensation_display,
   compensation_amount_min, compensation_amount_max, compensation_currency,
@@ -32,7 +32,7 @@ INSERT INTO jobs (
   title=excluded.title,
   updated_at=excluded.updated_at;
 
-INSERT INTO jobs (
+INSERT INTO job_listings (
   id, board, title, company, country, location, salary, description, source_url,
   apply_url, employer_id, first_seen_at, updated_at, compensation_display,
   compensation_amount_min, compensation_amount_max, compensation_currency,
@@ -100,7 +100,7 @@ INSERT INTO organization_contact_points (
   status=excluded.status,
   updated_at=excluded.updated_at;
 
-INSERT INTO user_jobs (
+INSERT INTO user_listing_states (
   id, user_id, job_id, status, priority, created_at, updated_at
 )
 SELECT

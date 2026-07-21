@@ -1,7 +1,12 @@
+import {
+  JOB_CONTENT_ANALYSIS_SCHEMA_VERSION,
+  type JobContentAnalysis,
+} from "../../src/features/jobs/content-analysis";
 import type { JobPositionAnalysis } from "../../src/features/jobs/position-variants";
 import { JOB_POSITION_ANALYSIS_SCHEMA_VERSION } from "../../src/features/jobs/position-variants";
 import type { JobMatchFacts } from "../../src/features/matching/schema";
 import { JOB_MATCH_FACTS_SCHEMA_VERSION } from "../../src/features/matching/version";
+import { unsupportedContentEvidence } from "../ai/job-content-extraction";
 import {
   jobFactSource,
   jobSourceHash,
@@ -10,7 +15,7 @@ import {
 import { unsupportedPositionEvidence } from "../ai/job-position-extraction";
 import { jobMatchFactsStatement } from "../repositories/job-match-facts";
 
-export interface OwnedJobSource {
+export interface JobListingSource {
   company: string;
   description: string;
   salary: string;
@@ -32,20 +37,15 @@ export class JobAnalysisRecordError extends Error {
   }
 }
 
-export async function readOwnedJobSource(
-  db: D1Database,
-  userId: string,
-  jobId: string
-) {
+export async function readJobListingSource(db: D1Database, jobId: string) {
   const job = await db
     .prepare(
       `SELECT j.title,j.company,j.salary,j.description
-         FROM jobs j
-         JOIN user_jobs uj ON uj.job_id=j.id AND uj.user_id=?1
-        WHERE j.id=?2`
+         FROM job_listings j
+        WHERE j.id=?1`
     )
-    .bind(userId, jobId)
-    .first<OwnedJobSource>();
+    .bind(jobId)
+    .first<JobListingSource>();
   if (!job) {
     throw new JobAnalysisRecordError("Unknown job", 404);
   }
@@ -59,7 +59,6 @@ export async function readOwnedJobSource(
 
 export async function recordJobMatchFacts(
   db: D1Database,
-  userId: string,
   input: {
     facts: JobMatchFacts;
     jobId: string;
@@ -68,7 +67,7 @@ export async function recordJobMatchFacts(
     sourceHash: string;
   }
 ) {
-  const job = await readOwnedJobSource(db, userId, input.jobId);
+  const job = await readJobListingSource(db, input.jobId);
   await assertCurrentSource(job, input.sourceHash);
   const rejectedEvidence = unsupportedEvidence(input.facts, jobFactSource(job));
   if (rejectedEvidence.length > 0) {
@@ -91,7 +90,7 @@ export async function recordJobMatchFacts(
       JOB_MATCH_FACTS_SCHEMA_VERSION
     ),
     db
-      .prepare("UPDATE jobs SET market_segments_json=? WHERE id=?")
+      .prepare("UPDATE job_listings SET market_segments_json=? WHERE id=?")
       .bind(
         JSON.stringify(input.facts.marketSegments.map((fact) => fact.value)),
         input.jobId
@@ -102,7 +101,6 @@ export async function recordJobMatchFacts(
 
 export async function recordJobPositionAnalysis(
   db: D1Database,
-  userId: string,
   input: {
     analysis: JobPositionAnalysis;
     jobId: string;
@@ -111,7 +109,7 @@ export async function recordJobPositionAnalysis(
     sourceHash: string;
   }
 ) {
-  const job = await readOwnedJobSource(db, userId, input.jobId);
+  const job = await readJobListingSource(db, input.jobId);
   await assertCurrentSource(job, input.sourceHash);
   const rejectedEvidence = unsupportedPositionEvidence(
     input.analysis,
@@ -190,7 +188,61 @@ export async function recordJobPositionAnalysis(
   };
 }
 
-async function assertCurrentSource(job: OwnedJobSource, sourceHash: string) {
+export async function recordJobContentAnalysis(
+  db: D1Database,
+  input: {
+    content: JobContentAnalysis;
+    jobId: string;
+    modelId: string;
+    provider: string;
+    sourceHash: string;
+  }
+) {
+  const job = await readJobListingSource(db, input.jobId);
+  await assertCurrentSource(job, input.sourceHash);
+  const rejectedEvidence = unsupportedContentEvidence(
+    input.content,
+    jobFactSource(job)
+  );
+  if (rejectedEvidence.length > 0) {
+    throw new JobAnalysisRecordError(
+      `${rejectedEvidence.length} evidence ${rejectedEvidence.length === 1 ? "quote is" : "quotes are"} not present in the stored listing`,
+      422,
+      rejectedEvidence.slice(0, 10)
+    );
+  }
+  const timestamp = new Date().toISOString();
+  await db
+    .prepare(
+      `INSERT INTO job_content_analyses
+        (job_id,content_json,schema_version,model_provider,model_id,source_hash,
+         updated_at)
+       VALUES (?,?,?,?,?,?,?)
+       ON CONFLICT(job_id) DO UPDATE SET
+         content_json=excluded.content_json,
+         schema_version=excluded.schema_version,
+         model_provider=excluded.model_provider,
+         model_id=excluded.model_id,
+         source_hash=excluded.source_hash,
+         updated_at=excluded.updated_at`
+    )
+    .bind(
+      input.jobId,
+      JSON.stringify(input.content),
+      JOB_CONTENT_ANALYSIS_SCHEMA_VERSION,
+      input.provider,
+      input.modelId,
+      input.sourceHash,
+      timestamp
+    )
+    .run();
+  return {
+    jobId: input.jobId,
+    schemaVersion: JOB_CONTENT_ANALYSIS_SCHEMA_VERSION,
+  };
+}
+
+async function assertCurrentSource(job: JobListingSource, sourceHash: string) {
   if ((await jobSourceHash(job)) !== sourceHash) {
     throw new JobAnalysisRecordError(
       "Source hash does not match the stored listing; analyze the current text",

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -57,10 +56,7 @@ export function MessageStyleView({ request }: { request: ApiRequest }) {
 
   if (!loaded) {
     return (
-      <SettingsPage
-        description="Choose between real message patterns. Platform rules such as Hello, truthfulness, and one useful question never change."
-        title="Writing style"
-      >
+      <SettingsPage>
         <Card className="mx-auto w-full max-w-3xl">
           <CardContent className="py-10 text-center text-muted-foreground text-sm">
             Loading your writing preferences…
@@ -122,10 +118,7 @@ export function MessageStyleView({ request }: { request: ApiRequest }) {
 
   const currentChoice = choices[selectedComparison.id];
   return (
-    <SettingsPage
-      description="Choose between real message patterns. Platform rules such as Hello, truthfulness, and one useful question never change."
-      title="Writing style"
-    >
+    <SettingsPage>
       <Card className="mx-auto max-w-3xl">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
@@ -139,10 +132,6 @@ export function MessageStyleView({ request }: { request: ApiRequest }) {
           <CardTitle className="pt-2 text-xl">
             {selectedComparison.prompt}
           </CardTitle>
-          <CardDescription>
-            Pick the version you would rather send. You can revisit every
-            answer.
-          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2">
           <StyleOption
@@ -201,10 +190,7 @@ function StyleCompletion({
 }) {
   const summary = messageStyleSummary(choices);
   return (
-    <SettingsPage
-      description="Your saved choices guide future application drafts and can be changed at any time."
-      title="Writing style"
-    >
+    <SettingsPage>
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
         <Card>
           <CardHeader className="items-center text-center">
@@ -212,10 +198,10 @@ function StyleCompletion({
               <Check className="size-6" />
             </div>
             <CardTitle>Writing style saved</CardTitle>
-            <CardDescription>
+            <p className="text-muted-foreground text-sm">
               All {messageStyleComparisons.length} choices are saved. Future
               drafts will use these preferences.
-            </CardDescription>
+            </p>
           </CardHeader>
           <CardContent className="grid gap-2 sm:grid-cols-2">
             {summary.map((item) => (

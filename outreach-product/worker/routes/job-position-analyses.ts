@@ -29,6 +29,9 @@ interface PendingJobRow {
 
 export function registerJobPositionAnalysisRoutes(app: JobKitApp) {
   app.get("/api/job-position-analyses/pending", async (c) => {
+    if (c.get("user").role !== "operator") {
+      return c.json({ message: "Operator access is required", ok: false }, 403);
+    }
     const limit = Math.min(
       Math.max(Number(c.req.query("limit")) || 10, 1),
       PENDING_LIMIT_MAX
@@ -43,44 +46,41 @@ export function registerJobPositionAnalysisRoutes(app: JobKitApp) {
     if (ids.length) {
       rows = await c.env.DB.prepare(
         `SELECT j.id,j.title,j.company,j.country,j.location,j.salary,j.description
-           FROM user_jobs uj
-           JOIN jobs j ON j.id=uj.job_id
-           WHERE uj.user_id=?1
-             AND j.id IN (SELECT value FROM json_each(?2))`
+           FROM job_listings j
+           WHERE j.inventory_status='active'
+             AND j.id IN (SELECT value FROM json_each(?1))`
       )
-        .bind(c.get("user").id, JSON.stringify(ids))
+        .bind(JSON.stringify(ids))
         .all<PendingJobRow>();
     } else if (allListings) {
       rows = await c.env.DB.prepare(
         `SELECT j.id,j.title,j.company,j.country,j.location,j.salary,j.description
-         FROM user_jobs uj
-         JOIN jobs j ON j.id=uj.job_id
+         FROM job_listings j
          LEFT JOIN job_position_analyses pa
            ON pa.job_id=j.id AND pa.schema_version=?1
-         WHERE uj.user_id=?2 AND pa.job_id IS NULL
+         WHERE j.inventory_status='active' AND pa.job_id IS NULL
            AND j.board<>'jobkit-e2e'
-         ORDER BY uj.priority DESC,uj.updated_at DESC
-         LIMIT ?3`
+         ORDER BY j.updated_at DESC
+         LIMIT ?2`
       )
-        .bind(JOB_POSITION_ANALYSIS_SCHEMA_VERSION, c.get("user").id, limit)
+        .bind(JOB_POSITION_ANALYSIS_SCHEMA_VERSION, limit)
         .all<PendingJobRow>();
     } else {
       rows = await c.env.DB.prepare(
         `SELECT j.id,j.title,j.company,j.country,j.location,j.salary,j.description
-           FROM user_jobs uj
-           JOIN jobs j ON j.id=uj.job_id
+           FROM job_listings j
            LEFT JOIN job_position_analyses pa
              ON pa.job_id=j.id AND pa.schema_version=?1
-           WHERE uj.user_id=?2 AND pa.job_id IS NULL
+           WHERE j.inventory_status='active' AND pa.job_id IS NULL
              AND (
                j.opportunity_scope='multi_position'
                OR lower(j.title || ' ' || j.description) LIKE '%multiple position%'
                OR lower(j.title || ' ' || j.description) LIKE '%various position%'
              )
-           ORDER BY uj.priority DESC,uj.updated_at DESC
-           LIMIT ?3`
+           ORDER BY j.updated_at DESC
+           LIMIT ?2`
       )
-        .bind(JOB_POSITION_ANALYSIS_SCHEMA_VERSION, c.get("user").id, limit)
+        .bind(JOB_POSITION_ANALYSIS_SCHEMA_VERSION, limit)
         .all<PendingJobRow>();
     }
     return c.json({
@@ -98,6 +98,9 @@ export function registerJobPositionAnalysisRoutes(app: JobKitApp) {
   });
 
   app.post("/api/job-position-analyses", async (c) => {
+    if (c.get("user").role !== "operator") {
+      return c.json({ message: "Operator access is required", ok: false }, 403);
+    }
     const body = RecordPositionAnalysisSchema.safeParse(await c.req.json());
     if (!body.success) {
       return c.json(
@@ -110,7 +113,7 @@ export function registerJobPositionAnalysisRoutes(app: JobKitApp) {
       );
     }
     const { analysis, jobId, modelId, provider, sourceHash } = body.data;
-    await recordJobPositionAnalysis(c.env.DB, c.get("user").id, {
+    await recordJobPositionAnalysis(c.env.DB, {
       analysis,
       jobId,
       modelId,

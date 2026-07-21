@@ -1,19 +1,43 @@
+import { JOB_CONTENT_EXTRACTION_INSTRUCTIONS } from "../../worker/ai/job-content-extraction";
 import {
   JOB_FACT_EXTRACTION_INSTRUCTIONS,
   jobFactSource,
 } from "../../worker/ai/job-fact-extraction";
 import { JOB_POSITION_EXTRACTION_INSTRUCTIONS } from "../../worker/ai/job-position-extraction";
+import { JobContentAnalysisSchema } from "../features/jobs/content-analysis";
 import { JobPositionAnalysisSchema } from "../features/jobs/position-variants";
 import { JobMatchFactsSchema } from "../features/matching/schema";
 import { codexOutputJsonSchema } from "./json-schema";
 
 export const JOB_MATCH_FACTS_TASK_TYPE = "job.match_facts";
 export const JOB_MATCH_FACTS_PROMPT_VERSION = "job-match-facts-v3";
+export const JOB_CONTENT_TASK_TYPE = "job.content_analysis";
+export const JOB_CONTENT_PROMPT_VERSION = "job-content-analysis-v1";
 export const JOB_POSITION_TASK_TYPE = "job.position_analysis";
 export const JOB_POSITION_PROMPT_VERSION = "job-position-analysis-v2";
 
+export const JOB_ANALYSIS_MODELS = {
+  [JOB_CONTENT_TASK_TYPE]: {
+    model: "gpt-5.6-terra",
+    reasoningEffort: "medium" as const,
+  },
+  [JOB_MATCH_FACTS_TASK_TYPE]: {
+    model: "gpt-5.6-luna",
+    reasoningEffort: "medium" as const,
+  },
+  [JOB_POSITION_TASK_TYPE]: {
+    model: "gpt-5.6-terra",
+    reasoningEffort: "medium" as const,
+  },
+} as const;
+
+export type JobAnalysisTaskType = keyof typeof JOB_ANALYSIS_MODELS;
+
 export const JOB_MATCH_FACTS_OUTPUT_JSON_SCHEMA =
   codexOutputJsonSchema(JobMatchFactsSchema);
+export const JOB_CONTENT_OUTPUT_JSON_SCHEMA = codexOutputJsonSchema(
+  JobContentAnalysisSchema
+);
 export const JOB_POSITION_OUTPUT_JSON_SCHEMA = codexOutputJsonSchema(
   JobPositionAnalysisSchema
 );
@@ -38,6 +62,16 @@ ${jobFactSource(job)}
 </job-listing>`;
 }
 
+export function jobContentAnalysisPrompt(job: JobAnalysisTaskSource) {
+  return `${UNTRUSTED_SOURCE_BOUNDARY}
+
+${JOB_CONTENT_EXTRACTION_INSTRUCTIONS}
+
+<job-listing>
+${jobFactSource(job)}
+</job-listing>`;
+}
+
 export function jobPositionAnalysisPrompt(job: JobAnalysisTaskSource) {
   return `${UNTRUSTED_SOURCE_BOUNDARY}
 
@@ -48,7 +82,6 @@ ${jobFactSource(job)}
 </job-listing>`;
 }
 
-export const JOB_ANALYSIS_MODEL = {
-  model: "gpt-5.6-luna",
-  reasoningEffort: "medium" as const,
-};
+export function jobAnalysisModel(taskType: JobAnalysisTaskType) {
+  return JOB_ANALYSIS_MODELS[taskType];
+}

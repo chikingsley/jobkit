@@ -22,7 +22,7 @@ async function seedSentAttempt(userId: string, suffix: string) {
   const routeId = `route-${suffix}`;
   await env.DB.batch([
     env.DB.prepare(
-      `INSERT INTO jobs
+      `INSERT INTO job_listings
         (id,board,title,company,country,location,source_url,apply_url,
          first_seen_at,updated_at)
        VALUES (?,?,?,?,?,?,?,?,?,?)`
@@ -39,7 +39,7 @@ async function seedSentAttempt(userId: string, suffix: string) {
       timestamp
     ),
     env.DB.prepare(
-      `INSERT INTO user_jobs
+      `INSERT INTO user_listing_states
         (id,user_id,job_id,status,created_at,updated_at)
        VALUES (?,?,?,'applied',?,?)`
     ).bind(userJobId, userId, jobId, timestamp, timestamp),

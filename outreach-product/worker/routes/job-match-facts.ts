@@ -24,6 +24,9 @@ interface PendingJobRow {
 
 export function registerJobMatchFactRoutes(app: JobKitApp) {
   app.get("/api/job-match-facts/pending", async (c) => {
+    if (c.get("user").role !== "operator") {
+      return c.json({ message: "Operator access is required", ok: false }, 403);
+    }
     const limit = Math.min(
       Math.max(Number(c.req.query("limit")) || 10, 1),
       PENDING_LIMIT_MAX
@@ -37,38 +40,35 @@ export function registerJobMatchFactRoutes(app: JobKitApp) {
     const rows = ids.length
       ? await c.env.DB.prepare(
           `SELECT j.id,j.title,j.salary,j.description
-             FROM user_jobs uj
-             JOIN jobs j ON j.id=uj.job_id
-            WHERE uj.user_id=?1
-              AND j.id IN (SELECT value FROM json_each(?2))`
+             FROM job_listings j
+            WHERE j.inventory_status='active'
+              AND j.id IN (SELECT value FROM json_each(?1))`
         )
-          .bind(c.get("user").id, JSON.stringify(ids))
+          .bind(JSON.stringify(ids))
           .all<PendingJobRow>()
       : await c.env.DB.prepare(
           `SELECT j.id,j.title,j.salary,j.description
-             FROM user_jobs uj
-             JOIN jobs j ON j.id=uj.job_id
+             FROM job_listings j
              LEFT JOIN job_match_facts mf
                ON mf.job_id=j.id AND mf.schema_version=?1
-            WHERE uj.user_id=?2 AND mf.job_id IS NULL
+            WHERE j.inventory_status='active' AND mf.job_id IS NULL
             ORDER BY
               CASE WHEN j.compensation_period='hour'
                 THEN COALESCE(j.compensation_amount_max,j.compensation_amount_min)
               END DESC NULLS LAST,
-              uj.priority DESC,
-              uj.updated_at DESC
-            LIMIT ?3`
+              j.updated_at DESC
+            LIMIT ?2`
         )
-          .bind(JOB_MATCH_FACTS_SCHEMA_VERSION, c.get("user").id, limit)
+          .bind(JOB_MATCH_FACTS_SCHEMA_VERSION, limit)
           .all<PendingJobRow>();
     const remaining = await c.env.DB.prepare(
       `SELECT COUNT(*) n
-         FROM user_jobs uj
+         FROM job_listings j
          LEFT JOIN job_match_facts mf
-           ON mf.job_id=uj.job_id AND mf.schema_version=?1
-        WHERE uj.user_id=?2 AND mf.job_id IS NULL`
+           ON mf.job_id=j.id AND mf.schema_version=?1
+        WHERE j.inventory_status='active' AND mf.job_id IS NULL`
     )
-      .bind(JOB_MATCH_FACTS_SCHEMA_VERSION, c.get("user").id)
+      .bind(JOB_MATCH_FACTS_SCHEMA_VERSION)
       .first<{ n: number }>();
     return c.json({
       pending: rows.results.map((row) => ({
@@ -83,6 +83,9 @@ export function registerJobMatchFactRoutes(app: JobKitApp) {
   });
 
   app.post("/api/job-match-facts", async (c) => {
+    if (c.get("user").role !== "operator") {
+      return c.json({ message: "Operator access is required", ok: false }, 403);
+    }
     const body = RecordMatchFactsSchema.safeParse(await c.req.json());
     if (!body.success) {
       return c.json(
@@ -95,7 +98,7 @@ export function registerJobMatchFactRoutes(app: JobKitApp) {
       );
     }
     const { facts, jobId, modelId, provider, sourceHash } = body.data;
-    await recordJobMatchFacts(c.env.DB, c.get("user").id, {
+    await recordJobMatchFacts(c.env.DB, {
       facts,
       jobId,
       modelId,

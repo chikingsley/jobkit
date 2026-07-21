@@ -47,8 +47,8 @@ export async function readSelectedAneslTargets(
                 WHERE existing_draft.user_job_id=uj.id) latest_draft_version,
               ar.id route_id,ar.status route_status,ar.contact_channel_id,
               COALESCE(c.role,'unknown') contact_role
-         FROM user_jobs uj
-         JOIN jobs j ON j.id=uj.job_id
+         FROM user_listing_states uj
+         JOIN job_listings j ON j.id=uj.job_id
          JOIN application_routes ar ON ar.id=(
            SELECT candidate.id FROM application_routes candidate
             WHERE candidate.job_id=j.id AND candidate.kind='email'
@@ -83,9 +83,9 @@ export async function ensureSelectedAneslUserJobs(
     jobIds.map((jobId) =>
       db
         .prepare(
-          `INSERT OR IGNORE INTO user_jobs
+          `INSERT OR IGNORE INTO user_listing_states
             (id,user_id,job_id,status,priority,created_at,updated_at)
-           SELECT ?,?,j.id,'new',0,?,? FROM jobs j
+           SELECT ?,?,j.id,'new',0,?,? FROM job_listings j
            WHERE j.id=? AND lower(j.board)=?`
         )
         .bind(
@@ -113,8 +113,8 @@ export async function readAneslBundleTargets(
               COALESCE(c.role,'unknown') contact_role
          FROM application_bundles b
          JOIN application_bundle_targets bt ON bt.bundle_id=b.id
-         JOIN user_jobs uj ON uj.id=bt.user_job_id
-         JOIN jobs j ON j.id=uj.job_id
+         JOIN user_listing_states uj ON uj.id=bt.user_job_id
+         JOIN job_listings j ON j.id=uj.job_id
          JOIN application_routes ar ON ar.id=bt.route_id
          LEFT JOIN contact_channels cc ON cc.id=ar.contact_channel_id
          LEFT JOIN contacts c ON c.id=cc.contact_id

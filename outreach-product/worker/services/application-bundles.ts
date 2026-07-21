@@ -139,7 +139,7 @@ export async function createAneslApplicationSet(
     ),
     taskCreation.statement,
     env.DB.prepare(
-      `UPDATE user_jobs SET status='review',updated_at=?
+      `UPDATE user_listing_states SET status='review',updated_at=?
         WHERE user_id=? AND id IN (${orderedTargets.map(() => "?").join(",")})`
     ).bind(
       timestamp,
@@ -359,7 +359,7 @@ export async function buildAneslBundleTaskCompletion(
       ),
       ...packetStatements,
       env.DB.prepare(
-        `UPDATE user_jobs SET status='review',updated_at=?
+        `UPDATE user_listing_states SET status='review',updated_at=?
           WHERE user_id=? AND id IN (
             SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
           )`
@@ -540,7 +540,7 @@ export async function cancelAneslApplicationSet(
       .bind(bundleId),
     db
       .prepare(
-        `UPDATE user_jobs SET status='new',updated_at=?
+        `UPDATE user_listing_states SET status='new',updated_at=?
         WHERE user_id=? AND id IN (
           SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
         ) AND status IN ('review','approved','failed')`
@@ -707,7 +707,7 @@ function buildBundleDraftMutationPlan(
         timestamp
       ),
       env.DB.prepare(
-        `UPDATE user_jobs SET status='review',updated_at=?
+        `UPDATE user_listing_states SET status='review',updated_at=?
           WHERE user_id=? AND id IN (
             SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
           ) AND status IN ('new','review','approved','failed')`

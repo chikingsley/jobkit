@@ -5,13 +5,7 @@ import { toast } from "sonner";
 import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,11 +52,6 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
                 ? "Campaign setup is unavailable"
                 : "Loading campaign setup…"}
             </CardTitle>
-            <CardDescription>
-              {setupError
-                ? "JobKit could not load the current markets and campaign defaults."
-                : "Loading the current markets and campaign defaults."}
-            </CardDescription>
           </CardHeader>
           {setupError ? (
             <CardContent>
@@ -148,19 +137,9 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
         <Button onClick={() => navigate("/campaigns")} variant="ghost">
           <ArrowLeft /> Campaigns
         </Button>
-        <div className="mt-3">
-          <p className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
-            New campaign
-          </p>
-          <h1 className="mt-1 font-semibold text-2xl tracking-tight">
-            Choose target markets
-          </h1>
-          <p className="mt-1 max-w-2xl text-muted-foreground text-sm leading-6">
-            Select up to three countries with one coherent goal. JobKit admits
-            the full eligible pool; pace controls how quickly it moves, not how
-            much of the pool exists.
-          </p>
-        </div>
+        <h1 className="mt-3 font-semibold text-2xl tracking-tight">
+          Choose target markets
+        </h1>
       </header>
 
       <div className="grid min-h-0 gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -169,11 +148,11 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <CardTitle>Target markets</CardTitle>
-                <CardDescription>
+                <p className="mt-1 text-muted-foreground text-sm">
                   {selectionComplete
                     ? "3 of 3 selected. Remove one to change markets."
                     : `${selected.length} of 3 selected`}
-                </CardDescription>
+                </p>
               </div>
               {selectionComplete ? null : (
                 <div className="relative w-full sm:w-64">
@@ -217,9 +196,6 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
           <Card>
             <CardHeader>
               <CardTitle>Campaign plan</CardTitle>
-              <CardDescription>
-                Every value remains visible and editable before launch.
-              </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
               <div className="grid gap-2">
@@ -307,9 +283,6 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
           <Card>
             <CardHeader>
               <CardTitle>Starting pool</CardTitle>
-              <CardDescription>
-                Based on inventory currently stored in JobKit.
-              </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3 text-sm">
               <SummaryRow label="Markets" value={selectedMarkets.length} />

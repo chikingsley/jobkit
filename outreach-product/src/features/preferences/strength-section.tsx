@@ -1,11 +1,5 @@
 import { useId } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { SettingsSection } from "@/components/settings-section";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { BenefitStrength, RuleStrength } from "@/profile-types";
@@ -30,25 +24,19 @@ const benefitStrengthOptions: Array<{
 ];
 
 export function PreferenceSection<Key extends string>({
-  description,
   labels,
   onChange,
   title,
   values,
 }: {
-  description: string;
   labels: [Key, string][];
   onChange: (key: Key, value: RuleStrength) => void;
   title: string;
   values: Record<Key, RuleStrength>;
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="grid grid-cols-[repeat(auto-fit,minmax(min(18rem,100%),1fr))] gap-x-6 gap-y-5">
+    <SettingsSection title={title}>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(18rem,100%),1fr))] gap-x-6 gap-y-5">
         {labels.map(([key, label]) => (
           <Field key={key}>
             <FieldLabel>{label}</FieldLabel>
@@ -58,31 +46,25 @@ export function PreferenceSection<Key extends string>({
             />
           </Field>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </SettingsSection>
   );
 }
 
 export function BenefitSection<Key extends string>({
-  description,
   labels,
   onChange,
   title,
   values,
 }: {
-  description: string;
   labels: [Key, string][];
   onChange: (key: Key, value: BenefitStrength) => void;
   title: string;
   values: Record<Key, BenefitStrength>;
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="grid grid-cols-[repeat(auto-fit,minmax(min(18rem,100%),1fr))] gap-x-6 gap-y-5">
+    <SettingsSection title={title}>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(18rem,100%),1fr))] gap-x-6 gap-y-5">
         {labels.map(([key, label]) => (
           <Field key={key}>
             <FieldLabel>{label}</FieldLabel>
@@ -92,8 +74,8 @@ export function BenefitSection<Key extends string>({
             />
           </Field>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </SettingsSection>
   );
 }
 

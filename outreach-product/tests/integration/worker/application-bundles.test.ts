@@ -44,7 +44,7 @@ describe("ANESL application sets", () => {
       env.DB.prepare("DELETE FROM application_drafts WHERE user_job_id=?").bind(
         position.userJobId
       ),
-      env.DB.prepare("DELETE FROM user_jobs WHERE id=?").bind(
+      env.DB.prepare("DELETE FROM user_listing_states WHERE id=?").bind(
         position.userJobId
       ),
     ]);
@@ -164,7 +164,7 @@ Integration User`,
 
     expect(
       await env.DB.prepare(
-        `SELECT status,COUNT(*) count FROM user_jobs
+        `SELECT status,COUNT(*) count FROM user_listing_states
           WHERE id IN (?,?) GROUP BY status`
       )
         .bind(first.userJobId, second.userJobId)
@@ -372,7 +372,7 @@ async function seedPosition(
   const location = "China";
   await env.DB.batch([
     env.DB.prepare(
-      `INSERT INTO jobs
+      `INSERT INTO job_listings
         (id,board,title,company,country,location,source_url,apply_url,
          contact_name,source_reference,first_seen_at,updated_at)
        VALUES (?,'anesl',?,'ANESL','China',?,?,?,?,?,?,?)`
@@ -388,7 +388,7 @@ async function seedPosition(
       timestamp
     ),
     env.DB.prepare(
-      `INSERT INTO user_jobs
+      `INSERT INTO user_listing_states
         (id,user_id,job_id,status,created_at,updated_at)
        VALUES (?,?,?,'review',?,?)`
     ).bind(userJobId, userId, jobId, timestamp, timestamp),
