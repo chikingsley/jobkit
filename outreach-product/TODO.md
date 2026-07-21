@@ -4,7 +4,6 @@ The roadmap lists unfinished product work. Git history records completed impleme
 
 ## Product verification and launch readiness
 
-- [ ] `[RELEASE-001]` Track the deployed classification-adjudication migration, reconcile the dirty checkout into reviewable commits, run the full check/build/E2E suite, deploy the exact commit, and verify the production version.
 - [ ] `[CAMPAIGN-001]` Run one test-only campaign through target selection, first-five review, message generation, paced delivery, Gmail reply ingestion, and reply-driven pause before enabling live campaign delivery.
 - [ ] Complete Google's production OAuth verification and security requirements before onboarding public users.
 
