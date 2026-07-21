@@ -164,9 +164,11 @@ export function TestLabCaseBrowser({
                 ))}
               </div>
               <PreferencePanel
+                key={selectedCase.id}
                 onRefresh={onRefresh}
                 request={request}
                 runs={caseRuns}
+                testCase={selectedCase}
               />
               {caseRuns.length === 0 ? (
                 <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground text-sm">

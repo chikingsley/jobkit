@@ -86,7 +86,7 @@ export async function claimTestLabTask(
     if (!testCase) {
       throw new Error("Test Lab case no longer exists in this corpus version");
     }
-    const model = testLabModel(testCase, Boolean(input.jinaResult));
+    const model = testLabModel(testCase);
     const prompt = testLabPrompt(testCase, input.jinaResult ?? null);
     const task = await createAgentTaskRun(env.DB, runner, {
       leaseExpiresAt,

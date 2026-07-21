@@ -14,10 +14,15 @@ const TEXT_PLAIN_MIME_PATTERN =
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("Test Lab", () => {
-  it("exposes exactly 100 versioned cases only to authenticated users", async () => {
+  it("exposes exactly 100 versioned cases only to operators", async () => {
     const unauthorized = await exports.default.fetch(
       "https://outreach.test/api/test-lab"
     );
+    const member = await createAuthenticatedUser(
+      "test-lab-member@example.test",
+      "member"
+    );
+    const forbidden = await sessionRequest("/api/test-lab", member.cookie);
     const { cookie } = await createAuthenticatedUser(
       "test-lab-corpus@example.test"
     );
@@ -28,6 +33,11 @@ describe("Test Lab", () => {
     };
 
     expect(unauthorized.status).toBe(401);
+    expect(forbidden.status).toBe(403);
+    await expect(forbidden.json()).resolves.toEqual({
+      message: "Operator access is required",
+      ok: false,
+    });
     expect(response.status).toBe(200);
     expect(payload.cases).toHaveLength(100);
     expect(new Set(payload.cases.map((testCase) => testCase.id)).size).toBe(
@@ -38,6 +48,75 @@ describe("Test Lab", () => {
         (testCase) => testCase.version === payload.corpusVersion
       )
     ).toBe(true);
+  });
+
+  it("records a reversible human adjudication for a versioned disagreement", async () => {
+    const { cookie } = await createAuthenticatedUser(
+      "test-lab-adjudication@example.test"
+    );
+    const initial = await sessionRequest(
+      "/api/test-lab/classification-review",
+      cookie
+    );
+    const initialPayload = (await initial.json()) as {
+      cases: Array<{ itemId: string; labels: Array<{ label: string }> }>;
+      corpusVersion: string;
+      summary: { decided: number; remaining: number; total: number };
+    };
+    const [reviewCase] = initialPayload.cases;
+    if (!reviewCase) {
+      throw new Error("Classification review corpus was empty");
+    }
+
+    expect(initial.status).toBe(200);
+    expect(initialPayload.cases).toHaveLength(23);
+    expect(initialPayload.summary).toEqual({
+      decided: 0,
+      remaining: 23,
+      total: 23,
+    });
+    expect(new Set(reviewCase.labels.map((item) => item.label)).size).toBe(2);
+
+    const saved = await sessionRequest(
+      `/api/test-lab/classification-review/${encodeURIComponent(reviewCase.itemId)}`,
+      cookie,
+      "PUT",
+      { label: "unclear", notes: "Human review of both blind passes" }
+    );
+    expect(saved.status).toBe(200);
+    await expect(saved.json()).resolves.toMatchObject({
+      adjudication: {
+        itemId: reviewCase.itemId,
+        label: "unclear",
+        notes: "Human review of both blind passes",
+      },
+    });
+
+    const updated = await sessionRequest(
+      "/api/test-lab/classification-review",
+      cookie
+    );
+    await expect(updated.json()).resolves.toMatchObject({
+      summary: { decided: 1, remaining: 22, total: 23 },
+    });
+
+    const cleared = await sessionRequest(
+      `/api/test-lab/classification-review/${encodeURIComponent(reviewCase.itemId)}`,
+      cookie,
+      "DELETE"
+    );
+    expect(cleared.status).toBe(200);
+    await expect(cleared.json()).resolves.toMatchObject({
+      result: { itemId: reviewCase.itemId },
+    });
+
+    const restored = await sessionRequest(
+      "/api/test-lab/classification-review",
+      cookie
+    );
+    await expect(restored.json()).resolves.toMatchObject({
+      summary: { decided: 0, remaining: 23, total: 23 },
+    });
   });
 
   it("queues, claims, validates, and scores a Codex evaluation", async () => {
@@ -124,7 +203,7 @@ describe("Test Lab", () => {
       await expect(response.json()).resolves.toMatchObject({
         run: {
           metrics: { exact: true, passed: true, score: 1 },
-          model: "jina-embeddings-v5-text-small",
+          model: "jina-embeddings-v3",
           output: { label: "english_teaching" },
           provider: "jina",
           status: "completed",
@@ -134,6 +213,10 @@ describe("Test Lab", () => {
         "https://api.jina.ai/v1/classify",
         expect.objectContaining({ method: "POST" })
       );
+      const request = provider.mock.calls[0]?.[1];
+      expect(JSON.parse(String(request?.body))).toMatchObject({
+        model: "jina-embeddings-v3",
+      });
     } finally {
       provider.mockRestore();
     }
@@ -181,7 +264,7 @@ describe("Test Lab", () => {
       const claimPayload = (await claim.json()) as {
         task: { model: string; prompt: string; runId: string };
       };
-      expect(claimPayload.task.model).toBe("gpt-5.6-terra");
+      expect(claimPayload.task.model).toBe("gpt-5.6-luna");
       expect(claimPayload.task.prompt).toContain("<jina-result>");
       await agentPost(
         `/api/agent-tasks/${claimPayload.task.runId}/complete`,

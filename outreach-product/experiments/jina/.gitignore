@@ -1,0 +1,5 @@
+/artifacts/
+/corpus/*.parquet
+/corpus/*.sqlite
+/corpus/*.sqlite-shm
+/corpus/*.sqlite-wal

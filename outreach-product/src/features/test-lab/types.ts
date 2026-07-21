@@ -1,4 +1,8 @@
 import type {
+  ClassificationLabel,
+  ClassificationReviewCase,
+} from "@/test-lab/classification-review";
+import type {
   TestLabCapability,
   TestLabCase,
   TestLabVariant,
@@ -67,6 +71,26 @@ export interface TestLabResponse {
     completed: number;
     failed: number;
     meanScore: number | null;
+    total: number;
+  };
+}
+
+export interface ClassificationAdjudication {
+  createdAt: string;
+  itemId: string;
+  label: ClassificationLabel;
+  notes: string;
+  sourceHash: string;
+  updatedAt: string;
+}
+
+export interface ClassificationReviewResponse {
+  adjudications: ClassificationAdjudication[];
+  cases: ClassificationReviewCase[];
+  corpusVersion: string;
+  summary: {
+    decided: number;
+    remaining: number;
     total: number;
   };
 }

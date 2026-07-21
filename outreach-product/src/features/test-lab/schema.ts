@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ClassificationLabelSchema } from "../../test-lab/classification-review";
 
 export const TestLabVariantSchema = z.enum(["codex", "jina", "hybrid"]);
 
@@ -29,6 +30,13 @@ export const TestLabPreferenceSchema = z
     notes: z.string().trim().max(2000).default(""),
     preference: z.enum(["left", "right", "tie", "both_bad"]),
     rightRunId: z.string().trim().min(1),
+  })
+  .strict();
+
+export const ClassificationAdjudicationSchema = z
+  .object({
+    label: ClassificationLabelSchema,
+    notes: z.string().trim().max(4000).default(""),
   })
   .strict();
 

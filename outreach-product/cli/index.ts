@@ -4,6 +4,8 @@ import { resolve } from "node:path";
 const COMMANDS = new Map<string, string>([
   ["agent connect", "agent/connect.ts"],
   ["agent start", "agent/start.ts"],
+  ["experiments onboarding", "../experiments/onboarding/index.ts"],
+  ["experiments jina", "../experiments/jina/index.ts"],
   ["inventory sync", "job-inventory/sync.ts"],
 ]);
 
@@ -32,6 +34,8 @@ Usage:
 Commands:
   agent connect                Pair this checkout with JobKit using Codex login
   agent start                  Claim and execute queued Codex tasks
+  experiments onboarding      Evaluate profile import and onboarding behavior
+  experiments jina             Run Jina experiments and corpus labeling
   inventory sync               Sync the local source inventory into D1`);
   if (unknownCommand) {
     process.exitCode = 1;

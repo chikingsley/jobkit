@@ -25,6 +25,7 @@
   "include": [
     "auth.config.ts",
     "cli",
+    "experiments",
     "src",
     "tests",
     "worker",

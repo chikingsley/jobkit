@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,57 +8,46 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { JsonPanel } from "@/features/test-lab/run-result";
 import type { TestLabRun } from "@/features/test-lab/types";
 import type { ApiRequest } from "@/lib/api";
+import type { TestLabCase } from "@/test-lab/corpus";
 
 type Preference = "both_bad" | "left" | "right" | "tie";
+
+const REVIEWABLE_CAPABILITIES = new Set([
+  "deepsearch",
+  "reader",
+  "reranking",
+  "revision",
+  "search",
+]);
 
 export function PreferencePanel({
   onRefresh,
   request,
   runs,
+  testCase,
 }: {
   onRefresh: () => Promise<unknown>;
   request: ApiRequest;
   runs: TestLabRun[];
+  testCase: TestLabCase;
 }) {
-  const completed = runs.filter((runItem) => runItem.status === "completed");
-  const [leftRunId, setLeftRunId] = useState("");
-  const [rightRunId, setRightRunId] = useState("");
+  const comparison = useMemo(() => blindComparison(runs), [runs]);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
-  const left = completed.find((runItem) => runItem.id === leftRunId);
-  const right = completed.find((runItem) => runItem.id === rightRunId);
+  const [revealedPair, setRevealedPair] = useState("");
 
-  useEffect(() => {
-    const [first, second] = completed;
-    if (!leftRunId && first) {
-      setLeftRunId(first.id);
-    }
-    if (!rightRunId && second) {
-      setRightRunId(second.id);
-    }
-  }, [completed, leftRunId, rightRunId]);
-
-  if (completed.length < 2) {
+  if (!comparison) {
     return null;
   }
 
+  const { left, right } = comparison;
+  const pairId = `${left.id}:${right.id}`;
+
   async function save(preference: Preference) {
-    if (!(left && right) || left.id === right.id) {
-      toast.error("Choose two different completed runs");
-      return;
-    }
     setBusy(true);
     try {
       const response = await request("/api/test-lab/preferences", {
@@ -72,6 +61,7 @@ export function PreferencePanel({
         method: "POST",
       });
       const result = (await response.json()) as { message: string };
+      setRevealedPair(pairId);
       await onRefresh();
       toast.success(result.message);
     } catch (error) {
@@ -86,36 +76,16 @@ export function PreferencePanel({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Human preference</CardTitle>
+        <CardTitle>Blind output comparison</CardTitle>
         <CardDescription>
-          Compare two completed outputs from this exact case and record the
-          result as evaluation data.
+          {comparisonQuestion(left.capability)} Provider identities stay hidden
+          until you record the result.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
         <div className="grid gap-3 lg:grid-cols-2">
-          <RunSelector
-            label="Left run"
-            onChange={setLeftRunId}
-            runs={completed}
-            value={leftRunId}
-          />
-          <RunSelector
-            label="Right run"
-            onChange={setRightRunId}
-            runs={completed}
-            value={rightRunId}
-          />
-        </div>
-        <div className="grid gap-3 lg:grid-cols-2">
-          <JsonPanel
-            label={`Left · ${left?.variant ?? "choose a run"}`}
-            value={left?.output ?? null}
-          />
-          <JsonPanel
-            label={`Right · ${right?.variant ?? "choose a run"}`}
-            value={right?.output ?? null}
-          />
+          <BlindOutput label="Option A" run={left} testCase={testCase} />
+          <BlindOutput label="Option B" run={right} testCase={testCase} />
         </div>
         <label
           className="grid gap-1.5 text-sm"
@@ -125,80 +95,169 @@ export function PreferencePanel({
           <Textarea
             id="test-lab-preference-notes"
             onChange={(event) => setNotes(event.target.value)}
-            placeholder="What made one result better?"
+            placeholder="What made one result more useful or trustworthy?"
             value={notes}
           />
         </label>
         <div className="flex flex-wrap gap-2">
           <Button disabled={busy} onClick={() => void save("left")}>
-            Left is better
+            Option A is better
           </Button>
           <Button
             disabled={busy}
             onClick={() => void save("right")}
             variant="outline"
           >
-            Right is better
+            Option B is better
           </Button>
           <Button
             disabled={busy}
             onClick={() => void save("tie")}
             variant="outline"
           >
-            Tie
+            Equally useful
           </Button>
           <Button
             disabled={busy}
             onClick={() => void save("both_bad")}
             variant="outline"
           >
-            Both need work
+            Neither is useful
           </Button>
         </div>
+        {revealedPair === pairId ? (
+          <p className="text-muted-foreground text-sm">
+            Option A was {providerLabel(left)}. Option B was{" "}
+            {providerLabel(right)}.
+          </p>
+        ) : null}
       </CardContent>
     </Card>
   );
 }
 
-function RunSelector({
+function blindComparison(runs: TestLabRun[]) {
+  const completed = runs.filter(
+    (run) =>
+      run.status === "completed" && REVIEWABLE_CAPABILITIES.has(run.capability)
+  );
+  const latestByVariant = new Map<string, TestLabRun>();
+  for (const run of completed) {
+    const current = latestByVariant.get(run.variant);
+    if (!current || run.createdAt > current.createdAt) {
+      latestByVariant.set(run.variant, run);
+    }
+  }
+  const pair = preferredPair(latestByVariant);
+  if (!pair) {
+    return null;
+  }
+  const [first, second] = pair;
+  const swap = stableParity(`${first.caseId}:${first.id}:${second.id}`) === 1;
+  return swap ? { left: second, right: first } : { left: first, right: second };
+}
+
+function preferredPair(runs: Map<string, TestLabRun>) {
+  for (const [leftVariant, rightVariant] of [
+    ["codex", "jina"],
+    ["jina", "hybrid"],
+    ["codex", "hybrid"],
+  ] as const) {
+    const left = runs.get(leftVariant);
+    const right = runs.get(rightVariant);
+    if (left && right) {
+      return [left, right] as const;
+    }
+  }
+  return null;
+}
+
+function comparisonQuestion(capability: string) {
+  switch (capability) {
+    case "reader":
+      return "Which extraction captures the supplied page more completely and faithfully?";
+    case "search":
+      return "Which result set contains more relevant, primary, directly useful sources?";
+    case "reranking":
+      return "Which ordering puts the most relevant opportunities first without promoting an ineligible role?";
+    case "deepsearch":
+      return "Which answer is better supported by direct sources and answers the exact question?";
+    case "revision":
+      return "Which revision follows the requested change while preserving the original voice and facts?";
+    default:
+      return "Which output is more useful for the stated task?";
+  }
+}
+
+function BlindOutput({
   label,
-  onChange,
-  runs,
-  value,
+  run,
+  testCase,
 }: {
   label: string;
-  onChange: (value: string) => void;
-  runs: TestLabRun[];
-  value: string;
+  run: TestLabRun;
+  testCase: TestLabCase;
 }) {
+  if (run.capability !== "reranking") {
+    return <JsonPanel label={label} value={run.output} />;
+  }
+  const documents = documentMap(testCase.input.documents);
+  const orderedIds = stringArray(objectValue(run.output, "orderedIds"));
   return (
-    <div className="grid gap-1.5 text-sm">
-      <span className="font-medium">{label}</span>
-      <Select
-        items={runs.map((runItem) => ({
-          label: runLabel(runItem),
-          value: runItem.id,
-        }))}
-        onValueChange={(next) => next && onChange(next)}
-        value={value}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Choose a completed run" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            {runs.map((runItem) => (
-              <SelectItem key={runItem.id} value={runItem.id}>
-                {runLabel(runItem)}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+    <div className="min-w-0 rounded-md border bg-muted/30">
+      <div className="border-b px-3 py-1.5 font-medium text-xs">{label}</div>
+      <ol className="grid gap-2 p-3">
+        {orderedIds.map((id, index) => (
+          <li className="rounded-md border bg-background p-3 text-sm" key={id}>
+            <span className="mr-2 font-medium text-muted-foreground">
+              {index + 1}.
+            </span>
+            {documents.get(id) ?? id}
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }
 
-function runLabel(run: TestLabRun) {
-  return `${run.variant} · ${new Date(run.createdAt).toLocaleString()}`;
+function documentMap(value: unknown) {
+  const documents = new Map<string, string>();
+  if (!Array.isArray(value)) {
+    return documents;
+  }
+  for (const item of value) {
+    if (!item || typeof item !== "object") {
+      continue;
+    }
+    const record = item as Record<string, unknown>;
+    if (typeof record.id === "string" && typeof record.text === "string") {
+      documents.set(record.id, record.text);
+    }
+  }
+  return documents;
+}
+
+function objectValue(value: unknown, key: string) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)[key]
+    : undefined;
+}
+
+function stringArray(value: unknown) {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+function providerLabel(run: TestLabRun) {
+  return [run.provider, run.model].filter(Boolean).join(" · ");
+}
+
+function stableParity(value: string) {
+  return (
+    [...value].reduce(
+      (total, character) => total + character.charCodeAt(0),
+      0
+    ) % 2
+  );
 }

@@ -1,0 +1,741 @@
+{
+  "cases": [
+    {
+      "board": "ajarn",
+      "company": "EP Plus Learning",
+      "country": "Thailand",
+      "description": "NES Kindergarten Teachers Posted 5 days ago 🌈 Kindergarten Teachers – Bangkok EP Plus Learning, a well-established educational company with over 29 years of experience, is looking for a passionate and experienced Kindergarten Teacher to join our growing team! We’re dedicated to inspiring young learners and creating a fun, engaging environment where children love to learn and grow. APPLICANTS MUST ALREADY BE IN THAILAND & ABLE TO DO AN ON-SITE DEMO (REQUIRED) 💼 Position Details 1. NES Kindergarten Teacher (UK, US, Canada, Australia, Ireland, New Zealand, & South Africa only) 💰Salary: Starts 50,000 - 55,000 THB/month (depending on qualifications & teaching experience) 📍Location: Khwaeng Arun Amarin, Khet Bangkok Noi, Bangkok 10700 🚀Start Date: Immediately 2. NES Kindergarten Teacher (UK, US, Canada, Australia, Ireland, New Zealand, & South Africa only) 💰Salary: Starts 50,000 - 55,000 THB/month (depending on qualifications & teaching experience) 📍Location: Pradit Manutham Rd, Lat Phrao, Bangkok 10230 🚀Start Date: Immediately Curriculum & materials provided Co-teaching with Thai and foreign assistant teachers Long-term position with growth opportunities 🎁 Package & Benefits 🩺 Basic health and group insurance 📄 12-months contract; Renewable yearly contract depending on performance 🏥 Social Security 📅 Paid public holidays 🏖️ 4 weeks of paid vacation (2 weeks in December + 2 weeks in April) 🍽️ Free school lunch on working days 👕 Free school uniforms 🛂 Work permit & visa support ✅ Qu",
+      "itemId": "ajarn:158245",
+      "sourceHash": "409d5a5452b82675cbab9bd4ae8b2286228a71a4ca86d133e744bb07b561d8ac",
+      "sourceUrl": "https://www.ajarn.com/recruitment/jobs/158245/nes-filipino-kindergarten-teachers-in-bangkok",
+      "title": "NES Kindergarten Teachers",
+      "labels": [
+        {
+          "confidence": "medium",
+          "evidence": "“NES Kindergarten Teacher” with “Curriculum & materials provided”",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "This is a general kindergarten classroom role, with no indication that English-language instruction is its primary subject.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "“NES Kindergarten Teacher” with “Curriculum & materials provided.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The listing identifies general kindergarten teachers but does not specify the subject or language taught.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "ajarn",
+      "company": "EP Plus Learning",
+      "country": "Thailand",
+      "description": "NES or Non-NES (European) Kindergarten Teacher Posted 5 days ago 👩‍🏫 NES or NNES (European) Kindergarten Teacher We are looking for a caring and enthusiastic Kindergarten Teacher to join a small, warm, and community-focused school 🏫💛. This position is ideal for teachers who enjoy working closely with young children in a friendly and supportive environment where every child is known and valued 🌈👶. ✨ Benefits: 💰 Monthly salary starting from NES 45,000 THB (for teachers with 1 year teaching experience) ⏰ Flexible schedule, with the possibility to finish as early as 2:30 PM on days without after-school classes 📚 Provided curriculum, lesson plans, and teaching materials 🛂 Work permit and visa support 🎯 Attendance and performance incentives 🩺 Health insurance 🎓 Free seminars and professional development opportunities 🤝 Supportive and close-knit working environment 📈 Long-term employment with growth opportunities ✅ Requirements: 🌍 Native English Speaker (UK, USA, Ireland, South Africa, New Zealand, Australia, or Canada) 🌍 Non-Native English Speaker (European Only) 🎓 Bachelor’s degree from an accredited university 👶 Teaching experience preferred (Kindergarten experience is an advantage) 💕 Caring, patient, and energetic personality 🏡 Comfortable working in a small-school, family-like setting 🎲 Confident in using play-based and child-centered teaching methods 📍 Location: Chim Phli Subdistrict, Taling Chan District, Bangkok 📅 Start Date: Immediately 📧 How to Apply: Please send your CV w",
+      "itemId": "ajarn:158246",
+      "sourceHash": "67e85a309d6fabb002a8f5216aa537ede1f2bd71e6eb388ac7fd0bfa3e6f88d6",
+      "sourceUrl": "https://www.ajarn.com/recruitment/jobs/158246/nes-or-non-nes-european-kindergarten-teacher-in-bangkok",
+      "title": "NES or Non-NES (European) Kindergarten Teacher",
+      "labels": [
+        {
+          "confidence": "medium",
+          "evidence": "“Kindergarten Teacher” using “play-based and child-centered teaching methods”",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The advertised position is a general play-based kindergarten classroom teacher rather than a specified English-language teacher.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "“Kindergarten Teacher” using “play-based and child-centered teaching methods.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "It is a kindergarten classroom role, but the listing does not state that English or another named academic subject is the instructional focus.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "ajarn",
+      "company": "Kajonkietsuksa School",
+      "country": "Thailand",
+      "description": "NES Kindergarten / Primary Homeroom Teachers Posted 5 days ago \"Are you ready to embark on an enriching teaching journey in beautiful Phuket, Thailand?\" Let’s be a part of our Kajonkiet family where we offer a supportive & vibrant community! Guided by our core values—Build Virtue, Excel in Education, and Develop Thai Society—Kajonkiet Schools Group is a premier private bilingual institution in beautiful Phuket, Thailand. Offering education from Pre-K to Secondary, our mission is to transform young learners into compassionate local and global citizens who create positive value for society. About The Current Opportunities: • Kindergarten 3 Homeroom Teacher, Kajonkietsuksa School • Primary 6 Homeroom Teachers, Kajonkietsuksa School • Primary 4 & 5 Homeroom Teacher, Kajonkiet Khokkloy School Requirements: • Must be a Native English Speaker (or a native-level speaker from a country where English is the primary language of communication and instruction). • A Bachelor’s degree from an accredited university is a minimum requirement under the regulations set by the Thai Ministry of Education. • Specialized Credentials: A degree or teaching qualification specifically in Early Childhood Education, or a PGCE/PGDE is highly preferred. • Teaching Experience: Prior experience teaching young learners is strongly recommended and will be given priority. • Availability: Ready to start immediately or for the upcoming intake. Ideal Candidates: • Energetic, compassionate, resilient, proactive, and",
+      "itemId": "ajarn:158252",
+      "sourceHash": "e6d29a1d69201ccf66e5c20d0137939fb9cae0d3a1689722d84dec47fc2eec6b",
+      "sourceUrl": "https://www.ajarn.com/recruitment/jobs/158252/nes-primary-homeroom-teachers-in-phuket",
+      "title": "NES Kindergarten / Primary Homeroom Teachers",
+      "labels": [
+        {
+          "confidence": "high",
+          "evidence": "“Kindergarten 3 Homeroom Teacher” and “Primary… Homeroom Teachers”",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "These are general kindergarten and primary homeroom classroom positions, not specifically English-language roles.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "“Kindergarten 3 Homeroom Teacher,” “Primary 6 Homeroom Teachers,” and “Primary 4 & 5 Homeroom Teacher.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The listing advertises several general kindergarten and primary homeroom positions without identifying what subjects they teach.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "ajarn",
+      "company": "St.Joseph Mueang-Ake School",
+      "country": "Thailand",
+      "description": "NES Kindergarten & Primary Teachers Posted 2 days ago Native English Teachers for Kindergarten and Primary Saint Joseph Mueang Ake (Rangsit Area) Saint Joseph Mueang Ake is hiring Native English-Speaking Teachers for Kindergarten 1–3 and Primary. Starting immediately or by the end of July. This is a direct-hire position with the school. Eligibility Requirement: • Native English Speakers ONLY • Applicants must hold a passport from: USA • UK • Ireland • Canada • Australia • New Zealand Applications that do not meet both requirements will not be considered or responded to. Salary, Bonuses & Financial Benefits • Base Salary: 48,000 THB A small, refundable security deposit is deducted during the 90-day probation period • 12-month contract (paid for all months) • Employment Continuity Bonus: 1,250 THB/month, accumulated and paid in full at contract completion • End-of-Contract Bonus: 10,000 – 40,000 THB, based on service and performance • Work Permit — fully covered by the school • Annual Salary Increase: Guaranteed 2–3%, performance-based • Paid School Breaks (after probation): April: 14-30 paid days (Based on Years) October: 2 paid weeks Christmas: Approximately 9 paid Days All Thai public holidays paid • Health & accident insurance (after probation) • Housing assistance (service only not funding) available near a university area (only teachers coming directly from abroad) • Airport Pickup (service only not funding) (only teachers coming directly from abroad) Position Details • L",
+      "itemId": "ajarn:158265",
+      "sourceHash": "2bc61d3ae0927f26be1e582db0cee584f1ed1eecfb764b83e75baa9a4af25005",
+      "sourceUrl": "https://www.ajarn.com/recruitment/jobs/158265/nes-kindergarten-primary-teachers-in-pathum-thani",
+      "title": "NES Kindergarten & Primary Teachers",
+      "labels": [
+        {
+          "confidence": "medium",
+          "evidence": "“Native English Teachers for Kindergarten and Primary.”",
+          "label": "english_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The advertised classroom positions are identified as native English teachers for kindergarten and primary levels.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "“Native English Teachers for Kindergarten and Primary.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The listing seeks kindergarten and primary classroom teachers but does not identify the language or academic subjects they would teach.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "ajarn",
+      "company": "Thai Singapore International School",
+      "country": "Thailand",
+      "description": "NES Kindergarten Teacher Posted 1 day ago NES English Homeroom Teachers Must be in Thailand and can start immediately Must be available for a personal interview and teaching demonstration With documents legalized by the Thai government Police clearance from country of origin Two professional reference letters Basic Salary: THB48,000 (Primary) Housing: THB 3,000 Experience: THB 1,000 per year up to the 5th year Education Degree/PGCE: THB 5,000 5-Year Krusapa License: THB5,000 Least Total Monthly Salary : THB 51,000 Health and Accident Insurance Free lunch meals during workdays Free Document processing 20 Teaching Hours per week Free stationery One year contract Paid holidays Leave Credits Yearly increase Requirements: Teaching Experience Authenticated and Legalized by Thai Government Diploma and Transcript of Bachelor's Degree Passport with enough pages Accomplished Residence Notification form Police Background check About Thai Singapore International School Thai Singapore International School is a Tri-Lingual (English, Thai, Chinese) International School in Samut Prakan, offering basic Education from Nursery-Kindergarten, Primary (Singapore Curriculum), and Secondary (Cambridge Curriculum). A two-time Silver Mark Awardee of Education Development Trust (EDT), with 1,900+ students (90% Thai Nationals) and around 260 teaching staff of different nationalities, it is a continuously growing International school seated on a 45,000+sqm of property along Srinakarin Road. Join us! Send",
+      "itemId": "ajarn:158269",
+      "sourceHash": "760800a18acbc1409ab592011c7db36d97bb506a0eb1d7e9aeb97439d2b8d249",
+      "sourceUrl": "https://www.ajarn.com/recruitment/jobs/158269/nes-kindergarten-teacher-in-samut-prakan",
+      "title": "NES Kindergarten Teacher",
+      "labels": [
+        {
+          "confidence": "medium",
+          "evidence": "“NES English Homeroom Teachers” with no stated subject duties.",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "This is a classroom homeroom role, but the subjects or instructional focus are not specified clearly enough.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "“NES English Homeroom Teachers.”",
+          "label": "english_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The advertised kindergarten role is explicitly described as an English homeroom teaching position.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "ajarn",
+      "company": "The Anglo Singapore International School Bangkok.",
+      "country": "Thailand",
+      "description": "NES Head of Secondary English & Social Studies Posted 1 day ago Job Summary Anglo Singapore International School is seeking an experienced and dynamic Head of Secondary English & Social Studies to lead the English department and oversee the delivery of Lower Secondary Social Studies at our Bangkok campus. This role is ideal for an educator who is academically strong in English, well-versed in the Cambridge IGCSE English curriculum, and confident in supporting students from diverse language backgrounds, including those with English as an Additional Language (EAL). The successful candidate will play a key role in strengthening curriculum coherence, teaching quality, and student outcomes across the secondary years. Job Overview The Head of Secondary English & Social Studies is responsible for leading the English department across Secondary levels and overseeing the Lower Secondary Social Studies programme. The role reports to the Secondary Principal and works closely with senior leadership to ensure alignment with the school’s academic direction, curriculum expectations, and whole-school priorities. Key responsibilities include: - Leading high-quality teaching and learning in Secondary English, including curriculum planning, assessment, moderation, and standards. - Demonstrating strong expertise in the Cambridge IGCSE English curriculum, including First Language English (FLE) and English as a Second Language (ESL). - Ensuring coherence and progression across English pathways, in",
+      "itemId": "ajarn:158276",
+      "sourceHash": "061e2f566c0e4c6e5b05523bbefc7fb9695681301314b2ced3f2bc8a7d7074f1",
+      "sourceUrl": "https://www.ajarn.com/recruitment/jobs/158276/secondary-business-studies-teacher-in-bangkok",
+      "title": "NES Head of Secondary English & Social Studies",
+      "labels": [
+        {
+          "confidence": "medium",
+          "evidence": "“lead the English department and oversee the delivery of Lower Secondary Social Studies.”",
+          "label": "non_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The advertised position primarily leads and oversees departments and programmes; personal classroom duties are not stated.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "high",
+          "evidence": "“Head of Secondary English & Social Studies” responsible for English and “overseeing the Lower Secondary Social Studies programme.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The combined role spans English-language/English curriculum leadership and Social Studies, with neither presented as the sole primary teaching assignment.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "anesl",
+      "company": "",
+      "country": "China",
+      "description": "Position ID: LN3944\nEmployer’s Type: Public University\nJob’s Type: Teaching Job\nLocation: Dalian Liaoning\nStart Date: From: Anytime At least 6 Months\nVacancy: 5\nUpdate: 2024/9/27\nLabels of this Job: Tourist City Coastal City Provide Residence Permit,Work Visa and Work Permit for Education\nSpecial Note: Probation period: 30 days\nDegree: Only Masters/ Post Graduate or Above\nAge: Only From: 20 To: 60 years old\nWork Experience: Only at least 2 years\nNationality: Only Canada,United Kingdom,United States,Australia,New Zealand,Ireland,South Africa,\nSpecialty: Unrequired\nGender: Unrequired\nStatements: All job seekers are required to provide their University transcripts\nSalary/M: From RMB: 16000 To RMB: 20000\nPeriod/week: Teaching hours: 14 Office working Hours: 0\nStudent’s age: from: 18 to: 25 years old\nAirfare: RMB 8000 /Year\nTravel Allowance: RMB 2200 Year\nTelephone Allowance: RMB /Year\nMedical/Insurance: RMB 1360 /Year\nAllowance Apartment: Private Apartment\nApartment Detail: Computer,Office,Internet,Private Bedroom , TV,Private Kitchen ,Air Conditioning/ Heating,Private Bathroom,Phone,Furniture Water ,Washing Machine ,Electricity,Refrigerator,Gas ,\nContact Person: Mr.Corey Yang\nTel No.: +86-10-51663658\nE-Mail: hr@anesl.com",
+      "itemId": "anesl:20240904104041232",
+      "sourceHash": "b82fe32895436e3c1e30ec4419b8135a3ea93c27d18552736d7490a39bb4e230",
+      "sourceUrl": "https://cafe.anesl.com/jobdetail.aspx?id=20240904104041232",
+      "title": "Public University Education and Psychology Lecturers needed at Dalian,Liaoning",
+      "labels": [
+        {
+          "confidence": "medium",
+          "evidence": "Title advertises “Education and Psychology Lecturers.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The listing combines lecturer openings in two materially different disciplines without identifying a primary one.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "high",
+          "evidence": "Title: “Education and Psychology Lecturers”",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The lecturer vacancies teach the named academic subjects of education and psychology.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "anesl",
+      "company": "",
+      "country": "China",
+      "description": "Position ID: SAX1424\nEmployer’s Type: Public University\nJob’s Type: Teaching Job\nLocation: Taiyuan Shanxi\nStart Date: From: Anytime At least 6 Months\nVacancy: 5\nUpdate: 2024/9/10\nLabels of this Job: China 211 University Provide Residence Permit,Work Visa and Work Permit for Education\nSpecial Note: Probation period: 30 days\nDegree: Only Bachelors/ Degree or Above\nAge: Only From: 20 To: 60 years old\nWork Experience: Only at least 2 years\nSpecialty: Unrequired\nGender: Unrequired\nSalary/M: From RMB: 8000 To RMB: 20000\nPeriod/week: Teaching hours: 16 Office working Hours: 0\nStudent’s age: from: 18 to: 25 years old\nAirfare: RMB 8000 /Year\nTravel Allowance: RMB 2200 Year\nTelephone Allowance: RMB /Year\nMedical/Insurance: RMB 1360 /Year\nAllowance Apartment: Private Apartment\nApartment Detail: Computer,Office,Internet,Private Bedroom , TV,Private Kitchen ,Air Conditioning/ Heating,Private Bathroom,Phone,Furniture Water ,Washing Machine ,Electricity,Refrigerator,Gas ,\nStatements: A. Salary: Monthly salary is based on the applicant’s educational background, work experience, and other qualifications. a.Salary (before tax) for language teachers: 1.Bachelor’s degree, CNY 8,000/month; 2.Master’s Degree, CNY 10,000/month; 3.Ph.D, CNY 12,000/month; 4.An associate professor with Ph.D., CNY 15,000/month; 5.A professor with Ph.D., CNY 20,000/month. b.Salary (before tax) for experts in other special fields: 1.Ph.D, CNY 12,000/month; 2.An associate professor with Ph.D, CNY 15,000/month; 3.A professor with Ph.D., CNY 20,000/month. No salary is paid during the summer vacation (from July 1st to August 30th).\nContact Person: Mr.Corey Yang\nTel No.: +86-10-51663658\nE-Mail: hr@anesl.com",
+      "itemId": "anesl:20240910080555723",
+      "sourceHash": "f310536002f5a15d49db01b1d2f56fb4473529d84e492dceaa342239ba43bc7c",
+      "sourceUrl": "https://cafe.anesl.com/jobdetail.aspx?id=20240910080555723",
+      "title": "University Japanese and German Teachers needed at Taiyuan, Shanxi",
+      "labels": [
+        {
+          "confidence": "high",
+          "evidence": "Title: “Japanese and German Teachers needed.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "It advertises separate Japanese- and German-teaching roles without one primary position.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "high",
+          "evidence": "Title: “University Japanese and German Teachers”",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The vacancies teach Japanese and German, both named subjects other than English.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "anesl",
+      "company": "",
+      "country": "China",
+      "description": "Position ID: GX8634\nEmployer’s Type: Private University\nJob’s Type: Teaching Job\nLocation: Nanning Guangxi\nStart Date: From: Anytime At least 6 Months\nVacancy: 15\nUpdate: 2024/11/30\nLabels of this Job: Provide Residence Permit,Work Visa and Work Permit for Education Nationality Unrequired\nSpecial Note: Probation period: 30 days\nDegree: Only Bachelors/ Degree or Above\nAge: Only From: 20 To: 60 years old\nWork Experience: at least 2 years\nSpecialty: Unrequired\nGender: Unrequired\nSalary/M: From RMB: 8000 To RMB: 12000\nPeriod/week: Teaching hours: 18 Office working Hours: 5\nStudent’s age: from: 18 to: 25 years old\nAirfare: RMB 8000 /Year\nTravel Allowance: RMB 2000 Year\nTelephone Allowance: RMB /Year\nMedical/Insurance: RMB 1360 /Year\nAllowance Apartment: Private Apartment\nApartment Detail: Computer,Office,Internet,Private Bedroom , TV,Private Kitchen ,Air Conditioning/ Heating,Private Bathroom,Phone,Furniture Water ,Washing Machine ,Electricity,Refrigerator,Gas ,\nContact Person: Mr.Corey Yang\nTel No.: +86-10-51663658\nE-Mail: hr@anesl.com",
+      "itemId": "anesl:20241130175908258",
+      "sourceHash": "aa6c8ff6e414da738d6d44f15bf69ac9ec9932ca416964b6c5dcb8791555340b",
+      "sourceUrl": "https://cafe.anesl.com/jobdetail.aspx?id=20241130175908258",
+      "title": "French, Spanish, German, Thai, Vietnamese, Cambodian, Indonesian, Burmese foreign teachers",
+      "labels": [
+        {
+          "confidence": "high",
+          "evidence": "Title lists “French, Spanish, German, Thai, Vietnamese, Cambodian, Indonesian, Burmese foreign teachers.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The listing seeks teachers for numerous distinct languages without specifying one primary role.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "high",
+          "evidence": "Title lists “French, Spanish, German, Thai, Vietnamese, Cambodian, Indonesian, Burmese foreign teachers”",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The vacancies teach several named foreign-language subjects other than English.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "anesl",
+      "company": "",
+      "country": "China",
+      "description": "Position ID: JS0643\nEmployer’s Type: Private International School\nJob’s Type: Teaching Job\nLocation: Nanjing Jiangsu\nStart Date: From: Anytime At least 10 Months\nVacancy: 5\nUpdate: 2024/12/30\nLabels of this Job: Provide Residence Permit,Work Visa and Work Permit for Education\nSpecial Note: Probation period: 30 days\nDegree: Only Bachelors/ Degree or Above\nAge: Only From: 20 To: 60 years old\nWork Experience: Only at least 2 years\nNationality: Canada,United Kingdom,United States,Australia,New Zealand,Ireland,South Africa,\nSpecialty: Unrequired\nGender: Unrequired\nSalary/M: From RMB: 27000 To RMB: 30000\nPeriod/week: Teaching hours: 18 Office working Hours: 5\nStudent’s age: from: 12 to: 19 years old\nCourse: Mathematical Science Natural Science\nAirfare: RMB /Year\nTravel Allowance: RMB Year\nTelephone Allowance: RMB /Year\nMedical/Insurance: RMB 1360 /Year\nAllowance Apartment: Private Apartment\nApartment Detail: Computer,Office,Internet,Private Bedroom , TV,Private Kitchen ,Air Conditioning/ Heating,Private Bathroom,Phone,Furniture Water ,Washing Machine ,Electricity,Refrigerator,Gas ,\nContact Person: Mr.Corey Yang\nTel No.: +86-10-51663658\nE-Mail: hr@anesl.com",
+      "itemId": "anesl:20241230155931728",
+      "sourceHash": "04bc60efcbbc67eae3b412a0ccd88c302940106831d8d316f0222f26fa67424a",
+      "sourceUrl": "https://cafe.anesl.com/jobdetail.aspx?id=20241230155931728",
+      "title": "OCT courses: Science/Mathematics/Humanities and Social sciences Teachers needed",
+      "labels": [
+        {
+          "confidence": "high",
+          "evidence": "Title lists “Science/Mathematics/Humanities and Social sciences Teachers.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "It advertises teachers across several materially different academic disciplines without one primary role.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "high",
+          "evidence": "“Course: Mathematical Science Natural Science”",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The classroom role teaches named academic subjects other than English.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "anesl",
+      "company": "ANESL",
+      "country": "China",
+      "description": "Position ID: YN5892\nEmployer’s Type: Public University\nJob’s Type: Teaching Job\nLocation: Kunming Yunnan\nStart Date: From: Anytime At least 9 Months\nVacancy: 5\nUpdate: 2025/4/28\nLabels of this Job: Tourist City Areas Inhabited by Ethnic Minorities Famous Universities/Schools Provide Residence Permit,Work Visa and Work Permit for Education\nSpecial Note: Probation period: 30 days\nDegree: Only Bachelors/ Degree or Above\nAge: Only From: 20 To: 60 years old\nWork Experience: Only at least 2 years\nNationality: Thailand,Vietnam,Myanmar,\nSpecialty: Unrequired\nGender: Unrequired\nSalary/M: From RMB: 8000 To RMB: 12000\nPeriod/week: Teaching hours: 14 Office working Hours: 50\nStudent’s age: from: 18 to: 25 years old\nAirfare: RMB 8000 /Year\nTravel Allowance: RMB 2000 Year\nTelephone Allowance: None /Year\nMedical/Insurance: RMB 1360 /Year\nAllowance Apartment: Private Apartment\nApartment Detail: Computer,Office,Internet,Private Bedroom , TV,Private Kitchen ,Air Conditioning/ Heating,Private Bathroom,Phone,Furniture Water ,Washing Machine ,Electricity,Refrigerator,Gas ,\nContact Person: Mr.Corey Yang\nTel No.: +86-10-51663658\nE-Mail: hr@anesl.com",
+      "itemId": "anesl:20250428140150439",
+      "sourceHash": "fcaf834aa593ddd3f3d254fb4fe23654e39a0595dba345bc01815c1c3c459816",
+      "sourceUrl": "https://cafe.anesl.com/jobdetail.aspx?id=20250428140150439",
+      "title": "University Thai, Vietnamese and Burmese Teachers needed in Kunming, Yunnan",
+      "labels": [
+        {
+          "confidence": "high",
+          "evidence": "Title: “Thai, Vietnamese and Burmese Teachers needed.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The listing advertises teachers for three distinct languages without one primary role.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "high",
+          "evidence": "Title: “University Thai, Vietnamese and Burmese Teachers”",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The advertised teaching vacancies cover named non-English language subjects.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "anesl",
+      "company": "",
+      "country": "China",
+      "description": "Position ID: JS1961\nEmployer’s Type: Private Training Center\nJob’s Type: Teaching Job\nLocation: Nantong Jiangsu\nStart Date: From: Anytime At least 6 Months\nVacancy: 2\nUpdate: 2026/4/19\nLabels of this Job: Provide Residence Permit,Work Visa and Work Permit for Education\nSpecial Note: Probation period: 30 days\nDegree: Bachelors/ Degree or Above\nAge: From: 20 To: 60 years old\nWork Experience: at least 2 years\nSpecialty: Unrequired\nGender: Unrequired\nStatements: UEFA B level or higher qualification required.\nSalary/M: From RMB: 15000 To RMB: 20000\nPeriod/week: Teaching hours: 40 Office working Hours: 0\nStudent’s age: from: 6 to: 18 years old\nAirfare: RMB 15000 /Year\nTravel Allowance: RMB Year\nTelephone Allowance: RMB /Year\nMedical/Insurance: RMB 1360 /Year\nAllowance Apartment: Private Apartment\nApartment Detail: Computer,Office,Internet,Private Bedroom , TV,Private Kitchen ,Air Conditioning/ Heating,Private Bathroom,Phone,Furniture Water ,Washing Machine ,Electricity,Refrigerator,Gas ,\nContact Person: Mr.Corey Yang\nTel No.: +86-10-51663658\nE-Mail: hr@anesl.com",
+      "itemId": "anesl:20260419160447485",
+      "sourceHash": "0cc2232ba8acfedb700be4c947f661ad70ecdff686691233a581c4638cb2ca69",
+      "sourceUrl": "https://cafe.anesl.com/jobdetail.aspx?id=20260419160447485",
+      "title": "Nationality Unrequired, Recruiting Certified European Football Coaches, Nantong, Jiangsu",
+      "labels": [
+        {
+          "confidence": "high",
+          "evidence": "Title: “Recruiting Certified European Football Coaches”; UEFA B qualification required.",
+          "label": "non_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The advertised position is for football coaches rather than classroom teachers.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "high",
+          "evidence": "Title: “Recruiting Certified European Football Coaches”; requires “UEFA B level or higher” and lists teaching hours.",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The role instructs students in football rather than English language.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "eslcafe-modern",
+      "company": "K Recruiting",
+      "country": "Gangnam-gu (Seoul)",
+      "description": "Kindergarten in, - Gangnam-gu, Seoul and Songpa-gu, Seoul is looking for teachers to teach Children (kindergarten, early elementary) Salary & Benefits Salary and vacation are negotiable depending on your teaching experience in Korea and the housing option chosen. Base Salary: KRW 2.6M – 3.2M/month Housing Provided (KRW 600K–800K value) Vacation: < 1 year Korea teaching experience: 11 days/year ≥ 1 year Experience : 11–15 days/year (based on interview) starting from June, July, August, September,October 2026 minimum requirement of a three or four year BA in any discipline. ** Requirements 1. Native English speaker (Nationality: USA, Canada, British, Irish, Australia, New Zealand, or South Africa) 2. B/A or B/S Degree Holder or Higher 3. USA, CA, UK, AUS, NZ, IRE or South Africa passport holders - Working Conditions: - Severance : One month salary at the completion of 'one full- year' contract - Flight fee : When you finish 1 year contract, School provides One way flight ticket (under 1.2 Million won) - National Pension : School support 50% - National Health Insurance : School support 50% - Working hours : 9am ~ 6pm) - Working day : Monday ~ Friday - Student : Kindergarten + early elementary Working Environment - Structured, set curriculum program We have run these schools since 2001 and 2007.(over 20 years) The financial status is very good. The salary should be paid on time. We have run 3 branches in Seoul. There are 8 ~ 10 foreign teachers in each branch. (All total would b",
+      "itemId": "eslcafe-modern:asapkindergarten-and-early-elementary-best-wo-7",
+      "sourceHash": "8d01d241b9477d2f4f0f508dae5202652fd053eb2558bff4c60e7a03d2ed8bc3",
+      "sourceUrl": "https://www.eslcafe.com/postajob-detail/asapkindergarten-and-early-elementary-best-wo-7",
+      "title": "🍎🍎🍎 ASAP_ Best working conditions / High Salary / (or long vacations) / Gangnam-gu or Songpa-gu(Seoul) /June, July, August, September,October 2026_Kindergarten and early elementary /🍎🍎🍎",
+      "labels": [
+        {
+          "confidence": "medium",
+          "evidence": "“teachers to teach Children (kindergarten, early elementary)” with no subject or English-course description.",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "It advertises classroom teachers for young children but does not identify what they will teach.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "Requires a “Native English speaker” to teach “Kindergarten + early elementary” students.",
+          "label": "english_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The advertised role is teaching young learners at a Korean English academy, though English is established mainly through the native-speaker and visa context.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "eslcafe-modern",
+      "company": "YBM ECC",
+      "country": "GangNam-Gu",
+      "description": "YBM/ECC, located at the most desirable district, GangNam-Gu of Seoul, is looking for teachers to teach children (kindergarten, elementary) starting September. Teaches who are already in Korea are also encouraged to apply. No experience is necessary, only a minimum requirement of a three or four year BA in any discipline. As the largest and most successful organization in our field today, we can offer you the followings: Most comfortable working hours, Monday to Friday from 9AM to 6PM Short orientation and training including class observation before starting (paid) 200,000 won relocation bonus paid to all successful applicants upon arrival Pickup from airport to apartment Free furnished airconditioned modern single studio type apartments, walking distance to the school located at heart of Seoul GangNam or housing allowance 600,000 won / month Trip ticket to Seoul, couriered to your doorstep 250,000 won bonus for unused sick days Severance bonus of one month's salary paid upon completion of contract National medical insurance (half paid by the school, half by the teacher, about US $20/month, includes checkups and dental care) Contract salary starting at 2.3 million won + extra or above National Pension Fund Structured, set curriculum program, teacher’s guide page by page YBM SISA has been in operation for over 70 years with the ECC division running for the last 30 years We offer a positive and reliable team-oriented environment to work in whether you are looking for your first",
+      "itemId": "eslcafe-modern:best-location-gangnam-gu-seoul-opening-positi-62",
+      "sourceHash": "2ee8f697e6c1099f844617881999b4be94548e2a695f90a1e77999eb21d73bdf",
+      "sourceUrl": "https://www.eslcafe.com/postajob-detail/best-location-gangnam-gu-seoul-opening-positi-62",
+      "title": "BEST LOCATION, GangNam-Gu, Seoul, Opening Positions for September",
+      "labels": [
+        {
+          "confidence": "medium",
+          "evidence": "“teachers to teach children (kindergarten, elementary)” without naming English or another subject.",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The listing identifies student levels but not the instructional subject.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "YBM/ECC seeks teachers for “children (kindergarten, elementary)” using a “structured, set curriculum.”",
+          "label": "english_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The role is at YBM ECC and targets native-level foreign teachers for young-learner instruction, making English teaching clear from context despite the omitted subject name.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "eslcafe-modern",
+      "company": "Little Leader's Institute",
+      "country": "Daegu",
+      "description": "Fulltime / Kindy + elementary https://www.instagram.com/liliinstitute/ ■ Location : Daegu, Dalseogu https://maps.app.goo.gl/4ep3s7PRSfrtCEZr9 ■ Hours: (Mon – Fri) 9:00AM -18:00PM ■ Visa : E2 / F visa / must have all the apostilled doc ■ Salary Range : From 2,600,000~ Depends on experience ■ 5 foreign teachers working, hiring 1 teacher. ■ Starting Date: August 2026 < To apply, please send me email with the following information. > E-mail : [email protected] 1. Nationality 2. CV with work experience and degree / diploma 3. Skype id or google meets ID (for the video interview) 4. Introduction video if you have any. To apply, email [email protected]",
+      "itemId": "eslcafe-modern:direct-hire-daegu-city-fulltime-starting-in-a",
+      "sourceHash": "cfbe1e2745b359e90a71128e7fecfd5400a0f37e60543f9f68c66f3b4042784f",
+      "sourceUrl": "https://www.eslcafe.com/postajob-detail/direct-hire-daegu-city-fulltime-starting-in-a",
+      "title": "Direct hire Starting August Kindy+Elementary",
+      "labels": [
+        {
+          "confidence": "high",
+          "evidence": "“Fulltime / Kindy + elementary” and “hiring 1 teacher.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The sparse listing advertises a teacher but gives no subject or course information.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "A full-time “Kindy + elementary” teacher opening accepting “E2 / F visa” applicants and requesting nationality details.",
+          "label": "english_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "This appears to be a standard E-2-eligible English-academy teaching role, but the subject is not stated explicitly.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "eslcafe-modern",
+      "company": "Christian American School of Guatemala",
+      "country": "Guatemala",
+      "description": "🏫 We are now hiring a full-time on-site roles for the 2026-2027 School Year at Christian American School of Guatemala located in Guatemala City, San Cristobal. We are hiring for 6th-12th grade Science, Bible and JROTC teachers. As a CAS Teacher, you will be responsible for planning, implementing, and evaluating a developmentally appropriate instructional program in a Christian-based educational environment. You will also need to supervise children’s activities in the classroom and on the playground, prepare materials and supplies for daily activities, and communicate with parents about their child’s progress. ✨ Why CAS? ✨ - Teach engaged students in a supportive environment - Be part of a school that emphasizes academic rigor and student growth - Help shape the next generation of leaders in science Life in Zone 8, Guatemala City - Central Location – Access to the city center, malls, grocery stores, and restaurants. - Transportation Options – Public transport and main roadways nearby. - Affordable Cost of Living (Relocation) – Comfortable housing provided by us with all utilities and internet included. Everyday expenses such as food and clothing are budget-friendly. - Cultural Opportunities – Enjoy Guatemalan cuisine, traditions, and warm hospitality. - Weekend Adventures – Just a few hours away from Antigua, Lake Atitlán, and Pacific beaches. 🎓 Seeking Qualifications: 🎓 - Passionate about teaching young children - Strong communication skills with students, parents, and collea",
+      "itemId": "eslcafe-modern:hiring-full-time-2026-2027-sciencebiblejrotc",
+      "sourceHash": "4e4a960e754f7873ae952dfb3c7ff8036d2f1bc3bfa42ccd34262b34b556c6ce",
+      "sourceUrl": "https://www.eslcafe.com/postajob-detail/hiring-full-time-2026-2027-sciencebiblejrotc",
+      "title": "Hiring full-time 2026-2027 SCIENCE,BIBLE,JROTC Teachers at Christian American School of Guatemala",
+      "labels": [
+        {
+          "confidence": "high",
+          "evidence": "“hiring for 6th-12th grade Science, Bible and JROTC teachers.”",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The classroom positions teach named non-English subjects.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "high",
+          "evidence": "“Hiring for 6th-12th grade Science, Bible and JROTC teachers.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The listing advertises several materially different teaching positions without identifying one primary role.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "eslcafe-modern",
+      "company": "Embark Recruiting",
+      "country": "Busan & Ulsan",
+      "description": "Poly Busan Gangseo Location Gangseo-gu, Busan Start Date Aug 1, 2026 Student Type Kindergarten & Elementary Salary Starting from 2.5 million KRW monthly Working Hours Monday – Friday, 9:00 A.M – 6:00 P.M. Benefits 4 Major Insurances Severance Pay Paid Leaves plus all Korean National Holidays Housing or housing allowance provided One-way airfare reimbursement for candidates outside of Korea EiE Busan Dadae Location Saha-gu, Busan Start Date ASAP Student Type Elementary & Middle Salary Starting from 2.5 million KRW monthly Working Hours Monday - Friday, 1:30 - 9:00 P.M. Benefits 4 Major Insurances Severance Pay Paid Leaves plus all Korean National Holidays Housing or housing allowance provided One-way airfare reimbursement for candidates outside of Korea RISE Busan Dongnae Location Dongnae-gu, Busan Start Date Sep 1, 2026 Student Type Kindergarten & Elementary Salary Starting from 2.4 million KRW monthly Working Hours M/W/F 9:00 A.M. - 6:00 P.M. Tu/Thu 9:00 A.M. - 5:30 P.M. Benefits 4 Major Insurances Severance Pay Paid Leaves plus all Korean National Holidays Housing or housing allowance provided One-way airfare reimbursement for candidates outside of Korea Clever Kinder Location Gangseo-gu, Busan Start Date Aug 1, 2026 Student Type Pre-K & Kindergarten Salary Starting from 2.7 million KRW monthly Working Hours Monday – Friday, 9:00 A.M – 6:00 P.M. Benefits 4 Major Insurances Severance Pay Paid Leaves plus all Korean National Holidays Housing or housing allowance provided One-",
+      "itemId": "eslcafe-modern:independent-schools-all-across-korea-small-cl-3",
+      "sourceHash": "7f4289aa35d83227d64a5d3c5edc7f22e753dfdb23ee5b1fcd48f2f333dc506e",
+      "sourceUrl": "https://www.eslcafe.com/postajob-detail/independent-schools-all-across-korea-small-cl-3",
+      "title": "Teach by the ocean: Find your next position here!",
+      "labels": [
+        {
+          "confidence": "high",
+          "evidence": "Entries specify only student types such as “Kindergarten & Elementary” and “Elementary & Middle.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The listing gives several schools, age groups, and employment terms but never identifies the subject taught.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "Openings at “Poly,” “EiE,” and “RISE” for kindergarten through middle-school students.",
+          "label": "english_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The academy openings are for young-learner English instruction, although the truncated text identifies the student levels more clearly than the subject.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "eslcafe-modern",
+      "company": "Embark Recruiting",
+      "country": "Gwangju & Mokpo",
+      "description": "Poly Gwangju Bongseon Location Nam-gu, Gwangju Start Date Aug 1, 2026 Student Type Kindergarten & Elementary Salary Starting from 2.5 million KRW monthly Working Hours Mon & Wed & Fri 9:00 A.M. - 6:00 P.M. Tue & Thu 9:00 A.M. - 6:50 P.M. Benefits 4 Major Insurances Severance Pay Paid Leaves plus all Korean National Holidays Housing or housing allowance provided One-way airfare reimbursement for candidates outside of Korea Hansol YBM ECC Location Gwangju-si, Gyeonggi-do Start Date ASAP Student Type Pre-K & Kindergarten Salary Starting from 2.4 million KRW monthly Working Hours Monday – Friday, 9:00 A.M – 6:00 P.M. Benefits 4 Major Insurances Severance Pay Paid Leaves plus all Korean National Holidays Housing or housing allowance provided One-way airfare reimbursement for candidates outside of Korea Poly Mokdong Location Yangcheon-gu, Seoul Start Date Sep 1, 2026 Student Type Kindergarten & Elementary Salary Starting from 2.8 million KRW monthly Working Hours M/W/F 9:00 A.M. - 6:10 P.M. Tu/Th 9:00 A.M. - 6:55 P.M. Benefits 4 Major Insurances Severance Pay Paid Leaves plus all Korean National Holidays Housing or housing allowance provided One-way airfare reimbursement for candidates outside of Korea YBM ECC Gwangju Suwan Location Gwangsan-gu, Gwangju Start Date Oct 1, 2026 Student Type Elementary Salary Starting from 2.4 million KRW monthly Working Hours M/W/F 1:00 - 9:00 P.M. Tu/Th 1:00 - 8:00 P.M. Benefits 4 Major Insurances Severance Pay Paid Leaves plus all Korean National H",
+      "itemId": "eslcafe-modern:july-start-date-seoul-cheonan-christian-acade",
+      "sourceHash": "c1a28ce3812dc2a2dd9b5785af77518b7263c7f75f020187477857f7c3b47eb7",
+      "sourceUrl": "https://www.eslcafe.com/postajob-detail/july-start-date-seoul-cheonan-christian-acade",
+      "title": "Gwangju and Mokpo, Open Positions Today!",
+      "labels": [
+        {
+          "confidence": "high",
+          "evidence": "Entries state student types such as “Kindergarten & Elementary” and “Pre-K & Kindergarten” without a subject.",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The multi-school advertisement identifies learner age groups but not what subject the teachers would teach.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "Openings at English-academy brands including “Poly” and “YBM ECC,” with kindergarten and elementary students.",
+          "label": "english_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The listed academy openings are for the same general young-learner English-teaching role, although the subject is not explicitly repeated.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "eslcafe-modern",
+      "company": "K Recruiting",
+      "country": "Gangnam-gu(Seoul)",
+      "description": "Kindergarten in, - Gangnam-gu, Seoul and Songpa-gu, Seoul is looking for teachers to teach Children (kindergarten, early elementary) Salary & Benefits Salary and vacation are negotiable depending on your teaching experience in Korea and the housing option chosen. Base Salary: KRW 2.6M – 3.2M/month Housing Provided Vacation: < 1 year Korea teaching experience: 11 days/year ≥ 1 year Experience : 11–15 days/year (based on interview) starting from July,August, September, October 2026 minimum requirement of a three or four year BA in any discipline. ** Requirements 1. Native English speaker (Nationality: USA, Canada, British, Irish, Australia, New Zealand, or South Africa) 2. B/A or B/S Degree Holder or Higher 3. USA, CA, UK, AUS, NZ, IRE or South Africa passport holders - Working Conditions: - Severance : One month salary at the completion of 'one full- year' contract - Flight fee : When you finish 1 year contract, School provides One way flight ticket (under 1.2 Million won) - National Pension : School support 50% - National Health Insurance : School support 50% - Working hours : 9am ~ 6pm) - Working day : Monday ~ Friday - Student : Kindergarten + early elementary Working Environment - Structured, set curriculum program We have run these schools since 2001 and 2007.(over 20 years) The financial status is very good. The salary should be paid on time. We have run 3 branches in Seoul. There are 8 ~ 10 foreign teachers in each branch. (All total would be around 27 foreign teahce",
+      "itemId": "eslcafe-modern:kindergarten-and-early-elementary-best-workin-2",
+      "sourceHash": "d02442bf905f70ba025bbb24400b8d30cb2b241aa6f1f051015cefc747a49c20",
+      "sourceUrl": "https://www.eslcafe.com/postajob-detail/kindergarten-and-early-elementary-best-workin-2",
+      "title": "🍎🍎🍎 Best working conditions / High Salary  / (or long vacations) / Gangnam-gu or Songpa-gu(Seoul) /  July,August, September,October  2026_Kindergarten and early elementary /🍎🍎🍎",
+      "labels": [
+        {
+          "confidence": "medium",
+          "evidence": "“teachers to teach Children (kindergarten, early elementary)” with no course subject identified.",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The role involves classroom teaching, but the subject or language taught is not stated.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "Seeks native English-speaking teachers to teach “kindergarten, early elementary” using a “structured, set curriculum.”",
+          "label": "english_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The advertised role is teaching young learners at a Korean English academy, though the subject is implied rather than directly stated.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "eslcafe-modern",
+      "company": "Angloville - Discover Europe",
+      "country": "Asia (Thailand",
+      "description": "Location: Asia (Thailand, South Korea, Japan, Vietnam) Type: TEFL Training & Teaching Placements Duration: 4-week TEFL Course + Ongoing Teaching Opportunities (2026) About Angloville Angloville has been connecting people and creating international opportunities since 2011. With over a decade of experience in language education and travel programmes, we now support aspiring teachers in starting a new chapter abroad through our Asia TEFL placements. Our programmes combine accredited TEFL training, real classroom teaching practice, and full support in transitioning to life and work in Asia. Whether you’re starting from scratch or already TEFL-qualified, we provide a clear, supported pathway into teaching English in some of Asia’s most exciting destinations. Role Description We are inviting motivated, open-minded individuals to join our Teach English in Asia programmes. This opportunity allows you to gain a recognised TEFL qualification, hands-on teaching experience, and the confidence needed to begin a paid teaching career abroad. You’ll train on-site in Asia, practise teaching with real learners, and receive guidance every step of the way — from training to securing a teaching position. 👉 APPLY NOW How It Works Complete a 4-week TEFL course Train in person with experienced tutors at one of our centres in Asia. Practise in a real classroom Teach your own lessons, receive feedback, and develop practical skills you’ll actually use on the job. Already TEFL qualified? Great news — y",
+      "itemId": "eslcafe-modern:teach-english-in-asia-with-on-site-tefl-job-s",
+      "sourceHash": "798fa34debb2c1269c1987f958b10bd49e58325c02487e5be37d41c788839e5a",
+      "sourceUrl": "https://www.eslcafe.com/postajob-detail/teach-english-in-asia-with-on-site-tefl-job-s",
+      "title": "Teach English in Asia with On-Site TEFL & Job Support",
+      "labels": [
+        {
+          "confidence": "high",
+          "evidence": "“Teach English in Asia programmes” and “practise teaching with real learners”",
+          "label": "english_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The program is a supported pathway into English-teaching placements and includes real classroom instruction.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "“4-week TEFL Course + Ongoing Teaching Opportunities” and “gain a recognised TEFL qualification” before securing a position.",
+          "label": "non_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The immediate advertised opportunity is a TEFL training and placement program rather than a specific paid teaching vacancy.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "seriousteachers",
+      "company": "American International School of Conakry",
+      "country": "Guinea",
+      "description": "Required Degrees: Bachelors Degree Fields of Expertise: High School, Salary: Negotiable American International School of Conakry Details: We have an opening for a Middle School English Teacher for the 2023-24 academic year beginning in August 2023. The tax-free salary is competititive and comes with a two-bedroom fully furnished apartment in proximity to the school, full health insurance for self and dependents, one tuition waiver for child. We are a small PK-12 school of only 108 students using the AERO Standards to deliver inquiry-based instruction. We are the only school in Guinea accredited by the Middle States Association.",
+      "itemId": "277600",
+      "sourceHash": "fdaebf2177f99b10b3950687e410584b0690da4e7e02fe6a8db502b728df7e79",
+      "sourceUrl": "https://www.seriousteachers.com/job_details/277600/0/",
+      "title": "Middle School English Teacher",
+      "labels": [
+        {
+          "confidence": "high",
+          "evidence": "“Middle School English Teacher” at a “PK-12 school” using “AERO Standards”",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "This is a school English-subject position under academic standards, rather than an ESL/EFL language-learning role.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "high",
+          "evidence": "“opening for a Middle School English Teacher”",
+          "label": "english_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "The primary classroom position teaches middle-school English, which includes English literacy instruction.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "seriousteachers",
+      "company": "",
+      "country": "Mexico",
+      "description": "Required Degrees: B. A. or B. Ed. Fields of Expertise: ESL/EFL, Elementary, Kindergarten, Salary: $2,250 USD Details: AVENUE SCHOOL is a new institution that will open its doors next August 2026. Our commitment is to offer a high quality K-2 school, academically strong, with immersion in English for Mexican Spanish students. The goal is to become completely bilingual by Grade 6. Our model is 100% English in 2K and 3K, and 50/50 Spanish/English from Grades 1 to 6. We are starting the process of becoming an IB school. We are looking for native English teachers, who preferably hold Teaching Certification and have at least one year of experience. Yearly salary ranges from $19,800 USD to $29,700 USD depending on position and qualifications. Also housing and utilities, round-trip flight to Torreón (from the USA commercial flight), medical comprehensive coverage and a one-year contract from August to June. Cost of living permits to save around $6,700 to $9,300 USD at the end of the contract.",
+      "itemId": "280239",
+      "sourceHash": "c1bc642208182521cfbfb64b5ff5594a8360dfeebd9a17e0d19605243892225d",
+      "sourceUrl": "https://www.seriousteachers.com/job_details/280239/0/",
+      "title": "K-2 Teacher",
+      "labels": [
+        {
+          "confidence": "medium",
+          "evidence": "“K-2 Teacher” in a school offering “immersion in English.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "This is a general K–2 classroom position, but the specific subjects taught are not identified; English is described mainly as the immersion medium.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "“K-2 school” using “100% English” and “50/50 Spanish/English” instructional models",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "This is a general K–2 classroom role in an English-immersion school, rather than dedicated English-language instruction.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    },
+    {
+      "board": "seriousteachers",
+      "company": "",
+      "country": "Kyrgyzstan",
+      "description": "Required Degrees: Bachelor’s Degree or higher Fields of Expertise: ESL/EFL, Elementary, ESL to Children, Kindergarten, Primary Salary: Negotiable Details: Primary Homeroom Teacher – Ellipse International School, Bishkek, Kyrgyzstan Ellipse International School is seeking a dedicated, enthusiastic, and qualified Primary Homeroom Teacher to join our growing international team for the 2026–2027 academic year. We are looking for a passionate educator who is committed to creating an engaging and supportive learning environment while delivering high-quality education to primary students. Requirements: - Bachelor’s degree or higher in Education or a related field. - Valid teaching qualification/certification is preferred. - Strong English communication skills (native or near-native proficiency preferred). - Experience with the Cambridge Primary Curriculum is an advantage. - Passion for working with young learners and collaborating within an international school environment. We Offer: - Competitive salary based on qualifications and experience. - Accommodation provided by the school. - Work visa and permit sponsorship. - Round-trip airfare. - Professional, supportive, and multicultural wor",
+      "itemId": "280352",
+      "sourceHash": "f6163187ef3c142299ed5bd795993c7ce277314355ca1d5e92b9d72157efa46c",
+      "sourceUrl": "https://www.seriousteachers.com/job_details/280352/0/",
+      "title": "Primary Homeroom Teacher",
+      "labels": [
+        {
+          "confidence": "medium",
+          "evidence": "“Primary Homeroom Teacher” delivering the “Cambridge Primary Curriculum.”",
+          "label": "unclear",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-a",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "This is a general primary homeroom role, but no specific academic subject is named.",
+          "reasoningEffort": "medium"
+        },
+        {
+          "confidence": "medium",
+          "evidence": "“Primary Homeroom Teacher” with “Experience with the Cambridge Primary Curriculum”",
+          "label": "subject_teaching",
+          "model": "gpt-5.6-sol",
+          "passId": "codex-b",
+          "promptVersion": "jobkit-listing-taxonomy-v1",
+          "rationale": "This is a primary homeroom classroom role delivering the general Cambridge curriculum, not a dedicated ESL role.",
+          "reasoningEffort": "medium"
+        }
+      ]
+    }
+  ],
+  "corpusVersion": "jobkit-jina-real-listings-v1"
+}

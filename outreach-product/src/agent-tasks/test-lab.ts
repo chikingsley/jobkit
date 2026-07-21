@@ -178,9 +178,8 @@ ${JSON.stringify(testCase.input)}
 ${jinaSection}`;
 }
 
-export function testLabModel(testCase: TestLabCase, hybrid: boolean) {
+export function testLabModel(testCase: TestLabCase) {
   const useTerra =
-    hybrid ||
     testCase.capability === "deepsearch" ||
     testCase.capability === "reader" ||
     testCase.capability === "revision" ||

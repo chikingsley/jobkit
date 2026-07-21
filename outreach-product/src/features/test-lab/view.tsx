@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TestLabCaseBrowser } from "@/features/test-lab/case-browser";
+import { ClassificationReview } from "@/features/test-lab/classification-review";
 import { DeliveryLab } from "@/features/test-lab/delivery-lab";
 import { DocumentLab } from "@/features/test-lab/document-lab";
 import { TestLabRunResult } from "@/features/test-lab/run-result";
@@ -30,6 +31,8 @@ const ACTIVE_REFRESH_MS = 2000;
 export function TestLabView({ request }: { request: ApiRequest }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedCaseId = searchParams.get("case") ?? "";
+  const selectedClassificationId = searchParams.get("classification") ?? "";
+  const activeTab = searchParams.get("tab") ?? "cases";
   const { data, isLoading, mutate } = useSWR(
     "/api/test-lab",
     async (path) => (await (await request(path)).json()) as TestLabResponse,
@@ -102,9 +105,21 @@ export function TestLabView({ request }: { request: ApiRequest }) {
         </div>
       </div>
 
-      <Tabs defaultValue="cases">
+      <Tabs
+        onValueChange={(value) => {
+          setSearchParams((current) => {
+            const next = new URLSearchParams(current);
+            next.set("tab", value);
+            return next;
+          });
+        }}
+        value={activeTab}
+      >
         <TabsList variant="line">
           <TabsTrigger value="cases">Cases</TabsTrigger>
+          <TabsTrigger value="classification">
+            Classification review
+          </TabsTrigger>
           <TabsTrigger value="runs">Run history</TabsTrigger>
           <TabsTrigger value="documents">Document OCR</TabsTrigger>
           <TabsTrigger value="delivery">Delivery sink</TabsTrigger>
@@ -123,6 +138,24 @@ export function TestLabView({ request }: { request: ApiRequest }) {
                 } else {
                   next.delete("case");
                 }
+                return next;
+              });
+            }}
+          />
+        </TabsContent>
+        <TabsContent value="classification">
+          <ClassificationReview
+            request={request}
+            selectedCaseId={selectedClassificationId}
+            setSelectedCaseId={(itemId) => {
+              setSearchParams((current) => {
+                const next = new URLSearchParams(current);
+                if (itemId) {
+                  next.set("classification", itemId);
+                } else {
+                  next.delete("classification");
+                }
+                next.set("tab", "classification");
                 return next;
               });
             }}

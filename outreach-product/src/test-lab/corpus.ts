@@ -28,7 +28,7 @@ export interface TestLabCase {
   version: string;
 }
 
-export const TEST_LAB_CORPUS_VERSION = "jobkit-eval-2026-07-19-v2";
+export const TEST_LAB_CORPUS_VERSION = "jobkit-eval-2026-07-20-v3";
 
 const syntheticSource = {
   kind: "synthetic" as const,
@@ -225,6 +225,29 @@ const rerankingSeeds = [
     "Maestra de arte para jardín de infancia",
     "Especialista en nóminas corporativas",
   ],
+] as const;
+
+const rerankingProfiles = [
+  "CELTA-qualified English teacher with six years teaching business English to working adults in groups and one-to-one lessons.",
+  "University EAP lecturer with an MA in Applied Linguistics and experience teaching academic writing to engineering students.",
+  "IELTS instructor with four years teaching speaking, writing, and exam strategy to adult candidates.",
+  "English teacher seeking an overseas role with employer-provided housing; open age-group preference.",
+  "Part-time English instructor available on weekday evenings with extensive adult classroom experience.",
+  "Licensed primary teacher with English literacy experience in grades 2 through 5.",
+  "Remote English tutor experienced in one-to-one online lessons for teenagers and adults.",
+  "University English lecturer targeting Poland, with academic writing and presentation-skills experience.",
+  "TEFL-certified United States citizen who requires employer support for the local work visa.",
+  "Secondary English teacher with five years teaching teenagers; preschool and corporate training are excluded.",
+  "Experienced English instructor prioritizing compensation while retaining paid employment and a teaching role.",
+  "Public-school English teacher with classroom-management experience and no sales or administrative background.",
+  "English teacher targeting Georgia, particularly Tbilisi; other countries and non-English subjects are excluded.",
+  "English lecturer who prefers a light teaching load and evaluates stated weekly teaching hours before other benefits.",
+  "English teacher prioritizing an airfare or annual-flight benefit in the compensation package.",
+  "Early-years English teacher experienced with play-based lessons for children ages three through five.",
+  "Private English tutor with extensive one-to-one lessons for adult professionals.",
+  "English teacher who prefers applying to a school directly and excludes recruiter-only or generic-board routes.",
+  "English teacher who prioritizes substantial paid leave while excluding non-English subject roles.",
+  "Profesor de ingles con experiencia en clases de negocios para profesionales adultos y preferencia por grupos pequenos.",
 ] as const;
 
 const deduplicationSeeds = [
@@ -601,7 +624,10 @@ const rerankingCases = rerankingSeeds.map(
         "Rank candidate opportunities against a user query."
       ),
       expected: { orderedIds: ["candidate-a", "candidate-b", "candidate-c"] },
-      input: { documents, query },
+      input: {
+        documents,
+        query: `Candidate profile: ${rerankingProfiles[index] ?? "English teacher"}\nPreferred next role: ${query}`,
+      },
       source: syntheticSource,
       supportedVariants: ["codex", "jina", "hybrid"] as TestLabVariant[],
       tags: [

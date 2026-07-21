@@ -1,4 +1,5 @@
 import {
+  ClassificationAdjudicationSchema,
   DocumentBenchmarkRunSchema,
   TestDeliveryAllowlistSchema,
   TestDeliveryCaptureSchema,
@@ -7,6 +8,11 @@ import {
   TestLabRunRequestSchema,
 } from "../../src/features/test-lab/schema";
 import type { JobKitApp } from "../app-types";
+import {
+  clearClassificationAdjudication,
+  listClassificationReview,
+  saveClassificationAdjudication,
+} from "../services/test-lab/classification-review";
 import {
   allowTestDeliveryAddress,
   createTestDeliveryCapture,
@@ -26,6 +32,25 @@ import {
 } from "../services/test-lab/runs";
 
 export function registerTestLabRoutes(app: JobKitApp) {
+  app.use("/api/test-lab", async (c, next) => {
+    if (c.get("user").role !== "operator") {
+      return c.json(
+        { message: "Operator access is required", ok: false as const },
+        403
+      );
+    }
+    await next();
+  });
+  app.use("/api/test-lab/*", async (c, next) => {
+    if (c.get("user").role !== "operator") {
+      return c.json(
+        { message: "Operator access is required", ok: false as const },
+        403
+      );
+    }
+    await next();
+  });
+
   app.get("/api/test-lab", async (c) =>
     c.json({
       ...(await listTestLab(c.env, c.get("user").id)),
@@ -115,6 +140,39 @@ export function registerTestLabRoutes(app: JobKitApp) {
       ),
     });
   });
+
+  app.get("/api/test-lab/classification-review", async (c) =>
+    c.json({
+      ...(await listClassificationReview(c.env.DB, c.get("user").id)),
+      ok: true as const,
+    })
+  );
+
+  app.put("/api/test-lab/classification-review/:itemId", async (c) => {
+    const input = ClassificationAdjudicationSchema.parse(await c.req.json());
+    return c.json({
+      adjudication: await saveClassificationAdjudication(
+        c.env.DB,
+        c.get("user").id,
+        decodeURIComponent(c.req.param("itemId")),
+        input
+      ),
+      message: "Classification adjudication recorded",
+      ok: true as const,
+    });
+  });
+
+  app.delete("/api/test-lab/classification-review/:itemId", async (c) =>
+    c.json({
+      message: "Classification adjudication cleared",
+      ok: true as const,
+      result: await clearClassificationAdjudication(
+        c.env.DB,
+        c.get("user").id,
+        decodeURIComponent(c.req.param("itemId"))
+      ),
+    })
+  );
 
   app.delete("/api/test-lab", async (c) =>
     c.json({

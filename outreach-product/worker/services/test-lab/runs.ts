@@ -485,7 +485,7 @@ async function queueCodexRun(
   variant: "codex" | "hybrid"
 ) {
   const runId = crypto.randomUUID();
-  const model = testLabModel(testCase, variant === "hybrid");
+  const model = testLabModel(testCase);
   const creation = buildAgentTaskRequestCreation(db, {
     payload: {
       caseId: testCase.id,
@@ -553,7 +553,7 @@ async function queueExistingHybridRun(
     userId,
   });
   const timestamp = new Date().toISOString();
-  const model = testLabModel(testCase, true);
+  const model = testLabModel(testCase);
   const results = await db.batch([
     creation.statement,
     db
