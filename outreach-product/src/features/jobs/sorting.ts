@@ -1,10 +1,14 @@
 import { monthlyCompensationUsd } from "./compensation";
-import { listedHourlyValueUsd, statedHourlyUsd } from "./economics";
-import type { FxData, Job } from "./types";
+import { listedHourlyValueUsd } from "./economics";
+import type { FxData, JobListItem } from "./types";
 
 export type JobSort = "monthly-pay" | "review-order" | "stated-hourly";
 
-export function sortJobs(jobs: Job[], fx: FxData, sort: JobSort): Job[] {
+export function sortJobs(
+  jobs: JobListItem[],
+  fx: FxData,
+  sort: JobSort
+): JobListItem[] {
   if (sort === "review-order") {
     return jobs;
   }
@@ -13,9 +17,8 @@ export function sortJobs(jobs: Job[], fx: FxData, sort: JobSort): Job[] {
       const listedHourly = listedHourlyValueUsd(job.compensation, fx);
       return {
         hourly:
-          (job.matchFacts === null
-            ? null
-            : statedHourlyUsd(job.matchFacts.economics, fx)) ??
+          job.statedHourly?.minimum ??
+          job.statedHourly?.maximum ??
           listedHourly?.minimum ??
           listedHourly?.maximum ??
           null,

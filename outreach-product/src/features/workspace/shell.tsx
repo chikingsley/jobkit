@@ -72,7 +72,7 @@ export function WorkspaceSidebar({
   onSignOut: () => Promise<unknown>;
   onViewChange: (view: WorkspaceView) => void;
   role: "member" | "operator";
-  totalJobs: number;
+  totalJobs: number | null;
 }) {
   const { isMobile, setOpenMobile } = useSidebar();
   return (
@@ -130,7 +130,11 @@ export function WorkspaceSidebar({
           onSignOut={onSignOut}
           onViewChange={onViewChange}
           role={role}
-          summary={`${applied} of ${totalJobs} applications sent`}
+          summary={
+            totalJobs === null
+              ? "Application workspace"
+              : `${applied} of ${totalJobs} applications sent`
+          }
         />
       </SidebarFooter>
     </Sidebar>
@@ -250,30 +254,32 @@ export function WorkspaceHeader({
     testLab: "Test Lab",
   }[activeView];
   return (
-    <header className="flex h-14 min-w-0 shrink-0 items-center gap-3 border-b bg-background px-4">
-      <SidebarTrigger className="-ml-1" />
-      <Separator
-        className="mr-2 data-vertical:h-4 data-vertical:self-auto"
-        orientation="vertical"
-      />
-      <h1 className="font-semibold text-sm">{title}</h1>
-      {toolbar ??
-        (activeView === "jobs" ? (
-          <span className="ml-auto hidden text-muted-foreground text-xs sm:block">
-            Review the facts, edit the message, then approve and send
-          </span>
+    <header className="min-w-0 shrink-0 border-b bg-background">
+      <div className="flex h-14 min-w-0 items-center gap-3 px-4">
+        <SidebarTrigger className="-ml-1" />
+        <Separator
+          className="mr-2 data-vertical:h-4 data-vertical:self-auto"
+          orientation="vertical"
+        />
+        <h1 className="shrink-0 font-semibold text-sm">{title}</h1>
+        {toolbar ? (
+          <div className="ml-auto hidden min-w-0 flex-1 md:flex">{toolbar}</div>
         ) : (
           <span className="ml-auto" />
-        ))}
-      <Button
-        aria-label="Messages"
-        onClick={() => navigate(workspacePaths.messages)}
-        size="icon-sm"
-        variant={activeView === "messages" ? "secondary" : "ghost"}
-      >
-        <MessagesSquare />
-      </Button>
-      <ModeToggle />
+        )}
+        <Button
+          aria-label="Messages"
+          onClick={() => navigate(workspacePaths.messages)}
+          size="icon-sm"
+          variant={activeView === "messages" ? "secondary" : "ghost"}
+        >
+          <MessagesSquare />
+        </Button>
+        <ModeToggle />
+      </div>
+      {toolbar ? (
+        <div className="border-t px-4 py-2 md:hidden">{toolbar}</div>
+      ) : null}
     </header>
   );
 }

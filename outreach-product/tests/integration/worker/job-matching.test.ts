@@ -111,16 +111,27 @@ describe("job matching facts", () => {
           contact: { id: string; relatedListingCount: number };
         }>;
         id: string;
-        matchFacts: typeof facts;
       }>;
+      matches: Record<string, { label: string }>;
     };
 
     expect(response.status).toBe(200);
     expect(body.jobs).toHaveLength(1);
-    expect(body.jobs[0]).toMatchObject({ id: jobId, matchFacts: facts });
+    expect(body.jobs[0]).toMatchObject({ id: jobId });
+    expect(body.matches[jobId]?.label).toBe("Needs verification");
     expect(body.jobs[0]?.applicationRoutes[0]?.contact).toMatchObject({
       id: "contact-test",
       relatedListingCount: 1,
     });
+
+    const detailResponse = await exports.default.fetch(
+      `https://outreach.test/api/jobs/${jobId}`,
+      { headers: { cookie } }
+    );
+    const detail = (await detailResponse.json()) as {
+      job: { matchFacts: typeof facts };
+    };
+    expect(detailResponse.status).toBe(200);
+    expect(detail.job.matchFacts).toEqual(facts);
   });
 });

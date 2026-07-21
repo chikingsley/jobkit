@@ -155,20 +155,17 @@ describe("job position analyses", () => {
     ]);
 
     const jobsResponse = await exports.default.fetch(
-      "https://outreach.test/api/jobs",
+      "https://outreach.test/api/jobs/position-job",
       { headers: { cookie } }
     );
     const jobs = (await jobsResponse.json()) as {
-      jobs: Array<{
+      job: {
         id: string;
         positionAnalysis: typeof analysis | null;
-      }>;
+      };
     };
     expect(jobsResponse.status).toBe(200);
-    expect(
-      jobs.jobs.find((candidate) => candidate.id === "position-job")
-        ?.positionAnalysis
-    ).toMatchObject({
+    expect(jobs.job.positionAnalysis).toMatchObject({
       positions: [
         expect.objectContaining({ roleFamily: "english_language" }),
         expect.objectContaining({ roleFamily: "subject_specialist" }),

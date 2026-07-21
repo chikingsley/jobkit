@@ -122,7 +122,12 @@ export function App() {
     saveQualificationClaim,
     setPreferences,
     setProfile,
-  } = useWorkspaceData();
+    jobDetailError,
+    jobDetailLoading,
+    jobDetails,
+    jobsError,
+    loadJob,
+  } = useWorkspaceData({ jobsEnabled: activeView === "jobs" });
   const setActiveView = useCallback(
     (view: WorkspaceView) => navigate(workspacePaths[view]),
     [navigate]
@@ -150,7 +155,23 @@ export function App() {
       setSelectedId(firstJob.id);
     }
   }, [activeView, selectedId, setSelectedId, visibleJobs]);
-  const selected = selectVisibleJob(visibleJobs, selectedId);
+  const selectedListItem = selectVisibleJob(visibleJobs, selectedId);
+  const selectedDetail = selectedListItem
+    ? jobDetails.get(selectedListItem.id)
+    : undefined;
+  const selected = selectedDetail?.job;
+
+  useEffect(() => {
+    if (
+      activeView !== "jobs" ||
+      !selectedListItem ||
+      selectedDetail ||
+      jobDetailLoading === selectedListItem.id
+    ) {
+      return;
+    }
+    void loadJob(selectedListItem.id).catch(() => undefined);
+  }, [activeView, jobDetailLoading, loadJob, selectedDetail, selectedListItem]);
 
   async function action(path: string, body?: object) {
     if (!selected) {
@@ -169,6 +190,7 @@ export function App() {
       };
       setInstruction("");
       await loadJobs({ quiet: true });
+      await loadJob(selected.id);
       toast.success(result.message ?? "Workspace updated");
     } catch (error) {
       await loadJobs({ quiet: true }).catch(() => undefined);
@@ -199,6 +221,7 @@ export function App() {
         };
         setInstruction("");
         await loadJobs({ quiet: true });
+        await loadJob(selected.id);
         toast.success(queued.notice);
         return null;
       }
@@ -230,7 +253,7 @@ export function App() {
         onSignOut={() => authClient.signOut()}
         onViewChange={setActiveView}
         role={currentUser.role}
-        totalJobs={jobs.length}
+        totalJobs={activeView === "jobs" ? jobs.length : null}
       />
       <SidebarInset className="h-svh min-h-0 min-w-0 overflow-hidden">
         <WorkspaceHeader
@@ -349,7 +372,14 @@ export function App() {
                   busyClaimKey={busyClaimKey}
                   fx={fx}
                   instruction={instruction}
+                  jobDetailError={jobDetailError}
+                  jobDetailLoading={
+                    jobDetailLoading !== "" &&
+                    jobDetailLoading === selectedListItem?.id
+                  }
                   jobs={visibleJobs}
+                  jobsError={jobsError}
+                  jobsLoading={refreshing && jobs.length === 0}
                   matches={matches}
                   onAction={action}
                   onDraftAction={draftAction}
@@ -359,6 +389,8 @@ export function App() {
                   preferences={preferences}
                   profile={profile}
                   selected={selected}
+                  selectedId={selectedListItem?.id}
+                  selectedMatch={selectedDetail?.match}
                   sort={sort}
                 />
               </Suspense>

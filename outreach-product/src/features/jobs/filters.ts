@@ -1,5 +1,5 @@
-import type { JobMatch } from "@/profile-types";
-import type { Job } from "./types";
+import type { JobMatchSummary } from "@/profile-types";
+import type { JobListItem } from "./types";
 
 interface JobFilters {
   country: string;
@@ -8,8 +8,8 @@ interface JobFilters {
 }
 
 export function filterJobs(
-  jobs: Job[],
-  matches: ReadonlyMap<string, JobMatch>,
+  jobs: JobListItem[],
+  matches: ReadonlyMap<string, JobMatchSummary>,
   filters: JobFilters
 ) {
   return jobs.filter((job) => {
@@ -27,6 +27,6 @@ export function filterJobs(
   });
 }
 
-export function selectVisibleJob(jobs: Job[], selectedId: string) {
+export function selectVisibleJob(jobs: JobListItem[], selectedId: string) {
   return jobs.find((job) => job.id === selectedId) ?? jobs.at(0);
 }

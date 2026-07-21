@@ -3,18 +3,16 @@ import { Badge } from "@/components/ui/badge";
 import { compensationDisplay } from "@/features/jobs/compensation";
 import {
   formatStatedHourlyUsd,
-  housingLabel,
   listedHourlyValueUsd,
-  statedHourlyValueUsd,
 } from "@/features/jobs/economics";
 import { humanize } from "@/features/jobs/format";
 import { MatchBadge } from "@/features/jobs/match";
-import type { FxData, Job } from "@/features/jobs/types";
+import type { FxData, JobListItem } from "@/features/jobs/types";
 import { restrictedMarketSegments } from "@/features/organizations/market-segments";
 import { cn } from "@/lib/utils";
-import type { JobMatch } from "@/profile-types";
+import type { JobMatchSummary } from "@/profile-types";
 
-function currentEmailStatus(job: Job) {
+function currentEmailStatus(job: JobListItem) {
   const attempt = job.emailAttempt;
   if (!attempt) {
     return;
@@ -37,20 +35,13 @@ export function JobQueueItem({
 }: {
   active: boolean;
   fx: FxData;
-  job: Job;
-  match?: JobMatch;
+  job: JobListItem;
+  match?: JobMatchSummary;
   onSelect: () => void;
 }) {
   const salary = compensationDisplay(job.compensation, fx);
   const emailStatus = currentEmailStatus(job);
-  const hourly =
-    (job.matchFacts
-      ? statedHourlyValueUsd(job.matchFacts.economics, fx)
-      : null) ?? listedHourlyValueUsd(job.compensation, fx);
-  const housing = housingLabel(
-    job.matchFacts?.benefits ?? [],
-    job.matchFacts?.economics
-  );
+  const hourly = job.statedHourly ?? listedHourlyValueUsd(job.compensation, fx);
   const contact = job.applicationRoutes.find(
     (route) => route.kind === "email" && route.status === "active"
   )?.contact;
@@ -99,9 +90,9 @@ export function JobQueueItem({
           <p className="mt-1 truncate font-medium text-xs">
             {salary.usd ?? salary.primary}
           </p>
-          {hourly || housing ? (
+          {hourly || job.housing ? (
             <p className="mt-1 truncate font-medium text-primary text-xs">
-              {[hourly ? formatStatedHourlyUsd(hourly) : null, housing]
+              {[hourly ? formatStatedHourlyUsd(hourly) : null, job.housing]
                 .filter(Boolean)
                 .join(" ")}
             </p>

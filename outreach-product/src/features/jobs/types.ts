@@ -78,11 +78,30 @@ export interface Job {
   title: string;
 }
 
+export interface JobListItem {
+  applicationRoutes: ApplicationRoute[];
+  board: string;
+  company: string;
+  compensation: Compensation;
+  country: string;
+  draftTask: Job["draftTask"];
+  emailAttempt: EmailAttempt | null;
+  housing: string | null;
+  id: string;
+  location: string;
+  marketSegments: MarketSegment[];
+  messageRoute: Job["messageRoute"];
+  opportunityScope: Job["opportunityScope"];
+  statedHourly: StatedHourlyValue | null;
+  status: string;
+  title: string;
+}
+
 export type MarketSegment = JobMarketSegment;
 
 import type { JobMatchFacts } from "@/features/matching/schema";
 import type { JobMarketSegment } from "@/features/organizations/market-segments";
-import type { Compensation } from "./economics";
+import type { Compensation, StatedHourlyValue } from "./economics";
 import type { JobPositionAnalysis } from "./position-variants";
 
 export type { Compensation, FxData } from "./economics";

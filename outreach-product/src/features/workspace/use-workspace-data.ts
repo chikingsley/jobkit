@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { DraftMutationResult, FxData, Job } from "@/features/jobs/types";
+import type {
+  DraftMutationResult,
+  FxData,
+  Job,
+  JobListItem,
+} from "@/features/jobs/types";
 import type {
   QualificationClaim,
   QualificationClaimAnswer,
@@ -9,6 +14,7 @@ import type {
 import { apiRequest } from "@/lib/api";
 import type {
   JobMatch,
+  JobMatchSummary,
   Preferences,
   Profile,
   StoredDocument,
@@ -23,9 +29,17 @@ interface QualificationClaimInput {
 
 const AGENT_TASK_REFRESH_MS = 1500;
 
-export function useWorkspaceData() {
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [matches, setMatches] = useState<Map<string, JobMatch>>(new Map());
+export function useWorkspaceData({ jobsEnabled }: { jobsEnabled: boolean }) {
+  const [jobs, setJobs] = useState<JobListItem[]>([]);
+  const [matches, setMatches] = useState<Map<string, JobMatchSummary>>(
+    new Map()
+  );
+  const [jobDetails, setJobDetails] = useState(
+    new Map<string, { job: Job; match: JobMatch }>()
+  );
+  const [jobsError, setJobsError] = useState("");
+  const [jobDetailError, setJobDetailError] = useState("");
+  const [jobDetailLoading, setJobDetailLoading] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [fx, setFx] = useState<FxData>({ rates: {}, updatedAt: null });
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -40,19 +54,47 @@ export function useWorkspaceData() {
       setRefreshing(true);
     }
     try {
+      setJobsError("");
       const response = await apiRequest("/api/jobs");
       const data = (await response.json()) as {
         fx: FxData;
-        jobs: Job[];
-        matches: Record<string, JobMatch>;
+        jobs: JobListItem[];
+        matches: Record<string, JobMatchSummary>;
       };
       setJobs(data.jobs);
       setFx(data.fx);
       setMatches(new Map(Object.entries(data.matches)));
+    } catch (error) {
+      setJobsError(
+        error instanceof Error ? error.message : "Jobs could not load"
+      );
+      throw error;
     } finally {
       if (!options.quiet) {
         setRefreshing(false);
       }
+    }
+  }, []);
+
+  const loadJob = useCallback(async (jobId: string) => {
+    setJobDetailError("");
+    setJobDetailLoading(jobId);
+    try {
+      const response = await apiRequest(`/api/jobs/${jobId}`);
+      const data = (await response.json()) as { job: Job; match: JobMatch };
+      setJobDetails((current) => {
+        const next = new Map(current);
+        next.set(jobId, data);
+        return next;
+      });
+      return data;
+    } catch (error) {
+      setJobDetailError(
+        error instanceof Error ? error.message : "Job details could not load"
+      );
+      throw error;
+    } finally {
+      setJobDetailLoading((current) => (current === jobId ? "" : current));
     }
   }, []);
 
@@ -63,10 +105,16 @@ export function useWorkspaceData() {
   }, []);
 
   useEffect(() => {
-    void loadJobs();
-  }, [loadJobs]);
+    if (!jobsEnabled) {
+      return;
+    }
+    void loadJobs().catch(() => undefined);
+  }, [jobsEnabled, loadJobs]);
 
   useEffect(() => {
+    if (!jobsEnabled) {
+      return;
+    }
     const hasActiveDraftTask = jobs.some(
       (job) =>
         job.draftTask?.status === "queued" ||
@@ -79,7 +127,7 @@ export function useWorkspaceData() {
       void loadJobs({ quiet: true });
     }, AGENT_TASK_REFRESH_MS);
     return () => window.clearInterval(interval);
-  }, [jobs, loadJobs]);
+  }, [jobs, jobsEnabled, loadJobs]);
 
   useEffect(() => {
     const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
@@ -141,6 +189,7 @@ export function useWorkspaceData() {
         return next;
       });
       await loadJobs({ quiet: true });
+      setJobDetails(new Map());
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Qualification answer failed"
@@ -154,18 +203,30 @@ export function useWorkspaceData() {
     setJobs((current) =>
       current.map((job) =>
         job.id === jobId
-          ? {
-              ...job,
-              draft: {
-                ...result.draft,
-                attachments: job.draft?.attachments ?? [],
-              },
-              emailAttempt: null,
-              status: "review",
-            }
+          ? { ...job, emailAttempt: null, status: "review" }
           : job
       )
     );
+    setJobDetails((current) => {
+      const existing = current.get(jobId);
+      if (!existing) {
+        return current;
+      }
+      const next = new Map(current);
+      next.set(jobId, {
+        ...existing,
+        job: {
+          ...existing.job,
+          draft: {
+            ...result.draft,
+            attachments: existing.job.draft?.attachments ?? [],
+          },
+          emailAttempt: null,
+          status: "review",
+        },
+      });
+      return next;
+    });
   }
 
   return {
@@ -174,8 +235,13 @@ export function useWorkspaceData() {
     countries: [...new Set(jobs.map((job) => job.country))].sort(),
     documents,
     fx,
+    jobDetailError,
+    jobDetailLoading,
+    jobDetails,
     jobs,
+    jobsError,
     loadDocuments,
+    loadJob,
     loadJobs,
     matches,
     preferences,

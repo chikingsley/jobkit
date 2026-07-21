@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
-import type { JobMatch, MatchState } from "@/profile-types";
+import type { JobMatch, JobMatchSummary, MatchState } from "@/profile-types";
 
-export function MatchBadge({ match }: { match?: JobMatch }) {
+export function MatchBadge({ match }: { match?: JobMatchSummary }) {
   return (
     <Badge className={matchBadgeClass(match?.tone)} variant="outline">
       {match?.label ?? "Evaluating…"}

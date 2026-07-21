@@ -2,10 +2,10 @@ import { Collapsible } from "@base-ui/react/collapsible";
 import { ChevronDown, Mail } from "lucide-react";
 import type { JobContactGroup } from "@/features/jobs/job-contact-groups";
 import { JobQueueItem } from "@/features/jobs/job-queue-item";
-import type { FxData, Job } from "@/features/jobs/types";
-import type { JobMatch } from "@/profile-types";
+import type { FxData, JobListItem } from "@/features/jobs/types";
+import type { JobMatchSummary } from "@/profile-types";
 
-function contactLabel(group: JobContactGroup, primary: Job) {
+function contactLabel(group: JobContactGroup, primary: JobListItem) {
   const { contact } = group;
   if (!contact) {
     return "Shared application contact";
@@ -29,7 +29,7 @@ export function JobQueueGroup({
 }: {
   fx: FxData;
   group: JobContactGroup;
-  matches: Map<string, JobMatch>;
+  matches: Map<string, JobMatchSummary>;
   onSelect: (id: string) => void;
   selectedId?: string;
 }) {

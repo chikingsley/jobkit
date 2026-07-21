@@ -1,18 +1,18 @@
-import type { ContactSummary, Job } from "./types";
+import type { ContactSummary, JobListItem } from "./types";
 
 export interface JobContactGroup {
   contact: ContactSummary | null;
   id: string;
-  jobs: Job[];
+  jobs: JobListItem[];
 }
 
-function activeEmailContact(job: Job) {
+function activeEmailContact(job: JobListItem) {
   return job.applicationRoutes.find(
     (route) => route.kind === "email" && route.status === "active"
   )?.contact;
 }
 
-export function groupJobsByContact(jobs: Job[]): JobContactGroup[] {
+export function groupJobsByContact(jobs: JobListItem[]): JobContactGroup[] {
   const groups = new Map<string, JobContactGroup>();
   for (const job of jobs) {
     const contact = activeEmailContact(job) ?? null;

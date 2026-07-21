@@ -40,3 +40,5 @@ export interface JobMatch {
   score: number;
   tone: "positive" | "neutral" | "warning" | "negative";
 }
+
+export type JobMatchSummary = Pick<JobMatch, "label" | "score" | "tone">;

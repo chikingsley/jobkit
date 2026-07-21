@@ -1,4 +1,5 @@
 import { RefreshCw } from "lucide-react";
+import { useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -52,50 +53,57 @@ export function JobToolbar({
   showExcluded: boolean;
   sort: JobSort;
 }) {
+  const blockedId = useId();
   const countryOptions = [
     { label: "All countries", value: "all" },
     ...countries.map((country) => ({ label: country, value: country })),
   ];
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 md:flex md:items-center">
       <FilterSelect
         ariaLabel="Filter jobs by fit"
-        className="w-36"
+        className="w-full md:w-36"
         items={fitFilterOptions}
         onValueChange={onFitFilter}
         value={fitFilter}
       />
       <FilterSelect
         ariaLabel="Filter jobs by country"
-        className="w-36"
+        className="w-full md:w-36"
         items={countryOptions}
         onValueChange={onCountryFilter}
         value={countryFilter}
       />
       <FilterSelect
         ariaLabel="Sort jobs"
-        className="w-36"
+        className="w-full md:w-36"
         items={sortOptions}
         onValueChange={(value) => onSort(value as JobSort)}
         value={sort}
       />
-      <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground text-xs">
-        <Checkbox
-          aria-label="Show jobs with hard blockers"
-          checked={showExcluded}
-          onCheckedChange={(value) => onShowExcluded(Boolean(value))}
-        />
-        Blocked
+      <div className="flex min-w-0 items-center justify-between gap-2 md:shrink-0 md:justify-start">
+        <label
+          className="flex min-h-11 items-center gap-1.5 text-muted-foreground text-xs md:min-h-0"
+          htmlFor={blockedId}
+        >
+          <Checkbox
+            aria-label="Show jobs with hard blockers"
+            checked={showExcluded}
+            id={blockedId}
+            onCheckedChange={(value) => onShowExcluded(Boolean(value))}
+          />
+          Blocked
+        </label>
+        <Button
+          aria-label="Refresh jobs"
+          className="shrink-0"
+          onClick={() => void onRefresh()}
+          size="icon-sm"
+          variant="ghost"
+        >
+          <RefreshCw className={cn("size-4", refreshing && "animate-spin")} />
+        </Button>
       </div>
-      <Button
-        aria-label="Refresh jobs"
-        className="shrink-0"
-        onClick={() => void onRefresh()}
-        size="icon-sm"
-        variant="ghost"
-      >
-        <RefreshCw className={cn("size-4", refreshing && "animate-spin")} />
-      </Button>
     </div>
   );
 }
