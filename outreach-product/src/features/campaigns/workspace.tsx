@@ -327,21 +327,30 @@ function CampaignDetailView({
             </Card>
           )}
 
-          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <Metric label="Known pool" value={campaign.counts.total} />
+          <dl
+            aria-label="Campaign summary"
+            className="grid grid-cols-2 overflow-hidden rounded-lg border bg-card sm:grid-cols-4"
+          >
             <Metric
-              label="Advertised positions"
+              className="border-r border-b sm:border-b-0"
+              label="Total opportunities"
+              value={campaign.counts.total}
+            />
+            <Metric
+              className="border-b sm:border-r sm:border-b-0"
+              label="Posted jobs"
               value={campaign.counts.advertised}
             />
             <Metric
-              label="Direct school contacts"
+              className="border-r"
+              label="Direct contacts"
               value={campaign.counts.school}
             />
             <Metric
               label="Human replies"
               value={campaign.counts.humanReplies}
             />
-          </section>
+          </dl>
 
           <CampaignActivity replies={campaign.replies} runs={campaign.runs} />
 
@@ -543,16 +552,24 @@ function TargetRow({ target }: { target: CampaignTarget }) {
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
+function Metric({
+  className,
+  label,
+  value,
+}: {
+  className?: string;
+  label: string;
+  value: number;
+}) {
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="font-semibold text-2xl tabular-nums">
-          {value.toLocaleString()}
-        </div>
-        <div className="mt-1 text-muted-foreground text-xs">{label}</div>
-      </CardContent>
-    </Card>
+    <div className={cn("min-w-0 px-4 py-3", className)}>
+      <dd className="font-semibold text-xl tabular-nums">
+        {value.toLocaleString()}
+      </dd>
+      <dt className="mt-0.5 text-muted-foreground text-xs leading-4">
+        {label}
+      </dt>
+    </div>
   );
 }
 

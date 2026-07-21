@@ -1,5 +1,5 @@
 import { ArrowLeft, Check, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import useSWR from "swr";
@@ -37,28 +37,55 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
   const [postedPercent, setPostedPercent] = useState<number | null>(null);
   const [firstFive, setFirstFive] = useState(true);
   const [busy, setBusy] = useState(false);
-  const { data: setup } = useSWR("/api/campaigns/setup", async (path) => {
+  const {
+    data: setup,
+    error: setupError,
+    mutate: retrySetup,
+  } = useSWR("/api/campaigns/setup", async (path) => {
     const payload = (await (await request(path)).json()) as {
       setup: CampaignSetup;
     };
     return payload.setup;
   });
 
-  const effectiveDailyPace = dailyPace ?? setup?.defaults.dailyPace ?? 1;
-  const effectiveStopAfter =
-    stopAfter ?? setup?.defaults.stopAfterHumanReplies ?? 3;
-  const effectivePostedPercent =
-    postedPercent ?? setup?.defaults.postedTargetPercent ?? 80;
-  const markets = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    return (setup?.markets ?? []).filter(
-      (market) =>
-        !normalized ||
-        market.countryName.toLowerCase().includes(normalized) ||
-        market.countryCode.toLowerCase().includes(normalized)
+  if (!setup) {
+    return (
+      <div className="mx-auto grid min-h-[28rem] w-full max-w-7xl place-items-center px-4 py-5 sm:px-6">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>
+              {setupError
+                ? "Campaign setup is unavailable"
+                : "Loading campaign setup…"}
+            </CardTitle>
+            <CardDescription>
+              {setupError
+                ? "JobKit could not load the current markets and campaign defaults."
+                : "Loading the current markets and campaign defaults."}
+            </CardDescription>
+          </CardHeader>
+          {setupError ? (
+            <CardContent>
+              <Button onClick={() => void retrySetup()}>Try again</Button>
+            </CardContent>
+          ) : null}
+        </Card>
+      </div>
     );
-  }, [query, setup?.markets]);
-  const selectedMarkets = (setup?.markets ?? []).filter((market) =>
+  }
+
+  const effectiveDailyPace = dailyPace ?? setup.defaults.dailyPace;
+  const effectiveStopAfter = stopAfter ?? setup.defaults.stopAfterHumanReplies;
+  const effectivePostedPercent =
+    postedPercent ?? setup.defaults.postedTargetPercent;
+  const normalizedQuery = query.trim().toLowerCase();
+  const markets = setup.markets.filter(
+    (market) =>
+      !normalizedQuery ||
+      market.countryName.toLowerCase().includes(normalizedQuery) ||
+      market.countryCode.toLowerCase().includes(normalizedQuery)
+  );
+  const selectedMarkets = setup.markets.filter((market) =>
     selected.includes(market.countryCode)
   );
   const selectionComplete = selected.length === 3;
@@ -177,7 +204,7 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
                 />
               ))}
             </div>
-            {setup && !selectionComplete && markets.length === 0 ? (
+            {!selectionComplete && markets.length === 0 ? (
               <p className="py-10 text-center text-muted-foreground text-sm">
                 No stored market matches that search. Country discovery can add
                 coverage after a market exists in the catalog.
@@ -286,16 +313,16 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
             </CardHeader>
             <CardContent className="grid gap-3 text-sm">
               <SummaryRow label="Markets" value={selectedMarkets.length} />
-              <SummaryRow label="Known candidates" value={pool} />
+              <SummaryRow label="Total opportunities" value={pool} />
               <SummaryRow
-                label="Advertised"
+                label="Posted jobs"
                 value={selectedMarkets.reduce(
                   (total, market) => total + market.openPositionCount,
                   0
                 )}
               />
               <SummaryRow
-                label="Verified school contacts"
+                label="Direct contacts"
                 value={selectedMarkets.reduce(
                   (total, market) => total + market.verifiedContactCount,
                   0
