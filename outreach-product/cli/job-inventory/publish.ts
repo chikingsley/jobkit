@@ -11,6 +11,9 @@ import type { AgentConfig } from "../agent/config";
 import { readSourceInventory } from "./source";
 
 const TRAILING_SLASH_PATTERN = /\/$/u;
+const INVENTORY_REQUEST_MAX_ATTEMPTS = 4;
+const INVENTORY_RETRY_BASE_DELAY_MS = 250;
+const RETRYABLE_HTTP_STATUSES = new Set([429, 500, 502, 503, 504]);
 const InventoryRunIdResponseSchema = z.object({
   run: z.object({ id: z.string().min(1) }),
 });
@@ -215,28 +218,65 @@ function chunk<Value>(values: Value[], size: number) {
   return chunks;
 }
 
-function inventoryClient(baseUrl: string, token: string) {
+export function inventoryClient(baseUrl: string, token: string) {
   return {
     async post(path: string, body: unknown) {
-      const response = await fetch(
-        `${baseUrl.replace(TRAILING_SLASH_PATTERN, "")}${path}`,
-        {
-          body: JSON.stringify(body),
-          headers: {
-            authorization: `Bearer ${token}`,
-            "content-type": "application/json",
-          },
-          method: "POST",
+      const url = `${baseUrl.replace(TRAILING_SLASH_PATTERN, "")}${path}`;
+      for (
+        let attempt = 1;
+        attempt <= INVENTORY_REQUEST_MAX_ATTEMPTS;
+        attempt += 1
+      ) {
+        try {
+          // biome-ignore lint/performance/noAwaitInLoops: Retry attempts must complete in order so an idempotent batch cannot overlap itself.
+          const response = await fetch(url, {
+            body: JSON.stringify(body),
+            headers: {
+              authorization: `Bearer ${token}`,
+              "content-type": "application/json",
+            },
+            method: "POST",
+          });
+          const payload: unknown = await response.json();
+          if (response.ok) {
+            return payload;
+          }
+          const message = z.object({ message: z.string() }).safeParse(payload);
+          const error = new InventoryRequestError(
+            response.status,
+            message.success ? message.data.message : "Unexpected response"
+          );
+          if (
+            attempt === INVENTORY_REQUEST_MAX_ATTEMPTS ||
+            !RETRYABLE_HTTP_STATUSES.has(response.status)
+          ) {
+            throw error;
+          }
+        } catch (error) {
+          if (
+            error instanceof InventoryRequestError ||
+            attempt === INVENTORY_REQUEST_MAX_ATTEMPTS
+          ) {
+            throw error;
+          }
         }
-      );
-      const payload: unknown = await response.json();
-      if (!response.ok) {
-        const message = z.object({ message: z.string() }).safeParse(payload);
-        throw new Error(
-          `Inventory request failed (${response.status}): ${message.success ? message.data.message : "Unexpected response"}`
+        await delay(
+          INVENTORY_RETRY_BASE_DELAY_MS * 2 ** Math.max(0, attempt - 1)
         );
       }
-      return payload;
+      throw new Error("Inventory request retry loop ended unexpectedly");
     },
   };
+}
+
+class InventoryRequestError extends Error {
+  constructor(status: number, message: string) {
+    super(`Inventory request failed (${status}): ${message}`);
+  }
+}
+
+function delay(milliseconds: number) {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
 }

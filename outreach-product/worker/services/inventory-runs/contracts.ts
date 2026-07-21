@@ -47,9 +47,9 @@ export interface InventorySourceRow {
 }
 
 export class InventoryRunError extends Error {
-  readonly status: 400 | 403 | 404 | 409 | 422;
+  readonly status: 400 | 403 | 404 | 409 | 422 | 503;
 
-  constructor(message: string, status: 400 | 403 | 404 | 409 | 422) {
+  constructor(message: string, status: 400 | 403 | 404 | 409 | 422 | 503) {
     super(message);
     this.status = status;
   }

@@ -49,6 +49,26 @@ export async function beginInventoryRun(
         409
       );
     }
+    if (existing.status === "failed") {
+      const timestamp = new Date().toISOString();
+      await db.batch([
+        db
+          .prepare(
+            `UPDATE inventory_runs
+                SET status='ingesting',error_detail='',completed_at=NULL,updated_at=?
+              WHERE id=? AND status='failed'`
+          )
+          .bind(timestamp, existing.id),
+        db
+          .prepare(
+            `UPDATE inventory_sources
+                SET name=?,last_started_at=?,last_error='',updated_at=?
+              WHERE id=?`
+          )
+          .bind(input.sourceName, timestamp, timestamp, source.id),
+      ]);
+      return toInventoryRun(await readOwnedRun(db, runner, existing.id));
+    }
     return toInventoryRun(existing);
   }
 
@@ -164,7 +184,7 @@ export async function ingestInventoryBatch(
     )
     .run();
 
-  const failures: string[] = [];
+  const failures: Array<{ detail: string; transient: boolean }> = [];
   for (const job of input.jobs) {
     try {
       // biome-ignore lint/performance/noAwaitInLoops: Each source job is a durable checkpoint, allowing an interrupted request to resume.
@@ -172,7 +192,10 @@ export async function ingestInventoryBatch(
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       await recordInventoryItemFailure(db, run.id, batchId, job, message);
-      failures.push(`${job.id}: ${message}`);
+      failures.push({
+        detail: `${job.id}: ${message}`,
+        transient: isTransientInventoryStorageError(error),
+      });
     }
   }
 
@@ -184,11 +207,18 @@ export async function ingestInventoryBatch(
             SET status='failed',error_detail=?,completed_at=?
           WHERE id=?`
       )
-      .bind(failures.join("\n").slice(0, 4000), completedAt, batchId)
+      .bind(
+        failures
+          .map((failure) => failure.detail)
+          .join("\n")
+          .slice(0, 4000),
+        completedAt,
+        batchId
+      )
       .run();
     throw new InventoryRunError(
       `${failures.length} inventory item${failures.length === 1 ? "" : "s"} could not be ingested`,
-      422
+      failures.every((failure) => failure.transient) ? 503 : 422
     );
   }
   await db
@@ -200,4 +230,13 @@ export async function ingestInventoryBatch(
     .bind(completedAt, batchId)
     .run();
   return toInventoryRun(await readOwnedRun(db, runner, runId));
+}
+
+const TRANSIENT_D1_ERROR_PATTERN =
+  /D1_ERROR:.*(?:network connection lost|service unavailable|temporarily unavailable|timed out|timeout|please try again)/iu;
+
+export function isTransientInventoryStorageError(error: unknown) {
+  return (
+    error instanceof Error && TRANSIENT_D1_ERROR_PATTERN.test(error.message)
+  );
 }
