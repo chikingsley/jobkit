@@ -8,6 +8,7 @@ const { values: args } = parseArgs({
   options: {
     apply: { default: false, type: "boolean" },
     "batch-size": { default: "50", type: "string" },
+    "batch-workers": { default: "1", type: "string" },
     source: { type: "string" },
   },
 });
@@ -18,6 +19,11 @@ const batchSize = z.coerce
   .min(1)
   .max(100)
   .parse(args["batch-size"]);
+const batchWorkers = z.coerce
+  .number()
+  .int()
+  .min(1)
+  .parse(args["batch-workers"]);
 const sourcePath = args.source
   ? resolve(args.source)
   : resolve(import.meta.dir, "../../../job-search/job-data/jobs.sqlite");
@@ -29,6 +35,7 @@ if (!args.apply) {
       active: snapshot.active,
       batchCount: Math.ceil(snapshot.jobs.length / batchSize),
       batchSize,
+      batchWorkers,
       closed: snapshot.closed,
       economics: snapshot.economics,
       mode: "dry-run",
@@ -41,6 +48,7 @@ if (!args.apply) {
 
 const result = await publishInventorySnapshot({
   batchSize,
+  batchWorkers,
   config: await readAgentConfig(),
   onProgress(progress) {
     console.log(JSON.stringify(progress));

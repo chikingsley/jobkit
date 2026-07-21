@@ -13,6 +13,7 @@ job-search/.cache/
 job-search/job-data/*.sqlite-shm
 job-search/job-data/*.sqlite-wal
 job-search/job-data/exports/*.csv
+tefl-job-board/data/benchmarks/
 
 # Private historical source documents used only to rebuild current resumes
 job-search/resumes/recovered/

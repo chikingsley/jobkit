@@ -9,9 +9,10 @@ import { JobKitAgentApiError, type JobKitAgentClient } from "./client";
 import type { AgentConfig } from "./config";
 
 const HEARTBEAT_INTERVAL_MS = 60_000;
-const INVENTORY_BATCH_SIZE = 50;
+const INVENTORY_BATCH_SIZE = 100;
+const MAX_IN_FLIGHT_DETAIL_REQUESTS = 4;
 const SOURCE_NAME = "Job search source inventory";
-const teflJobBoardPath = resolve(import.meta.dir, "../../../tefl-job-board");
+const collectorPath = resolve(import.meta.dir, "../../collectors");
 const sourceDatabasePath = resolve(
   import.meta.dir,
   "../../../job-search/job-data/jobs.sqlite"
@@ -131,17 +132,55 @@ function runRefreshCommand(
   boards: string[],
   onSpawn: (child: ChildProcess) => void
 ) {
+  return runGoRefreshes(mode, boards, onSpawn);
+}
+
+const INVENTORY_BOARDS = [
+  "ajarn",
+  "anesl",
+  "eslcafe-modern",
+  "seriousteachers",
+  "tefl",
+] as const;
+
+async function runGoRefreshes(
+  mode: "full" | "latest",
+  boards: string[],
+  onSpawn: (child: ChildProcess) => void
+) {
+  const selected = boards.length > 0 ? boards : [...INVENTORY_BOARDS];
+  for (const board of selected) {
+    // biome-ignore lint/performance/noAwaitInLoops: Source refreshes are deliberately sequential to honor board request policies.
+    await runGoRefresh(mode, board, onSpawn);
+  }
+}
+
+function runGoRefresh(
+  mode: "full" | "latest",
+  board: string,
+  onSpawn: (child: ChildProcess) => void
+) {
   return new Promise<void>((resolveRun, reject) => {
-    const args = ["run", "--locked", "jobs", "refresh"];
-    if (mode === "latest") {
-      args.push("--latest");
-    }
-    args.push(...boards);
-    const child = spawn("uv", args, {
-      cwd: teflJobBoardPath,
-      env: process.env,
-      stdio: "inherit",
-    });
+    const child = spawn(
+      "go",
+      [
+        "run",
+        "./cmd/jobkit-collect",
+        "refresh",
+        board,
+        "--mode",
+        mode,
+        "--detail-workers",
+        String(MAX_IN_FLIGHT_DETAIL_REQUESTS),
+        "--db",
+        sourceDatabasePath,
+      ],
+      {
+        cwd: collectorPath,
+        env: process.env,
+        stdio: "inherit",
+      }
+    );
     onSpawn(child);
     child.once("error", reject);
     child.once("close", (code, signal) => {
@@ -152,8 +191,8 @@ function runRefreshCommand(
       reject(
         new Error(
           signal
-            ? `Job inventory refresh stopped by ${signal}`
-            : `Job inventory refresh exited with code ${code ?? "unknown"}`
+            ? `${board} inventory refresh stopped by ${signal}`
+            : `${board} inventory refresh exited with code ${code ?? "unknown"}`
         )
       );
     });

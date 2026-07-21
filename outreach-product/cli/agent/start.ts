@@ -8,7 +8,10 @@ import { readAgentConfig } from "./config";
 import { claimAndRunInventoryOperation } from "./inventory-operations";
 
 const { values: args } = parseArgs({
-  options: { once: { default: false, type: "boolean" } },
+  options: {
+    once: { default: false, type: "boolean" },
+    "operations-only": { default: false, type: "boolean" },
+  },
 });
 const config = await readAgentConfig();
 const client = createAgentClient(config);
@@ -18,17 +21,19 @@ await main();
 
 async function main() {
   do {
-    // biome-ignore lint/performance/noAwaitInLoops: Each claim depends on the prior leased task reaching a terminal state.
-    const response = await client.post("/api/agent-tasks/claim", {
-      runnerVersion: codexVersion,
-    });
-    const task = AgentTaskEnvelopeSchema.nullable().parse(response.task);
-    if (task) {
-      await runAgentTask(task);
-      if (args.once) {
-        return;
+    if (!args["operations-only"]) {
+      // biome-ignore lint/performance/noAwaitInLoops: Each claim depends on the prior leased task reaching a terminal state.
+      const response = await client.post("/api/agent-tasks/claim", {
+        runnerVersion: codexVersion,
+      });
+      const task = AgentTaskEnvelopeSchema.nullable().parse(response.task);
+      if (task) {
+        await runAgentTask(task);
+        if (args.once) {
+          return;
+        }
+        continue;
       }
-      continue;
     }
     if (
       config.capabilities.includes("operations") &&

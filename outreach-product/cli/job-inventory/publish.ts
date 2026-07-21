@@ -38,6 +38,7 @@ export interface InventorySnapshot {
 
 interface PublishInventorySnapshotInput {
   batchSize: number;
+  batchWorkers?: number;
   config: AgentConfig;
   onProgress?: (progress: InventoryPublishProgress) => void | Promise<void>;
   operationId?: string;
@@ -100,6 +101,11 @@ export async function publishInventorySnapshot(
   input: PublishInventorySnapshotInput
 ) {
   const batchSize = z.number().int().min(1).max(100).parse(input.batchSize);
+  const batchWorkers = z
+    .number()
+    .int()
+    .min(1)
+    .parse(input.batchWorkers ?? 1);
   const client = inventoryClient(input.config.baseUrl, input.config.token);
   const start = await client.post("/api/inventory/runs", {
     ...(input.operationId ? { operationId: input.operationId } : {}),
@@ -129,21 +135,24 @@ export async function publishInventorySnapshot(
         ordinal,
       }))
     );
-    for (const { batch, batchKey, ordinal } of batchRequests) {
-      // biome-ignore lint/performance/noAwaitInLoops: Hosted batches are ordered durable checkpoints; later batches wait for acknowledgement.
+    await runBatchWorkers(batchRequests, batchWorkers, async (request) => {
       const response = await client.post(
         `/api/inventory/runs/${run.id}/batches`,
-        { batchKey, jobs: batch, ordinal }
+        {
+          batchKey: request.batchKey,
+          jobs: request.batch,
+          ordinal: request.ordinal,
+        }
       );
       const progress = InventoryRunProgressResponseSchema.parse(response).run;
       if (input.onProgress) {
         await input.onProgress({
-          batch: ordinal + 1,
+          batch: request.ordinal + 1,
           batches: batches.length,
           ...progress,
         });
       }
-    }
+    });
     const completed = await client.post(
       `/api/inventory/runs/${run.id}/complete`,
       { expectedBatchCount: batches.length }
@@ -163,6 +172,38 @@ export async function publishInventorySnapshot(
       // Preserve the publishing error; the hosted run may already be terminal.
     }
     throw error;
+  }
+}
+
+async function runBatchWorkers<Value>(
+  values: Value[],
+  workerCount: number,
+  run: (value: Value) => Promise<void>
+) {
+  let cursor = 0;
+  let firstError: unknown;
+  const worker = async (): Promise<void> => {
+    if (firstError !== undefined) {
+      return;
+    }
+    const index = cursor;
+    cursor += 1;
+    const value = values[index];
+    if (value === undefined) {
+      return;
+    }
+    try {
+      await run(value);
+      await worker();
+    } catch (error) {
+      firstError = error;
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(workerCount, values.length) }, worker)
+  );
+  if (firstError !== undefined) {
+    throw firstError;
   }
 }
 

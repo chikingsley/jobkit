@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: ESL Cafe Modern
+  version: 1.0.0
+  description: >-
+    Observed public read-only API used by Dave's ESL Cafe job boards. The JSON
+    listing endpoint and HTML detail endpoint are both required to construct a
+    complete JobKit posting.
+servers:
+  - url: https://www.eslcafe.com
+tags:
+  - name: postings
+    description: Public ESL Cafe job listings and their detail pages.
+paths:
+  /api/list/PostAJobList:
+    get:
+      operationId: listPostings
+      summary: List job postings
+      description: >-
+        Returns one page from the Korea, China, or international board. Clients
+        must send Accept application/json; ordinary browser content negotiation
+        can select the site's broken XML serializer.
+      tags: [postings]
+      parameters:
+        - $ref: "#/components/parameters/BoardSlug"
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Size"
+        - $ref: "#/components/parameters/Name"
+        - $ref: "#/components/parameters/SortColumn"
+        - $ref: "#/components/parameters/SortType"
+        - $ref: "#/components/parameters/JobType"
+      responses:
+        "200":
+          description: One validated page of postings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostingPage"
+  /postajob-detail/{slug}:
+    get:
+      operationId: getPostingDetail
+      summary: Get a posting detail page
+      description: >-
+        Returns server-rendered HTML containing the full description, location,
+        employer, contact route, and optional external application link.
+      tags: [postings]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: Stable posting slug returned by the listing endpoint.
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Posting detail HTML.
+          content:
+            text/html:
+              schema:
+                type: string
+components:
+  parameters:
+    BoardSlug:
+      name: jobBoardSlug
+      in: query
+      required: true
+      description: Public board to query.
+      schema:
+        type: string
+        enum: [korea, china, international]
+        default: international
+    Page:
+      name: page
+      in: query
+      required: true
+      description: One-based result page.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    Size:
+      name: size
+      in: query
+      required: true
+      description: Page size in postings; the website uses and caps this at 60.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 60
+        default: 60
+    Name:
+      name: name
+      in: query
+      required: false
+      description: Optional title or employer search text.
+      schema:
+        type: string
+        default: ""
+    SortColumn:
+      name: sortColumn
+      in: query
+      required: true
+      schema:
+        type: string
+        enum: [SortOrder]
+        default: SortOrder
+    SortType:
+      name: sortType
+      in: query
+      required: true
+      schema:
+        type: string
+        enum: [asc]
+        default: asc
+    JobType:
+      name: jobType
+      in: query
+      required: true
+      description: Regular listings use 1; paid or premium ads use 2.
+      schema:
+        type: integer
+        enum: [1, 2]
+        default: 1
+  schemas:
+    PostingPage:
+      type: object
+      required: [paging, data]
+      properties:
+        paging:
+          $ref: "#/components/schemas/Paging"
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PostingSummary"
+    Paging:
+      type: object
+      required: [page, lastPage, size, total]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        lastPage:
+          type: integer
+          minimum: 1
+        size:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+    PostingSummary:
+      type: object
+      required: [jobTitle, company, slug, statusStartDate, isOpenNewTab]
+      properties:
+        jobTitle:
+          type: string
+        company:
+          type: string
+        slug:
+          type: string
+          minLength: 1
+        statusStartDate:
+          type: string
+          description: Source timestamp without an explicit time-zone offset.
+        isOpenNewTab:
+          type: boolean
