@@ -89,6 +89,25 @@ export function WorkExperienceSection({
                   </Field>
                 )}
               />
+              <Controller
+                control={control}
+                name={`workExperience.${index}.messageAttribution`}
+                render={({ field }) => (
+                  <Field className="self-end">
+                    <div className="flex min-h-9 items-center gap-2">
+                      <Checkbox
+                        checked={field.value === "name"}
+                        onCheckedChange={(value) =>
+                          field.onChange(value ? "name" : "describe")
+                        }
+                      />
+                      <FieldLabel>
+                        Name employer in application messages
+                      </FieldLabel>
+                    </div>
+                  </Field>
+                )}
+              />
             </FieldGroup>
             <Controller
               control={control}
@@ -98,6 +117,19 @@ export function WorkExperienceSection({
                   addLabel="Add highlight"
                   description="Keep the full factual record here; a tailored resume can select the relevant points."
                   label="Highlights"
+                  onChange={field.onChange}
+                  values={field.value}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name={`workExperience.${index}.messageHighlights`}
+              render={({ field }) => (
+                <StringListField
+                  addLabel="Add application evidence"
+                  description="Include only facts approved for application messages."
+                  label="Application evidence"
                   onChange={field.onChange}
                   values={field.value}
                 />
@@ -114,6 +146,8 @@ export function WorkExperienceSection({
               endDate: "",
               highlights: [],
               location: "",
+              messageAttribution: "describe",
+              messageHighlights: [],
               startDate: "",
               title: "",
             })

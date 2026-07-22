@@ -35,10 +35,12 @@ export async function readProfile(
   if (!row) {
     return { updatedAt: null, value: defaultProfile };
   }
-  requireSchemaVersion("profile", row.schema_version, PROFILE_SCHEMA_VERSION);
+  const payload = JSON.parse(row.payload);
   return {
     updatedAt: row.updated_at,
-    value: ProfileSchema.parse(JSON.parse(row.payload)),
+    value: ProfileSchema.parse(
+      upgradeProfilePayload(payload, row.schema_version)
+    ),
   };
 }
 
@@ -120,4 +122,27 @@ function requireSchemaVersion(
       `Unsupported ${subject} schema version ${actual}; expected ${expected}`
     );
   }
+}
+
+function upgradeProfilePayload(payload: unknown, schemaVersion: number) {
+  if (schemaVersion === PROFILE_SCHEMA_VERSION) {
+    return payload;
+  }
+  if (schemaVersion === 4) {
+    const profile = payload as {
+      workExperience?: Record<string, unknown>[];
+    };
+    return {
+      ...profile,
+      workExperience: (profile.workExperience ?? []).map((entry) => ({
+        ...entry,
+        messageAttribution: "describe",
+        messageHighlights: Array.isArray(entry.highlights)
+          ? entry.highlights
+          : [],
+      })),
+    };
+  }
+  requireSchemaVersion("profile", schemaVersion, PROFILE_SCHEMA_VERSION);
+  return payload;
 }

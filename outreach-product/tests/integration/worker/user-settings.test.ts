@@ -12,6 +12,71 @@ const testEnv = env as TestEnv;
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("candidate application settings", () => {
+  it("upgrades version 4 work history into safe application evidence", async () => {
+    const { cookie, userId } = await createAuthenticatedUser(
+      "legacy-profile@example.test"
+    );
+    const legacyProfile = {
+      availability: "",
+      citizenship: "United States",
+      credentials: [],
+      currentLocation: "Phoenix, Arizona",
+      education: [],
+      email: "legacy-profile@example.test",
+      experienceLabel: "",
+      fields: [],
+      fullName: "Legacy Profile",
+      introduction: "",
+      languages: [],
+      phone: "",
+      preferredName: "Legacy",
+      profileReviewNotes: [],
+      subjectQualifications: [],
+      workAuthorization: [],
+      workExperience: [
+        {
+          current: false,
+          employer: "Example Local School",
+          endDate: "2024",
+          highlights: ["Taught adult English learners."],
+          location: "Las Vegas, Nevada",
+          startDate: "2022",
+          title: "English Teacher",
+        },
+      ],
+    };
+    await testEnv.DB.prepare(
+      `INSERT INTO user_profiles
+        (id,user_id,profile_json,updated_at,schema_version)
+       VALUES (?,?,?,?,4)`
+    )
+      .bind(
+        crypto.randomUUID(),
+        userId,
+        JSON.stringify(legacyProfile),
+        "2026-07-21T00:00:00.000Z"
+      )
+      .run();
+
+    const response = await exports.default.fetch(
+      "https://outreach.test/api/profile",
+      { headers: { cookie } }
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      profile: {
+        workExperience: [
+          {
+            employer: "Example Local School",
+            messageAttribution: "describe",
+            messageHighlights: ["Taught adult English learners."],
+          },
+        ],
+      },
+    });
+  });
+
   it("stores a valid browser time zone and rejects invalid names", async () => {
     const { cookie, userId } = await createAuthenticatedUser(
       "time-zone@example.test"

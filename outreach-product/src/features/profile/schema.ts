@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const PROFILE_SCHEMA_VERSION = 4;
+export const PROFILE_SCHEMA_VERSION = 5;
 
 export const DegreeLevelSchema = z.enum([
   "associate",
@@ -44,6 +44,8 @@ export interface WorkExperienceEntry {
   endDate: string;
   highlights: string[];
   location: string;
+  messageAttribution: "describe" | "name";
+  messageHighlights: string[];
   startDate: string;
   title: string;
 }
@@ -106,6 +108,8 @@ export const WorkExperienceEntrySchema = z
     endDate: z.string().max(40),
     highlights: z.array(z.string().min(1).max(500)).max(30),
     location: z.string().max(180),
+    messageAttribution: z.enum(["describe", "name"]),
+    messageHighlights: z.array(z.string().min(1).max(500)).max(30),
     startDate: z.string().max(40),
     title: z.string().min(1, "Enter the role").max(180),
   })

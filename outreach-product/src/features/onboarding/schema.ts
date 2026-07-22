@@ -60,10 +60,15 @@ export const ImportedListItemSchema = z
   })
   .strict();
 
-export const ImportedWorkExperienceSchema = WorkExperienceEntrySchema.extend({
-  confidence: ExtractionConfidenceSchema,
-  evidence: z.string().max(1600),
-}).strict();
+export const ImportedWorkExperienceSchema = WorkExperienceEntrySchema.omit({
+  messageAttribution: true,
+  messageHighlights: true,
+})
+  .extend({
+    confidence: ExtractionConfidenceSchema,
+    evidence: z.string().max(1600),
+  })
+  .strict();
 
 export const ProfileImportProposalSchema = z
   .object({
@@ -183,6 +188,8 @@ export function profileFromImport(
       endDate: entry.endDate.trim(),
       highlights: uniqueValues(entry.highlights),
       location: entry.location.trim(),
+      messageAttribution: "describe",
+      messageHighlights: uniqueValues(entry.highlights),
       startDate: entry.startDate.trim(),
       title: entry.title.trim(),
     })),

@@ -173,7 +173,16 @@ export function messageProfile(profile: Profile) {
     introduction: profile.introduction,
     languages: profile.languages,
     workAuthorization: profile.workAuthorization,
-    workExperience: profile.workExperience,
+    workExperience: profile.workExperience.map((entry) => ({
+      current: entry.current,
+      endDate: entry.endDate,
+      highlights: entry.messageHighlights,
+      location: entry.location,
+      organization:
+        entry.messageAttribution === "name" ? entry.employer : undefined,
+      startDate: entry.startDate,
+      title: entry.title,
+    })),
   };
 }
 
