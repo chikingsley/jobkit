@@ -140,19 +140,19 @@ export function applicationMessageTaskConfig(
   if (mode === "follow_up") {
     return {
       model: "gpt-5.6-luna",
-      promptVersion: "application-message-follow-up-v1",
+      promptVersion: "application-message-follow-up-v2",
       reasoningEffort: "low" as const,
     };
   }
   return mode === "revise"
     ? {
         model: "gpt-5.6-terra",
-        promptVersion: "application-message-revise-v2",
+        promptVersion: "application-message-revise-v3",
         reasoningEffort: "medium" as const,
       }
     : {
         model: "gpt-5.6-luna",
-        promptVersion: "application-message-generate-v2",
+        promptVersion: "application-message-generate-v3",
         reasoningEffort: "medium" as const,
       };
 }

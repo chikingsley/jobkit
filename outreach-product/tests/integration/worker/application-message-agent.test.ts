@@ -239,9 +239,13 @@ describe("Codex application message tasks", () => {
     const generation = await claimTask(token);
     expect(generation).toMatchObject({
       model: "gpt-5.6-luna",
+      promptVersion: "application-message-generate-v3",
       taskType: "application.message",
       webSearch: "disabled",
     });
+    expect(generation.prompt).toContain(
+      "Describe lesser-known local schools through the teaching setting, learner group, and location instead of naming them."
+    );
     const question = advertisedPositionQuestion(new Date(), "UTC");
     const firstMessage = messageFor(
       question,
@@ -277,6 +281,7 @@ describe("Codex application message tasks", () => {
     const revision = await claimTask(token);
     expect(revision).toMatchObject({
       model: "gpt-5.6-terra",
+      promptVersion: "application-message-revise-v3",
       taskType: "application.message",
     });
     const revisedMessage = messageFor(
@@ -716,6 +721,8 @@ async function claimTask(token: string) {
   const payload = (await response.json()) as {
     task: {
       model: string;
+      prompt: string;
+      promptVersion: string;
       runId: string;
       taskType: string;
       webSearch: string;
