@@ -57,8 +57,7 @@ export async function queueCampaignDispatchRevision(
   userId: string,
   campaignId: string,
   dispatchId: string,
-  instruction: string,
-  scope: "campaign" | "future" | "message"
+  instruction: string
 ) {
   const dispatch = await readDispatch(db, userId, dispatchId);
   if (dispatch.campaign_id !== campaignId) {
@@ -76,7 +75,15 @@ export async function queueCampaignDispatchRevision(
     taskType: APPLICATION_MESSAGE_TASK_TYPE,
     userId,
   });
+  const timestamp = new Date().toISOString();
   if (active) {
+    await db
+      .prepare(
+        `UPDATE campaign_dispatches SET status='drafting',updated_at=?
+          WHERE id=? AND campaign_id=? AND status IN ('review','calibration')`
+      )
+      .bind(timestamp, dispatchId, campaignId)
+      .run();
     return active;
   }
   const taskCreation = buildAgentTaskRequestCreation(db, {
@@ -92,24 +99,7 @@ export async function queueCampaignDispatchRevision(
     taskType: APPLICATION_MESSAGE_TASK_TYPE,
     userId,
   });
-  const timestamp = new Date().toISOString();
-  const statements = [
-    db
-      .prepare(
-        `INSERT INTO campaign_guidance
-          (id,campaign_id,source_dispatch_id,instruction,scope,status,
-           created_at,decided_at)
-         VALUES (?,?,?,?,?,'accepted',?,?)`
-      )
-      .bind(
-        crypto.randomUUID(),
-        campaignId,
-        dispatchId,
-        instruction,
-        scope,
-        timestamp,
-        timestamp
-      ),
+  await db.batch([
     taskCreation.statement,
     db
       .prepare(
@@ -117,13 +107,7 @@ export async function queueCampaignDispatchRevision(
           WHERE id=? AND campaign_id=? AND status IN ('review','calibration')`
       )
       .bind(timestamp, dispatchId, campaignId),
-  ];
-  if (scope === "future") {
-    statements.push(
-      ...(await futureGuidanceStatements(db, userId, instruction))
-    );
-  }
-  await db.batch(statements);
+  ]);
   return taskCreation.request;
 }
 
@@ -231,6 +215,18 @@ export async function prepareCampaignDispatchTask(
       allGuidance,
       context
     );
+    prepared.input.feedbackClassification = {
+      decisionOwner: "application-message-agent",
+      required: true,
+      scopes: {
+        campaign:
+          "The generalized rule should affect the remaining messages in this campaign.",
+        future:
+          "The generalized rule is a durable voice, profile, or application rule for this and later campaigns.",
+        message:
+          "The feedback depends on this recipient, organization, listing, or message only.",
+      },
+    };
   } else {
     if (current) {
       throw new Error("This campaign dispatch already has a message");
@@ -272,6 +268,31 @@ export async function buildCampaignDispatchTaskCompletion(
   const automated =
     state.dispatch.campaign_status === "running" &&
     state.dispatch.status === "queued";
+  const guidance =
+    input.mode === "revise"
+      ? requireCampaignRevisionGuidance(generated.guidance)
+      : null;
+  const guidanceStatements = guidance
+    ? [
+        env.DB.prepare(
+          `INSERT INTO campaign_guidance
+            (id,campaign_id,source_dispatch_id,instruction,scope,status,
+             created_at,decided_at)
+           VALUES (?,?,?,?,?,'accepted',?,?)`
+        ).bind(
+          crypto.randomUUID(),
+          state.dispatch.campaign_id,
+          input.dispatchId,
+          guidance.instruction,
+          guidance.scope,
+          timestamp,
+          timestamp
+        ),
+        ...(guidance.scope === "future"
+          ? await futureGuidanceStatements(env.DB, userId, guidance.instruction)
+          : []),
+      ]
+    : [];
   return {
     result: {
       dispatchId: input.dispatchId,
@@ -285,6 +306,7 @@ export async function buildCampaignDispatchTaskCompletion(
       },
     },
     statements: [
+      ...guidanceStatements,
       env.DB.prepare(
         `UPDATE campaign_messages SET status='superseded'
           WHERE dispatch_id=? AND status='draft'`
@@ -339,6 +361,20 @@ export async function buildCampaignDispatchTaskCompletion(
       ).bind(timestamp, state.dispatch.run_id ?? "", input.dispatchId),
     ],
   };
+}
+
+function requireCampaignRevisionGuidance(
+  guidance:
+    | { instruction: string; scope: "campaign" | "future" | "message" }
+    | null
+    | undefined
+) {
+  if (!guidance) {
+    throw new Error(
+      "Campaign revision output must classify the user's feedback"
+    );
+  }
+  return guidance;
 }
 
 async function readDispatch(

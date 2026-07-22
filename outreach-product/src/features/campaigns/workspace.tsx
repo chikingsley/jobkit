@@ -166,6 +166,8 @@ function CampaignDetailView({
   request: ApiRequest;
 }) {
   const [busy, setBusy] = useState("");
+  const [hiddenDispatchIds, setHiddenDispatchIds] = useState<string[]>([]);
+  const [pendingFocusId, setPendingFocusId] = useState("");
   const [targets, setTargets] = useState<CampaignTarget[]>([]);
   const [targetPage, setTargetPage] = useState<CampaignTargetPage | null>(null);
   const {
@@ -208,6 +210,27 @@ function CampaignDetailView({
       );
     }
   }, [campaignId, request]);
+
+  const activeDispatches = (campaign?.dispatches ?? []).filter(
+    (dispatch) =>
+      ["calibration", "drafting", "review"].includes(dispatch.status) &&
+      !hiddenDispatchIds.includes(dispatch.id)
+  );
+
+  useEffect(() => {
+    if (!pendingFocusId) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      document
+        .querySelector<HTMLElement>(
+          `[data-campaign-dispatch-id="${pendingFocusId}"]`
+        )
+        ?.focus({ preventScroll: true });
+      setPendingFocusId("");
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [pendingFocusId]);
 
   async function loadMore() {
     if (
@@ -266,16 +289,20 @@ function CampaignDetailView({
   }
 
   return (
-    <>
-      <div className="split-workspace-back border-b bg-background px-4 py-2">
-        <Button onClick={onBack} variant="ghost">
-          <ChevronLeft /> Campaigns
-        </Button>
-      </div>
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 sm:px-6">
-          <header className="flex flex-wrap items-start justify-between gap-4">
-            <div>
+    <ScrollArea className="min-h-0 flex-1">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-5 sm:px-6">
+        <header className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex min-w-0 items-start gap-2">
+            <Button
+              aria-label="Back to campaigns"
+              className="split-workspace-back -ml-2 shrink-0"
+              onClick={onBack}
+              size="icon-sm"
+              variant="ghost"
+            >
+              <ChevronLeft />
+            </Button>
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="font-semibold text-2xl tracking-tight">
                   {campaign.name}
@@ -288,148 +315,159 @@ function CampaignDetailView({
                 replies
               </p>
             </div>
-            <CampaignActions action={action} busy={busy} campaign={campaign} />
-          </header>
+          </div>
+          <CampaignActions action={action} busy={busy} campaign={campaign} />
+        </header>
 
-          {campaign.pauseReason ? (
-            <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950 text-sm dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
-              {campaign.pauseReason}
-            </div>
-          ) : null}
+        {campaign.pauseReason ? (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950 text-sm dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+            {campaign.pauseReason}
+          </div>
+        ) : null}
 
-          {campaign.liveDeliveryEnabled ? null : (
-            <p className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950 text-sm dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
-              Live delivery is locked. Review and simulation remain available.
-            </p>
-          )}
+        {campaign.liveDeliveryEnabled ? null : (
+          <p className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950 text-sm dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+            Live delivery is locked. Review and simulation remain available.
+          </p>
+        )}
 
-          <dl
-            aria-label="Campaign summary"
-            className="grid grid-cols-2 overflow-hidden rounded-lg border bg-card sm:grid-cols-4"
+        <dl
+          aria-label="Campaign summary"
+          className="grid grid-cols-2 overflow-hidden rounded-lg border bg-card sm:grid-cols-4"
+        >
+          <Metric
+            className="border-r border-b sm:border-b-0"
+            label="Total opportunities"
+            value={campaign.counts.total}
+          />
+          <Metric
+            className="border-b sm:border-r sm:border-b-0"
+            label="Posted jobs"
+            value={campaign.counts.advertised}
+          />
+          <Metric
+            className="border-r"
+            label="Direct contacts"
+            value={campaign.counts.school}
+          />
+          <Metric label="Human replies" value={campaign.counts.humanReplies} />
+        </dl>
+
+        <CampaignActivity replies={campaign.replies} runs={campaign.runs} />
+
+        {campaign.status === "preparing" ? (
+          <p
+            className="border-y py-4 text-muted-foreground text-sm"
+            role="status"
           >
-            <Metric
-              className="border-r border-b sm:border-b-0"
-              label="Total opportunities"
-              value={campaign.counts.total}
-            />
-            <Metric
-              className="border-b sm:border-r sm:border-b-0"
-              label="Posted jobs"
-              value={campaign.counts.advertised}
-            />
-            <Metric
-              className="border-r"
-              label="Direct contacts"
-              value={campaign.counts.school}
-            />
-            <Metric
-              label="Human replies"
-              value={campaign.counts.humanReplies}
-            />
-          </dl>
+            Evaluating the campaign pool…
+          </p>
+        ) : null}
 
-          <CampaignActivity replies={campaign.replies} runs={campaign.runs} />
-
-          {campaign.status === "preparing" ? (
-            <p
-              className="border-y py-4 text-muted-foreground text-sm"
-              role="status"
-            >
-              Evaluating the campaign pool…
+        {campaign.status === "draft" ? (
+          <section className="flex flex-wrap items-center justify-between gap-3 border-y py-4">
+            <p className="text-muted-foreground text-sm">
+              {campaign.firstFiveRequired
+                ? "Review sample messages before launch."
+                : "Prepare this campaign for launch."}
             </p>
-          ) : null}
-
-          {campaign.status === "draft" ? (
-            <section className="flex flex-wrap items-center justify-between gap-3 border-y py-4">
-              <p className="text-muted-foreground text-sm">
-                {campaign.firstFiveRequired
-                  ? "Review sample messages before launch."
-                  : "Prepare this campaign for launch."}
-              </p>
-              <Button
-                disabled={Boolean(busy)}
-                onClick={() => void action("begin_calibration")}
-              >
-                <MailCheck />
-                {campaign.firstFiveRequired
-                  ? "Review the first five"
-                  : "Prepare campaign"}
-              </Button>
-            </section>
-          ) : null}
-
-          {campaign.dispatches.length > 0 ? (
-            <section className="grid gap-3">
-              <div>
-                <h2 className="font-semibold">Calibration and delivery</h2>
-              </div>
-              {campaign.dispatches.map((dispatch, index) => (
-                <CampaignDispatchCard
-                  campaignId={campaign.id}
-                  dispatch={dispatch}
-                  index={index}
-                  key={dispatch.id}
-                  onChanged={async (nextCampaign) => {
-                    if (nextCampaign) {
-                      await mutate(nextCampaign, { revalidate: false });
-                    } else {
-                      await mutate();
-                    }
-                    await onChanged();
-                  }}
-                  request={request}
-                />
-              ))}
-            </section>
-          ) : null}
-
-          <section className="grid gap-3">
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <h2 className="font-semibold">Campaign pool</h2>
-                <p className="text-muted-foreground text-sm">
-                  {targets.length.toLocaleString()} of{" "}
-                  {(
-                    targetPage?.total ?? campaign.counts.total
-                  ).toLocaleString()}{" "}
-                  targets
-                </p>
-              </div>
-              <Button
-                aria-label="Refresh campaign"
-                onClick={() => void mutate()}
-                size="icon-sm"
-                variant="ghost"
-              >
-                <RefreshCw />
-              </Button>
-            </div>
-            <div className="overflow-hidden rounded-lg border">
-              {targets.map((target, index) => (
-                <div key={target.id}>
-                  {index > 0 ? <Separator /> : null}
-                  <TargetRow target={target} />
-                </div>
-              ))}
-              {targets.length === 0 ? (
-                <p className="px-4 py-10 text-center text-muted-foreground text-sm">
-                  No targets are stored in this campaign.
-                </p>
-              ) : null}
-            </div>
-            {targetPage?.hasMore ? (
-              <Button
-                disabled={busy === "targets"}
-                onClick={() => void loadMore()}
-                variant="outline"
-              >
-                {busy === "targets" ? "Loading…" : "Load more targets"}
-              </Button>
-            ) : null}
+            <Button
+              disabled={Boolean(busy)}
+              onClick={() => void action("begin_calibration")}
+            >
+              <MailCheck />
+              {campaign.firstFiveRequired
+                ? "Review the first five"
+                : "Prepare campaign"}
+            </Button>
           </section>
-        </div>
-      </ScrollArea>
-    </>
+        ) : null}
+
+        <CampaignWritingRules guidance={campaign.guidance} />
+
+        {activeDispatches.length > 0 ? (
+          <section className="grid gap-3">
+            <h2 className="font-semibold">Messages to review</h2>
+            {activeDispatches.map((dispatch, index) => (
+              <CampaignDispatchCard
+                campaignId={campaign.id}
+                dispatch={dispatch}
+                index={index}
+                key={dispatch.id}
+                onApproveFailed={() => {
+                  setHiddenDispatchIds((current) =>
+                    current.filter((id) => id !== dispatch.id)
+                  );
+                  setPendingFocusId(dispatch.id);
+                }}
+                onApproveStart={() => {
+                  const currentIndex = activeDispatches.findIndex(
+                    (candidate) => candidate.id === dispatch.id
+                  );
+                  const next =
+                    activeDispatches[currentIndex + 1] ??
+                    activeDispatches[currentIndex - 1];
+                  setPendingFocusId(next?.id ?? "");
+                  setHiddenDispatchIds((current) => [...current, dispatch.id]);
+                }}
+                onChanged={async (nextCampaign) => {
+                  if (nextCampaign) {
+                    await mutate(nextCampaign, { revalidate: false });
+                  } else {
+                    await mutate();
+                  }
+                  await onChanged();
+                }}
+                request={request}
+              />
+            ))}
+          </section>
+        ) : null}
+
+        <section className="grid gap-3">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h2 className="font-semibold">Campaign pool</h2>
+              <p className="text-muted-foreground text-sm">
+                {targets.length.toLocaleString()} of{" "}
+                {(targetPage?.total ?? campaign.counts.total).toLocaleString()}{" "}
+                targets
+              </p>
+            </div>
+            <Button
+              aria-label="Refresh campaign"
+              onClick={() => void mutate()}
+              size="icon-sm"
+              variant="ghost"
+            >
+              <RefreshCw />
+            </Button>
+          </div>
+          <div className="overflow-hidden rounded-lg border">
+            {targets.map((target, index) => (
+              <div key={target.id}>
+                {index > 0 ? <Separator /> : null}
+                <TargetRow target={target} />
+              </div>
+            ))}
+            {targets.length === 0 ? (
+              <p className="px-4 py-10 text-center text-muted-foreground text-sm">
+                No targets are stored in this campaign.
+              </p>
+            ) : null}
+          </div>
+          {targetPage?.hasMore ? (
+            <Button
+              disabled={busy === "targets"}
+              onClick={() => void loadMore()}
+              variant="outline"
+            >
+              {busy === "targets" ? "Loading…" : "Load more targets"}
+            </Button>
+          ) : null}
+        </section>
+      </div>
+    </ScrollArea>
   );
 }
 
@@ -527,6 +565,62 @@ function Metric({
       </dt>
     </div>
   );
+}
+
+function CampaignWritingRules({
+  guidance,
+}: {
+  guidance: CampaignDetail["guidance"];
+}) {
+  const rules = Array.from(
+    new Map(
+      guidance
+        .filter((item) => item.status === "accepted")
+        .map((item) => [`${item.scope}:${item.instruction}`, item])
+    ).values()
+  );
+  if (rules.length === 0) {
+    return null;
+  }
+  return (
+    <details className="group border-y py-3 text-sm">
+      <summary className="cursor-pointer list-none font-medium marker:content-none">
+        <span className="inline-flex items-center gap-2">
+          <span
+            aria-hidden
+            className="transition-transform group-open:rotate-90"
+          >
+            ▶
+          </span>
+          Writing rules
+          <span className="text-muted-foreground">{rules.length}</span>
+        </span>
+      </summary>
+      <ul className="mt-3 grid gap-3 pl-5">
+        {rules.map((rule) => (
+          <li
+            className="grid gap-1 sm:grid-cols-[1fr_auto] sm:gap-4"
+            key={rule.id}
+          >
+            <span className="leading-6">{rule.instruction}</span>
+            <span className="text-muted-foreground text-xs">
+              {guidanceScopeLabel(rule.scope)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
+
+function guidanceScopeLabel(scope: "campaign" | "future" | "message") {
+  if (scope === "future") {
+    return "All campaigns";
+  }
+  if (scope === "campaign") {
+    return "This campaign";
+  }
+  return "Source message";
 }
 
 function StatusBadge({ status }: { status: string }) {

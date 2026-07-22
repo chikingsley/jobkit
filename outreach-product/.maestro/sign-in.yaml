@@ -1,6 +1,7 @@
 url: ${JOBKIT_URL}
 ---
-- launchApp
+- launchApp:
+    clearState: true
 - openLink: ${JOBKIT_URL}
 - runFlow:
     label: Sign in when the browser has no active session
@@ -12,4 +13,4 @@ url: ${JOBKIT_URL}
       - tapOn: "Password"
       - inputText: ${JOBKIT_PASSWORD}
       - tapOn: "Sign in"
-- assertVisible: "Job review"
+- assertVisible: "Jobs"

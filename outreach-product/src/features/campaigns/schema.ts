@@ -66,7 +66,6 @@ export const CampaignFeedbackSchema = z
   .object({
     dispatchId: z.string().min(1),
     instruction: z.string().trim().min(1).max(1000),
-    scope: z.enum(["message", "campaign", "future"]),
   })
   .strict();
 

@@ -1,0 +1,42 @@
+url: ${JOBKIT_URL}
+name: Keep campaign review stable while revising and approving
+tags:
+  - campaign-review
+---
+- runFlow: ../sign-in.yaml
+- openLink: ${JOBKIT_URL}/campaigns/maestro-review-campaign
+- assertVisible: "Review interaction fixture"
+- assertVisible: "Maestro English Teacher"
+- assertVisible: "Writing rules"
+- tapOn: "Writing rules"
+- assertVisible: "Keep secondary experience brief and tied to the teaching role."
+- tapOn: "Writing rules"
+- swipe:
+    start: 50%, 85%
+    end: 50%, 20%
+- assertVisible: "Describe the change"
+- tapOn: "Describe the change"
+- inputText: "Remove the engineering paragraph."
+- swipe:
+    start: 50%, 80%
+    end: 50%, 60%
+- assertVisible: "Revise"
+- tapOn: "Revise"
+- assertVisible: "Revision queued for the paired Codex runner"
+- assertVisible: "Describe the change"
+- swipe:
+    start: 50%, 85%
+    end: 50%, 25%
+- assertVisible: "Maestro University English Lecturer"
+- swipe:
+    start: 50%, 85%
+    end: 50%, 45%
+- swipe:
+    start: 50%, 85%
+    end: 50%, 20%
+- tapOn: "Approve"
+- assertNotVisible: "Message 2"
+- swipe:
+    start: 50%, 25%
+    end: 50%, 85%
+- assertVisible: "Maestro English Teacher"

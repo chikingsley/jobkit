@@ -107,8 +107,7 @@ export function registerCampaignRoutes(app: JobKitApp) {
         c.get("user").id,
         c.req.param("campaignId"),
         input.dispatchId,
-        input.instruction,
-        input.scope
+        input.instruction
       );
       return c.json(
         {

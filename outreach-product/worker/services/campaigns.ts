@@ -635,8 +635,7 @@ async function readCampaignDispatches(
               updated_at
          FROM campaign_dispatches
         WHERE campaign_id=?
-        ORDER BY CASE status WHEN 'calibration' THEN 0 WHEN 'review' THEN 1
-          WHEN 'ready' THEN 2 ELSE 3 END,created_at`
+        ORDER BY created_at,id`
     )
     .bind(campaignId)
     .all();

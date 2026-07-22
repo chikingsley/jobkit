@@ -1,17 +1,9 @@
-import { MailCheck } from "lucide-react";
+import { LoaderCircle, MailCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   CampaignDetail,
@@ -24,20 +16,25 @@ export function CampaignDispatchCard({
   campaignId,
   dispatch,
   index,
+  onApproveFailed,
+  onApproveStart,
   onChanged,
   request,
 }: {
   campaignId: string;
   dispatch: CampaignDispatch;
   index: number;
+  onApproveFailed: () => void;
+  onApproveStart: () => void;
   onChanged: (campaign?: CampaignDetail) => Promise<void>;
   request: ApiRequest;
 }) {
   const [instruction, setInstruction] = useState("");
-  const [scope, setScope] = useState<"campaign" | "future" | "message">(
-    "message"
-  );
   const [busy, setBusy] = useState("");
+  const isRevising = busy === "revise" || dispatch.status === "drafting";
+  const targetLabels = dispatch.targets
+    .map((target) => target.label)
+    .join(" · ");
 
   async function revise() {
     setBusy("revise");
@@ -48,7 +45,6 @@ export function CampaignDispatchCard({
           body: JSON.stringify({
             dispatchId: dispatch.id,
             instruction,
-            scope,
           }),
           headers: { "content-type": "application/json" },
           method: "POST",
@@ -60,7 +56,9 @@ export function CampaignDispatchCard({
       toast.success(payload.message);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Revision could not be queued"
+        error instanceof Error
+          ? error.message
+          : "Revision failed. Try the change again."
       );
     } finally {
       setBusy("");
@@ -69,6 +67,7 @@ export function CampaignDispatchCard({
 
   async function approve() {
     setBusy("approve");
+    onApproveStart();
     try {
       const response = await request(
         `/api/campaigns/${campaignId}/dispatches/${dispatch.id}/approve`,
@@ -81,8 +80,11 @@ export function CampaignDispatchCard({
       await onChanged(payload.campaign);
       toast.success(payload.message);
     } catch (error) {
+      onApproveFailed();
       toast.error(
-        error instanceof Error ? error.message : "Message could not be approved"
+        error instanceof Error
+          ? error.message
+          : "Approval failed. The message is back in the queue."
       );
     } finally {
       setBusy("");
@@ -90,22 +92,26 @@ export function CampaignDispatchCard({
   }
 
   return (
-    <Card>
+    <Card
+      data-campaign-dispatch-id={dispatch.id}
+      data-testid={`campaign-dispatch-${dispatch.id}`}
+      tabIndex={-1}
+    >
       <CardHeader className="gap-2">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <CardTitle>Message {index + 1}</CardTitle>
-            <p className="mt-1 text-muted-foreground text-sm">
-              {dispatch.targets.map((target) => target.label).join(" · ")}
-            </p>
+            <p className="mt-1 text-muted-foreground text-sm">{targetLabels}</p>
           </div>
           <div className="flex gap-2">
             {dispatch.routeStrategy === "anesl_bundle" ? (
               <Badge variant="secondary">ANESL bundle</Badge>
             ) : null}
-            <Badge variant="outline">
-              {dispatch.status.replaceAll("_", " ")}
-            </Badge>
+            {isRevising ? (
+              <Badge variant="outline">
+                <LoaderCircle className="animate-spin" /> Revising
+              </Badge>
+            ) : null}
           </div>
         </div>
       </CardHeader>
@@ -120,14 +126,15 @@ export function CampaignDispatchCard({
             <MessageChanges
               message={dispatch.message.message}
               previousMessage={dispatch.message.previousMessage}
+              version={dispatch.message.version}
             />
             {dispatch.message.changeSummary ? (
-              <div className="rounded-lg bg-muted/60 p-3 text-sm">
-                <div className="font-medium">What changed</div>
-                <p className="mt-1 text-muted-foreground">
-                  {dispatch.message.changeSummary}
-                </p>
-              </div>
+              <p className="text-muted-foreground text-sm">
+                <span className="font-medium text-foreground">
+                  v{dispatch.message.version}
+                </span>{" "}
+                · {dispatch.message.changeSummary}
+              </p>
             ) : null}
           </>
         ) : (
@@ -135,46 +142,41 @@ export function CampaignDispatchCard({
             Waiting for the paired Codex runner to prepare this message.
           </div>
         )}
-        {dispatch.message && dispatch.status === "review" ? (
-          <div className="grid gap-3 rounded-lg border p-3">
+        {dispatch.message &&
+        ["drafting", "review"].includes(dispatch.status) ? (
+          <div className="grid gap-3 border-t pt-4">
+            <label
+              className="font-medium text-sm"
+              htmlFor={`campaign-revision-${dispatch.id}`}
+            >
+              Describe the change
+            </label>
             <Textarea
               aria-label={`Revision instruction for message ${index + 1}`}
-              className="min-h-20"
+              className="min-h-28 w-full resize-y px-3 py-3 leading-6"
+              disabled={isRevising}
+              id={`campaign-revision-${dispatch.id}`}
               onChange={(event) => setInstruction(event.target.value)}
-              placeholder="Describe one change. The revised message will replace this one in place."
+              placeholder="For example: Remove the engineering paragraph."
               value={instruction}
             />
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <Select
-                onValueChange={(value) =>
-                  setScope(value as "campaign" | "future" | "message")
-                }
-                value={scope}
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+              <Button
+                aria-label={`Revise message for ${targetLabels}`}
+                disabled={Boolean(busy) || isRevising || !instruction.trim()}
+                onClick={() => void revise()}
+                variant="secondary"
               >
-                <SelectTrigger aria-label="Revision scope">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="message">This message</SelectItem>
-                    <SelectItem value="campaign">Remaining campaign</SelectItem>
-                    <SelectItem value="future">Future campaigns</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              <div className="flex gap-2">
-                <Button
-                  disabled={Boolean(busy) || !instruction.trim()}
-                  onClick={() => void revise()}
-                  variant="secondary"
-                >
-                  {busy === "revise" ? "Revising…" : "Revise"}
-                </Button>
-                <Button disabled={Boolean(busy)} onClick={() => void approve()}>
-                  <MailCheck />
-                  {busy === "approve" ? "Approving…" : "Approve"}
-                </Button>
-              </div>
+                {isRevising ? "Revising…" : "Revise"}
+              </Button>
+              <Button
+                aria-label={`Approve message for ${targetLabels}`}
+                disabled={Boolean(busy) || isRevising}
+                onClick={() => void approve()}
+              >
+                <MailCheck />
+                {busy === "approve" ? "Approving…" : "Approve"}
+              </Button>
             </div>
           </div>
         ) : null}

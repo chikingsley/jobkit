@@ -454,13 +454,26 @@ describe("Codex application message tasks", () => {
       {
         dispatchId: dispatch.id,
         instruction: "Keep the description of adult teaching this direct.",
-        scope: "campaign",
       }
     );
     expect(revision.status).toBe(202);
+    const queuedRevision = await sessionGet(
+      `/api/campaigns/${createdPayload.campaign.id}`,
+      cookie
+    );
+    await expect(queuedRevision.json()).resolves.toMatchObject({
+      campaign: {
+        dispatches: [{ id: dispatch.id, status: "drafting" }],
+      },
+    });
     const revisionTask = await claimTask(token);
     const revisedMessage = `Hello,\n\nI have taught adult English learners in several classroom settings and would be glad to discuss this position.\n\n${question}\n\nBest,\nIntegration User\nE: ${email}`;
     await completeTask(token, revisionTask.runId, {
+      guidance: {
+        instruction:
+          "Describe adult teaching experience in direct, ordinary language.",
+        scope: "campaign",
+      },
       message: revisedMessage,
       summary: "Kept the adult teaching description direct.",
     });
@@ -484,7 +497,8 @@ describe("Codex application message tasks", () => {
         ],
         guidance: [
           {
-            instruction: "Keep the description of adult teaching this direct.",
+            instruction:
+              "Describe adult teaching experience in direct, ordinary language.",
             scope: "campaign",
             status: "accepted",
           },

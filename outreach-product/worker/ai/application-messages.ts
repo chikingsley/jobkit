@@ -134,6 +134,7 @@ export function validateCodexApplicationMessage(
     prepared.input.requiredPositionReferences
   );
   return {
+    guidance: output.guidance,
     message,
     modelId,
     provider: "codex",

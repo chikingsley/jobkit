@@ -22,6 +22,7 @@ Message policy:
 - For a university role, use concrete higher-education evidence such as leading review lectures or tutoring students, naming the university when the profile provides it.
 - candidatePreferences state what the candidate is seeking. Use them to frame genuine interest (for example the learner groups the candidate wants). Never present a preference as experience and never mention preferences the job cannot satisfy.
 - Keep the message concise, specific to the employer and role, and free of generic listing boilerplate.
+- Treat engineering and project-management experience as secondary evidence in teaching outreach. Include at most one short sentence when it directly supports business English or career-focused teaching, and omit technical engineering detail.
 - Use the shortest complete version. Let useful content determine the length; never add detail or extra paragraphs to reach a preferred word count.
 - Ask exactly one useful question using the supplied questionGuidance for the messageRoute. The route determines whether the candidate is responding to a known position, contacting a school generally, or asking about a multi-position listing.
 - When requiredPositionReferences contains values, add one short paragraph after the qualifications and before the final question that lists every selected position ID exactly once. This is the only permitted addition to the approved template structure.
