@@ -108,7 +108,9 @@ export async function sealRelation(
     leftMemberHash: draft.left.memberHash,
     leftMemberKey: draft.left.memberKey,
     matchingSignals: draft.matchingSignals,
-    operatorDecisionHash: draft.operatorDecision?.decisionHash ?? null,
+    operatorDecisionHash: draft.operatorDecision
+      ? draft.operatorDecision.decisionHash
+      : null,
     reasonCode: draft.reasonCode,
     relation: draft.relation,
     rightMemberHash: draft.right.memberHash,
@@ -123,7 +125,9 @@ export async function sealRelation(
     ),
     left: draft.left,
     matchingSignals: draft.matchingSignals,
-    operatorDecisionId: draft.operatorDecision?.id ?? null,
+    operatorDecisionId: draft.operatorDecision
+      ? draft.operatorDecision.id
+      : null,
     reasonCode: draft.reasonCode,
     relation: draft.relation,
     relationHash: await canonicalSha256(payload),

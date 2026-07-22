@@ -20,17 +20,21 @@ import {
 import { advanceFinalWorkClaim } from "./final-graph/phase-controller";
 import { canonicalSha256 } from "./hash";
 
+// biome-ignore lint/performance/noBarrelFile: This behavior-owning module preserves the stable D3 identity API after internal decomposition.
 export {
   deterministicPublicJobId,
   finalDuplicateRelationId,
   finalPublicMemberKey,
   finalShadowMemberKey,
 } from "./final-graph/identity";
+// biome-ignore lint/performance/noBarrelFile: This behavior-owning module preserves the stable D3 error API after internal decomposition.
 export { FinalDuplicateSnapshotError } from "./final-graph/model";
+// biome-ignore lint/performance/noBarrelFile: This behavior-owning module preserves the stable D3 reduction API after internal decomposition.
 export {
   appendFinalPhaseDigest,
   FINAL_PHASE_REDUCTION_DOMAINS,
 } from "./final-graph/reduction";
+// biome-ignore lint/performance/noBarrelFile: This behavior-owning module preserves the stable D3 relation API after internal decomposition.
 export {
   LIVE_CANONICAL_MATCH_KEYSET_SQL,
   LIVE_CANONICAL_SHADOW_PAGE_SQL,

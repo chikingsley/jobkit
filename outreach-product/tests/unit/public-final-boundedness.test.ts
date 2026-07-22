@@ -9,6 +9,10 @@ const finalWorkDirectory = new URL(
   "../../worker/repositories/public-projection-final-work/",
   import.meta.url
 );
+const finalGraphServiceDirectory = new URL(
+  "../../worker/services/public-projection/final-graph/",
+  import.meta.url
+);
 const productionSources = [
   ...fixedProductionSources,
   ...readdirSync(finalWorkDirectory)
@@ -16,6 +20,9 @@ const productionSources = [
     .map(
       (file) => `../../worker/repositories/public-projection-final-work/${file}`
     ),
+  ...readdirSync(finalGraphServiceDirectory)
+    .filter((file) => file.endsWith(".ts"))
+    .map((file) => `../../worker/services/public-projection/final-graph/${file}`),
 ].map((path) => ({
   path,
   source: readFileSync(new URL(path, import.meta.url), "utf8"),
