@@ -14,7 +14,6 @@ import type {
   JobListItem,
 } from "@/features/jobs/types";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
-import { useWorkspaceQueryState } from "@/features/workspace/query-state";
 import { SplitWorkspace } from "@/features/workspace/split-workspace";
 import type {
   JobMatch,
@@ -29,6 +28,7 @@ const JOB_LOADING_ROWS = ["first", "second", "third", "fourth", "fifth"];
 export function JobsWorkspace({
   busy,
   busyClaimKey,
+  detailOpen,
   fx,
   instruction,
   jobDetailError,
@@ -38,6 +38,7 @@ export function JobsWorkspace({
   jobsLoading,
   matches,
   onAction,
+  onCloseDetail,
   onDraftAction,
   onInstruction,
   onQualificationClaim,
@@ -47,10 +48,12 @@ export function JobsWorkspace({
   selected,
   selectedId,
   selectedMatch,
+  selectionNotice,
   sort,
 }: {
   busy: string;
   busyClaimKey: string;
+  detailOpen: boolean;
   fx: FxData;
   instruction: string;
   jobDetailError: string;
@@ -60,6 +63,7 @@ export function JobsWorkspace({
   jobsLoading: boolean;
   matches: ReadonlyMap<string, JobMatchSummary>;
   onAction: (path: string, body?: object) => Promise<void>;
+  onCloseDetail: () => void;
   onDraftAction: (
     path: string,
     options: { body?: object; method?: "POST" | "PUT" }
@@ -71,15 +75,15 @@ export function JobsWorkspace({
     kind: string;
     label: string;
   }) => Promise<void>;
-  onSelect: (id: string) => void;
+  onSelect: (id: string) => Promise<void>;
   preferences: Preferences | null;
   profile: Profile | null;
   selected?: Job;
   selectedId?: string;
   selectedMatch?: JobMatch;
+  selectionNotice?: { message: string; title: string };
   sort: JobSort;
 }) {
-  const { detailOpen, setDetailOpen } = useWorkspaceQueryState();
   const [visibleLimit, setVisibleLimit] = useState(INITIAL_VISIBLE_JOBS);
   const sortedJobs = useMemo(() => sortJobs(jobs, fx, sort), [fx, jobs, sort]);
   const queueJobs = sortedJobs.slice(0, visibleLimit);
@@ -87,7 +91,19 @@ export function JobsWorkspace({
     () => groupJobsByContact(sortedJobs.slice(0, visibleLimit)),
     [sortedJobs, visibleLimit]
   );
-  let detailContent = (
+  let detailContent = selectionNotice ? (
+    <>
+      <div className="split-workspace-back border-b bg-background px-4 py-2">
+        <Button onClick={onCloseDetail} variant="ghost">
+          <ChevronLeft /> Jobs
+        </Button>
+      </div>
+      <WorkspaceError
+        message={selectionNotice.message}
+        title={selectionNotice.title}
+      />
+    </>
+  ) : (
     <div className="grid min-h-[24rem] place-items-center p-8 text-center">
       <div>
         <h2 className="font-semibold">No jobs in this view</h2>
@@ -101,7 +117,7 @@ export function JobsWorkspace({
     detailContent = (
       <>
         <div className="split-workspace-back border-b bg-background px-4 py-2">
-          <Button onClick={() => setDetailOpen(false)} variant="ghost">
+          <Button onClick={onCloseDetail} variant="ghost">
             <ChevronLeft /> Jobs
           </Button>
         </div>
@@ -166,10 +182,7 @@ export function JobsWorkspace({
                   group={group}
                   key={group.id}
                   matches={matches}
-                  onSelect={(jobId) => {
-                    onSelect(jobId);
-                    setDetailOpen(true);
-                  }}
+                  onSelect={(jobId) => void onSelect(jobId)}
                   selectedId={selectedId}
                 />
               ))}

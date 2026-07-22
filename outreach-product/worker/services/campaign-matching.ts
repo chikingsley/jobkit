@@ -1,5 +1,6 @@
 import { compensationFromEconomics } from "../../src/features/jobs/economics";
 import {
+  JOB_POSITION_ANALYSIS_SCHEMA_VERSION,
   type JobPositionAnalysis,
   JobPositionAnalysisSchema,
 } from "../../src/features/jobs/position-variants";
@@ -167,7 +168,8 @@ function readCampaignMatchingRows(
                   ),'[]')
                 )
                 FROM job_position_analyses analysis
-                WHERE analysis.job_id=j.id AND analysis.schema_version=2
+                WHERE analysis.job_id=j.id
+                  AND analysis.schema_version=${JOB_POSITION_ANALYSIS_SCHEMA_VERSION}
               ) position_analysis_json
          FROM campaign_targets t
          JOIN campaigns c ON c.id=t.campaign_id
@@ -218,6 +220,7 @@ function matchingJobFromRow(row: CampaignMatchingRow): Job {
     messageRoute: String(row.message_route) as Job["messageRoute"],
     opportunityScope: String(row.opportunity_scope) as Job["opportunityScope"],
     positionAnalysis,
+    publicJobId: null,
     sourceReference: String(row.source_reference),
     sourceUrl: String(row.source_url),
     status: "new",

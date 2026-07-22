@@ -170,6 +170,7 @@ describe("campaign lifecycle", () => {
       `/api/agent-tasks/${task.runId}/complete`,
       runnerToken,
       {
+        leaseToken: task.leaseToken,
         output: {
           message: exactMessage,
           summary: "Used the candidate's adult teaching experience.",
@@ -587,7 +588,7 @@ async function claimTask(token: string) {
     runnerVersion: "codex-cli test",
   });
   const payload = (await response.json()) as {
-    task: { runId: string; taskType: string };
+    task: { leaseToken: string; runId: string; taskType: string };
   };
   return payload.task;
 }

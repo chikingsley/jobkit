@@ -14,16 +14,16 @@ Production: <https://outreach-product.peacockery.studio>
 - Authenticated Gmail Pub/Sub reply ingestion, D1 message threads, unread state, and attachment retrieval in the Messages interface.
 - SeriousTeachers login-gated form submission with authoritative post-submit verification.
 - Country-market catalogs, campaigns, paired Codex task execution, and automation policy.
-- React Router routes plus URL-backed job filters, sort, selected job, and selected message thread.
+- TanStack Start and TanStack Router routes with validated URL-backed filters, sort, selected job, and selected message thread.
 
 R2 objects have no public bucket URL. All document operations are authenticated and ownership scoped. Accepted uploads are PDF, DOCX, JPG, and PNG files up to 10 MB.
 
 ## Architecture
 
 ```text
-React + React Router
+TanStack Start + React + TanStack Router
         |
-Cloudflare Worker (Hono, Better Auth, application executors)
+Cloudflare Worker (Start SSR, Hono APIs, Better Auth, application executors)
         |-- D1: shared inventory and user-owned workflow/message state
         |-- R2: user-owned documents and immutable send snapshots
         |-- Gmail OAuth: send, thread reconciliation, and reply retrieval
@@ -37,13 +37,7 @@ paired local Codex CLI
         `-- outbound HTTPS claim/result protocol --> versioned agent tasks
 ```
 
-Long-running research and analysis never hold open a Worker request. A user
-pairs a local `codex login` with a short-lived one-time code, then the local
-companion claims versioned tasks over outbound HTTPS. JobKit stores only a hash
-of the revocable companion token. Each task runs in an empty ephemeral
-workspace with project secrets removed from the child environment and returns a
-schema-validated result. See
-[`docs/architecture/codex-agent-runtime.md`](docs/architecture/codex-agent-runtime.md).
+Long-running research and analysis never hold open a Worker request. A user pairs a local `codex login` with a short-lived one-time code, then the local companion claims versioned tasks over outbound HTTPS. JobKit stores only a hash of the revocable companion token. Each task runs in an empty ephemeral workspace with project secrets removed from the child environment and returns a schema-validated result. See [`docs/architecture/codex-agent-runtime.md`](docs/architecture/codex-agent-runtime.md).
 
 ## Local development
 
@@ -72,8 +66,7 @@ SERIOUSTEACHERS_EMAIL=...
 SERIOUSTEACHERS_PASSWORD=...
 ```
 
-Never commit `.dev.vars`, OAuth client JSON, access tokens, pairing codes, or
-companion tokens.
+Never commit `.dev.vars`, OAuth client JSON, access tokens, pairing codes, or companion tokens.
 
 ## Verification and deployment
 
@@ -104,11 +97,13 @@ bun run jobkit -- agent connect --code <one-time-code>
 bun run jobkit -- agent start
 ```
 
-The source inventory is `../job-search/job-data/jobs.sqlite`. It is not application state. D1 is the hosted source of truth for user profiles, preferences, job workflow state, qualification claims, drafts, send attempts, Gmail threads, and replies.
+The source inventory at `../job-search/job-data/jobs.sqlite` supplies raw collector data. D1 is the hosted source of truth for user profiles, preferences, job workflow state, qualification claims, drafts, send attempts, Gmail threads, and replies.
 
 ## Documentation
 
-- [`docs/jobkit-product-prd.md`](docs/jobkit-product-prd.md) — canonical product behavior and direction.
+- [`PRODUCT.md`](PRODUCT.md) — canonical product, access, route, rendering, data, SEO, and verification contract.
+- [`docs/user-flows/`](docs/user-flows/README.md) — canonical journey and terminal-state contracts.
+- [`docs/jobkit-product-prd.md`](docs/jobkit-product-prd.md) — detailed requirements and historical design context.
 - [`docs/architecture/codex-agent-runtime.md`](docs/architecture/codex-agent-runtime.md) — Codex pairing, execution, trust, and provider-migration contract.
 - [`docs/escape-pathways-product-research.md`](docs/escape-pathways-product-research.md) — research and positioning for expanding from ESL jobs into verified work, training, and relocation routes.
 - [`docs/recruiting-business/`](docs/recruiting-business/) — proposed recruiting business, licensing, market order, school offer, candidate pricing, and confidential relocation product.

@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import {
   Bot,
   BriefcaseBusiness,
@@ -7,8 +8,7 @@ import {
   Settings,
   ShieldCheck,
 } from "lucide-react";
-import type { ReactNode } from "react";
-import { useNavigate } from "react-router";
+import type { PropsWithChildren, ReactNode } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
@@ -53,6 +54,10 @@ export function ViewLoading() {
       Loading workspace…
     </div>
   );
+}
+
+export function WorkspacePage({ children }: PropsWithChildren) {
+  return <ScrollArea className="min-h-0 flex-1">{children}</ScrollArea>;
 }
 
 export function WorkspaceSidebar({
@@ -269,7 +274,7 @@ export function WorkspaceHeader({
         )}
         <Button
           aria-label="Messages"
-          onClick={() => navigate(workspacePaths.messages)}
+          onClick={() => void navigate({ to: workspacePaths.messages })}
           size="icon-sm"
           variant={activeView === "messages" ? "secondary" : "ghost"}
         >

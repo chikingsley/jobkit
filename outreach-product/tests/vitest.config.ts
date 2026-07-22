@@ -9,6 +9,9 @@ const migrations = await readD1Migrations("./migrations");
 export default defineConfig({
   plugins: [
     cloudflareTest({
+      // API integration tests exercise the Hono worker directly. TanStack Start
+      // owns the production document dispatcher in src/server.ts.
+      main: "./worker/index.ts",
       miniflare: {
         bindings: {
           APP_ORIGIN: "https://outreach.test",

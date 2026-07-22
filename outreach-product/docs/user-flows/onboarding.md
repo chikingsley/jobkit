@@ -4,13 +4,13 @@
 
 **Actor:** Candidate
 
-**Entry:** The public JobKit URL without an authenticated session.
+**Entry:** A public Apply with JobKit action, `/app/*` without an authenticated session, or the Sign in action.
 
 **Preconditions:** None.
 
 ### Journey
 
-1. Create an account or sign in.
+1. Create an account or sign in. Preserve a selected public job when onboarding began from `FLOW-000`.
 1. Choose a resume and upload it, or choose to build the profile manually.
 1. Review extracted profile facts before they become application facts.
 1. Correct and save the profile.

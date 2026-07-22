@@ -15,9 +15,11 @@ import {
   validateCodexApplicationMessage,
 } from "../ai/application-messages";
 import type { AppEnv } from "../env";
+import { ensureDocumentPackets } from "../repositories/document-packets";
 import {
   copyPacketSnapshotStatements,
-  defaultPacketSnapshotStatements,
+  copyPacketSnapshotWrites,
+  defaultPacketSnapshotWrites,
 } from "../repositories/draft-attachments";
 import { jobEventStatement } from "../repositories/job-events";
 import { readMessageStyleGuidance } from "../repositories/message-style";
@@ -26,6 +28,10 @@ import {
   createAgentTaskRequest,
   readActiveAgentTaskRequest,
 } from "./agent-task-requests";
+import type {
+  AgentTaskCompletionFence,
+  AgentTaskCompletionWrite,
+} from "./agent-tasks/run-store";
 import {
   ANESL_CONTACT_NAME,
   ANESL_KIND,
@@ -95,6 +101,7 @@ export async function createAneslApplicationSet(
     throw new ApplicationBundleError("Select at least one position", 400);
   }
   const subject = aneslBundleSubject(orderedTargets);
+  await ensureDocumentPackets(env.DB, userId);
   const taskCreation = buildAgentTaskRequestCreation(env.DB, {
     payload: {
       bundleId,
@@ -286,7 +293,8 @@ export async function buildAneslBundleTaskCompletion(
   userId: string,
   input: AneslBundleTaskInput,
   rawOutput: unknown,
-  modelId: string
+  modelId: string,
+  fence: AgentTaskCompletionFence
 ) {
   const state = await prepareAneslBundleTask(env, userId, input);
   const generated = validateCodexApplicationMessage(
@@ -295,29 +303,57 @@ export async function buildAneslBundleTaskCompletion(
     modelId
   );
   if (state.current) {
-    return buildBundleDraftMutationPlan(env, userId, state.current, {
-      changeSummary: generated.summary,
-      foundationId: state.context.foundationId,
-      message: generated.message,
-      modelId: generated.modelId,
-      modelProvider: generated.provider,
-      revisionInstruction: input.instruction ?? "",
-      revisionSource: "ai_revision",
-      snapshotDraftId: state.current.draftId,
-      templateKey: state.context.templateKey,
-    });
+    return buildFencedBundleDraftMutationPlan(
+      env,
+      userId,
+      state.current,
+      {
+        changeSummary: generated.summary,
+        foundationId: state.context.foundationId,
+        message: generated.message,
+        modelId: generated.modelId,
+        modelProvider: generated.provider,
+        revisionInstruction: input.instruction ?? "",
+        revisionSource: "ai_revision",
+        snapshotDraftId: state.current.draftId,
+        templateKey: state.context.templateKey,
+      },
+      fence
+    );
   }
 
   const draftId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
   const version = state.latestVersion + 1;
-  const packetStatements = await defaultPacketSnapshotStatements(
+  const packetStatements = await defaultPacketSnapshotWrites(
     env,
     userId,
     draftId,
-    timestamp
+    timestamp,
+    fence
   );
   return {
+    condition: {
+      clause: `EXISTS (
+        SELECT 1 FROM application_bundles completion_bundle
+         WHERE completion_bundle.id=? AND completion_bundle.user_id=?
+           AND completion_bundle.status='review'
+      ) AND (
+        SELECT COUNT(*) FROM application_bundle_targets completion_targets
+         WHERE completion_targets.bundle_id=?
+      )=? AND COALESCE((
+        SELECT MAX(version) FROM application_drafts
+         WHERE user_job_id=?
+      ),0)=?`,
+      values: [
+        input.bundleId,
+        userId,
+        input.bundleId,
+        state.targets.length,
+        state.userJobId,
+        state.latestVersion,
+      ],
+    },
     result: {
       applicationSetId: input.bundleId,
       draft: {
@@ -331,52 +367,70 @@ export async function buildAneslBundleTaskCompletion(
         version,
       },
     },
-    statements: [
-      env.DB.prepare(
-        `UPDATE application_drafts SET status='superseded'
-          WHERE user_job_id=? AND status='draft'`
-      ).bind(state.userJobId),
-      env.DB.prepare(
-        `INSERT INTO application_drafts
-          (id,user_job_id,application_bundle_id,version,message,required_opening,
-           change_summary,model_provider,model_id,message_foundation_id,
-           message_template_key,revision_source,created_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
-      ).bind(
-        draftId,
-        state.userJobId,
-        input.bundleId,
-        version,
-        generated.message,
-        openingFor(ANESL_CONTACT_NAME),
-        generated.summary,
-        generated.provider,
-        generated.modelId,
-        state.context.foundationId,
-        state.context.templateKey,
-        "generated",
-        timestamp
-      ),
-      ...packetStatements,
-      env.DB.prepare(
-        `UPDATE user_listing_states SET status='review',updated_at=?
-          WHERE user_id=? AND id IN (
-            SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
-          )`
-      ).bind(timestamp, userId, input.bundleId),
-      env.DB.prepare(
-        `UPDATE application_bundles SET status='review',updated_at=?
-          WHERE id=? AND user_id=? AND status='review'`
-      ).bind(timestamp, input.bundleId, userId),
-      ...state.targets.map((target) =>
-        jobEventStatement(
-          env.DB,
-          target.user_job_id,
-          "bundle_draft_generated",
-          `Added ${target.source_reference} to an ANESL application set`,
+    writes: [
+      {
+        statement: env.DB.prepare(
+          `UPDATE application_drafts SET status='superseded'
+            WHERE user_job_id=? AND status='draft' AND ${fence.clause}`
+        ).bind(state.userJobId, ...fence.values),
+      },
+      {
+        expectedChanges: 1,
+        statement: env.DB.prepare(
+          `INSERT INTO application_drafts
+            (id,user_job_id,application_bundle_id,version,message,required_opening,
+             change_summary,model_provider,model_id,message_foundation_id,
+             message_template_key,revision_source,created_at)
+           SELECT ?,?,?,?,?,?,?,?,?,?,?,?,? WHERE ${fence.clause}`
+        ).bind(
           draftId,
-          { applicationBundleId: input.bundleId }
-        )
+          state.userJobId,
+          input.bundleId,
+          version,
+          generated.message,
+          openingFor(ANESL_CONTACT_NAME),
+          generated.summary,
+          generated.provider,
+          generated.modelId,
+          state.context.foundationId,
+          state.context.templateKey,
+          "generated",
+          timestamp,
+          ...fence.values
+        ),
+      },
+      ...packetStatements,
+      {
+        expectedChanges: state.targets.length,
+        statement: env.DB.prepare(
+          `UPDATE user_listing_states SET status='review',updated_at=?
+            WHERE user_id=? AND id IN (
+              SELECT user_job_id FROM application_bundle_targets
+               WHERE bundle_id=?
+            ) AND ${fence.clause}`
+        ).bind(timestamp, userId, input.bundleId, ...fence.values),
+      },
+      {
+        expectedChanges: 1,
+        statement: env.DB.prepare(
+          `UPDATE application_bundles SET status='review',updated_at=?
+            WHERE id=? AND user_id=? AND status='review'
+              AND ${fence.clause}`
+        ).bind(timestamp, input.bundleId, userId, ...fence.values),
+      },
+      ...state.targets.map(
+        (target): AgentTaskCompletionWrite => ({
+          expectedChanges: 1,
+          statement: jobEventStatement(
+            env.DB,
+            target.user_job_id,
+            "bundle_draft_generated",
+            `Added ${target.source_reference} to an ANESL application set`,
+            draftId,
+            { applicationBundleId: input.bundleId },
+            fence
+          ),
+        })
       ),
     ],
   };
@@ -563,6 +617,7 @@ interface CurrentBundleDraft {
   job: ReturnType<typeof aneslBundleJob>;
   message: string;
   requiredOpening: string;
+  targetCount: number;
   templateKey: string | null;
   userJobId: string;
   version: number;
@@ -617,6 +672,7 @@ async function currentBundleDraft(
     job: aneslBundleJob(bundleId, targets),
     message: draft.message,
     requiredOpening: draft.required_opening,
+    targetCount: targets.length,
     templateKey: draft.message_template_key,
     userJobId: first.user_job_id,
     version: draft.version,
@@ -717,6 +773,148 @@ function buildBundleDraftMutationPlan(
           WHERE id=? AND user_id=? AND status IN ('review','approved','failed')`
       ).bind(timestamp, current.bundleId, userId),
     ],
+  };
+}
+
+async function buildFencedBundleDraftMutationPlan(
+  env: AppEnv,
+  userId: string,
+  current: CurrentBundleDraft,
+  input: BundleDraftMutation,
+  fence: AgentTaskCompletionFence
+) {
+  const draftId = crypto.randomUUID();
+  const timestamp = new Date().toISOString();
+  const version = current.version + 1;
+  const packetCopy = await copyPacketSnapshotWrites(
+    env.DB,
+    input.snapshotDraftId,
+    draftId,
+    timestamp,
+    fence
+  );
+  const writes: AgentTaskCompletionWrite[] = [
+    {
+      statement: env.DB.prepare(
+        `UPDATE outbound_recipient_claims
+            SET status='released',released_at=?,updated_at=?
+          WHERE source_kind='application_attempt' AND status='claimed'
+            AND source_id IN (
+              SELECT id FROM application_attempts
+               WHERE application_bundle_id=? AND draft_id=?
+                 AND status='approved' AND send_requested_at IS NULL
+                 AND gmail_draft_id=''
+            ) AND ${fence.clause}`
+      ).bind(
+        timestamp,
+        timestamp,
+        current.bundleId,
+        current.draftId,
+        ...fence.values
+      ),
+    },
+    {
+      statement: env.DB.prepare(
+        `DELETE FROM application_attempts
+          WHERE application_bundle_id=? AND draft_id=? AND status='approved'
+            AND send_requested_at IS NULL AND gmail_draft_id=''
+            AND ${fence.clause}`
+      ).bind(current.bundleId, current.draftId, ...fence.values),
+    },
+    {
+      expectedChanges: 1,
+      statement: env.DB.prepare(
+        `UPDATE application_drafts SET status='superseded'
+          WHERE id=? AND application_bundle_id=?
+            AND status IN ('draft','approved') AND ${fence.clause}`
+      ).bind(current.draftId, current.bundleId, ...fence.values),
+    },
+    {
+      expectedChanges: 1,
+      statement: env.DB.prepare(
+        `INSERT INTO application_drafts
+          (id,user_job_id,application_bundle_id,version,message,required_opening,
+           change_summary,revision_instruction,model_provider,model_id,
+           message_foundation_id,message_template_key,revision_source,created_at)
+         SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,? WHERE ${fence.clause}`
+      ).bind(
+        draftId,
+        current.userJobId,
+        current.bundleId,
+        version,
+        input.message,
+        current.requiredOpening,
+        input.changeSummary,
+        input.revisionInstruction,
+        input.modelProvider,
+        input.modelId,
+        input.foundationId,
+        input.templateKey,
+        input.revisionSource,
+        timestamp,
+        ...fence.values
+      ),
+    },
+    ...packetCopy.writes,
+    {
+      expectedChanges: current.targetCount,
+      statement: env.DB.prepare(
+        `UPDATE user_listing_states SET status='review',updated_at=?
+          WHERE user_id=? AND id IN (
+            SELECT user_job_id FROM application_bundle_targets WHERE bundle_id=?
+          ) AND status IN ('new','review','approved','failed')
+            AND ${fence.clause}`
+      ).bind(timestamp, userId, current.bundleId, ...fence.values),
+    },
+    {
+      expectedChanges: 1,
+      statement: env.DB.prepare(
+        `UPDATE application_bundles SET status='review',updated_at=?
+          WHERE id=? AND user_id=? AND status IN ('review','approved','failed')
+            AND ${fence.clause}`
+      ).bind(timestamp, current.bundleId, userId, ...fence.values),
+    },
+  ];
+  return {
+    condition: {
+      clause: `EXISTS (
+        SELECT 1 FROM application_drafts completion_draft
+        JOIN application_bundles completion_bundle
+          ON completion_bundle.id=completion_draft.application_bundle_id
+       WHERE completion_draft.id=?
+         AND completion_draft.application_bundle_id=?
+         AND completion_draft.version=?
+         AND completion_draft.status IN ('draft','approved')
+         AND completion_bundle.user_id=?
+         AND completion_bundle.status IN ('review','approved','failed')
+      ) AND NOT EXISTS (
+        SELECT 1 FROM application_drafts newer_draft
+         WHERE newer_draft.application_bundle_id=? AND newer_draft.version>?
+      ) AND (${packetCopy.condition.clause})`,
+      values: [
+        current.draftId,
+        current.bundleId,
+        current.version,
+        userId,
+        current.bundleId,
+        current.version,
+        ...packetCopy.condition.values,
+      ],
+    },
+    result: {
+      applicationSetId: current.bundleId,
+      draft: {
+        changeSummary: input.changeSummary,
+        createdAt: timestamp,
+        id: draftId,
+        message: input.message,
+        previousMessage: current.message,
+        revisionSource: input.revisionSource,
+        status: "draft" as const,
+        version,
+      },
+    },
+    writes,
   };
 }
 

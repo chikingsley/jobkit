@@ -85,6 +85,20 @@ export function registerJobRoutes(app: JobKitApp) {
        )
        SELECT j.id,j.board,j.title,j.company,j.country,j.location,
                 j.market_segments_json,j.message_route,j.opportunity_scope,
+                (
+                  SELECT mapping.public_job_id
+                  FROM job_source_positions position
+                  JOIN job_source_position_mapping_heads mapping_head
+                    ON mapping_head.source_position_id=position.id
+                  JOIN job_source_position_mapping_versions mapping
+                    ON mapping.source_position_id=position.id
+                   AND mapping.version=mapping_head.current_version
+                  WHERE position.listing_id=j.id
+                    AND mapping.mapping_state='mapped'
+                    AND mapping.public_job_id IS NOT NULL
+                  ORDER BY position.id
+                  LIMIT 1
+                ) public_job_id,
                 j.compensation_display,j.compensation_amount_min,
                 j.compensation_amount_max,j.compensation_currency,
                 j.compensation_period,j.compensation_qualifier,
@@ -132,7 +146,8 @@ export function registerJobRoutes(app: JobKitApp) {
                     ),'[]')
                   )
                   FROM job_position_analyses pa
-                  WHERE pa.job_id=j.id AND pa.schema_version=2
+                  WHERE pa.job_id=j.id
+                    AND pa.schema_version=${JOB_POSITION_ANALYSIS_SCHEMA_VERSION}
                 ) position_analysis_json,
                 (
                   SELECT json_object(
@@ -245,6 +260,20 @@ function readReviewJob(db: D1Database, userId: string, jobId: string) {
   return db
     .prepare(
       `SELECT j.*,uj.status,uj.priority,
+              (
+                SELECT mapping.public_job_id
+                FROM job_source_positions position
+                JOIN job_source_position_mapping_heads mapping_head
+                  ON mapping_head.source_position_id=position.id
+                JOIN job_source_position_mapping_versions mapping
+                  ON mapping.source_position_id=position.id
+                 AND mapping.version=mapping_head.current_version
+                WHERE position.listing_id=j.id
+                  AND mapping.mapping_state='mapped'
+                  AND mapping.public_job_id IS NOT NULL
+                ORDER BY position.id
+                LIMIT 1
+              ) public_job_id,
               mf.facts_json,mf.schema_version match_facts_schema_version,
               CASE
                 WHEN mf.job_id IS NULL THEN 'pending'
@@ -285,7 +314,8 @@ function readReviewJob(db: D1Database, userId: string, jobId: string) {
                   ),'[]')
                 )
                 FROM job_position_analyses pa
-                WHERE pa.job_id=j.id AND pa.schema_version=2
+                WHERE pa.job_id=j.id
+                  AND pa.schema_version=${JOB_POSITION_ANALYSIS_SCHEMA_VERSION}
               ) position_analysis_json,
               d.id draft_id,d.version,d.message,d.change_summary,
               d.status draft_status,d.created_at draft_created_at,
@@ -412,6 +442,7 @@ function toListEvaluationJob(row: Record<string, unknown>): Job {
     messageRoute: String(row.message_route) as Job["messageRoute"],
     opportunityScope: String(row.opportunity_scope) as Job["opportunityScope"],
     positionAnalysis: positionAnalysisFromRow(row),
+    publicJobId: row.public_job_id ? String(row.public_job_id) : null,
     sourceReference: "",
     sourceUrl: "",
     status: String(row.status ?? "new"),
@@ -443,6 +474,7 @@ function toListJob(
     messageRoute: evaluationJob.messageRoute,
     opportunityScope: evaluationJob.opportunityScope,
     positionCount: Number(row.position_count ?? 0),
+    publicJobId: row.public_job_id ? String(row.public_job_id) : null,
     statedHourly: evaluationJob.matchFacts
       ? statedHourlyValueUsd(evaluationJob.matchFacts.economics, fx)
       : null,
@@ -496,6 +528,7 @@ function toReviewJob(row: Record<string, unknown>) {
     opportunityScope: String(row.opportunity_scope),
     positionAnalysis: positionAnalysisFromRow(row),
     priority: Number(row.priority ?? 0),
+    publicJobId: row.public_job_id ? String(row.public_job_id) : null,
     sourceReference: String(row.source_reference),
     sourceUrl: String(row.source_url),
     status: String(row.status ?? "new"),

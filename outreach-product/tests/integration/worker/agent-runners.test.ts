@@ -92,9 +92,11 @@ describe("Codex agent pairing", () => {
       testEnv.DB.prepare(
         `INSERT INTO agent_task_requests
           (id,user_id,task_type,subject_type,subject_id,input_json,status,
-           runner_id,claimed_at,lease_expires_at,created_at,updated_at)
+           runner_id,claimed_at,lease_expires_at,created_at,updated_at,
+           attempt_count,lease_token)
          SELECT 'revoked-request',user_id,'application.message','job','job-1',
-                '{}','claimed',id,?,?,?,?
+                '{"kind":"job_draft","mode":"generate","jobId":"job-1"}',
+                'claimed',id,?,?,?,?,1,'revoked-lease-token'
            FROM agent_runners WHERE id=?`
       ).bind(
         timestamp,
@@ -107,10 +109,10 @@ describe("Codex agent pairing", () => {
         `INSERT INTO agent_task_runs
           (id,user_id,runner_id,task_type,source_task_id,prompt_version,model,
            reasoning_effort,source_hash,prompt_hash,status,started_at,
-           lease_expires_at,updated_at)
+           lease_expires_at,updated_at,attempt_number,lease_token)
          SELECT 'revoked-run',user_id,id,'application.message',
                 'revoked-request','test-v1','gpt-5.6-luna','medium','source',
-                'prompt','running',?,?,?
+                'prompt','running',?,?,?,1,'revoked-lease-token'
            FROM agent_runners WHERE id=?`
       ).bind(
         timestamp,
@@ -134,18 +136,26 @@ describe("Codex agent pairing", () => {
     expect(afterRevoke.status).toBe(401);
     await expect(
       testEnv.DB.prepare(
-        "SELECT status,runner_id,error_detail FROM agent_task_requests WHERE id='revoked-request'"
+        `SELECT status,runner_id,error_detail,last_error_code
+           FROM agent_task_requests WHERE id='revoked-request'`
       ).first()
     ).resolves.toEqual({
-      error_detail: "Runner revoked; task requeued",
+      error_detail: "Runner revoked",
+      last_error_code: "runner_revoked",
       runner_id: null,
       status: "queued",
     });
     await expect(
       testEnv.DB.prepare(
-        "SELECT status,error_detail FROM agent_task_runs WHERE id='revoked-run'"
+        `SELECT status,error_detail,error_code,result_json
+           FROM agent_task_runs WHERE id='revoked-run'`
       ).first()
-    ).resolves.toEqual({ error_detail: "Runner revoked", status: "failed" });
+    ).resolves.toEqual({
+      error_code: "runner_revoked",
+      error_detail: "Runner revoked",
+      result_json: null,
+      status: "failed",
+    });
   });
 
   it("lists, cancels, and explicitly retries durable task requests", async () => {

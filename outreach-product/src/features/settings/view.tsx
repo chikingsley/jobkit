@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import {
   Bot,
   ChevronRight,
@@ -6,7 +7,6 @@ import {
   SlidersHorizontal,
   UserRound,
 } from "lucide-react";
-import { useNavigate } from "react-router";
 import { SettingsPage } from "@/components/settings-page";
 import { Button } from "@/components/ui/button";
 import { AgentRunnerConnectionCard } from "@/features/agents/runner-connection-card";
@@ -52,7 +52,7 @@ export function SettingsView({ request }: { request: ApiRequest }) {
             <Button
               className="h-auto w-full justify-start whitespace-normal rounded-none px-1 py-4 text-left"
               key={section.path}
-              onClick={() => navigate(section.path)}
+              onClick={() => void navigate({ to: section.path })}
               variant="ghost"
             >
               <Icon className="size-5 shrink-0 text-muted-foreground" />

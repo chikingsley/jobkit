@@ -12,27 +12,37 @@ import {
   testLabOutputJsonSchema,
   testLabPrompt,
 } from "../../../src/agent-tasks/test-lab";
+import type { AgentTaskFailureCode } from "../../../src/features/agents/schema";
 import { readTestLabCase } from "../../../src/test-lab/corpus";
 import type { AgentRunnerContext } from "../../app-types";
 import type { AppEnv } from "../../env";
 import { agentRunnerHasCapability } from "../agent-runners";
 import {
   type ClaimedAgentTaskRequest,
-  claimAgentTaskRequest,
+  type QueuedAgentTaskRequest,
   readClaimedAgentTaskRequest,
+  readNextAgentTaskRequest,
 } from "../agent-task-requests";
 import {
   scoreDocumentBenchmark,
   scoreTestLabOutput,
 } from "../test-lab/scoring";
-import { attachDocumentArtifact } from "./artifacts";
+import { prepareDocumentArtifact } from "./artifacts";
 import {
-  AGENT_TASK_LEASE_MS,
   AgentTaskError,
   type AgentTaskRunRow,
   type PreparedAgentTask,
+  type PreparedAgentTaskArtifact,
 } from "./contracts";
-import { createAgentTaskRun, sha256 } from "./run-store";
+import {
+  claimRequestedAgentTaskWithDomainWrites,
+  failRequestedAgentTaskWithDomainWrites,
+} from "./requested-task-leases";
+import {
+  type AgentTaskCompletionFence,
+  completeRequestedAgentTaskWithDomainWrites,
+  sha256,
+} from "./run-store";
 
 const CorpusTestLabTaskInputSchema = z
   .object({
@@ -51,6 +61,8 @@ const DocumentTestLabTaskInputSchema = z
   })
   .strict();
 
+class UnclaimableDocumentArtifactError extends Error {}
+
 export async function claimTestLabTask(
   env: AppEnv,
   runner: AgentRunnerContext
@@ -58,19 +70,12 @@ export async function claimTestLabTask(
   if (!agentRunnerHasCapability(runner, "evaluation")) {
     return null;
   }
-  const leaseExpiresAt = new Date(
-    Date.now() + AGENT_TASK_LEASE_MS
-  ).toISOString();
   const request =
-    (await claimAgentTaskRequest(env.DB, {
-      leaseExpiresAt,
-      runnerId: runner.id,
+    (await readNextAgentTaskRequest(env.DB, {
       taskType: TEST_LAB_DOCUMENT_OCR_TASK_TYPE,
       userId: runner.user.id,
     })) ??
-    (await claimAgentTaskRequest(env.DB, {
-      leaseExpiresAt,
-      runnerId: runner.id,
+    (await readNextAgentTaskRequest(env.DB, {
       taskType: TEST_LAB_TASK_TYPE,
       userId: runner.user.id,
     }));
@@ -78,48 +83,50 @@ export async function claimTestLabTask(
     return null;
   }
   if (request.taskType === TEST_LAB_DOCUMENT_OCR_TASK_TYPE) {
-    return claimDocumentOcrTask(env, runner, request, leaseExpiresAt);
+    return claimDocumentOcrTask(env, runner, request);
   }
-  try {
-    const input = CorpusTestLabTaskInputSchema.parse(request.input);
-    const testCase = readTestLabCase(input.caseId);
-    if (!testCase) {
-      throw new Error("Test Lab case no longer exists in this corpus version");
-    }
-    const model = testLabModel(testCase);
-    const prompt = testLabPrompt(testCase, input.jinaResult ?? null);
-    const task = await createAgentTaskRun(env.DB, runner, {
-      leaseExpiresAt,
+  const parsed = CorpusTestLabTaskInputSchema.safeParse(request.input);
+  if (!parsed.success) {
+    await failQueuedTestLabRequest(
+      env.DB,
+      runner,
+      request,
+      parsed.error.message,
+      "invalid_input"
+    );
+    return null;
+  }
+  const input = parsed.data;
+  const testCase = readTestLabCase(input.caseId);
+  if (!testCase) {
+    await failQueuedTestLabRequest(
+      env.DB,
+      runner,
+      request,
+      "Test Lab case no longer exists in this corpus version",
+      "source_changed"
+    );
+    return null;
+  }
+  const model = testLabModel(testCase);
+  const prompt = testLabPrompt(testCase, input.jinaResult ?? null);
+  return claimRequestedAgentTaskWithDomainWrites(
+    env.DB,
+    runner,
+    request,
+    {
       model: model.model,
       outputSchema: testLabOutputJsonSchema(testCase),
       prompt,
       promptVersion: TEST_LAB_PROMPT_VERSION,
       reasoningEffort: model.reasoningEffort,
       sourceHash: await sha256(JSON.stringify(testCase.input)),
-      sourceTaskId: request.id,
       taskType: TEST_LAB_TASK_TYPE,
       webSearch: model.webSearch,
-    });
-    const timestamp = new Date().toISOString();
-    await env.DB.prepare(
-      `UPDATE test_lab_runs
-          SET status='running',started_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND status='queued'`
-    )
-      .bind(timestamp, timestamp, input.testLabRunId, runner.user.id)
-      .run();
-    return task;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    await failTestLabRequest(
-      env.DB,
-      runner,
-      request.id,
-      request.subjectId,
-      message
-    );
-    return null;
-  }
+    },
+    (_context, fence) =>
+      testLabClaimWrites(env.DB, runner.user.id, input.testLabRunId, fence)
+  );
 }
 
 export async function completeTestLabTask(
@@ -159,130 +166,138 @@ export async function completeTestLabTask(
     ...scoreTestLabOutput(testCase, output),
     codexLatencyMs: Math.max(0, Date.now() - startedAt),
   };
-  const timestamp = new Date().toISOString();
-  const results = await env.DB.batch([
-    env.DB.prepare(
-      `UPDATE test_lab_runs
-          SET status='completed',output_json=?,metrics_json=?,model=?,
-              prompt_version=?,error_detail='',completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND status='running'`
-    ).bind(
-      JSON.stringify(output),
-      JSON.stringify(metrics),
-      run.model,
-      TEST_LAB_PROMPT_VERSION,
-      timestamp,
-      timestamp,
-      input.testLabRunId,
-      runner.user.id
-    ),
-    env.DB.prepare(
-      `UPDATE agent_task_requests
-          SET status='completed',result_json=?,error_detail='',completed_at=?,
-              updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='claimed'`
-    ).bind(
-      JSON.stringify(output),
-      timestamp,
-      timestamp,
-      request.id,
-      runner.user.id,
-      runner.id
-    ),
-    env.DB.prepare(
-      `UPDATE agent_task_runs
-          SET status='completed',result_json=?,completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='running'`
-    ).bind(
-      JSON.stringify(output),
-      timestamp,
-      timestamp,
-      runId,
-      runner.user.id,
-      runner.id
-    ),
-  ]);
-  assertAtomic(results, "Test Lab task could not be completed");
+  await completeTestLabRun(
+    env.DB,
+    runner,
+    request,
+    run,
+    runId,
+    input.testLabRunId,
+    "corpus",
+    output,
+    metrics,
+    TEST_LAB_PROMPT_VERSION
+  );
   return { requestId: request.id, testLabRunId: input.testLabRunId };
 }
 
 async function claimDocumentOcrTask(
   env: AppEnv,
   runner: AgentRunnerContext,
-  request: ClaimedAgentTaskRequest,
-  leaseExpiresAt: string
+  request: QueuedAgentTaskRequest
 ): Promise<PreparedAgentTask | null> {
-  let agentRunId: string | undefined;
-  try {
-    const input = DocumentTestLabTaskInputSchema.parse(request.input);
-    const document = await env.DB.prepare(
-      `SELECT filename,content_type,r2_version,etag
-         FROM user_documents
-        WHERE id=? AND user_id=? AND archived_at IS NULL`
-    )
-      .bind(input.documentId, runner.user.id)
-      .first<{
-        content_type: string;
-        etag: string;
-        filename: string;
-        r2_version: string;
-      }>();
-    if (!document) {
-      throw new Error("Document OCR source was not found");
-    }
-    if (
-      document.etag !== input.documentEtag ||
-      document.r2_version !== input.documentVersion
-    ) {
-      throw new Error("Document OCR source changed while it was queued");
-    }
-    const prompt = documentOcrPrompt({
-      contentType: document.content_type,
-      filename: document.filename,
-    });
-    const task = await createAgentTaskRun(env.DB, runner, {
-      leaseExpiresAt,
-      model: "gpt-5.6-terra",
-      outputSchema: documentOcrOutputJsonSchema(),
-      prompt,
-      promptVersion: TEST_LAB_DOCUMENT_OCR_PROMPT_VERSION,
-      reasoningEffort: "high",
-      sourceHash: await sha256(
-        `${input.documentId}:${input.documentVersion}:${input.documentEtag}`
-      ),
-      sourceTaskId: request.id,
-      taskType: TEST_LAB_DOCUMENT_OCR_TASK_TYPE,
-      webSearch: "disabled",
-    });
-    agentRunId = task.runId;
-    const artifact = await attachDocumentArtifact(
-      env,
-      runner,
-      task.runId,
-      input.documentId,
-      { etag: input.documentEtag, version: input.documentVersion }
-    );
-    const timestamp = new Date().toISOString();
-    const updated = await env.DB.prepare(
-      `UPDATE test_lab_runs
-          SET status='running',started_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND status='queued'`
-    )
-      .bind(timestamp, timestamp, input.testLabRunId, runner.user.id)
-      .run();
-    if ((updated.meta.changes ?? 0) !== 1) {
-      throw new Error("Document OCR benchmark changed while it was claimed");
-    }
-    return { ...task, artifacts: [artifact] };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    await failTestLabRequest(
+  const parsed = DocumentTestLabTaskInputSchema.safeParse(request.input);
+  if (!parsed.success) {
+    await failQueuedTestLabRequest(
       env.DB,
       runner,
-      request.id,
-      request.subjectId,
-      message,
-      agentRunId
+      request,
+      parsed.error.message,
+      "invalid_input"
+    );
+    return null;
+  }
+  const input = parsed.data;
+  const document = await env.DB.prepare(
+    `SELECT filename,content_type,r2_version,etag
+         FROM user_documents
+        WHERE id=? AND user_id=? AND archived_at IS NULL`
+  )
+    .bind(input.documentId, runner.user.id)
+    .first<{
+      content_type: string;
+      etag: string;
+      filename: string;
+      r2_version: string;
+    }>();
+  if (!document) {
+    await failQueuedTestLabRequest(
+      env.DB,
+      runner,
+      request,
+      "Document OCR source was not found",
+      "source_changed"
+    );
+    return null;
+  }
+  if (
+    document.etag !== input.documentEtag ||
+    document.r2_version !== input.documentVersion
+  ) {
+    await failQueuedTestLabRequest(
+      env.DB,
+      runner,
+      request,
+      "Document OCR source changed while it was queued",
+      "source_changed"
+    );
+    return null;
+  }
+  const prompt = documentOcrPrompt({
+    contentType: document.content_type,
+    filename: document.filename,
+  });
+  const artifacts: PreparedAgentTaskArtifact[] = [];
+  try {
+    return await claimRequestedAgentTaskWithDomainWrites(
+      env.DB,
+      runner,
+      request,
+      {
+        artifacts,
+        model: "gpt-5.6-terra",
+        outputSchema: documentOcrOutputJsonSchema(),
+        prompt,
+        promptVersion: TEST_LAB_DOCUMENT_OCR_PROMPT_VERSION,
+        reasoningEffort: "high",
+        sourceHash: await sha256(
+          `${input.documentId}:${input.documentVersion}:${input.documentEtag}`
+        ),
+        taskType: TEST_LAB_DOCUMENT_OCR_TASK_TYPE,
+        webSearch: "disabled",
+      },
+      async (context, fence) => {
+        try {
+          const artifact = await prepareDocumentArtifact(
+            env,
+            runner.user.id,
+            context.runId,
+            input.documentId,
+            { etag: input.documentEtag, version: input.documentVersion }
+          );
+          artifacts.push(artifact.artifact);
+          return [
+            artifact.write,
+            ...testLabClaimWrites(
+              env.DB,
+              runner.user.id,
+              input.testLabRunId,
+              fence
+            ),
+          ];
+        } catch (error) {
+          if (
+            error instanceof AgentTaskError &&
+            (error.status === 404 || error.status === 409)
+          ) {
+            throw new UnclaimableDocumentArtifactError(error.message, {
+              cause: error,
+            });
+          }
+          throw error;
+        }
+      }
+    );
+  } catch (error) {
+    if (!(error instanceof UnclaimableDocumentArtifactError)) {
+      throw error;
+    }
+    await failQueuedTestLabRequest(
+      env.DB,
+      runner,
+      request,
+      error.message,
+      "source_changed"
     );
     return null;
   }
@@ -319,51 +334,86 @@ async function completeDocumentOcrTask(
     codexLatencyMs: Math.max(0, Date.now() - startedAt),
     pages: output.pages.length,
   };
-  const timestamp = new Date().toISOString();
-  const results = await env.DB.batch([
-    env.DB.prepare(
-      `UPDATE test_lab_runs
-          SET status='completed',output_json=?,metrics_json=?,model=?,
-              prompt_version=?,error_detail='',completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND status='running'`
-    ).bind(
-      JSON.stringify(output),
-      JSON.stringify(metrics),
-      run.model,
-      TEST_LAB_DOCUMENT_OCR_PROMPT_VERSION,
-      timestamp,
-      timestamp,
-      input.testLabRunId,
-      runner.user.id
-    ),
-    env.DB.prepare(
-      `UPDATE agent_task_requests
-          SET status='completed',result_json=?,error_detail='',completed_at=?,
-              updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='claimed'`
-    ).bind(
-      JSON.stringify(output),
-      timestamp,
-      timestamp,
-      request.id,
-      runner.user.id,
-      runner.id
-    ),
-    env.DB.prepare(
-      `UPDATE agent_task_runs
-          SET status='completed',result_json=?,completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='running'`
-    ).bind(
-      JSON.stringify(output),
-      timestamp,
-      timestamp,
-      runId,
-      runner.user.id,
-      runner.id
-    ),
-  ]);
-  assertAtomic(results, "Document OCR task could not be completed");
+  await completeTestLabRun(
+    env.DB,
+    runner,
+    request,
+    run,
+    runId,
+    input.testLabRunId,
+    "document",
+    output,
+    metrics,
+    TEST_LAB_DOCUMENT_OCR_PROMPT_VERSION
+  );
   return { requestId: request.id, testLabRunId: input.testLabRunId };
+}
+
+async function completeTestLabRun(
+  db: D1Database,
+  runner: AgentRunnerContext,
+  request: ClaimedAgentTaskRequest,
+  run: AgentTaskRunRow,
+  runId: string,
+  testLabRunId: string,
+  caseKind: "corpus" | "document",
+  output: unknown,
+  metrics: Record<string, unknown>,
+  promptVersion: string
+) {
+  await completeRequestedAgentTaskWithDomainWrites(
+    db,
+    {
+      attemptNumber: run.attempt_number,
+      leaseToken: run.lease_token,
+      requestId: request.id,
+      runId,
+      runnerId: runner.id,
+      taskType: run.task_type,
+      userId: runner.user.id,
+    },
+    (fence) => ({
+      condition: {
+        clause: `EXISTS (
+            SELECT 1 FROM test_lab_runs completion_test
+             WHERE completion_test.id=?
+               AND completion_test.user_id=?
+               AND completion_test.agent_task_request_id=?
+               AND completion_test.case_kind=?
+               AND completion_test.status='running'
+          )`,
+        values: [testLabRunId, runner.user.id, request.id, caseKind],
+      },
+      result: output,
+      writes: [
+        {
+          expectedChanges: 1,
+          statement: db
+            .prepare(
+              `UPDATE test_lab_runs
+                  SET status='completed',output_json=?,metrics_json=?,model=?,
+                      prompt_version=?,error_detail='',
+                      completed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+                      updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+                WHERE id=? AND user_id=? AND agent_task_request_id=?
+                  AND case_kind=? AND status='running'
+                  AND ${fence.clause}`
+            )
+            .bind(
+              JSON.stringify(output),
+              JSON.stringify(metrics),
+              run.model,
+              promptVersion,
+              testLabRunId,
+              runner.user.id,
+              request.id,
+              caseKind,
+              ...fence.values
+            ),
+        },
+      ],
+    })
+  );
 }
 
 export async function failTestLabTask(
@@ -371,77 +421,155 @@ export async function failTestLabTask(
   runner: AgentRunnerContext,
   requestId: string,
   runId: string,
-  error: string
+  error: string,
+  errorCode: AgentTaskFailureCode
 ) {
   const request = await requireClaimedRequest(env.DB, runner, requestId);
-  await failTestLabRequest(
+  await failRequestedAgentTaskWithDomainWrites(
     env.DB,
-    runner,
-    request.id,
-    request.subjectId,
-    error,
-    runId
+    {
+      attemptNumber: request.attemptCount,
+      errorCode,
+      errorDetail: error,
+      leaseToken: request.leaseToken,
+      mode: "runner",
+      requestId: request.id,
+      runId,
+      runnerId: runner.id,
+      taskType: request.taskType,
+      userId: runner.user.id,
+    },
+    (retry, fence) =>
+      buildTestLabFailureWrites(
+        env.DB,
+        runner.user.id,
+        request.id,
+        request.subjectId,
+        error,
+        retry,
+        fence
+      )
   );
 }
 
-async function failTestLabRequest(
+export function buildTestLabFailureWrites(
   db: D1Database,
-  runner: AgentRunnerContext,
+  userId: string,
   requestId: string,
   testLabRunId: string,
   error: string,
-  agentRunId?: string
+  retry: boolean,
+  fence: AgentTaskCompletionFence
 ) {
-  const timestamp = new Date().toISOString();
-  const statements = [
+  return [
+    {
+      expectedChanges: 1,
+      statement: db
+        .prepare(
+          `UPDATE test_lab_runs
+            SET status=?,error_detail=?,
+                started_at=CASE WHEN ?=1 THEN NULL ELSE started_at END,
+                completed_at=CASE WHEN ?=1 THEN NULL ELSE
+                  strftime('%Y-%m-%dT%H:%M:%fZ','now') END,
+                updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          WHERE id=? AND user_id=? AND status='running'
+            AND agent_task_request_id=? AND ${fence.clause}`
+        )
+        .bind(
+          retry ? "queued" : "failed",
+          retry ? "" : error.slice(0, 4000),
+          retry ? 1 : 0,
+          retry ? 1 : 0,
+          testLabRunId,
+          userId,
+          requestId,
+          ...fence.values
+        ),
+    },
+  ];
+}
+
+function testLabClaimWrites(
+  db: D1Database,
+  userId: string,
+  testLabRunId: string,
+  fence: AgentTaskCompletionFence
+) {
+  return [
+    {
+      expectedChanges: 1,
+      statement: db
+        .prepare(
+          `UPDATE test_lab_runs
+            SET status='running',
+                started_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+                updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          WHERE id=? AND user_id=? AND status='queued'
+            AND ${fence.clause}`
+        )
+        .bind(testLabRunId, userId, ...fence.values),
+    },
+  ];
+}
+
+async function failQueuedTestLabRequest(
+  db: D1Database,
+  runner: AgentRunnerContext,
+  request: QueuedAgentTaskRequest,
+  error: string,
+  errorCode: "invalid_input" | "source_changed"
+) {
+  const statements: D1PreparedStatement[] = [
     db
       .prepare(
         `UPDATE test_lab_runs
-          SET status='failed',error_detail=?,completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND status IN ('queued','running')`
+            SET status='failed',error_detail=?,
+                completed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+                updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          WHERE id=? AND user_id=? AND status='queued'
+            AND EXISTS (
+              SELECT 1 FROM agent_task_requests failure_request
+               WHERE failure_request.id=? AND failure_request.user_id=?
+                 AND failure_request.status='queued'
+            )`
       )
       .bind(
         error.slice(0, 4000),
-        timestamp,
-        timestamp,
-        testLabRunId,
+        request.subjectId,
+        runner.user.id,
+        request.id,
         runner.user.id
       ),
+    db.prepare(
+      `INSERT INTO transaction_assertions(must_equal_one)
+       SELECT 0 WHERE changes()<>1`
+    ),
     db
       .prepare(
         `UPDATE agent_task_requests
-          SET status='failed',error_detail=?,completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='claimed'`
+          SET status='failed',last_error_code=?,error_detail=?,
+              completed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+              updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        WHERE id=? AND user_id=? AND status='queued'`
       )
-      .bind(
-        error.slice(0, 4000),
-        timestamp,
-        timestamp,
-        requestId,
-        runner.user.id,
-        runner.id
-      ),
+      .bind(errorCode, error.slice(0, 4000), request.id, runner.user.id),
+    db.prepare(
+      `INSERT INTO transaction_assertions(must_equal_one)
+       SELECT 0 WHERE changes()<>1`
+    ),
   ];
-  if (agentRunId) {
-    statements.push(
-      db
-        .prepare(
-          `UPDATE agent_task_runs
-            SET status='failed',error_detail=?,completed_at=?,updated_at=?
-          WHERE id=? AND user_id=? AND runner_id=? AND status='running'`
-        )
-        .bind(
-          error.slice(0, 4000),
-          timestamp,
-          timestamp,
-          agentRunId,
-          runner.user.id,
-          runner.id
-        )
-    );
+  try {
+    await db.batch(statements);
+  } catch (failure) {
+    if (
+      !(
+        failure instanceof Error &&
+        failure.message.toLowerCase().includes("constraint")
+      )
+    ) {
+      throw failure;
+    }
   }
-  const results = await db.batch(statements);
-  assertAtomic(results, "Test Lab task could not be failed");
 }
 
 async function requireClaimedRequest(
@@ -504,10 +632,4 @@ async function readDocumentRunContext(
     metrics: JSON.parse(row.metrics_json) as Record<string, unknown>,
     startedAt: row.started_at,
   };
-}
-
-function assertAtomic(results: D1Result[], message: string) {
-  if (results.some((result) => (result.meta.changes ?? 0) !== 1)) {
-    throw new AgentTaskError(message, 409);
-  }
 }

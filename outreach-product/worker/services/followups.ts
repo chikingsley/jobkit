@@ -13,6 +13,7 @@ import { readMessageStyleGuidance } from "../repositories/message-style";
 import { readUserTimeZone } from "../repositories/user-time-zone";
 import type { ApplicationMessageRoute } from "../schemas";
 import { buildAgentTaskRequestCreation } from "./agent-task-requests";
+import type { AgentTaskCompletionFence } from "./agent-tasks/run-store";
 import { savedProfile } from "./application-drafts";
 import {
   createGmailDraft,
@@ -150,7 +151,7 @@ export async function prepareFollowUpTask(
   input: FollowUpTaskInput
 ) {
   const source = await readFollowUpSource(env.DB, userId, input.followUpId);
-  if (source.status !== "scheduled") {
+  if (source.status !== "scheduled" && source.status !== "drafting") {
     throw new FollowUpError("Follow-up is no longer awaiting a draft");
   }
   const [profile, timeZone, styleGuidance, foundation] = await Promise.all([
@@ -206,7 +207,8 @@ export async function buildFollowUpTaskCompletion(
   userId: string,
   input: FollowUpTaskInput,
   rawOutput: unknown,
-  modelId: string
+  modelId: string,
+  fence: AgentTaskCompletionFence
 ) {
   const prepared = await prepareFollowUpTask(env, userId, input);
   const output = ApplicationMessageTaskOutputSchema.parse(rawOutput);
@@ -226,6 +228,15 @@ export async function buildFollowUpTaskCompletion(
   }
   const timestamp = new Date().toISOString();
   return {
+    condition: {
+      clause: `EXISTS (
+        SELECT 1 FROM outreach_followups completion_followup
+         WHERE completion_followup.id=?
+           AND completion_followup.user_id=?
+           AND completion_followup.status='drafting'
+      )`,
+      values: [input.followUpId, userId],
+    },
     result: {
       changeSummary: output.summary.trim(),
       followUpId: input.followUpId,
@@ -233,20 +244,25 @@ export async function buildFollowUpTaskCompletion(
       modelId,
       provider: "codex" as const,
     },
-    statements: [
-      env.DB.prepare(
-        `UPDATE outreach_followups
-              SET status='review',message=?,change_summary=?,model_id=?,
-                  error_detail='',updated_at=?
-            WHERE id=? AND user_id=? AND status='scheduled'`
-      ).bind(
-        message,
-        output.summary.trim(),
-        modelId,
-        timestamp,
-        input.followUpId,
-        userId
-      ),
+    writes: [
+      {
+        expectedChanges: 1,
+        statement: env.DB.prepare(
+          `UPDATE outreach_followups
+                SET status='review',message=?,change_summary=?,model_id=?,
+                    error_detail='',updated_at=?
+              WHERE id=? AND user_id=? AND status='drafting'
+                AND ${fence.clause}`
+        ).bind(
+          message,
+          output.summary.trim(),
+          modelId,
+          timestamp,
+          input.followUpId,
+          userId,
+          ...fence.values
+        ),
+      },
     ],
   };
 }

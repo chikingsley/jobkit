@@ -15,6 +15,16 @@
   },
   "overrides": [
     {
+      "includes": ["src/routes/**", "src/routeTree.gen.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useFilenamingConvention": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["src/components/ui/**", "src/hooks/**"],
       "linter": {
         "rules": {

@@ -1,6 +1,6 @@
+import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ChevronRight, ExternalLink, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { SettingsPage } from "@/components/settings-page";
@@ -24,8 +24,13 @@ import type {
 } from "@/features/countries/types";
 import type { ApiRequest } from "@/lib/api";
 
-export function CountryView({ request }: { request: ApiRequest }) {
-  const { countryCode = "" } = useParams();
+export function CountryView({
+  countryCode,
+  request,
+}: {
+  countryCode: string;
+  request: ApiRequest;
+}) {
   const navigate = useNavigate();
   const [cityInput, setCityInput] = useState("");
   const { data, isLoading, mutate } = useSWR(
@@ -81,7 +86,10 @@ export function CountryView({ request }: { request: ApiRequest }) {
   return (
     <SettingsPage title={data.countryName}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button onClick={() => navigate("/campaigns/markets")} variant="ghost">
+        <Button
+          onClick={() => void navigate({ to: "/app/campaigns/markets" })}
+          variant="ghost"
+        >
           <ArrowLeft /> Markets
         </Button>
         <div className="flex gap-2">
@@ -98,7 +106,10 @@ export function CountryView({ request }: { request: ApiRequest }) {
           </Button>
           <Button
             onClick={() =>
-              navigate(`/campaigns/new?country=${data.countryCode}`)
+              void navigate({
+                search: { country: data.countryCode },
+                to: "/app/campaigns/new",
+              })
             }
           >
             Start campaign
@@ -269,7 +280,12 @@ function ActivitySection({
                 {campaign.targetCount > 0 ? (
                   <Button
                     className="mt-2"
-                    onClick={() => navigate(`/campaigns/${campaign.id}`)}
+                    onClick={() =>
+                      void navigate({
+                        params: { campaignId: campaign.id },
+                        to: "/app/campaigns/$campaignId",
+                      })
+                    }
                     size="sm"
                     variant="outline"
                   >

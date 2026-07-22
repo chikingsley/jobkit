@@ -29,11 +29,33 @@ export const AgentTaskClaimSchema = z
   .strict();
 
 export const AgentTaskCompletionSchema = z
-  .object({ output: z.unknown() })
+  .object({ leaseToken: z.string().min(1), output: z.unknown() })
   .strict();
 
+export const AgentTaskFailureCodeSchema = z.enum([
+  "provider_transport",
+  "provider_unavailable",
+  "r2_unavailable",
+  "d1_unavailable",
+  "schema_invalid",
+  "evidence_invalid",
+  "source_changed",
+  "policy_violation",
+  "invalid_input",
+  "safety_rejection",
+  "runner_failure",
+]);
+
 export const AgentTaskFailureSchema = z
-  .object({ error: z.string().trim().min(1).max(4000) })
+  .object({
+    error: z.string().trim().min(1).max(4000),
+    errorCode: AgentTaskFailureCodeSchema.default("runner_failure"),
+    leaseToken: z.string().min(1),
+  })
+  .strict();
+
+export const AgentTaskHeartbeatSchema = z
+  .object({ leaseToken: z.string().min(1) })
   .strict();
 
 export const AgentTaskArtifactSchema = z
@@ -51,7 +73,9 @@ export const AgentTaskArtifactSchema = z
 export const AgentTaskEnvelopeSchema = z
   .object({
     artifacts: z.array(AgentTaskArtifactSchema).max(20).default([]),
+    attemptNumber: z.number().int().positive(),
     leaseExpiresAt: z.iso.datetime(),
+    leaseToken: z.string().min(1),
     model: z.string().min(1),
     outputSchema: z.record(z.string(), z.unknown()),
     prompt: z.string().min(1),
@@ -64,4 +88,5 @@ export const AgentTaskEnvelopeSchema = z
   .strict();
 
 export type AgentCapability = z.infer<typeof AgentCapabilitySchema>;
+export type AgentTaskFailureCode = z.infer<typeof AgentTaskFailureCodeSchema>;
 export type AgentTaskEnvelope = z.infer<typeof AgentTaskEnvelopeSchema>;

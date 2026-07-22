@@ -1,6 +1,19 @@
 import { z } from "zod";
 import { OrganizationMarketSegmentSchema } from "../organizations/market-segments";
 
+export const MAX_COUNTRY_SWEEP_CITIES = 250;
+
+const CITY_KEY_SEPARATOR_PATTERN = /[^\p{Letter}\p{Number}]+/gu;
+const COMBINING_MARK_PATTERN = /\p{Mark}+/gu;
+const LETTER_OR_NUMBER_PATTERN = /[\p{Letter}\p{Number}]/u;
+
+const CountrySweepCitySchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(160)
+  .regex(LETTER_OR_NUMBER_PATTERN, "A city must contain a letter or number");
+
 export const CountryDiscoverySourceSchema = z.enum([
   "directories",
   "known_sources",
@@ -10,7 +23,7 @@ export const CountryDiscoverySourceSchema = z.enum([
 
 export const CountrySweepRequestSchema = z
   .object({
-    cities: z.array(z.string().trim().min(1).max(160)).default([]),
+    cities: z.array(CountrySweepCitySchema).default([]),
     includeDirectories: z.boolean().default(true),
     includeKnownSources: z.boolean().default(true),
     includeMaps: z.boolean().default(true),
@@ -24,7 +37,44 @@ export const CountrySweepRequestSchema = z
       value.includeMaps ||
       value.includeSearch,
     { message: "Choose at least one discovery source" }
-  );
+  )
+  .refine(
+    (value) =>
+      normalizeCountrySweepCities(value.cities).length <=
+      MAX_COUNTRY_SWEEP_CITIES,
+    {
+      message: `Choose at most ${MAX_COUNTRY_SWEEP_CITIES} distinct cities`,
+      path: ["cities"],
+    }
+  )
+  .transform((value) => ({
+    ...value,
+    cities: normalizeCountrySweepCities(value.cities),
+  }));
+
+export function countrySweepCityKey(city: string) {
+  return city
+    .trim()
+    .toLowerCase()
+    .normalize("NFKD")
+    .replaceAll(COMBINING_MARK_PATTERN, "")
+    .replaceAll(CITY_KEY_SEPARATOR_PATTERN, "-")
+    .replaceAll(/^-|-$/gu, "");
+}
+
+export function normalizeCountrySweepCities(cities: readonly string[]) {
+  const citiesByKey = new Map<string, string>();
+  for (const rawCity of cities) {
+    const city = rawCity.trim();
+    const key = countrySweepCityKey(city);
+    if (!citiesByKey.has(key)) {
+      citiesByKey.set(key, city);
+    }
+  }
+  return [...citiesByKey]
+    .sort(([left], [right]) => left.localeCompare(right, "en"))
+    .map(([, city]) => city);
+}
 
 const SweepContactPointSchema = z
   .object({

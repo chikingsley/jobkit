@@ -4,7 +4,9 @@ import {
   AgentTaskClaimSchema,
   AgentTaskCompletionSchema,
   AgentTaskFailureSchema,
+  AgentTaskHeartbeatSchema,
 } from "../../src/features/agents/schema";
+import { CountrySweepChunkUploadSchema } from "../../src/features/countries/materialization";
 import type { AgentRunnerContext, JobKitApp } from "../app-types";
 import {
   createAgentRunnerPairing,
@@ -17,6 +19,9 @@ import {
   claimAgentTask,
   completeAgentTask,
   failAgentTask,
+  heartbeatAgentTask,
+  reapAgentTasks,
+  uploadAgentTaskCountryChunk,
 } from "../services/agent-task-broker";
 import {
   cancelAgentTaskRequest,
@@ -25,6 +30,7 @@ import {
   retryAgentTaskRequest,
 } from "../services/agent-task-requests";
 import { readAgentTaskArtifact } from "../services/agent-tasks/artifacts";
+import { readBoundedAgentTaskJson } from "../services/agent-tasks/bounded-json";
 import { AgentTaskError } from "../services/agent-tasks/contracts";
 
 export function registerAgentRunnerRoutes(app: JobKitApp) {
@@ -124,6 +130,7 @@ export function registerAgentRunnerRoutes(app: JobKitApp) {
     if (!revoked) {
       return c.json({ message: "Agent runner was not active", ok: false }, 404);
     }
+    await reapAgentTasks(c.env, c.get("user").id);
     return c.json({ message: "Agent runner revoked", ok: true });
   });
 
@@ -143,26 +150,64 @@ export function registerAgentRunnerRoutes(app: JobKitApp) {
 
   app.post("/api/agent-tasks/:runId/complete", async (c) => {
     const runner = requireAgentRunner(c.get("agentRunner"));
-    const { output } = AgentTaskCompletionSchema.parse(await c.req.json());
+    const { leaseToken, output } = AgentTaskCompletionSchema.parse(
+      await readBoundedAgentTaskJson(c.req.raw)
+    );
     const result = await completeAgentTask(
       c.env,
       runner,
       c.req.param("runId"),
-      output
+      output,
+      leaseToken
     );
     return c.json({ message: "Agent task completed", ok: true, result });
   });
 
+  app.post("/api/agent-tasks/:runId/chunks", async (c) => {
+    const runner = requireAgentRunner(c.get("agentRunner"));
+    const { leaseToken, ...input } = CountrySweepChunkUploadSchema.parse(
+      await readBoundedAgentTaskJson(c.req.raw)
+    );
+    const result = await uploadAgentTaskCountryChunk(
+      c.env,
+      runner,
+      c.req.param("runId"),
+      input,
+      leaseToken
+    );
+    return c.json({
+      message: "Country output chunk accepted",
+      ok: true,
+      result,
+    });
+  });
+
   app.post("/api/agent-tasks/:runId/fail", async (c) => {
     const runner = requireAgentRunner(c.get("agentRunner"));
-    const { error } = AgentTaskFailureSchema.parse(await c.req.json());
+    const { error, errorCode, leaseToken } = AgentTaskFailureSchema.parse(
+      await c.req.json()
+    );
     const result = await failAgentTask(
       c.env,
       runner,
       c.req.param("runId"),
-      error
+      error,
+      errorCode,
+      leaseToken
     );
     return c.json({ message: "Agent task failed", ok: true, result });
+  });
+
+  app.post("/api/agent-tasks/:runId/heartbeat", async (c) => {
+    const runner = requireAgentRunner(c.get("agentRunner"));
+    const { leaseToken } = AgentTaskHeartbeatSchema.parse(await c.req.json());
+    const result = await heartbeatAgentTask(
+      c.env,
+      runner,
+      c.req.param("runId"),
+      leaseToken
+    );
+    return c.json({ message: "Agent task lease extended", ok: true, result });
   });
 
   app.get("/api/agent-tasks/:runId/artifacts/:artifactId", async (c) => {

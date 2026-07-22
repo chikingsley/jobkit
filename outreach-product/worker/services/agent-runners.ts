@@ -183,44 +183,16 @@ export async function revokeAgentRunner(
   userId: string,
   runnerId: string
 ) {
-  const timestamp = new Date().toISOString();
-  const [runnerResult] = await db.batch([
-    db
-      .prepare(
-        `UPDATE agent_runners SET revoked_at=?,updated_at=?
-          WHERE id=? AND user_id=? AND revoked_at IS NULL`
-      )
-      .bind(timestamp, timestamp, runnerId, userId),
-    db
-      .prepare(
-        `UPDATE agent_task_runs
-            SET status='failed',error_detail='Runner revoked',
-                completed_at=?,updated_at=?
-          WHERE runner_id=? AND user_id=? AND status='running'`
-      )
-      .bind(timestamp, timestamp, runnerId, userId),
-    db
-      .prepare(
-        `UPDATE test_lab_runs
-            SET status='queued',started_at=NULL,
-                error_detail='Runner revoked; task requeued',updated_at=?
-          WHERE user_id=? AND status='running' AND agent_task_request_id IN (
-            SELECT id FROM agent_task_requests
-             WHERE runner_id=? AND user_id=? AND status='claimed'
-          )`
-      )
-      .bind(timestamp, userId, runnerId, userId),
-    db
-      .prepare(
-        `UPDATE agent_task_requests
-            SET status='queued',runner_id=NULL,claimed_at=NULL,
-                lease_expires_at=NULL,error_detail='Runner revoked; task requeued',
-                updated_at=?
-          WHERE runner_id=? AND user_id=? AND status='claimed'`
-      )
-      .bind(timestamp, runnerId, userId),
-  ]);
-  return (runnerResult?.meta.changes ?? 0) === 1;
+  const runnerResult = await db
+    .prepare(
+      `UPDATE agent_runners
+          SET revoked_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+              updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        WHERE id=? AND user_id=? AND revoked_at IS NULL`
+    )
+    .bind(runnerId, userId)
+    .run();
+  return (runnerResult.meta.changes ?? 0) === 1;
 }
 
 export async function updateAgentRunnerVersion(

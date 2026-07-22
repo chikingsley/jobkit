@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import {
   ChevronLeft,
   CirclePause,
@@ -8,7 +9,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
@@ -27,8 +27,13 @@ import { SplitWorkspace } from "@/features/workspace/split-workspace";
 import type { ApiRequest } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
-  const { campaignId = "" } = useParams();
+export function CampaignsWorkspace({
+  campaignId = "",
+  request,
+}: {
+  campaignId?: string;
+  request: ApiRequest;
+}) {
   const navigate = useNavigate();
   const {
     data: campaigns,
@@ -49,12 +54,14 @@ export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
         selectedId ? (
           <CampaignDetailView
             campaignId={selectedId}
-            onBack={() => navigate("/campaigns")}
+            onBack={() => void navigate({ to: "/app/campaigns" })}
             onChanged={() => mutateCampaigns()}
             request={request}
           />
         ) : (
-          <EmptyCampaigns onCreate={() => navigate("/campaigns/new")} />
+          <EmptyCampaigns
+            onCreate={() => void navigate({ to: "/app/campaigns/new" })}
+          />
         )
       }
       detailOpen={Boolean(campaignId)}
@@ -69,7 +76,7 @@ export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
             <div className="flex items-center gap-1">
               <Button
                 aria-label="Markets"
-                onClick={() => navigate("/campaigns/markets")}
+                onClick={() => void navigate({ to: "/app/campaigns/markets" })}
                 size="icon-sm"
                 variant="ghost"
               >
@@ -77,7 +84,7 @@ export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
               </Button>
               <Button
                 aria-label="New campaign"
-                onClick={() => navigate("/campaigns/new")}
+                onClick={() => void navigate({ to: "/app/campaigns/new" })}
                 size="icon-sm"
               >
                 <Plus />
@@ -91,7 +98,12 @@ export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
                   active={campaign.id === selectedId}
                   campaign={campaign}
                   key={campaign.id}
-                  onSelect={() => navigate(`/campaigns/${campaign.id}`)}
+                  onSelect={() =>
+                    void navigate({
+                      params: { campaignId: campaign.id },
+                      to: "/app/campaigns/$campaignId",
+                    })
+                  }
                 />
               ))}
               {isLoading ? (
@@ -106,7 +118,7 @@ export function CampaignsWorkspace({ request }: { request: ApiRequest }) {
                   </p>
                   <Button
                     className="mt-3"
-                    onClick={() => navigate("/campaigns/new")}
+                    onClick={() => void navigate({ to: "/app/campaigns/new" })}
                     size="sm"
                   >
                     <Plus /> New campaign

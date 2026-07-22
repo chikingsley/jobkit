@@ -2,6 +2,7 @@ import { Database } from "bun:sqlite";
 import {
   type InventoryJob,
   InventoryJobSchema,
+  InventorySourceDateEvidenceSchema,
 } from "../../src/features/inventory/schema";
 import { cloudflareEmailsFromHtml } from "../../src/features/jobs/protected-email";
 
@@ -15,6 +16,7 @@ interface SourceJobRow {
   job_id: string;
   last_seen_at: string;
   location: string;
+  posted_date: string;
   raw: string;
   raw_json: string;
   salary: string;
@@ -34,6 +36,9 @@ export interface SourceInventory {
 }
 
 const JOINED_HONORIFIC_PATTERN = /^(Dr|Mr|Mrs|Ms|Prof)\.(?=\p{L})/u;
+const SOURCE_DATE_PREFIX_PATTERN = /^(\d{4}-\d{2}-\d{2})(?=$|[T\s])/u;
+const SERIOUS_TEACHERS_APPLICATION_ROUTE_PATTERN =
+  /\/te2\/respond\/\d+\/(\d+)(?:$|[\s/?#])/u;
 
 export function readSourceInventory(databasePath: string): SourceInventory {
   const database = new Database(databasePath, {
@@ -52,7 +57,7 @@ export function readSourceInventory(databasePath: string): SourceInventory {
     const rows = database
       .query(
         `SELECT apply_email,apply_url,board,company,country,
-                description,job_id,last_seen_at,location,raw,raw_json,
+                description,job_id,last_seen_at,location,posted_date,raw,raw_json,
                 salary,title,url
            FROM jobs
           WHERE status='active'
@@ -82,6 +87,7 @@ function toInventoryJob(row: SourceJobRow): InventoryJob {
     contactName: contactNameFor(fields),
     country: row.country.trim(),
     description: description.slice(0, 50_000),
+    employerId: employerIdFor(row, fields),
     id:
       row.board === "seriousteachers"
         ? row.job_id
@@ -90,9 +96,55 @@ function toInventoryJob(row: SourceJobRow): InventoryJob {
     location: row.location,
     marketSegments: [],
     salary,
+    sourceDates: {
+      expires: sourceDateEvidence(fields.closing),
+      posted: sourceDateEvidence(row.posted_date),
+    },
     sourceReference: sourceReferenceFor(row, fields),
     sourceUrl: row.url,
     title: row.title,
+  });
+}
+
+function employerIdFor(
+  row: SourceJobRow,
+  fields: Record<string, string | undefined>
+) {
+  const explicit =
+    fields["Employer ID"]?.trim() ||
+    fields.employerId?.trim() ||
+    fields.employer_id?.trim();
+  if (explicit) {
+    return explicit.slice(0, 500);
+  }
+  const route = `${row.apply_url}\n${row.url}\n${row.raw}`;
+  return SERIOUS_TEACHERS_APPLICATION_ROUTE_PATTERN.exec(route)?.[1] ?? "";
+}
+
+export function sourceDateEvidence(value: string | null | undefined) {
+  const raw = (value ?? "").trim().slice(0, 500);
+  if (!raw) {
+    return InventorySourceDateEvidenceSchema.parse({
+      date: null,
+      provenance: "unknown",
+      raw: "",
+    });
+  }
+  const date = SOURCE_DATE_PREFIX_PATTERN.exec(raw)?.[1];
+  if (date) {
+    const published = InventorySourceDateEvidenceSchema.safeParse({
+      date,
+      provenance: "board-published",
+      raw,
+    });
+    if (published.success) {
+      return published.data;
+    }
+  }
+  return InventorySourceDateEvidenceSchema.parse({
+    date: null,
+    provenance: "unresolved",
+    raw,
   });
 }
 

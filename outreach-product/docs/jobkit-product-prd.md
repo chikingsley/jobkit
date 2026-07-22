@@ -164,9 +164,9 @@ The Expo app is still first-class, but its MVP should focus on mobile-appropriat
 
 Recommended:
 
-- React + Vite.
-- Cloudflare Vite plugin / Workers Static Assets.
-- TanStack Router for typed URL/search state.
+- TanStack Start with React and Vite for full-stack rendering and server functions.
+- Cloudflare Vite plugin and Workers runtime for SSR, bindings, static assets, and deployment.
+- TanStack Router for the generated typed route tree and validated URL/search state.
 - TanStack Table for controlled table state, filtering, sorting, pagination, column visibility, and row selection.
 - shadcn/ui for web components.
 
@@ -808,11 +808,12 @@ Board-specific notes:
 
 ## 17. Authentication and Privacy
 
-MVP can be single-user/private.
+Public discovery and private candidate work use separate data boundaries.
 
 Requirements:
 
-- No public unauthenticated dashboard.
+- Public visitors may browse published job and market pages without authentication.
+- Applying, profile match, campaigns, messages, documents, drafts, recipients, and execution state require authentication.
 - No identity documents in client bundle.
 - Credential PDFs stay private.
 - R2 may later store selected documents, but only after access controls are designed.

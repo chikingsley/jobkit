@@ -1,6 +1,8 @@
 export const AGENT_TASK_LEASE_MS = 30 * 60 * 1000;
 
 export interface AgentTaskRunRow {
+  attempt_number: number;
+  lease_token: string;
   model: string;
   source_hash: string;
   source_task_id: string;
@@ -10,7 +12,9 @@ export interface AgentTaskRunRow {
 
 export interface PreparedAgentTask {
   artifacts?: PreparedAgentTaskArtifact[];
+  attemptNumber: number;
   leaseExpiresAt: string;
+  leaseToken: string;
   model: string;
   outputSchema: Record<string, unknown>;
   prompt: string;
@@ -41,10 +45,12 @@ export type AgentTaskFamily =
   | "test_lab";
 
 export class AgentTaskError extends Error {
-  readonly status: 401 | 404 | 409;
+  readonly status: 401 | 404 | 409 | 413 | 422;
 
-  constructor(message: string, status: 401 | 404 | 409) {
+  constructor(message: string, status: 401 | 404 | 409 | 413 | 422) {
     super(message);
     this.status = status;
   }
 }
+
+export class AgentTaskClaimLostError extends Error {}

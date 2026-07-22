@@ -12,6 +12,67 @@ const testEnv = env as TestEnv;
 beforeEach(() => applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS));
 
 describe("Codex job analysis tasks", () => {
+  it("requires the exact lease token for every runner transition", async () => {
+    const { cookie } = await createAuthenticatedUser(
+      "agent-analysis-lease-token@example.test"
+    );
+    const timestamp = "2026-07-18T00:00:00.000Z";
+    await testEnv.DB.prepare(
+      `INSERT INTO job_listings
+        (id,title,description,apply_url,first_seen_at,updated_at)
+       VALUES ('agent-analysis-token-job','English teacher',
+               'We need an English teacher.',
+               'https://example.test/token-apply',?,?)`
+    )
+      .bind(timestamp, timestamp)
+      .run();
+    const token = await pairAgent(cookie);
+    const claim = await agentPost("/api/agent-tasks/claim", token, {
+      runnerVersion: "codex-cli test",
+    });
+    const payload = (await claim.json()) as {
+      task: { leaseToken: string; runId: string };
+    };
+    const runPath = `/api/agent-tasks/${payload.task.runId}`;
+
+    await expect(
+      agentPost(`${runPath}/complete`, token, { output: {} })
+    ).resolves.toMatchObject({ status: 400 });
+    await expect(
+      agentPost(`${runPath}/fail`, token, { error: "provider unavailable" })
+    ).resolves.toMatchObject({ status: 400 });
+    await expect(
+      agentPost(`${runPath}/heartbeat`, token, {})
+    ).resolves.toMatchObject({ status: 400 });
+
+    await expect(
+      agentPost(`${runPath}/complete`, token, {
+        leaseToken: "stale-lease-token",
+        output: {},
+      })
+    ).resolves.toMatchObject({ status: 409 });
+    await expect(
+      agentPost(`${runPath}/fail`, token, {
+        error: "provider unavailable",
+        leaseToken: "stale-lease-token",
+      })
+    ).resolves.toMatchObject({ status: 409 });
+    await expect(
+      agentPost(`${runPath}/heartbeat`, token, {
+        leaseToken: "stale-lease-token",
+      })
+    ).resolves.toMatchObject({ status: 409 });
+
+    await expect(
+      agentPost(`${runPath}/heartbeat`, token, {
+        leaseToken: payload.task.leaseToken,
+      })
+    ).resolves.toMatchObject({ status: 200 });
+    await testEnv.DB.prepare(
+      "DELETE FROM job_listings WHERE id='agent-analysis-token-job'"
+    ).run();
+  });
+
   it("round-robins global position, match-fact, and content work", async () => {
     const { cookie, userId } = await createAuthenticatedUser(
       "agent-analysis@example.test"
@@ -32,7 +93,7 @@ describe("Codex job analysis tasks", () => {
       runnerVersion: "codex-cli test",
     });
     const positionPayload = (await positionClaim.json()) as {
-      task: { runId: string; taskType: string };
+      task: { leaseToken: string; runId: string; taskType: string };
     };
     expect(positionPayload.task.taskType).toBe("job.position_analysis");
 
@@ -40,6 +101,7 @@ describe("Codex job analysis tasks", () => {
       `/api/agent-tasks/${positionPayload.task.runId}/complete`,
       token,
       {
+        leaseToken: positionPayload.task.leaseToken,
         output: {
           positions: [
             {
@@ -75,7 +137,7 @@ describe("Codex job analysis tasks", () => {
       runnerVersion: "codex-cli test",
     });
     const factsPayload = (await factsClaim.json()) as {
-      task: { runId: string; taskType: string };
+      task: { leaseToken: string; runId: string; taskType: string };
     };
     expect(factsPayload.task.taskType).toBe("job.match_facts");
 
@@ -83,6 +145,7 @@ describe("Codex job analysis tasks", () => {
       `/api/agent-tasks/${factsPayload.task.runId}/complete`,
       token,
       {
+        leaseToken: factsPayload.task.leaseToken,
         output: {
           audiences: [],
           benefits: [],
@@ -112,13 +175,16 @@ describe("Codex job analysis tasks", () => {
       runnerVersion: "codex-cli test",
     });
     const contentPayload = (await contentClaim.json()) as {
-      task: { runId: string; taskType: string };
+      task: { leaseToken: string; runId: string; taskType: string };
     };
     expect(contentPayload.task.taskType).toBe("job.content_analysis");
     const contentComplete = await agentPost(
       `/api/agent-tasks/${contentPayload.task.runId}/complete`,
       token,
-      { output: contentOutput() }
+      {
+        leaseToken: contentPayload.task.leaseToken,
+        output: contentOutput(),
+      }
     );
     expect(contentComplete.status).toBe(200);
 
@@ -207,13 +273,14 @@ describe("Codex job analysis tasks", () => {
       runnerVersion: "codex-cli test",
     });
     const firstTask = (await firstClaim.json()) as {
-      task: { runId: string; taskType: string };
+      task: { leaseToken: string; runId: string; taskType: string };
     };
     expect(firstTask.task.taskType).toBe("job.position_analysis");
     const rejected = await agentPost(
       `/api/agent-tasks/${firstTask.task.runId}/complete`,
       token,
       {
+        leaseToken: firstTask.task.leaseToken,
         output: {
           positions: [
             {
@@ -241,7 +308,10 @@ describe("Codex job analysis tasks", () => {
     const failed = await agentPost(
       `/api/agent-tasks/${firstTask.task.runId}/fail`,
       token,
-      { error: "1 evidence quote is not present in the stored listing" }
+      {
+        error: "1 evidence quote is not present in the stored listing",
+        leaseToken: firstTask.task.leaseToken,
+      }
     );
     expect(failed.status).toBe(200);
 
@@ -249,13 +319,14 @@ describe("Codex job analysis tasks", () => {
       runnerVersion: "codex-cli test",
     });
     const factsTask = (await factsClaim.json()) as {
-      task: { runId: string; taskType: string };
+      task: { leaseToken: string; runId: string; taskType: string };
     };
     expect(factsTask.task.taskType).toBe("job.match_facts");
     const factsComplete = await agentPost(
       `/api/agent-tasks/${factsTask.task.runId}/complete`,
       token,
       {
+        leaseToken: factsTask.task.leaseToken,
         output: {
           audiences: [],
           benefits: [],
@@ -285,13 +356,16 @@ describe("Codex job analysis tasks", () => {
       runnerVersion: "codex-cli test",
     });
     const contentTask = (await contentClaim.json()) as {
-      task: { runId: string; taskType: string };
+      task: { leaseToken: string; runId: string; taskType: string };
     };
     expect(contentTask.task.taskType).toBe("job.content_analysis");
     const contentComplete = await agentPost(
       `/api/agent-tasks/${contentTask.task.runId}/complete`,
       token,
-      { output: contentOutput() }
+      {
+        leaseToken: contentTask.task.leaseToken,
+        output: contentOutput(),
+      }
     );
     expect(contentComplete.status).toBe(200);
 

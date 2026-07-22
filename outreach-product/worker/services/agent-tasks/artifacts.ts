@@ -19,12 +19,30 @@ export async function attachDocumentArtifact(
   documentId: string,
   expected: { etag: string; version: string }
 ): Promise<PreparedAgentTaskArtifact> {
+  const prepared = await prepareDocumentArtifact(
+    env,
+    runner.user.id,
+    runId,
+    documentId,
+    expected
+  );
+  await prepared.write.statement.run();
+  return prepared.artifact;
+}
+
+export async function prepareDocumentArtifact(
+  env: AppEnv,
+  userId: string,
+  runId: string,
+  documentId: string,
+  expected: { etag: string; version: string }
+) {
   const document = await env.DB.prepare(
     `SELECT filename,object_key,content_type,size_bytes,r2_version,etag
        FROM user_documents
       WHERE id=? AND user_id=? AND archived_at IS NULL`
   )
-    .bind(documentId, runner.user.id)
+    .bind(documentId, userId)
     .first<DocumentArtifactRow>();
   if (!document) {
     throw new AgentTaskError("Document artifact was not found", 404);
@@ -52,26 +70,28 @@ export async function attachDocumentArtifact(
     sizeBytes: document.size_bytes,
     url: `/api/agent-tasks/${runId}/artifacts/${artifactId}`,
   };
-  await env.DB.prepare(
-    `INSERT INTO agent_task_artifacts
-      (id,run_id,user_id,object_key,filename,content_type,size_bytes,sha256,
-       purpose,created_at)
-     VALUES (?,?,?,?,?,?,?,?,?,?)`
-  )
-    .bind(
-      artifact.id,
-      runId,
-      runner.user.id,
-      document.object_key,
-      document.filename,
-      document.content_type,
-      document.size_bytes,
-      sha256,
-      artifact.purpose,
-      new Date().toISOString()
-    )
-    .run();
-  return artifact;
+  return {
+    artifact,
+    write: {
+      expectedChanges: 1,
+      statement: env.DB.prepare(
+        `INSERT INTO agent_task_artifacts
+          (id,run_id,user_id,object_key,filename,content_type,size_bytes,sha256,
+           purpose,created_at)
+         VALUES (?,?,?,?,?,?,?,?,?,strftime('%Y-%m-%dT%H:%M:%fZ','now'))`
+      ).bind(
+        artifact.id,
+        runId,
+        userId,
+        document.object_key,
+        document.filename,
+        document.content_type,
+        document.size_bytes,
+        sha256,
+        artifact.purpose
+      ),
+    },
+  };
 }
 
 export async function readAgentTaskArtifact(

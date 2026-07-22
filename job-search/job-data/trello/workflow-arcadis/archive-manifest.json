@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-07-22T19:26:37Z",
+  "boardSnapshot": {
+    "file": "raw/2026-07-22-workflow-arcadis.json",
+    "sha256": "9cd2e74ecf516a4f27f2accb4f79b51a6b480683fd40ccf9299b7b221c8569f1",
+    "cards": 115,
+    "lists": 24,
+    "checklists": 80,
+    "checklistItems": 849,
+    "actionsIncluded": 1000,
+    "attachmentRecords": 34
+  },
+  "fullActionHistory": {
+    "file": "raw/2026-07-22-workflow-arcadis-all-actions.json",
+    "sha256": "4b331a1c969498b558c2c2388abeb1bf88f3b5359d8a8232d4fa1381dbfa686c",
+    "actions": 1831,
+    "pages": 2,
+    "oldest": "2021-11-28T10:39:08.238Z",
+    "newest": "2025-09-26T18:59:30.376Z",
+    "paginationExhausted": true
+  },
+  "currentAttachments": {
+    "directory": "attachments",
+    "manifest": "attachment-manifest.json",
+    "checksums": "attachment-sha256.txt",
+    "files": 34,
+    "bytes": 62916506,
+    "allMetadataSizesMatched": true
+  },
+  "historicalDeletionsObserved": {
+    "deletedCards": 2,
+    "deletedAttachments": 1,
+    "deletedAttachment": {
+      "attachmentId": "61eeb616bb1ef91d1d56c73c",
+      "cardId": "61b8439dba66667a59f8f8a9",
+      "name": "image.jpeg",
+      "deletedAt": "2022-01-27T12:00:33.154Z",
+      "binaryFetchStatus": 404
+    }
+  }
+}

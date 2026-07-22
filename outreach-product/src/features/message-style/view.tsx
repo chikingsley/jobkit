@@ -1,6 +1,6 @@
+import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { SettingsPage } from "@/components/settings-page";
 import { Badge } from "@/components/ui/badge";
@@ -70,7 +70,7 @@ export function MessageStyleView({ request }: { request: ApiRequest }) {
     return (
       <StyleCompletion
         choices={choices}
-        onJobs={() => navigate(workspacePaths.jobs)}
+        onJobs={() => void navigate({ to: workspacePaths.jobs })}
         onReview={() => {
           setIndex(0);
           setReviewing(true);

@@ -6,6 +6,7 @@ import {
   PROFILE_IMPORT_TASK_TYPE,
   profileImportPrompt,
 } from "../../../src/agent-tasks/profile-import";
+import type { AgentTaskFailureCode } from "../../../src/features/agents/schema";
 import {
   PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION,
   ProfileImportProposalSchema,
@@ -13,24 +14,31 @@ import {
 import { normalizeProfileImportProposal } from "../../ai/profile-extraction";
 import type { AgentRunnerContext } from "../../app-types";
 import type { AppEnv } from "../../env";
-import { failProfileImport } from "../../repositories/onboarding";
 import { agentRunnerHasCapability } from "../agent-runners";
 import {
-  claimAgentTaskRequest,
-  failAgentTaskRequest,
   readClaimedAgentTaskRequest,
+  readNextAgentTaskRequest,
 } from "../agent-task-requests";
 import {
-  AGENT_TASK_LEASE_MS,
   AgentTaskError,
   type AgentTaskRunRow,
   type PreparedAgentTask,
 } from "./contracts";
-import { createAgentTaskRun, sha256 } from "./run-store";
+import {
+  claimRequestedAgentTaskWithDomainWrites,
+  failRequestedAgentTaskWithDomainWrites,
+} from "./requested-task-leases";
+import {
+  type AgentTaskCompletionFence,
+  completeRequestedAgentTaskWithDomainWrites,
+  sha256,
+} from "./run-store";
 
 const ProfileImportTaskInputSchema = z
   .object({ sourceTextKey: z.string().min(1) })
   .strict();
+
+class UnclaimableProfileImportSourceError extends Error {}
 
 export async function claimProfileImportTask(
   env: AppEnv,
@@ -39,49 +47,67 @@ export async function claimProfileImportTask(
   if (!agentRunnerHasCapability(runner, "extraction")) {
     return null;
   }
-  const leaseExpiresAt = new Date(
-    Date.now() + AGENT_TASK_LEASE_MS
-  ).toISOString();
-  const request = await claimAgentTaskRequest(env.DB, {
-    leaseExpiresAt,
-    runnerId: runner.id,
+  const request = await readNextAgentTaskRequest(env.DB, {
     taskType: PROFILE_IMPORT_TASK_TYPE,
     userId: runner.user.id,
   });
   if (!request) {
     return null;
   }
+  const parsed = ProfileImportTaskInputSchema.safeParse(request.input);
+  if (!parsed.success) {
+    await failUnclaimableProfileImport(
+      env.DB,
+      runner,
+      request.id,
+      request.subjectId,
+      parsed.error.message
+    );
+    return null;
+  }
+  const { sourceTextKey } = parsed.data;
+  let sourceText: string;
   try {
-    const { sourceTextKey } = ProfileImportTaskInputSchema.parse(request.input);
-    const sourceText = await readR2Text(env.DOCUMENTS, sourceTextKey);
-    return await createAgentTaskRun(env.DB, runner, {
-      leaseExpiresAt,
+    sourceText = await readR2Text(env.DOCUMENTS, sourceTextKey);
+  } catch (error) {
+    if (!(error instanceof UnclaimableProfileImportSourceError)) {
+      throw error;
+    }
+    await failUnclaimableProfileImport(
+      env.DB,
+      runner,
+      request.id,
+      request.subjectId,
+      error.message
+    );
+    return null;
+  }
+  return claimRequestedAgentTaskWithDomainWrites(
+    env.DB,
+    runner,
+    request,
+    {
       model: PROFILE_IMPORT_MODEL.model,
       outputSchema: PROFILE_IMPORT_OUTPUT_JSON_SCHEMA,
       prompt: profileImportPrompt(sourceText),
       promptVersion: PROFILE_IMPORT_PROMPT_VERSION,
       reasoningEffort: PROFILE_IMPORT_MODEL.reasoningEffort,
       sourceHash: await sha256(sourceText),
-      sourceTaskId: request.id,
       taskType: PROFILE_IMPORT_TASK_TYPE,
       webSearch: "disabled",
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    await failProfileImport(env.DB, {
-      errorMessage: message,
-      importId: request.subjectId,
-      updatedAt: new Date().toISOString(),
-      userId: runner.user.id,
-    });
-    await failAgentTaskRequest(env.DB, {
-      error: message,
-      requestId: request.id,
-      runnerId: runner.id,
-      userId: runner.user.id,
-    });
-    return null;
-  }
+    },
+    (_context, fence) => [
+      {
+        expectedChanges: 1,
+        statement: env.DB.prepare(
+          `UPDATE profile_imports
+            SET updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          WHERE id=? AND user_id=? AND status='processing'
+            AND ${fence.clause}`
+        ).bind(request.subjectId, runner.user.id, ...fence.values),
+      },
+    ]
+  );
 }
 
 export async function completeProfileImportTask(
@@ -105,50 +131,52 @@ export async function completeProfileImportTask(
     ProfileImportProposalSchema.parse(rawOutput),
     sourceText
   );
-  const timestamp = new Date().toISOString();
-  const results = await env.DB.batch([
-    env.DB.prepare(
-      `UPDATE profile_imports
-          SET status='ready',source_text_key=?,proposal_json=?,
-              proposal_schema_version=?,
-              model_provider='codex',model_id=?,error_message=NULL,updated_at=?
-        WHERE id=? AND user_id=? AND status='processing'`
-    ).bind(
-      sourceTextKey,
-      JSON.stringify(proposal),
-      PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION,
-      run.model,
-      timestamp,
-      request.subjectId,
-      runner.user.id
-    ),
-    env.DB.prepare(
-      `UPDATE agent_task_requests
-          SET status='completed',result_json=?,error_detail='',completed_at=?,
-              updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='claimed'`
-    ).bind(
-      JSON.stringify(proposal),
-      timestamp,
-      timestamp,
-      request.id,
-      runner.user.id,
-      runner.id
-    ),
-    env.DB.prepare(
-      `UPDATE agent_task_runs
-          SET status='completed',result_json=?,completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='running'`
-    ).bind(
-      JSON.stringify(proposal),
-      timestamp,
-      timestamp,
+  await completeRequestedAgentTaskWithDomainWrites(
+    env.DB,
+    {
+      attemptNumber: run.attempt_number,
+      leaseToken: run.lease_token,
+      requestId: request.id,
       runId,
-      runner.user.id,
-      runner.id
-    ),
-  ]);
-  assertAtomicChanges(results, "Profile import task could not be completed");
+      runnerId: runner.id,
+      taskType: run.task_type,
+      userId: runner.user.id,
+    },
+    (fence) => ({
+      condition: {
+        clause: `EXISTS (
+            SELECT 1 FROM profile_imports completion_import
+             WHERE completion_import.id=?
+               AND completion_import.user_id=?
+               AND completion_import.status='processing'
+          )`,
+        values: [request.subjectId, runner.user.id],
+      },
+      result: proposal,
+      writes: [
+        {
+          expectedChanges: 1,
+          statement: env.DB.prepare(
+            `UPDATE profile_imports
+                  SET status='ready',source_text_key=?,proposal_json=?,
+                      proposal_schema_version=?,model_provider='codex',model_id=?,
+                      error_message=NULL,
+                      updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+                WHERE id=? AND user_id=? AND status='processing'
+                  AND ${fence.clause}`
+          ).bind(
+            sourceTextKey,
+            JSON.stringify(proposal),
+            PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION,
+            run.model,
+            request.subjectId,
+            runner.user.id,
+            ...fence.values
+          ),
+        },
+      ],
+    })
+  );
   return { importId: request.subjectId, requestId: request.id };
 }
 
@@ -157,40 +185,120 @@ export async function failProfileImportTask(
   runner: AgentRunnerContext,
   requestId: string,
   runId: string,
-  error: string
+  error: string,
+  errorCode: AgentTaskFailureCode
 ) {
   const request = await requireClaimedRequest(env.DB, runner, requestId);
-  const timestamp = new Date().toISOString();
-  const results = await env.DB.batch([
-    env.DB.prepare(
-      `UPDATE profile_imports
-          SET status='failed',error_message=?,updated_at=?
-        WHERE id=? AND user_id=? AND status='processing'`
-    ).bind(error.slice(0, 500), timestamp, request.subjectId, runner.user.id),
-    env.DB.prepare(
-      `UPDATE agent_task_requests
-          SET status='failed',error_detail=?,completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='claimed'`
-    ).bind(
-      error.slice(0, 4000),
-      timestamp,
-      timestamp,
-      request.id,
-      runner.user.id,
-      runner.id
-    ),
-    env.DB.prepare(
-      `UPDATE agent_task_runs
-          SET status='failed',error_detail=?,completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='running'`
-    ).bind(error, timestamp, timestamp, runId, runner.user.id, runner.id),
-  ]);
-  assertAtomicChanges(results, "Profile import task could not be failed");
+  await failRequestedAgentTaskWithDomainWrites(
+    env.DB,
+    {
+      attemptNumber: request.attemptCount,
+      errorCode,
+      errorDetail: error,
+      leaseToken: request.leaseToken,
+      mode: "runner",
+      requestId: request.id,
+      runId,
+      runnerId: runner.id,
+      taskType: request.taskType,
+      userId: runner.user.id,
+    },
+    (retry, fence) =>
+      buildProfileImportFailureWrites(
+        env.DB,
+        runner.user.id,
+        request.subjectId,
+        error,
+        retry,
+        fence
+      )
+  );
 }
 
-function assertAtomicChanges(results: D1Result[], message: string) {
-  if (results.some((result) => (result.meta.changes ?? 0) !== 1)) {
-    throw new AgentTaskError(message, 409);
+export function buildProfileImportFailureWrites(
+  db: D1Database,
+  userId: string,
+  importId: string,
+  error: string,
+  retry: boolean,
+  fence: AgentTaskCompletionFence
+) {
+  return [
+    {
+      expectedChanges: 1,
+      statement: db
+        .prepare(
+          `UPDATE profile_imports
+            SET status=?,error_message=?,
+                updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          WHERE id=? AND user_id=? AND status='processing'
+            AND ${fence.clause}`
+        )
+        .bind(
+          retry ? "processing" : "failed",
+          retry ? null : error.slice(0, 500),
+          importId,
+          userId,
+          ...fence.values
+        ),
+    },
+  ];
+}
+
+async function failUnclaimableProfileImport(
+  db: D1Database,
+  runner: AgentRunnerContext,
+  requestId: string,
+  importId: string,
+  error: string
+) {
+  const statements = [
+    db
+      .prepare(
+        `UPDATE profile_imports SET status='failed',error_message=?,
+              updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        WHERE id=? AND user_id=? AND status='processing'
+          AND EXISTS (
+            SELECT 1 FROM agent_task_requests request
+             WHERE request.id=? AND request.user_id=? AND request.status='queued'
+          )`
+      )
+      .bind(
+        error.slice(0, 500),
+        importId,
+        runner.user.id,
+        requestId,
+        runner.user.id
+      ),
+    db.prepare(
+      `INSERT INTO transaction_assertions(must_equal_one)
+       SELECT 0 WHERE changes()<>1`
+    ),
+    db
+      .prepare(
+        `UPDATE agent_task_requests
+          SET status='failed',last_error_code='invalid_input',error_detail=?,
+              completed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+              updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        WHERE id=? AND user_id=? AND status='queued'`
+      )
+      .bind(error.slice(0, 4000), requestId, runner.user.id),
+    db.prepare(
+      `INSERT INTO transaction_assertions(must_equal_one)
+       SELECT 0 WHERE changes()<>1`
+    ),
+  ];
+  try {
+    await db.batch(statements);
+  } catch (failure) {
+    if (
+      !(
+        failure instanceof Error &&
+        failure.message.toLowerCase().includes("constraint")
+      )
+    ) {
+      throw failure;
+    }
   }
 }
 
@@ -213,11 +321,15 @@ async function requireClaimedRequest(
 async function readR2Text(bucket: R2Bucket, objectKey: string) {
   const object = await bucket.get(objectKey);
   if (!object) {
-    throw new Error("Agent task source document was not found");
+    throw new UnclaimableProfileImportSourceError(
+      "Agent task source document was not found"
+    );
   }
   const text = (await object.text()).trim();
   if (text.length < 80 || text.length > 60_000) {
-    throw new Error("Agent task source text was outside the accepted size");
+    throw new UnclaimableProfileImportSourceError(
+      "Agent task source text was outside the accepted size"
+    );
   }
   return text;
 }

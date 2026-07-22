@@ -82,6 +82,7 @@ export interface Job {
   messageRoute: "advertised_position" | "multi_position" | "school_outreach";
   opportunityScope: "direct" | "multi_position" | "unknown";
   positionAnalysis: JobPositionAnalysis | null;
+  publicJobId: string | null;
   sourceReference: string;
   sourceUrl: string;
   status: string;
@@ -104,6 +105,7 @@ export interface JobListItem {
   messageRoute: Job["messageRoute"];
   opportunityScope: Job["opportunityScope"];
   positionCount: number;
+  publicJobId: string | null;
   statedHourly: StatedHourlyValue | null;
   status: string;
   title: string;

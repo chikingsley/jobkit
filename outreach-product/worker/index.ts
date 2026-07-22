@@ -30,10 +30,12 @@ import { registerJobRoutes } from "./routes/jobs";
 import { registerMessagePreviewRoutes } from "./routes/message-preview";
 import { registerMessageRoutes } from "./routes/messages";
 import { registerOnboardingRoutes } from "./routes/onboarding";
+import { registerPublicProjectionRoutes } from "./routes/public-projection";
 import { registerTestLabRoutes } from "./routes/test-lab";
 import { registerUserSettingsRoutes } from "./routes/user-settings";
 import { ImportSchema, SubmitSchema } from "./schemas";
 import { authenticateAgentRunner } from "./services/agent-runners";
+import { queueAgentTaskMaintenance } from "./services/agent-task-maintenance-queue";
 import { AgentTaskError } from "./services/agent-tasks/contracts";
 import { ApplicationBundleError } from "./services/application-bundle-model";
 import {
@@ -42,10 +44,17 @@ import {
   DraftProfileRequiredError,
   importJobs,
 } from "./services/application-drafts";
+import {
+  consumeJobKitQueue,
+  type JobKitQueueMessage,
+} from "./services/background-queue";
 import { runCampaignMatchingPass } from "./services/campaign-matching";
 import { runCampaignScheduler } from "./services/campaign-scheduler";
 import { CampaignError } from "./services/campaigns";
 import { CountryMarketError } from "./services/country-markets";
+import { cleanupAbandonedCountrySweepOutputObjects } from "./services/country-materialization/cleanup";
+import { reapExpiredCountryMaterializationItems } from "./services/country-materialization/materializer";
+import { publishCountryMaterializationOutbox } from "./services/country-materialization/queue";
 import { DocumentConversionError } from "./services/document-text";
 import { EmailAttemptError } from "./services/email-attempts";
 import { FollowUpError, queueDueFollowUps } from "./services/followups";
@@ -59,6 +68,8 @@ import { ensureLocalDevelopmentUser } from "./services/local-development-user";
 import { searchLocations, searchUniversities } from "./services/lookups";
 import { currentFxData } from "./services/matching-engine";
 import { ResumeUploadError } from "./services/profile-imports";
+import { queuePublicProjectionAdvance } from "./services/public-projection/queue";
+import { PublicProjectionRunError } from "./services/public-projection/runs";
 import { TestLabError } from "./services/test-lab/errors";
 
 const app: JobKitApp = new OpenAPIHono<{
@@ -137,10 +148,11 @@ app.onError((error, c) => {
       error.status
     );
   }
-  if (error instanceof TestLabError) {
-    return c.json({ message: error.message, ok: false }, error.status);
-  }
-  if (error instanceof InventoryRunError) {
+  if (
+    error instanceof TestLabError ||
+    error instanceof InventoryRunError ||
+    error instanceof PublicProjectionRunError
+  ) {
     return c.json({ message: error.message, ok: false }, error.status);
   }
   return c.json({ message: "Internal server error", ok: false }, 500);
@@ -153,7 +165,8 @@ app.on(["GET", "POST"], "/api/auth/*", (c) =>
 );
 
 const AGENT_PAIRING_EXCHANGE_PATH = "/api/agent-runner-pairings/exchange";
-const AGENT_TASK_RESULT_PATH = /^\/api\/agent-tasks\/[^/]+\/(complete|fail)$/u;
+const AGENT_TASK_RESULT_PATH =
+  /^\/api\/agent-tasks\/[^/]+\/(chunks|complete|fail|heartbeat)$/u;
 const AGENT_TASK_ARTIFACT_PATH =
   /^\/api\/agent-tasks\/[^/]+\/artifacts\/[^/]+$/u;
 const AGENT_TASK_CLAIM_PATH = "/api/agent-tasks/claim";
@@ -250,6 +263,7 @@ registerApplicationBundleRoutes(app);
 registerApplicationDraftRoutes(app);
 registerCampaignRoutes(app);
 registerInventoryRoutes(app);
+registerPublicProjectionRoutes(app);
 registerJobRoutes(app);
 registerJobMatchFactRoutes(app);
 registerJobPositionAnalysisRoutes(app);
@@ -383,8 +397,13 @@ app.doc("/openapi.json", {
   openapi: "3.1.0",
 });
 
+app.notFound((c) => c.json({ message: "Route not found", ok: false }, 404));
+
 export default {
   fetch: app.fetch,
+  queue(batch: MessageBatch<JobKitQueueMessage>, env: AppEnv) {
+    return consumeJobKitQueue(batch, env);
+  },
   scheduled(
     _controller: ScheduledController,
     env: AppEnv,
@@ -397,18 +416,41 @@ export default {
         runCampaignMatchingPass(env),
         runCampaignScheduler(env),
         queueDueInventoryRefreshes(env.DB),
-      ]).then(([gmail, followUps, matching, campaigns, inventory]) => {
-        console.log(
-          JSON.stringify({
-            campaigns,
-            event: "scheduled_maintenance",
-            followUps,
-            gmail,
-            inventory,
-            matching,
-          })
-        );
-      })
+        queuePublicProjectionAdvance(env),
+        queueAgentTaskMaintenance(env),
+        publishCountryMaterializationOutbox(env),
+        reapExpiredCountryMaterializationItems(env.DB),
+        cleanupAbandonedCountrySweepOutputObjects(env),
+      ]).then(
+        ([
+          gmail,
+          followUps,
+          matching,
+          campaigns,
+          inventory,
+          projectionWake,
+          agentTaskWake,
+          countryMaterializationWake,
+          countryMaterializationLeases,
+          countryOutputCleanup,
+        ]) => {
+          console.log(
+            JSON.stringify({
+              agentTaskWake,
+              campaigns,
+              countryMaterializationLeases,
+              countryMaterializationWake,
+              countryOutputCleanup,
+              event: "scheduled_maintenance",
+              followUps,
+              gmail,
+              inventory,
+              matching,
+              projectionWake,
+            })
+          );
+        }
+      )
     );
   },
 };

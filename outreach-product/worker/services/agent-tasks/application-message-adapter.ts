@@ -5,13 +5,14 @@ import {
   applicationMessagePrompt,
   applicationMessageTaskConfig,
 } from "../../../src/agent-tasks/application-message";
+import type { AgentTaskFailureCode } from "../../../src/features/agents/schema";
 import type { AgentRunnerContext } from "../../app-types";
 import type { AppEnv } from "../../env";
 import { agentRunnerHasCapability } from "../agent-runners";
 import {
-  claimAgentTaskRequest,
-  failAgentTaskRequest,
+  failQueuedAgentTaskRequest,
   readClaimedAgentTaskRequest,
+  readNextAgentTaskRequest,
 } from "../agent-task-requests";
 import {
   buildAneslBundleTaskCompletion,
@@ -25,22 +26,25 @@ import {
   buildCampaignDispatchTaskCompletion,
   prepareCampaignDispatchTask,
 } from "../campaign-messages";
-import {
-  buildFollowUpTaskCompletion,
-  markFollowUpTaskFailed,
-  prepareFollowUpTask,
-} from "../followups";
+import { buildFollowUpTaskCompletion, prepareFollowUpTask } from "../followups";
 import {
   completeMessagePreviewTask,
   prepareMessagePreviewTask,
 } from "../message-preview";
 import {
-  AGENT_TASK_LEASE_MS,
   AgentTaskError,
   type AgentTaskRunRow,
   type PreparedAgentTask,
 } from "./contracts";
-import { createAgentTaskRun, sha256 } from "./run-store";
+import {
+  claimRequestedAgentTaskWithDomainWrites,
+  failRequestedAgentTaskWithDomainWrites,
+} from "./requested-task-leases";
+import {
+  type AgentTaskCompletionFence,
+  completeRequestedAgentTaskWithDomainWrites,
+  sha256,
+} from "./run-store";
 
 export async function claimApplicationMessageTask(
   env: AppEnv,
@@ -49,49 +53,63 @@ export async function claimApplicationMessageTask(
   if (!agentRunnerHasCapability(runner, "drafting")) {
     return null;
   }
-  const leaseExpiresAt = new Date(
-    Date.now() + AGENT_TASK_LEASE_MS
-  ).toISOString();
-  const request = await claimAgentTaskRequest(env.DB, {
-    leaseExpiresAt,
-    runnerId: runner.id,
+  const request = await readNextAgentTaskRequest(env.DB, {
     taskType: APPLICATION_MESSAGE_TASK_TYPE,
     userId: runner.user.id,
   });
   if (!request) {
     return null;
   }
+  const parsed = ApplicationMessageRequestInputSchema.safeParse(request.input);
+  if (!parsed.success) {
+    await failQueuedAgentTaskRequest(env.DB, {
+      error: parsed.error.message,
+      errorCode: "invalid_input",
+      requestId: request.id,
+      userId: runner.user.id,
+    });
+    return null;
+  }
+  const input = parsed.data;
+  let prepared: Awaited<ReturnType<typeof prepareApplicationMessageRequest>>;
   try {
-    const input = ApplicationMessageRequestInputSchema.parse(request.input);
-    const prepared = await prepareApplicationMessageRequest(
+    prepared = await prepareApplicationMessageRequest(
       env,
       runner.user.id,
       input
     );
-    const config = applicationMessageTaskConfig(input.mode);
-    const source = JSON.stringify(prepared.input);
-    return await createAgentTaskRun(env.DB, runner, {
-      leaseExpiresAt,
+  } catch (error) {
+    const sourceError = permanentPreparationError(error);
+    if (!sourceError) {
+      throw error;
+    }
+    await failQueuedAgentTaskRequest(env.DB, {
+      error: sourceError,
+      errorCode: "source_changed",
+      requestId: request.id,
+      userId: runner.user.id,
+    });
+    return null;
+  }
+  const config = applicationMessageTaskConfig(input.mode);
+  const source = JSON.stringify(prepared.input);
+  return claimRequestedAgentTaskWithDomainWrites(
+    env.DB,
+    runner,
+    request,
+    {
       model: config.model,
       outputSchema: APPLICATION_MESSAGE_OUTPUT_JSON_SCHEMA,
       prompt: applicationMessagePrompt(input.mode, prepared.input),
       promptVersion: config.promptVersion,
       reasoningEffort: config.reasoningEffort,
       sourceHash: await sha256(source),
-      sourceTaskId: request.id,
       taskType: APPLICATION_MESSAGE_TASK_TYPE,
       webSearch: "disabled",
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    await failAgentTaskRequest(env.DB, {
-      error: message,
-      requestId: request.id,
-      runnerId: runner.id,
-      userId: runner.user.id,
-    });
-    return null;
-  }
+    },
+    (_context, fence) =>
+      applicationMessageClaimWrites(env.DB, runner.user.id, input, fence)
+  );
 }
 
 export async function completeApplicationMessageTask(
@@ -115,50 +133,27 @@ export async function completeApplicationMessageTask(
   if ((await sha256(JSON.stringify(prepared.input))) !== run.source_hash) {
     throw new AgentTaskError("Application message source changed", 409);
   }
-  const plan = await buildApplicationMessageCompletionPlan(
-    env,
-    runner.user.id,
-    input,
-    rawOutput,
-    run.model
-  );
-  const timestamp = new Date().toISOString();
-  const results = await env.DB.batch([
-    ...plan.statements,
-    env.DB.prepare(
-      `UPDATE agent_task_requests
-          SET status='completed',result_json=?,error_detail='',completed_at=?,
-              updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='claimed'`
-    ).bind(
-      JSON.stringify(plan.result),
-      timestamp,
-      timestamp,
-      request.id,
-      runner.user.id,
-      runner.id
-    ),
-    env.DB.prepare(
-      `UPDATE agent_task_runs
-          SET status='completed',result_json=?,completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='running'`
-    ).bind(
-      JSON.stringify(plan.result),
-      timestamp,
-      timestamp,
+  return completeRequestedAgentTaskWithDomainWrites<unknown>(
+    env.DB,
+    {
+      attemptNumber: run.attempt_number,
+      leaseToken: run.lease_token,
+      requestId: request.id,
       runId,
-      runner.user.id,
-      runner.id
-    ),
-  ]);
-  const lifecycleResults = results.slice(-2);
-  if (lifecycleResults.some((result) => (result.meta.changes ?? 0) !== 1)) {
-    throw new AgentTaskError(
-      "Application message task could not be completed",
-      409
-    );
-  }
-  return plan.result;
+      runnerId: runner.id,
+      taskType: run.task_type,
+      userId: runner.user.id,
+    },
+    (fence) =>
+      buildApplicationMessageCompletionPlan(
+        env,
+        runner.user.id,
+        input,
+        rawOutput,
+        run.model,
+        fence
+      )
+  );
 }
 
 async function buildApplicationMessageCompletionPlan(
@@ -166,13 +161,28 @@ async function buildApplicationMessageCompletionPlan(
   userId: string,
   input: ReturnType<typeof ApplicationMessageRequestInputSchema.parse>,
   rawOutput: unknown,
-  modelId: string
+  modelId: string,
+  fence: AgentTaskCompletionFence
 ) {
   if (input.kind === "follow_up") {
-    return buildFollowUpTaskCompletion(env, userId, input, rawOutput, modelId);
+    return buildFollowUpTaskCompletion(
+      env,
+      userId,
+      input,
+      rawOutput,
+      modelId,
+      fence
+    );
   }
   if (input.kind === "job_draft") {
-    return buildJobDraftTaskCompletion(env, userId, input, rawOutput, modelId);
+    return buildJobDraftTaskCompletion(
+      env,
+      userId,
+      input,
+      rawOutput,
+      modelId,
+      fence
+    );
   }
   if (input.kind === "anesl_bundle") {
     return buildAneslBundleTaskCompletion(
@@ -180,7 +190,8 @@ async function buildApplicationMessageCompletionPlan(
       userId,
       input,
       rawOutput,
-      modelId
+      modelId,
+      fence
     );
   }
   if (input.kind === "campaign_dispatch") {
@@ -189,10 +200,12 @@ async function buildApplicationMessageCompletionPlan(
       userId,
       input,
       rawOutput,
-      modelId
+      modelId,
+      fence
     );
   }
   return {
+    condition: { clause: "1=1", values: [] },
     result: await completeMessagePreviewTask(
       env,
       userId,
@@ -200,7 +213,7 @@ async function buildApplicationMessageCompletionPlan(
       rawOutput,
       modelId
     ),
-    statements: [],
+    writes: [],
   };
 }
 
@@ -224,49 +237,180 @@ async function prepareApplicationMessageRequest(
   return prepareMessagePreviewTask(env, userId, input);
 }
 
+const PERMANENT_PREPARATION_MESSAGES = new Set([
+  "ANESL application set not found",
+  "Campaign dispatch was not found",
+  "Campaign job was not found",
+  "Campaign school was not found",
+  "Follow-up not found",
+  "Job not found",
+  "Job or draft not found",
+  "Unknown message preview sample",
+]);
+
+function permanentPreparationError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return null;
+  }
+  const status = "status" in error ? Number(error.status) : 0;
+  if (status >= 400 && status < 500) {
+    return error.message;
+  }
+  return PERMANENT_PREPARATION_MESSAGES.has(error.message)
+    ? error.message
+    : null;
+}
+
 export async function failApplicationMessageTask(
   env: AppEnv,
   runner: AgentRunnerContext,
   requestId: string,
   runId: string,
-  error: string
+  error: string,
+  errorCode: AgentTaskFailureCode
 ) {
   const request = await requireClaimedRequest(env.DB, runner, requestId);
-  const input = ApplicationMessageRequestInputSchema.safeParse(request.input);
-  const timestamp = new Date().toISOString();
-  const results = await env.DB.batch([
-    env.DB.prepare(
-      `UPDATE agent_task_requests
-          SET status='failed',error_detail=?,completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='claimed'`
-    ).bind(
-      error.slice(0, 4000),
-      timestamp,
-      timestamp,
-      request.id,
-      runner.user.id,
-      runner.id
-    ),
-    env.DB.prepare(
-      `UPDATE agent_task_runs
-          SET status='failed',error_detail=?,completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='running'`
-    ).bind(error, timestamp, timestamp, runId, runner.user.id, runner.id),
-  ]);
-  if (results.some((result) => (result.meta.changes ?? 0) !== 1)) {
-    throw new AgentTaskError(
-      "Application message task could not be failed",
-      409
-    );
+  const input = ApplicationMessageRequestInputSchema.parse(request.input);
+  await failRequestedAgentTaskWithDomainWrites(
+    env.DB,
+    {
+      attemptNumber: request.attemptCount,
+      errorCode,
+      errorDetail: error,
+      leaseToken: request.leaseToken,
+      mode: "runner",
+      requestId: request.id,
+      runId,
+      runnerId: runner.id,
+      taskType: request.taskType,
+      userId: runner.user.id,
+    },
+    (retry, fence) =>
+      buildApplicationMessageFailureWrites(
+        env.DB,
+        runner.user.id,
+        input,
+        error,
+        retry,
+        fence
+      )
+  );
+}
+
+function applicationMessageClaimWrites(
+  db: D1Database,
+  userId: string,
+  input: ReturnType<typeof ApplicationMessageRequestInputSchema.parse>,
+  fence: AgentTaskCompletionFence
+) {
+  if (input.kind === "follow_up") {
+    return [
+      {
+        expectedChanges: 1,
+        statement: db
+          .prepare(
+            `UPDATE outreach_followups SET status='drafting',
+                updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          WHERE id=? AND user_id=? AND status='scheduled'
+            AND ${fence.clause}`
+          )
+          .bind(input.followUpId, userId, ...fence.values),
+      },
+    ];
   }
-  if (input.success && input.data.kind === "follow_up") {
-    await markFollowUpTaskFailed(
-      env.DB,
-      runner.user.id,
-      input.data.followUpId,
-      error
-    );
+  if (input.kind === "campaign_dispatch") {
+    return [
+      {
+        expectedChanges: 1,
+        statement: db
+          .prepare(
+            `UPDATE campaign_dispatches SET status='drafting',
+                updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          WHERE id=? AND status IN ('queued','calibration','drafting')
+            AND EXISTS (
+              SELECT 1 FROM campaigns claim_campaign
+               WHERE claim_campaign.id=campaign_dispatches.campaign_id
+                 AND claim_campaign.user_id=?
+            ) AND ${fence.clause}`
+          )
+          .bind(input.dispatchId, userId, ...fence.values),
+      },
+    ];
   }
+  return [];
+}
+
+export function buildApplicationMessageFailureWrites(
+  db: D1Database,
+  userId: string,
+  input: ReturnType<typeof ApplicationMessageRequestInputSchema.parse>,
+  error: string,
+  retry: boolean,
+  fence: AgentTaskCompletionFence
+) {
+  if (input.kind === "follow_up") {
+    return [
+      {
+        expectedChanges: 1,
+        statement: db
+          .prepare(
+            `UPDATE outreach_followups
+            SET status=?,error_detail=?,
+                updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          WHERE id=? AND user_id=? AND status='drafting'
+            AND ${fence.clause}`
+          )
+          .bind(
+            retry ? "scheduled" : "failed",
+            retry ? "" : error.slice(0, 4000),
+            input.followUpId,
+            userId,
+            ...fence.values
+          ),
+      },
+    ];
+  }
+  if (input.kind === "campaign_dispatch") {
+    const retryStatus = input.mode === "revise" ? "review" : null;
+    return [
+      {
+        expectedChanges: 1,
+        statement: db
+          .prepare(
+            `UPDATE campaign_dispatches
+            SET status=CASE
+                  WHEN ?=0 THEN 'failed'
+                  WHEN ? IS NOT NULL THEN ?
+                  WHEN EXISTS (
+                    SELECT 1 FROM campaigns failure_campaign
+                     WHERE failure_campaign.id=campaign_dispatches.campaign_id
+                       AND failure_campaign.status='calibrating'
+                  ) THEN 'calibration'
+                  ELSE 'queued'
+                END,
+                error_detail=CASE WHEN ?=1 THEN '' ELSE ? END,
+                updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          WHERE id=? AND status='drafting'
+            AND EXISTS (
+              SELECT 1 FROM campaigns failure_owner
+               WHERE failure_owner.id=campaign_dispatches.campaign_id
+                 AND failure_owner.user_id=?
+            ) AND ${fence.clause}`
+          )
+          .bind(
+            retry ? 1 : 0,
+            retryStatus,
+            retryStatus,
+            retry ? 1 : 0,
+            error.slice(0, 4000),
+            input.dispatchId,
+            userId,
+            ...fence.values
+          ),
+      },
+    ];
+  }
+  return [];
 }
 
 async function requireClaimedRequest(

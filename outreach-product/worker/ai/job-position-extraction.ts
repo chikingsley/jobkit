@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   type JobPositionAnalysis,
   JobPositionAnalysisSchema,
+  JobPositionLocationSchema,
   JobPositionRoleFamilySchema,
 } from "../../src/features/jobs/position-variants";
 import {
@@ -42,7 +43,7 @@ export const ProviderJobPositionAnalysisSchema = z
             ProviderEvidenceValueSchema(JobEmploymentTypeSchema)
           ),
           evidence: z.array(z.string()),
-          locations: z.array(ProviderEvidenceValueSchema(z.string())),
+          locations: z.array(JobPositionLocationSchema),
           requirements: z.array(ProviderRequirementSchema),
           roleFamily: JobPositionRoleFamilySchema,
           subjects: z.array(ProviderEvidenceValueSchema(z.string())),
@@ -67,6 +68,7 @@ Rules:
 - roleFamily homeroom is for an explicitly named homeroom or classroom-generalist role. Early-childhood roles belong in early_childhood when the listing does not specify English teaching.
 - Preserve every explicitly named subject in short lowercase canonical form. Never turn a general teaching duty into a subject opening.
 - Every subject, audience, location, and employment type must include its own short exact quote in evidence. Leave a field empty when its value would require general knowledge or inference. For example, do not infer preschool merely from the word kindergarten and do not infer full-time merely from a weekday schedule.
+- For every location, preserve its literal semanticKind, role, scope, and workplaceType. Use unknown when the listing does not state one. Preserve explicitly stated parentGeographies and addressComponents with an exact quote for each; never derive a parent, address part, workplace type, or geographic scope from general knowledge.
 - Every position needs at least one short, exact, continuous quote in evidence proving that the role exists.
 - Every requirement and compensationEvidence value also needs a short, exact, continuous quote from the listing.
 - Extract only facts that apply to that position. If a requirement is shared by every position, repeat it for each position.
@@ -87,7 +89,11 @@ export function unsupportedPositionEvidence(
     ...position.evidence,
     ...position.compensationEvidence,
     ...position.subjects.map((subject) => subject.evidence),
-    ...position.locations.map((location) => location.evidence),
+    ...position.locations.flatMap((location) => [
+      location.evidence,
+      ...location.parentGeographies.map((parent) => parent.evidence),
+      ...location.addressComponents.map((component) => component.evidence),
+    ]),
     ...position.audiences.map((audience) => audience.evidence),
     ...position.employmentTypes.map((employment) => employment.evidence),
     ...position.requirements.map((requirement) => requirement.evidence),
@@ -117,7 +123,15 @@ export function canonicalizeJobPositionEvidence(
       evidence: position.evidence.map(canonicalize),
       locations: position.locations.map((location) => ({
         ...location,
+        addressComponents: location.addressComponents.map((component) => ({
+          ...component,
+          evidence: canonicalize(component.evidence),
+        })),
         evidence: canonicalize(location.evidence),
+        parentGeographies: location.parentGeographies.map((parent) => ({
+          ...parent,
+          evidence: canonicalize(parent.evidence),
+        })),
       })),
       requirements: position.requirements.map((requirement) => ({
         ...requirement,

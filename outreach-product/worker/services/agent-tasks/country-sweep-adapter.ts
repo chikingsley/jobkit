@@ -1,84 +1,113 @@
+import type { AgentTaskFailureCode } from "../../../src/features/agents/schema";
 import {
-  COUNTRY_SWEEP_OUTPUT_JSON_SCHEMA,
-  COUNTRY_SWEEP_PROMPT_VERSION,
-  countrySweepModel,
-  countrySweepPrompt,
-  countrySweepTaskType,
-} from "../../../src/agent-tasks/country-sweep";
+  CountrySweepChunkUploadSchema,
+  type CountrySweepManifestSnapshot,
+  CountrySweepOutputFinalizeSchema,
+  canonicalCountrySweepChunkJson,
+  createCountrySweepCanonicalChunks,
+  INITIAL_COUNTRY_OUTPUT_ROLLING_SHA256,
+  sha256Hex,
+} from "../../../src/features/countries/materialization";
 import { CountrySweepTaskOutputSchema } from "../../../src/features/countries/schema";
 import type { AgentRunnerContext } from "../../app-types";
+import type { AppEnv } from "../../env";
 import { agentRunnerHasCapability } from "../agent-runners";
 import {
-  claimCountrySweepTask,
-  completeCountrySweepTask,
-  failCountrySweepTask,
-} from "../country-sweep-tasks";
+  acceptCountrySweepOutput,
+  uploadCountrySweepOutputChunk,
+} from "../country-materialization/output";
 import type { AgentTaskRunRow, PreparedAgentTask } from "./contracts";
-import { completeAgentTaskRun, createAgentTaskRun, sha256 } from "./run-store";
+import {
+  claimCountrySweepAgentTask,
+  failCountrySweepAgentTask,
+  readCountryTaskLeaseContext,
+} from "./country-sweep-leases";
 
-export async function claimCountryTask(
+export function claimCountryTask(
   db: D1Database,
   runner: AgentRunnerContext
 ): Promise<PreparedAgentTask | null> {
   if (!agentRunnerHasCapability(runner, "research")) {
-    return null;
+    return Promise.resolve(null);
   }
-  const task = await claimCountrySweepTask(db, runner.user.id, runner.id);
-  if (!task) {
-    return null;
-  }
-  const { model, reasoningEffort } = countrySweepModel(task.phase);
-  const prompt = countrySweepPrompt({
-    countryCode: task.countryCode,
-    countryName: task.countryName,
-    input: task.input,
-    phase: task.phase,
-    scopeKey: task.scopeKey,
-  });
-  return createAgentTaskRun(db, runner, {
-    leaseExpiresAt: task.leaseExpiresAt,
-    model,
-    outputSchema: COUNTRY_SWEEP_OUTPUT_JSON_SCHEMA,
-    prompt,
-    promptVersion: COUNTRY_SWEEP_PROMPT_VERSION,
-    reasoningEffort,
-    sourceHash: await sha256(JSON.stringify(task.input)),
-    sourceTaskId: task.id,
-    taskType: countrySweepTaskType(task.phase),
-    webSearch: "live",
-  });
+  return claimCountrySweepAgentTask(db, runner);
 }
 
 export async function completeCountryTask(
-  db: D1Database,
+  env: AppEnv,
   runner: AgentRunnerContext,
   run: AgentTaskRunRow,
   runId: string,
   rawOutput: unknown
 ) {
+  const lease = await readCountryTaskLeaseContext(env.DB, runner, run, runId);
+  const finalized = CountrySweepOutputFinalizeSchema.safeParse(rawOutput);
+  if (finalized.success) {
+    return acceptCountrySweepOutput(env, lease, finalized.data);
+  }
   const output = CountrySweepTaskOutputSchema.parse(rawOutput);
-  const domainResult = await completeCountrySweepTask(
-    db,
-    runner.user.id,
-    run.source_task_id,
-    runner.id,
-    output
-  );
-  await completeAgentTaskRun(db, runner.id, runId, output);
-  return domainResult;
+  let manifest: CountrySweepManifestSnapshot = {
+    chunkCount: 0,
+    contactCount: 0,
+    organizationCount: 0,
+    rollingSha256: INITIAL_COUNTRY_OUTPUT_ROLLING_SHA256,
+    scopeCount: 0,
+    totalBytes: 0,
+  };
+  const chunks = createCountrySweepCanonicalChunks(output);
+  for (let ordinal = 0; ordinal < chunks.length; ordinal += 1) {
+    const chunk = chunks[ordinal];
+    if (!chunk) {
+      continue;
+    }
+    const canonicalJson = canonicalCountrySweepChunkJson(chunk);
+    const bytes = new TextEncoder().encode(canonicalJson);
+    // biome-ignore lint/performance/noAwaitInLoops: Chunk ordinals and the rolling manifest hash are strictly sequential.
+    const uploaded = await uploadCountrySweepOutputChunk(env, lease, {
+      byteLength: bytes.byteLength,
+      chunk,
+      ordinal,
+      recordCount: chunk.records.length,
+      sha256: await sha256Hex(bytes),
+    });
+    ({ manifest } = uploaded);
+  }
+  return acceptCountrySweepOutput(env, lease, {
+    coverageSummary: output.coverageSummary,
+    manifest,
+    notes: output.notes,
+  });
 }
 
-export function failCountryTask(
+export async function uploadCountryTaskChunk(
+  env: AppEnv,
+  runner: AgentRunnerContext,
+  run: AgentTaskRunRow,
+  runId: string,
+  rawInput: unknown
+) {
+  const input = CountrySweepChunkUploadSchema.omit({ leaseToken: true }).parse(
+    rawInput
+  );
+  return uploadCountrySweepOutputChunk(
+    env,
+    await readCountryTaskLeaseContext(env.DB, runner, run, runId),
+    input
+  );
+}
+
+export async function failCountryTask(
   db: D1Database,
   runner: AgentRunnerContext,
   run: AgentTaskRunRow,
-  error: string
+  runId: string,
+  error: string,
+  errorCode: AgentTaskFailureCode
 ) {
-  return failCountrySweepTask(
+  return failCountrySweepAgentTask(
     db,
-    runner.user.id,
-    run.source_task_id,
-    runner.id,
-    error
+    await readCountryTaskLeaseContext(db, runner, run, runId),
+    error,
+    errorCode
   );
 }

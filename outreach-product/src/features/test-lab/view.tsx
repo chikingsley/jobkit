@@ -1,5 +1,5 @@
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { RotateCcw, Trash2 } from "lucide-react";
-import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { SettingsPage } from "@/components/settings-page";
@@ -29,10 +29,11 @@ import type { ApiRequest } from "@/lib/api";
 const ACTIVE_REFRESH_MS = 2000;
 
 export function TestLabView({ request }: { request: ApiRequest }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const selectedCaseId = searchParams.get("case") ?? "";
-  const selectedClassificationId = searchParams.get("classification") ?? "";
-  const activeTab = searchParams.get("tab") ?? "cases";
+  const navigate = useNavigate({ from: "/app/operator/test-lab" });
+  const search = useSearch({ from: "/app/operator/test-lab" });
+  const selectedCaseId = search.case ?? "";
+  const selectedClassificationId = search.classification ?? "";
+  const activeTab = search.tab ?? "cases";
   const { data, isLoading, mutate } = useSWR(
     "/api/test-lab",
     async (path) => (await (await request(path)).json()) as TestLabResponse,
@@ -107,10 +108,8 @@ export function TestLabView({ request }: { request: ApiRequest }) {
 
       <Tabs
         onValueChange={(value) => {
-          setSearchParams((current) => {
-            const next = new URLSearchParams(current);
-            next.set("tab", value);
-            return next;
+          void navigate({
+            search: (current) => ({ ...current, tab: value }),
           });
         }}
         value={activeTab}
@@ -131,14 +130,11 @@ export function TestLabView({ request }: { request: ApiRequest }) {
             request={request}
             selectedCaseId={selectedCaseId}
             setSelectedCaseId={(caseId) => {
-              setSearchParams((current) => {
-                const next = new URLSearchParams(current);
-                if (caseId) {
-                  next.set("case", caseId);
-                } else {
-                  next.delete("case");
-                }
-                return next;
+              void navigate({
+                search: (current) => ({
+                  ...current,
+                  case: caseId || undefined,
+                }),
               });
             }}
           />
@@ -148,15 +144,12 @@ export function TestLabView({ request }: { request: ApiRequest }) {
             request={request}
             selectedCaseId={selectedClassificationId}
             setSelectedCaseId={(itemId) => {
-              setSearchParams((current) => {
-                const next = new URLSearchParams(current);
-                if (itemId) {
-                  next.set("classification", itemId);
-                } else {
-                  next.delete("classification");
-                }
-                next.set("tab", "classification");
-                return next;
+              void navigate({
+                search: (current) => ({
+                  ...current,
+                  classification: itemId || undefined,
+                  tab: "classification",
+                }),
               });
             }}
           />

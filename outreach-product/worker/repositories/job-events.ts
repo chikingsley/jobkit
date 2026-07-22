@@ -1,11 +1,32 @@
+import type { AgentTaskCompletionFence } from "../services/agent-tasks/run-store";
+
 export function jobEventStatement(
   db: D1Database,
   userJobId: string,
   type: string,
   detail: string,
   draftId?: string,
-  metadata: Record<string, unknown> = {}
+  metadata: Record<string, unknown> = {},
+  fence?: AgentTaskCompletionFence
 ) {
+  if (fence) {
+    return db
+      .prepare(
+        `INSERT INTO job_events
+          (id,user_job_id,event_type,draft_id,detail,metadata_json,created_at)
+         SELECT ?,?,?,?,?,?,? WHERE ${fence.clause}`
+      )
+      .bind(
+        crypto.randomUUID(),
+        userJobId,
+        type,
+        draftId ?? null,
+        detail,
+        JSON.stringify(metadata),
+        new Date().toISOString(),
+        ...fence.values
+      );
+  }
   return db
     .prepare(
       "INSERT INTO job_events (id,user_job_id,event_type,draft_id,detail,metadata_json,created_at) VALUES (?,?,?,?,?,?,?)"

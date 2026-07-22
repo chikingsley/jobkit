@@ -2,10 +2,8 @@ import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
 import { COUNTRY_SWEEP_PROMPT_VERSION } from "../../../src/agent-tasks/country-sweep";
-import {
-  claimCountrySweepTask,
-  completeCountrySweepTask,
-} from "../../../worker/services/country-sweep-tasks";
+import type { CountrySweepTaskOutput } from "../../../src/features/countries/schema";
+import { materializeOneCountrySweepItem } from "../../../worker/services/country-materialization/materializer";
 import { createAuthenticatedUser } from "./auth";
 import { seedStrongEnglishMatch } from "./campaign-match-fixtures";
 
@@ -24,7 +22,7 @@ describe("country markets and campaigns", () => {
       "country-city-sweep@example.test"
     );
     const response = await request("/api/countries/TJ/sweeps", cookie, "POST", {
-      cities: ["Dushanbe", "Khujand", "Dushanbe"],
+      cities: ["Dushanbe", "Khujand", "Dushanbe", "dushanbe"],
       includeDirectories: false,
       includeKnownSources: false,
       includeMaps: false,
@@ -55,8 +53,56 @@ describe("country markets and campaigns", () => {
     ]);
   });
 
-  it("continues a coverage audit through novel scopes and stops when no new scope remains", async () => {
+  it("creates a broad multi-source sweep in one bounded D1 batch", async () => {
+    const { cookie } = await createAuthenticatedUser(
+      "country-broad-sweep@example.test"
+    );
+    const cities = Array.from(
+      { length: 60 },
+      (_, index) => `Research city ${index + 1}`
+    );
+
+    const response = await request("/api/countries/TJ/sweeps", cookie, "POST", {
+      cities,
+    });
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as { sweep: { id: string } };
+    await expect(
+      testEnv.DB.prepare(
+        `SELECT COUNT(*) count FROM country_sweep_tasks
+          WHERE phase='discovery' AND sweep_id=?`
+      )
+        .bind(payload.sweep.id)
+        .first<number>("count")
+    ).resolves.toBe(cities.length * 4);
+  });
+
+  it("rejects a sweep beyond the canonical 1,000-task envelope", async () => {
     const { cookie, userId } = await createAuthenticatedUser(
+      "country-sweep-limit@example.test"
+    );
+    const cities = Array.from(
+      { length: 251 },
+      (_, index) => `Research city ${index + 1}`
+    );
+
+    const response = await request("/api/countries/TJ/sweeps", cookie, "POST", {
+      cities,
+    });
+
+    expect(response.status).toBe(400);
+    await expect(
+      testEnv.DB.prepare(
+        "SELECT COUNT(*) count FROM country_sweeps WHERE requested_by_user_id=?"
+      )
+        .bind(userId)
+        .first<number>("count")
+    ).resolves.toBe(0);
+  });
+
+  it("continues a coverage audit through novel scopes and stops when no new scope remains", async () => {
+    const { cookie } = await createAuthenticatedUser(
       "country-coverage@example.test"
     );
     await request("/api/countries/TJ/sweeps", cookie, "POST", {
@@ -66,31 +112,12 @@ describe("country markets and campaigns", () => {
       includeSearch: true,
     });
 
-    const discovery = await claimCountrySweepTask(
-      testEnv.DB,
-      userId,
-      "coverage-runner"
-    );
-    if (!discovery) {
-      throw new Error("Initial discovery task was not queued");
-    }
-    await completeCountrySweepTask(
-      testEnv.DB,
-      userId,
-      discovery.id,
-      "coverage-runner",
-      emptySweepOutput()
-    );
+    const runnerToken = await createResearchRunner(cookie, "Coverage runner");
+    const discovery = await claimCountryRunnerTask(runnerToken);
+    await completeCountryRunnerTask(runnerToken, discovery, emptySweepOutput());
 
-    const firstAudit = await claimCountrySweepTask(
-      testEnv.DB,
-      userId,
-      "coverage-runner"
-    );
-    expect(firstAudit?.phase).toBe("coverage_audit");
-    if (!firstAudit) {
-      throw new Error("Coverage audit task was not queued");
-    }
+    const firstAudit = await claimCountryRunnerTask(runnerToken);
+    expect(firstAudit.taskType).toBe("country_sweep.coverage_audit");
     const followUp = {
       ...emptySweepOutput(),
       coverageSummary: {
@@ -106,50 +133,28 @@ describe("country markets and campaigns", () => {
         ],
       },
     };
-    await completeCountrySweepTask(
-      testEnv.DB,
-      userId,
-      firstAudit.id,
-      "coverage-runner",
-      followUp
-    );
+    await completeCountryRunnerTask(runnerToken, firstAudit, followUp);
 
-    const secondDiscovery = await claimCountrySweepTask(
-      testEnv.DB,
-      userId,
-      "coverage-runner"
-    );
-    expect(secondDiscovery).toMatchObject({
-      phase: "discovery",
-      scopeKey: "search:khorog:schools-khorog",
-    });
-    if (!secondDiscovery) {
-      throw new Error("Follow-up discovery task was not queued");
-    }
-    await completeCountrySweepTask(
-      testEnv.DB,
-      userId,
-      secondDiscovery.id,
-      "coverage-runner",
+    const secondDiscovery = await claimCountryRunnerTask(runnerToken);
+    expect(secondDiscovery.taskType).toBe("country_sweep.discovery");
+    await expect(
+      testEnv.DB.prepare(
+        `SELECT scope_key FROM country_sweep_tasks task
+          JOIN agent_task_runs run ON run.source_task_id=task.id
+         WHERE run.id=?`
+      )
+        .bind(secondDiscovery.runId)
+        .first<string>("scope_key")
+    ).resolves.toBe("search:khorog:schools-khorog");
+    await completeCountryRunnerTask(
+      runnerToken,
+      secondDiscovery,
       emptySweepOutput()
     );
 
-    const secondAudit = await claimCountrySweepTask(
-      testEnv.DB,
-      userId,
-      "coverage-runner"
-    );
-    expect(secondAudit?.phase).toBe("coverage_audit");
-    if (!secondAudit) {
-      throw new Error("Second coverage audit task was not queued");
-    }
-    await completeCountrySweepTask(
-      testEnv.DB,
-      userId,
-      secondAudit.id,
-      "coverage-runner",
-      followUp
-    );
+    const secondAudit = await claimCountryRunnerTask(runnerToken);
+    expect(secondAudit.taskType).toBe("country_sweep.coverage_audit");
+    await completeCountryRunnerTask(runnerToken, secondAudit, followUp);
 
     await expect(
       testEnv.DB.prepare("SELECT status FROM country_sweeps").first("status")
@@ -369,12 +374,13 @@ describe("country markets and campaigns", () => {
       { runnerVersion: "codex-cli test" }
     );
     const claimPayload = (await claim.json()) as {
-      task: { runId: string; taskType: string };
+      task: { leaseToken: string; runId: string; taskType: string };
     };
     const completed = await runnerRequest(
       `/api/agent-tasks/${claimPayload.task.runId}/complete`,
       runnerPayload.runner.token,
       {
+        leaseToken: claimPayload.task.leaseToken,
         output: {
           coverageSummary: {
             citiesChecked: ["Dushanbe"],
@@ -422,6 +428,7 @@ describe("country markets and campaigns", () => {
       taskType: "country_sweep.discovery",
     });
     expect(completed.status).toBe(200);
+    await materializeCountryCompletionResponse(completed);
     expect(
       await testEnv.DB.prepare(
         `SELECT o.country_code,o.name,o.status,cp.kind,cp.value,cp.status contact_status
@@ -559,4 +566,84 @@ function publicRequest(path: string, body: Record<string, unknown>) {
     headers: { "content-type": "application/json" },
     method: "POST",
   });
+}
+
+async function createResearchRunner(cookie: string, runnerName: string) {
+  const pairingResponse = await request(
+    "/api/agent-runner-pairings",
+    cookie,
+    "POST",
+    { capabilities: ["research"] }
+  );
+  const pairing = (await pairingResponse.json()) as {
+    pairing: { code: string };
+  };
+  const exchangeResponse = await publicRequest(
+    "/api/agent-runner-pairings/exchange",
+    {
+      code: pairing.pairing.code,
+      codexVersion: "codex-cli test",
+      runnerName,
+    }
+  );
+  const exchange = (await exchangeResponse.json()) as {
+    runner: { token: string };
+  };
+  return exchange.runner.token;
+}
+
+async function claimCountryRunnerTask(token: string) {
+  const response = await runnerRequest("/api/agent-tasks/claim", token, {
+    runnerVersion: "codex-cli test",
+  });
+  const payload = (await response.json()) as {
+    task: {
+      leaseToken: string;
+      runId: string;
+      taskType: string;
+    } | null;
+  };
+  if (!payload.task) {
+    throw new Error("Country task was not claimed");
+  }
+  return payload.task;
+}
+
+async function completeCountryRunnerTask(
+  token: string,
+  task: { leaseToken: string; runId: string },
+  output: CountrySweepTaskOutput
+) {
+  const response = await runnerRequest(
+    `/api/agent-tasks/${task.runId}/complete`,
+    token,
+    { leaseToken: task.leaseToken, output }
+  );
+  if (!response.ok) {
+    throw new Error(`Country completion failed: ${await response.text()}`);
+  }
+  await materializeCountryCompletionResponse(response);
+}
+
+async function materializeCountryCompletionResponse(response: Response) {
+  const payload = (await response.json()) as {
+    result: { domainResult: { outputId: string } };
+  };
+  for (let step = 0; step < 20; step += 1) {
+    // biome-ignore lint/performance/noAwaitInLoops: Each invocation owns one bounded materialization item and unlocks its successor.
+    await materializeOneCountrySweepItem(
+      testEnv,
+      payload.result.domainResult.outputId,
+      `country-test:${step.toString()}`
+    );
+    const status = await testEnv.DB.prepare(
+      "SELECT status FROM country_sweep_outputs WHERE id=?"
+    )
+      .bind(payload.result.domainResult.outputId)
+      .first<string>("status");
+    if (status === "materialized") {
+      return;
+    }
+  }
+  throw new Error("Country output materialization did not finish");
 }

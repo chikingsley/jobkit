@@ -51,7 +51,12 @@ Taught English to adult and teenage learners in group classes.`;
       runnerVersion: "codex-cli test",
     });
     const claimPayload = (await claim.json()) as {
-      task: { runId: string; taskType: string; webSearch: string };
+      task: {
+        leaseToken: string;
+        runId: string;
+        taskType: string;
+        webSearch: string;
+      };
     };
     expect(claimPayload.task).toMatchObject({
       taskType: "profile.import",
@@ -63,6 +68,7 @@ Taught English to adult and teenage learners in group classes.`;
       `/api/agent-tasks/${claimPayload.task.runId}/complete`,
       token,
       {
+        leaseToken: claimPayload.task.leaseToken,
         output: {
           citizenship: emptyText,
           credentials: [],

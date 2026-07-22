@@ -6,17 +6,33 @@ import {
 import { AgentTaskError } from "./agent-tasks/contracts";
 
 export interface ClaimedAgentTaskRequest {
+  attemptCount: number;
   id: string;
   input: unknown;
+  leaseToken: string;
+  maxAttempts: number;
+  subjectId: string;
+  subjectType: string;
+  taskType: string;
+}
+
+export interface QueuedAgentTaskRequest {
+  attemptCount: number;
+  id: string;
+  input: unknown;
+  maxAttempts: number;
   subjectId: string;
   subjectType: string;
   taskType: string;
 }
 
 interface AgentTaskRequestRow {
+  attempt_count: number;
   error_detail: string;
   id: string;
   input_json: string;
+  lease_token: string | null;
+  max_attempts: number;
   result_json: string | null;
   status: "cancelled" | "claimed" | "completed" | "failed" | "queued";
   subject_id: string;
@@ -26,7 +42,9 @@ interface AgentTaskRequestRow {
 }
 
 interface AgentTaskRequestCreation {
+  maxAttempts?: number;
   payload: unknown;
+  retryOfRequestId?: string;
   subjectId: string;
   subjectType: string;
   taskType: string;
@@ -45,8 +63,8 @@ export function buildAgentTaskRequestCreation(
       .prepare(
         `INSERT INTO agent_task_requests
           (id,user_id,task_type,subject_type,subject_id,input_json,status,
-           created_at,updated_at)
-         VALUES (?,?,?,?,?,?,'queued',?,?)`
+           max_attempts,retry_of_request_id,created_at,updated_at)
+         VALUES (?,?,?,?,?,?,'queued',?,?,?,?)`
       )
       .bind(
         id,
@@ -55,10 +73,32 @@ export function buildAgentTaskRequestCreation(
         input.subjectType,
         input.subjectId,
         JSON.stringify(input.payload),
+        input.maxAttempts ?? 3,
+        input.retryOfRequestId ?? null,
         timestamp,
         timestamp
       ),
   };
+}
+
+export async function readNextAgentTaskRequest(
+  db: D1Database,
+  input: { taskType: string; userId: string }
+): Promise<QueuedAgentTaskRequest | null> {
+  const row = await db
+    .prepare(
+      `SELECT id,task_type,subject_type,subject_id,input_json,attempt_count,
+              max_attempts
+         FROM agent_task_requests
+        WHERE user_id=? AND task_type=? AND status='queued'
+          AND attempt_count<max_attempts
+          AND (next_attempt_at IS NULL OR next_attempt_at<=
+               strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        ORDER BY created_at,id LIMIT 1`
+    )
+    .bind(input.userId, input.taskType)
+    .first<AgentTaskRequestRow>();
+  return row ? toQueuedRequest(row) : null;
 }
 
 export async function createAgentTaskRequest(
@@ -70,99 +110,31 @@ export async function createAgentTaskRequest(
   return creation.request;
 }
 
-export async function claimAgentTaskRequest(
-  db: D1Database,
-  input: {
-    leaseExpiresAt: string;
-    runnerId: string;
-    taskType: string;
-    userId: string;
-  }
-): Promise<ClaimedAgentTaskRequest | null> {
-  const timestamp = new Date().toISOString();
-  const row = await db
-    .prepare(
-      `UPDATE agent_task_requests
-          SET status='claimed',runner_id=?,claimed_at=?,lease_expires_at=?,
-              updated_at=?
-        WHERE id=(
-          SELECT id FROM agent_task_requests
-           WHERE user_id=? AND task_type=? AND status='queued'
-           ORDER BY created_at LIMIT 1
-        ) AND status='queued'
-      RETURNING id,task_type,subject_type,subject_id,input_json`
-    )
-    .bind(
-      input.runnerId,
-      timestamp,
-      input.leaseExpiresAt,
-      timestamp,
-      input.userId,
-      input.taskType
-    )
-    .first<AgentTaskRequestRow>();
-  return row ? toClaimedRequest(row) : null;
-}
-
-export async function completeAgentTaskRequest(
-  db: D1Database,
-  input: {
-    requestId: string;
-    result: unknown;
-    runnerId: string;
-    userId: string;
-  }
-) {
-  const timestamp = new Date().toISOString();
-  const result = await db
-    .prepare(
-      `UPDATE agent_task_requests
-          SET status='completed',result_json=?,error_detail='',completed_at=?,
-              updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='claimed'`
-    )
-    .bind(
-      JSON.stringify(input.result),
-      timestamp,
-      timestamp,
-      input.requestId,
-      input.userId,
-      input.runnerId
-    )
-    .run();
-  if ((result.meta.changes ?? 0) !== 1) {
-    throw new Error("Agent task request could not be completed");
-  }
-}
-
-export async function failAgentTaskRequest(
+export async function failQueuedAgentTaskRequest(
   db: D1Database,
   input: {
     error: string;
+    errorCode: string;
     requestId: string;
-    runnerId: string;
     userId: string;
   }
 ) {
-  const timestamp = new Date().toISOString();
   const result = await db
     .prepare(
       `UPDATE agent_task_requests
-          SET status='failed',error_detail=?,completed_at=?,updated_at=?
-        WHERE id=? AND user_id=? AND runner_id=? AND status='claimed'`
+          SET status='failed',last_error_code=?,error_detail=?,
+              completed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+              updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        WHERE id=? AND user_id=? AND status='queued'`
     )
     .bind(
+      input.errorCode,
       input.error.slice(0, 4000),
-      timestamp,
-      timestamp,
       input.requestId,
-      input.userId,
-      input.runnerId
+      input.userId
     )
     .run();
-  if ((result.meta.changes ?? 0) !== 1) {
-    throw new Error("Agent task request could not be failed");
-  }
+  return (result.meta.changes ?? 0) === 1;
 }
 
 export async function readClaimedAgentTaskRequest(
@@ -176,7 +148,8 @@ export async function readClaimedAgentTaskRequest(
   const row = await db
     .prepare(
       `SELECT id,task_type,subject_type,subject_id,input_json,status,
-              result_json,error_detail,updated_at
+              result_json,error_detail,updated_at,attempt_count,max_attempts,
+              lease_token
          FROM agent_task_requests
         WHERE id=? AND user_id=? AND runner_id=? AND status='claimed'`
     )
@@ -192,7 +165,8 @@ export async function readAgentTaskRequest(
   const row = await db
     .prepare(
       `SELECT id,task_type,subject_type,subject_id,input_json,status,
-              result_json,error_detail,updated_at
+              result_json,error_detail,updated_at,attempt_count,max_attempts,
+              lease_token
          FROM agent_task_requests
         WHERE id=? AND user_id=?`
     )
@@ -213,7 +187,8 @@ export async function readActiveAgentTaskRequest(
   const row = await db
     .prepare(
       `SELECT id,task_type,subject_type,subject_id,input_json,status,
-              result_json,error_detail,updated_at
+              result_json,error_detail,updated_at,attempt_count,max_attempts,
+              lease_token
          FROM agent_task_requests
         WHERE user_id=? AND task_type=? AND subject_type=? AND subject_id=?
           AND status IN ('queued','claimed')
@@ -341,7 +316,9 @@ export async function retryAgentTaskRequest(
     );
   }
   const creation = buildAgentTaskRequestCreation(db, {
+    maxAttempts: request.max_attempts,
     payload: JSON.parse(request.input_json) as unknown,
+    retryOfRequestId: request.id,
     subjectId: request.subject_id,
     subjectType: request.subject_type,
     taskType: request.task_type,
@@ -380,39 +357,28 @@ export async function retryAgentTaskRequest(
   return creation.request;
 }
 
-export async function releaseExpiredAgentTaskRequests(
-  db: D1Database,
-  userId: string,
-  timestamp: string
-) {
-  await db
-    .prepare(
-      `UPDATE test_lab_runs
-          SET status='queued',started_at=NULL,
-              error_detail='Runner lease expired; task requeued',updated_at=?
-        WHERE user_id=? AND status='running' AND agent_task_request_id IN (
-          SELECT id FROM agent_task_requests
-           WHERE user_id=? AND status='claimed' AND lease_expires_at<?
-        )`
-    )
-    .bind(timestamp, userId, userId, timestamp)
-    .run();
-  await db
-    .prepare(
-      `UPDATE agent_task_requests
-          SET status='queued',runner_id=NULL,claimed_at=NULL,
-              lease_expires_at=NULL,error_detail='Runner lease expired',
-              updated_at=?
-        WHERE user_id=? AND status='claimed' AND lease_expires_at<?`
-    )
-    .bind(timestamp, userId, timestamp)
-    .run();
-}
-
 function toClaimedRequest(row: AgentTaskRequestRow): ClaimedAgentTaskRequest {
+  if (!row.lease_token) {
+    throw new AgentTaskError("Agent task request lease is missing", 409);
+  }
   return {
+    attemptCount: row.attempt_count,
     id: row.id,
     input: JSON.parse(row.input_json) as unknown,
+    leaseToken: row.lease_token,
+    maxAttempts: row.max_attempts,
+    subjectId: row.subject_id,
+    subjectType: row.subject_type,
+    taskType: row.task_type,
+  };
+}
+
+function toQueuedRequest(row: AgentTaskRequestRow): QueuedAgentTaskRequest {
+  return {
+    attemptCount: row.attempt_count,
+    id: row.id,
+    input: JSON.parse(row.input_json) as unknown,
+    maxAttempts: row.max_attempts,
     subjectId: row.subject_id,
     subjectType: row.subject_type,
     taskType: row.task_type,
@@ -446,7 +412,8 @@ function readMutableTaskRequest(
 ) {
   return db
     .prepare(
-      `SELECT id,task_type,subject_type,subject_id,input_json,status
+      `SELECT id,task_type,subject_type,subject_id,input_json,status,
+              attempt_count,max_attempts
          FROM agent_task_requests WHERE id=? AND user_id=?`
     )
     .bind(requestId, userId)
@@ -454,7 +421,9 @@ function readMutableTaskRequest(
       Pick<
         AgentTaskRequestRow,
         | "id"
+        | "attempt_count"
         | "input_json"
+        | "max_attempts"
         | "status"
         | "subject_id"
         | "subject_type"

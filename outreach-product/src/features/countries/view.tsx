@@ -1,6 +1,6 @@
+import { useNavigate } from "@tanstack/react-router";
 import { ChevronRight, Globe2, Search } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 import useSWR from "swr";
 import { SettingsPage } from "@/components/settings-page";
 import { Badge } from "@/components/ui/badge";
@@ -105,7 +105,12 @@ export function CountriesView({
           <CountryRow
             key={market.countryCode}
             market={market}
-            onOpen={() => navigate(`/campaigns/markets/${market.countryCode}`)}
+            onOpen={() =>
+              void navigate({
+                params: { countryCode: market.countryCode },
+                to: "/app/campaigns/markets/$countryCode",
+              })
+            }
             preference={countryPreference(market.countryName, preferences)}
           />
         ))}

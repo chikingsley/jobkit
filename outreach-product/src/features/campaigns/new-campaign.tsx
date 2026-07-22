@@ -1,6 +1,6 @@
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, Check, Search } from "lucide-react";
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
@@ -20,8 +20,9 @@ import { cn } from "@/lib/utils";
 
 export function NewCampaignView({ request }: { request: ApiRequest }) {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const initialCountry = (searchParams.get("country") ?? "").toUpperCase();
+  const { country: initialCountry = "" } = useSearch({
+    from: "/app/campaigns/new",
+  });
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string[]>(
     initialCountry ? [initialCountry] : []
@@ -121,7 +122,10 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
         message: string;
       };
       toast.success(payload.message);
-      navigate(`/campaigns/${payload.campaign.id}`);
+      void navigate({
+        params: { campaignId: payload.campaign.id },
+        to: "/app/campaigns/$campaignId",
+      });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Campaign could not be created"
@@ -134,7 +138,10 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-5 sm:px-6">
       <header>
-        <Button onClick={() => navigate("/campaigns")} variant="ghost">
+        <Button
+          onClick={() => void navigate({ to: "/app/campaigns" })}
+          variant="ghost"
+        >
           <ArrowLeft /> Campaigns
         </Button>
         <h1 className="mt-3 font-semibold text-2xl tracking-tight">

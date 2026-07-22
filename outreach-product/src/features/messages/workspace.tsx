@@ -10,14 +10,19 @@ import type {
   MessageThreadDetail,
   MessageThreadSummary,
 } from "@/features/messages/types";
-import { useWorkspaceQueryState } from "@/features/workspace/query-state";
+import { useMessagesQueryState } from "@/features/workspace/query-state";
 import { SplitWorkspace } from "@/features/workspace/split-workspace";
 import type { ApiRequest } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export function MessagesWorkspace({ request }: { request: ApiRequest }) {
-  const { detailOpen, selectedThreadId, setDetailOpen, setSelectedThreadId } =
-    useWorkspaceQueryState();
+  const {
+    closeDetail,
+    detailOpen,
+    openThread,
+    selectedThreadId,
+    setSelectedThreadId,
+  } = useMessagesQueryState();
 
   const {
     data: threads,
@@ -77,7 +82,7 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
       detail={
         <>
           <div className="split-workspace-back flex items-center gap-2 border-b bg-background px-4 py-2">
-            <Button onClick={() => setDetailOpen(false)} variant="ghost">
+            <Button onClick={closeDetail} variant="ghost">
               <ChevronLeftIcon /> Messages
             </Button>
           </div>
@@ -136,10 +141,7 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
                 <MessageThreadItem
                   active={thread.threadId === activeThreadId}
                   key={thread.threadId}
-                  onSelect={() => {
-                    setSelectedThreadId(thread.threadId);
-                    setDetailOpen(true);
-                  }}
+                  onSelect={() => void openThread(thread.threadId)}
                   thread={thread}
                 />
               ))}

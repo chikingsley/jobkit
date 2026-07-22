@@ -1,5 +1,4 @@
 import type { AgentRunnerContext } from "../../app-types";
-import { releaseExpiredAgentTaskRequests } from "../agent-task-requests";
 import {
   AgentTaskError,
   type AgentTaskRunRow,
@@ -9,20 +8,34 @@ import {
 export async function createAgentTaskRun(
   db: D1Database,
   runner: AgentRunnerContext,
-  task: Omit<PreparedAgentTask, "runId"> & {
+  task: Omit<PreparedAgentTask, "attemptNumber" | "leaseToken" | "runId"> & {
     sourceHash: string;
     sourceTaskId: string;
   }
 ) {
   const runId = crypto.randomUUID();
-  const timestamp = new Date().toISOString();
-  await db
+  const leaseToken = crypto.randomUUID();
+  const result = await db
     .prepare(
       `INSERT INTO agent_task_runs
         (id,user_id,runner_id,task_type,source_task_id,prompt_version,model,
          reasoning_effort,source_hash,prompt_hash,status,started_at,
-         lease_expires_at,updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,'running',?,?,?)`
+         lease_expires_at,updated_at,attempt_number,lease_token)
+       SELECT ?,?,?,?,?,?,?,?,?,?,'running',
+              strftime('%Y-%m-%dT%H:%M:%fZ','now'),?,
+              strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+              COALESCE((
+                SELECT MAX(history.attempt_number)
+                  FROM agent_task_runs history
+                 WHERE history.user_id=? AND history.task_type=?
+                   AND history.source_task_id=?
+              ),0)+1,?
+        WHERE EXISTS (
+          SELECT 1 FROM agent_runners active_runner
+           WHERE active_runner.id=? AND active_runner.user_id=?
+             AND active_runner.revoked_at IS NULL
+        )
+      RETURNING attempt_number,lease_expires_at`
     )
     .bind(
       runId,
@@ -35,14 +48,23 @@ export async function createAgentTaskRun(
       task.reasoningEffort,
       task.sourceHash,
       await sha256(task.prompt),
-      timestamp,
       task.leaseExpiresAt,
-      timestamp
+      runner.user.id,
+      task.taskType,
+      task.sourceTaskId,
+      leaseToken,
+      runner.id,
+      runner.user.id
     )
-    .run();
+    .first<{ attempt_number: number; lease_expires_at: string }>();
+  if (!result) {
+    throw new AgentTaskError("Agent task run could not be created", 409);
+  }
   return {
     artifacts: task.artifacts ?? [],
-    leaseExpiresAt: task.leaseExpiresAt,
+    attemptNumber: result.attempt_number,
+    leaseExpiresAt: result.lease_expires_at,
+    leaseToken,
     model: task.model,
     outputSchema: task.outputSchema,
     prompt: task.prompt,
@@ -60,18 +82,193 @@ export async function completeAgentTaskRun(
   runId: string,
   output: unknown
 ) {
-  const timestamp = new Date().toISOString();
-  const result = await db
-    .prepare(
-      `UPDATE agent_task_runs
-          SET status='completed',result_json=?,completed_at=?,updated_at=?
-        WHERE id=? AND runner_id=? AND status='running'`
-    )
-    .bind(JSON.stringify(output), timestamp, timestamp, runId, runnerId)
-    .run();
-  if ((result.meta.changes ?? 0) !== 1) {
-    throw new AgentTaskError("Agent task run could not be completed", 409);
+  const result = await agentTaskCompletionStatement(
+    db,
+    runnerId,
+    runId,
+    output
+  ).run();
+  assertAgentTaskCompleted(result);
+}
+
+export interface AgentTaskCompletionFence<
+  Values extends readonly unknown[] = readonly unknown[],
+> {
+  clause: string;
+  values: Values;
+}
+
+export interface AgentTaskCompletionCondition {
+  clause: string;
+  values: readonly unknown[];
+}
+
+export interface AgentTaskCompletionWrite {
+  expectedChanges?: number;
+  statement: D1PreparedStatement;
+}
+
+export interface RequestedAgentTaskCompletionPlan<Result> {
+  condition: AgentTaskCompletionCondition;
+  result: Result;
+  writes: AgentTaskCompletionWrite[];
+}
+
+export interface RequestedAgentTaskCompletionContext {
+  attemptNumber: number;
+  leaseToken: string;
+  requestId: string;
+  runId: string;
+  runnerId: string;
+  taskType: string;
+  userId: string;
+}
+
+export async function completeAgentTaskRunWithDomainWrites(
+  db: D1Database,
+  runnerId: string,
+  runId: string,
+  output: unknown,
+  domainStatements: (
+    fence: AgentTaskCompletionFence<[string, string, string]>
+  ) => D1PreparedStatement[]
+) {
+  const guardResultJson = JSON.stringify({
+    completionGuard: crypto.randomUUID(),
+  });
+  const fence: AgentTaskCompletionFence<[string, string, string]> = {
+    clause: `EXISTS (
+      SELECT 1 FROM agent_task_runs completion_run
+      JOIN agent_runners completion_runner
+        ON completion_runner.id=completion_run.runner_id
+       AND completion_runner.user_id=completion_run.user_id
+       AND completion_runner.revoked_at IS NULL
+       WHERE completion_run.id=?
+         AND completion_run.runner_id=?
+         AND completion_run.status='running'
+         AND completion_run.result_json=?
+         AND completion_run.lease_expires_at>
+             strftime('%Y-%m-%dT%H:%M:%fZ','now')
+    )`,
+    values: [runId, runnerId, guardResultJson],
+  };
+  const statements = domainStatements(fence);
+  const results = await db.batch([
+    agentTaskCompletionGuardStatement(db, runnerId, runId, guardResultJson),
+    ...statements,
+    guardedAgentTaskCompletionStatement(
+      db,
+      runnerId,
+      runId,
+      guardResultJson,
+      output
+    ),
+  ]);
+  const guardResult = results.at(0);
+  const completionResult = results.at(-1);
+  assertAgentTaskCompleted(guardResult);
+  assertAgentTaskCompleted(completionResult);
+}
+
+export async function completeRequestedAgentTaskWithDomainWrites<Result>(
+  db: D1Database,
+  context: RequestedAgentTaskCompletionContext,
+  buildPlan: (
+    fence: AgentTaskCompletionFence
+  ) =>
+    | Promise<RequestedAgentTaskCompletionPlan<Result>>
+    | RequestedAgentTaskCompletionPlan<Result>
+) {
+  const guardResultJson = JSON.stringify({
+    completionGuard: crypto.randomUUID(),
+  });
+  const fence: AgentTaskCompletionFence = {
+    clause: `EXISTS (
+      SELECT 1 FROM agent_task_runs completion_run
+      JOIN agent_task_requests completion_request
+        ON completion_request.id=completion_run.source_task_id
+      JOIN agent_runners completion_runner
+        ON completion_runner.id=completion_run.runner_id
+       AND completion_runner.user_id=completion_run.user_id
+       AND completion_runner.revoked_at IS NULL
+       WHERE completion_run.id=?
+         AND completion_run.runner_id=?
+         AND completion_run.user_id=?
+         AND completion_run.source_task_id=?
+         AND completion_run.attempt_number=?
+         AND completion_run.lease_token=?
+         AND completion_run.status='running'
+         AND completion_run.result_json=?
+         AND completion_run.lease_expires_at>
+             strftime('%Y-%m-%dT%H:%M:%fZ','now')
+         AND completion_request.user_id=completion_run.user_id
+         AND completion_request.runner_id=completion_run.runner_id
+         AND completion_request.task_type=completion_run.task_type
+         AND completion_request.status='claimed'
+         AND completion_request.attempt_count=completion_run.attempt_number
+         AND completion_request.lease_token=completion_run.lease_token
+         AND completion_request.lease_expires_at>
+             strftime('%Y-%m-%dT%H:%M:%fZ','now')
+    )`,
+    values: [
+      context.runId,
+      context.runnerId,
+      context.userId,
+      context.requestId,
+      context.attemptNumber,
+      context.leaseToken,
+      guardResultJson,
+    ],
+  };
+  const plan = await buildPlan(fence);
+  const statements: D1PreparedStatement[] = [
+    requestedAgentTaskCompletionGuardStatement(
+      db,
+      context,
+      guardResultJson,
+      plan.condition
+    ),
+    requiredChangesAssertionStatement(db, 1),
+  ];
+  for (const write of plan.writes) {
+    statements.push(write.statement);
+    if (write.expectedChanges !== undefined) {
+      statements.push(
+        requiredChangesAssertionStatement(db, write.expectedChanges)
+      );
+    }
   }
+  statements.push(
+    requestedAgentTaskCompletionStatement(
+      db,
+      context,
+      guardResultJson,
+      plan.result
+    ),
+    requiredChangesAssertionStatement(db, 1),
+    guardedAgentTaskCompletionStatement(
+      db,
+      context.runnerId,
+      context.runId,
+      guardResultJson,
+      plan.result
+    ),
+    requiredChangesAssertionStatement(db, 1)
+  );
+  try {
+    await db.batch(statements);
+  } catch (error) {
+    if (isConstraintError(error)) {
+      const completionError = new AgentTaskError(
+        "Agent task state changed before completion",
+        409
+      );
+      completionError.cause = error;
+      throw completionError;
+    }
+    throw error;
+  }
+  return plan.result;
 }
 
 export async function failAgentTaskRun(
@@ -80,32 +277,26 @@ export async function failAgentTaskRun(
   runId: string,
   error: string
 ) {
-  const timestamp = new Date().toISOString();
   const result = await db
     .prepare(
       `UPDATE agent_task_runs
-          SET status='failed',error_detail=?,completed_at=?,updated_at=?
-        WHERE id=? AND runner_id=? AND status='running'`
+          SET status='failed',error_detail=?,error_code='runner_failure',
+              completed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+              updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        WHERE id=? AND runner_id=? AND status='running'
+          AND lease_expires_at>strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          AND EXISTS (
+            SELECT 1 FROM agent_runners failure_runner
+             WHERE failure_runner.id=agent_task_runs.runner_id
+               AND failure_runner.user_id=agent_task_runs.user_id
+               AND failure_runner.revoked_at IS NULL
+          )`
     )
-    .bind(error, timestamp, timestamp, runId, runnerId)
+    .bind(error, runId, runnerId)
     .run();
   if ((result.meta.changes ?? 0) !== 1) {
     throw new AgentTaskError("Agent task run could not be failed", 409);
   }
-}
-
-export async function expireStaleAgentTaskRuns(db: D1Database, userId: string) {
-  const timestamp = new Date().toISOString();
-  await releaseExpiredAgentTaskRequests(db, userId, timestamp);
-  await db
-    .prepare(
-      `UPDATE agent_task_runs
-          SET status='failed',error_detail='Runner lease expired',
-              completed_at=?,updated_at=?
-        WHERE user_id=? AND status='running' AND lease_expires_at<?`
-    )
-    .bind(timestamp, timestamp, userId, timestamp)
-    .run();
 }
 
 export async function readLastAgentTaskType(db: D1Database, runnerId: string) {
@@ -126,9 +317,14 @@ export async function readOwnedRunningAgentTask(
 ) {
   const run = await db
     .prepare(
-      `SELECT task_type,source_task_id,source_hash,model,status
-         FROM agent_task_runs
-        WHERE id=? AND user_id=? AND runner_id=?`
+      `SELECT run.task_type,run.source_task_id,run.source_hash,run.model,
+              run.status,run.attempt_number,run.lease_token
+         FROM agent_task_runs run
+         JOIN agent_runners active_runner
+           ON active_runner.id=run.runner_id
+          AND active_runner.user_id=run.user_id
+          AND active_runner.revoked_at IS NULL
+        WHERE run.id=? AND run.user_id=? AND run.runner_id=?`
     )
     .bind(runId, runner.user.id, runner.id)
     .first<AgentTaskRunRow>();
@@ -156,4 +352,187 @@ export function isConstraintError(error: unknown) {
     error instanceof Error &&
     error.message.toLocaleLowerCase("en").includes("constraint")
   );
+}
+
+function agentTaskCompletionStatement(
+  db: D1Database,
+  runnerId: string,
+  runId: string,
+  output: unknown
+) {
+  return db
+    .prepare(
+      `UPDATE agent_task_runs
+          SET status='completed',result_json=?,
+              completed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+              updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        WHERE id=? AND runner_id=? AND status='running'
+          AND lease_expires_at>strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          AND EXISTS (
+            SELECT 1 FROM agent_runners completion_runner
+             WHERE completion_runner.id=agent_task_runs.runner_id
+               AND completion_runner.user_id=agent_task_runs.user_id
+               AND completion_runner.revoked_at IS NULL
+          )`
+    )
+    .bind(JSON.stringify(output), runId, runnerId);
+}
+
+function agentTaskCompletionGuardStatement(
+  db: D1Database,
+  runnerId: string,
+  runId: string,
+  guardResultJson: string
+) {
+  return db
+    .prepare(
+      `UPDATE agent_task_runs
+          SET result_json=?
+        WHERE id=? AND runner_id=? AND status='running'
+          AND lease_expires_at>strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          AND EXISTS (
+            SELECT 1 FROM agent_runners completion_runner
+             WHERE completion_runner.id=agent_task_runs.runner_id
+               AND completion_runner.user_id=agent_task_runs.user_id
+               AND completion_runner.revoked_at IS NULL
+          )`
+    )
+    .bind(guardResultJson, runId, runnerId);
+}
+
+function requestedAgentTaskCompletionGuardStatement(
+  db: D1Database,
+  context: RequestedAgentTaskCompletionContext,
+  guardResultJson: string,
+  condition: AgentTaskCompletionCondition
+) {
+  return db
+    .prepare(
+      `UPDATE agent_task_runs
+          SET result_json=?
+        WHERE id=? AND runner_id=? AND user_id=? AND source_task_id=?
+          AND task_type=? AND status='running'
+          AND attempt_number=? AND lease_token=?
+          AND lease_expires_at>strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          AND EXISTS (
+            SELECT 1 FROM agent_task_requests completion_request
+             WHERE completion_request.id=?
+               AND completion_request.user_id=?
+               AND completion_request.runner_id=?
+               AND completion_request.task_type=?
+               AND completion_request.status='claimed'
+               AND completion_request.attempt_count=?
+               AND completion_request.lease_token=?
+               AND completion_request.lease_expires_at>
+                   strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          )
+          AND (${condition.clause})`
+    )
+    .bind(
+      guardResultJson,
+      context.runId,
+      context.runnerId,
+      context.userId,
+      context.requestId,
+      context.taskType,
+      context.attemptNumber,
+      context.leaseToken,
+      context.requestId,
+      context.userId,
+      context.runnerId,
+      context.taskType,
+      context.attemptNumber,
+      context.leaseToken,
+      ...condition.values
+    );
+}
+
+function requestedAgentTaskCompletionStatement(
+  db: D1Database,
+  context: RequestedAgentTaskCompletionContext,
+  guardResultJson: string,
+  output: unknown
+) {
+  return db
+    .prepare(
+      `UPDATE agent_task_requests
+          SET status='completed',result_json=?,error_detail='',
+              completed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+              runner_id=NULL,claimed_at=NULL,lease_expires_at=NULL,
+              lease_token=NULL,next_attempt_at=NULL,last_error_code='',
+              updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        WHERE id=? AND user_id=? AND runner_id=? AND task_type=?
+          AND status='claimed'
+          AND attempt_count=? AND lease_token=?
+          AND EXISTS (
+            SELECT 1 FROM agent_task_runs completion_run
+             WHERE completion_run.id=?
+               AND completion_run.runner_id=?
+               AND completion_run.user_id=?
+               AND completion_run.source_task_id=?
+               AND completion_run.attempt_number=?
+               AND completion_run.lease_token=?
+               AND completion_run.status='running'
+               AND completion_run.result_json=?
+          )`
+    )
+    .bind(
+      JSON.stringify(output),
+      context.requestId,
+      context.userId,
+      context.runnerId,
+      context.taskType,
+      context.attemptNumber,
+      context.leaseToken,
+      context.runId,
+      context.runnerId,
+      context.userId,
+      context.requestId,
+      context.attemptNumber,
+      context.leaseToken,
+      guardResultJson
+    );
+}
+
+function requiredChangesAssertionStatement(
+  db: D1Database,
+  expectedChanges: number
+) {
+  return db
+    .prepare(
+      `INSERT INTO transaction_assertions(must_equal_one)
+       SELECT 0 WHERE changes()<>?`
+    )
+    .bind(expectedChanges);
+}
+
+function guardedAgentTaskCompletionStatement(
+  db: D1Database,
+  runnerId: string,
+  runId: string,
+  guardResultJson: string,
+  output: unknown
+) {
+  return db
+    .prepare(
+      `UPDATE agent_task_runs
+          SET status='completed',result_json=?,
+              completed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+              updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        WHERE id=? AND runner_id=? AND status='running' AND result_json=?
+          AND lease_expires_at>strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          AND EXISTS (
+            SELECT 1 FROM agent_runners completion_runner
+             WHERE completion_runner.id=agent_task_runs.runner_id
+               AND completion_runner.user_id=agent_task_runs.user_id
+               AND completion_runner.revoked_at IS NULL
+          )`
+    )
+    .bind(JSON.stringify(output), runId, runnerId, guardResultJson);
+}
+
+function assertAgentTaskCompleted(result: D1Result | undefined) {
+  if ((result?.meta.changes ?? 0) !== 1) {
+    throw new AgentTaskError("Agent task run could not be completed", 409);
+  }
 }

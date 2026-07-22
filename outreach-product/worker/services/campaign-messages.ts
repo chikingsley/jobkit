@@ -15,6 +15,11 @@ import {
   buildAgentTaskRequestCreation,
   readActiveAgentTaskRequest,
 } from "./agent-task-requests";
+import type {
+  AgentTaskCompletionCondition,
+  AgentTaskCompletionFence,
+  AgentTaskCompletionWrite,
+} from "./agent-tasks/run-store";
 import {
   ANESL_REQUIRED_QUESTION,
   type ApplicationBundleTargetRow,
@@ -176,13 +181,14 @@ export async function prepareCampaignDispatchTask(
   input: CampaignDispatchTaskInput
 ) {
   const dispatch = await readDispatch(env.DB, userId, input.dispatchId);
-  const [profile, job, styleGuidance, acceptedGuidance, current] =
+  const [profile, job, styleGuidance, acceptedGuidance, current, targetCount] =
     await Promise.all([
       savedProfile(env.DB, userId),
       campaignDispatchJob(env.DB, dispatch),
       readMessageStyleGuidance(env.DB, userId),
       readAcceptedCampaignGuidance(env.DB, dispatch.campaign_id),
       readCurrentCampaignMessage(env.DB, input.dispatchId),
+      readCampaignDispatchTargetCount(env.DB, input.dispatchId),
     ]);
   const context = await messageContext(
     env,
@@ -244,6 +250,7 @@ export async function prepareCampaignDispatchTask(
     job,
     prepared,
     recipient: await campaignDispatchRecipient(env.DB, dispatch),
+    targetCount,
   };
 }
 
@@ -252,7 +259,8 @@ export async function buildCampaignDispatchTaskCompletion(
   userId: string,
   input: CampaignDispatchTaskInput,
   rawOutput: unknown,
-  modelId: string
+  modelId: string,
+  fence: AgentTaskCompletionFence
 ) {
   const state = await prepareCampaignDispatchTask(env, userId, input);
   const generated = validateCodexApplicationMessage(
@@ -267,33 +275,102 @@ export async function buildCampaignDispatchTaskCompletion(
   const subject = applicationSubject(state.job);
   const automated =
     state.dispatch.campaign_status === "running" &&
-    state.dispatch.status === "queued";
+    input.mode === "generate" &&
+    !state.current;
   const guidance =
     input.mode === "revise"
       ? requireCampaignRevisionGuidance(generated.guidance)
       : null;
-  const guidanceStatements = guidance
+  const futureGuidance =
+    guidance?.scope === "future"
+      ? await futureGuidanceWrites(env.DB, userId, guidance.instruction, fence)
+      : { condition: null, writes: [] };
+  const guidanceWrites: AgentTaskCompletionWrite[] = guidance
     ? [
-        env.DB.prepare(
-          `INSERT INTO campaign_guidance
-            (id,campaign_id,source_dispatch_id,instruction,scope,status,
-             created_at,decided_at)
-           VALUES (?,?,?,?,?,'accepted',?,?)`
-        ).bind(
-          crypto.randomUUID(),
-          state.dispatch.campaign_id,
-          input.dispatchId,
-          guidance.instruction,
-          guidance.scope,
-          timestamp,
-          timestamp
-        ),
-        ...(guidance.scope === "future"
-          ? await futureGuidanceStatements(env.DB, userId, guidance.instruction)
-          : []),
+        {
+          expectedChanges: 1,
+          statement: env.DB.prepare(
+            `INSERT INTO campaign_guidance
+              (id,campaign_id,source_dispatch_id,instruction,scope,status,
+               created_at,decided_at)
+             SELECT ?,?,?,?,?,'accepted',?,? WHERE ${fence.clause}`
+          ).bind(
+            crypto.randomUUID(),
+            state.dispatch.campaign_id,
+            input.dispatchId,
+            guidance.instruction,
+            guidance.scope,
+            timestamp,
+            timestamp,
+            ...fence.values
+          ),
+        },
+        ...futureGuidance.writes,
       ]
     : [];
+  const currentMessageCondition: AgentTaskCompletionCondition = state.current
+    ? {
+        clause: `EXISTS (
+          SELECT 1 FROM campaign_messages completion_message
+           WHERE completion_message.id=?
+             AND completion_message.dispatch_id=?
+             AND completion_message.version=?
+             AND completion_message.status='draft'
+        ) AND NOT EXISTS (
+          SELECT 1 FROM campaign_messages newer_message
+           WHERE newer_message.dispatch_id=? AND newer_message.version>?
+        )`,
+        values: [
+          state.current.id,
+          input.dispatchId,
+          state.current.version,
+          input.dispatchId,
+          state.current.version,
+        ],
+      }
+    : {
+        clause:
+          "NOT EXISTS (SELECT 1 FROM campaign_messages WHERE dispatch_id=?)",
+        values: [input.dispatchId],
+      };
+  const conditions: AgentTaskCompletionCondition[] = [
+    {
+      clause: `EXISTS (
+        SELECT 1 FROM campaign_dispatches completion_dispatch
+        JOIN campaigns completion_campaign
+          ON completion_campaign.id=completion_dispatch.campaign_id
+       WHERE completion_dispatch.id=?
+         AND completion_dispatch.campaign_id=?
+         AND completion_dispatch.status=?
+         AND completion_campaign.user_id=?
+         AND completion_campaign.status=?
+      ) AND (
+        SELECT COUNT(*) FROM campaign_dispatch_targets completion_links
+        JOIN campaign_targets completion_target
+          ON completion_target.id=completion_links.target_id
+       WHERE completion_links.dispatch_id=?
+         AND completion_target.status IN ('calibration','claimed','drafted')
+      )=?`,
+      values: [
+        input.dispatchId,
+        state.dispatch.campaign_id,
+        state.dispatch.status,
+        userId,
+        state.dispatch.campaign_status,
+        input.dispatchId,
+        state.targetCount,
+      ],
+    },
+    currentMessageCondition,
+  ];
+  if (futureGuidance.condition) {
+    conditions.push(futureGuidance.condition);
+  }
   return {
+    condition: {
+      clause: conditions.map(({ clause }) => `(${clause})`).join(" AND "),
+      values: conditions.flatMap(({ values }) => values),
+    },
     result: {
       dispatchId: input.dispatchId,
       message: {
@@ -305,60 +382,88 @@ export async function buildCampaignDispatchTaskCompletion(
         version,
       },
     },
-    statements: [
-      ...guidanceStatements,
-      env.DB.prepare(
-        `UPDATE campaign_messages SET status='superseded'
-          WHERE dispatch_id=? AND status='draft'`
-      ).bind(input.dispatchId),
-      env.DB.prepare(
-        `INSERT INTO campaign_messages
-          (id,dispatch_id,version,message,change_summary,
-           revision_instruction,revision_source,status,model_id,created_at,
-           approved_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?)`
-      ).bind(
-        id,
-        input.dispatchId,
-        version,
-        generated.message,
-        generated.summary,
-        input.instruction ?? "",
-        revisionSource,
-        automated ? "approved" : "draft",
-        generated.modelId,
-        timestamp,
-        automated ? timestamp : null
-      ),
-      env.DB.prepare(
-        `UPDATE campaign_dispatches
-            SET recipient=?,subject=?,status=?,updated_at=?
-          WHERE id=? AND campaign_id=?
-            AND status IN ('calibration','queued','drafting','review')`
-      ).bind(
-        state.recipient,
-        subject,
-        automated ? "ready" : "review",
-        timestamp,
-        input.dispatchId,
-        state.dispatch.campaign_id
-      ),
-      env.DB.prepare(
-        `UPDATE campaign_targets SET status=?,updated_at=?
-          WHERE id IN (
-            SELECT target_id FROM campaign_dispatch_targets WHERE dispatch_id=?
-          ) AND status IN ('calibration','claimed','drafted')`
-      ).bind(automated ? "approved" : "drafted", timestamp, input.dispatchId),
-      env.DB.prepare(
-        `UPDATE campaign_runs SET status='delivering',updated_at=?
-          WHERE id=? AND status='generating'
-            AND NOT EXISTS (
-              SELECT 1 FROM campaign_dispatches pending
-               WHERE pending.run_id=campaign_runs.id
-                 AND pending.id<>?
-                 AND pending.status IN ('queued','drafting')
-            )`
-      ).bind(timestamp, state.dispatch.run_id ?? "", input.dispatchId),
+    writes: [
+      ...guidanceWrites,
+      {
+        ...(state.current ? { expectedChanges: 1 } : {}),
+        statement: env.DB.prepare(
+          `UPDATE campaign_messages SET status='superseded'
+            WHERE dispatch_id=? AND status='draft' AND ${fence.clause}`
+        ).bind(input.dispatchId, ...fence.values),
+      },
+      {
+        expectedChanges: 1,
+        statement: env.DB.prepare(
+          `INSERT INTO campaign_messages
+            (id,dispatch_id,version,message,change_summary,
+             revision_instruction,revision_source,status,model_id,created_at,
+             approved_at)
+           SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE ${fence.clause}`
+        ).bind(
+          id,
+          input.dispatchId,
+          version,
+          generated.message,
+          generated.summary,
+          input.instruction ?? "",
+          revisionSource,
+          automated ? "approved" : "draft",
+          generated.modelId,
+          timestamp,
+          automated ? timestamp : null,
+          ...fence.values
+        ),
+      },
+      {
+        expectedChanges: 1,
+        statement: env.DB.prepare(
+          `UPDATE campaign_dispatches
+              SET recipient=?,subject=?,status=?,updated_at=?
+            WHERE id=? AND campaign_id=? AND status=?
+              AND ${fence.clause}`
+        ).bind(
+          state.recipient,
+          subject,
+          automated ? "ready" : "review",
+          timestamp,
+          input.dispatchId,
+          state.dispatch.campaign_id,
+          state.dispatch.status,
+          ...fence.values
+        ),
+      },
+      {
+        expectedChanges: state.targetCount,
+        statement: env.DB.prepare(
+          `UPDATE campaign_targets SET status=?,updated_at=?
+            WHERE id IN (
+              SELECT target_id FROM campaign_dispatch_targets WHERE dispatch_id=?
+            ) AND status IN ('calibration','claimed','drafted')
+              AND ${fence.clause}`
+        ).bind(
+          automated ? "approved" : "drafted",
+          timestamp,
+          input.dispatchId,
+          ...fence.values
+        ),
+      },
+      {
+        statement: env.DB.prepare(
+          `UPDATE campaign_runs SET status='delivering',updated_at=?
+            WHERE id=? AND status='generating'
+              AND NOT EXISTS (
+                SELECT 1 FROM campaign_dispatches pending
+                 WHERE pending.run_id=campaign_runs.id
+                   AND pending.id<>?
+                   AND pending.status IN ('queued','drafting')
+              ) AND ${fence.clause}`
+        ).bind(
+          timestamp,
+          state.dispatch.run_id ?? "",
+          input.dispatchId,
+          ...fence.values
+        ),
+      },
     ],
   };
 }
@@ -411,6 +516,19 @@ function readCurrentCampaignMessage(db: D1Database, dispatchId: string) {
     )
     .bind(dispatchId)
     .first<CurrentCampaignMessage>();
+}
+
+async function readCampaignDispatchTargetCount(
+  db: D1Database,
+  dispatchId: string
+) {
+  const count = await db
+    .prepare(
+      "SELECT COUNT(*) count FROM campaign_dispatch_targets WHERE dispatch_id=?"
+    )
+    .bind(dispatchId)
+    .first<number>("count");
+  return Number(count ?? 0);
 }
 
 async function readAcceptedCampaignGuidance(
@@ -546,10 +664,11 @@ function applicationSubject(job: JobImport) {
   );
 }
 
-async function futureGuidanceStatements(
+async function futureGuidanceWrites(
   db: D1Database,
   userId: string,
-  instruction: string
+  instruction: string,
+  fence: AgentTaskCompletionFence
 ) {
   const active = await db
     .prepare(
@@ -566,7 +685,7 @@ async function futureGuidanceStatements(
       voice_rules_json: string;
     }>();
   if (!active) {
-    return [];
+    return { condition: null, writes: [] };
   }
   const rules = JSON.parse(active.voice_rules_json) as string[];
   if (!rules.includes(instruction)) {
@@ -574,29 +693,49 @@ async function futureGuidanceStatements(
   }
   const id = crypto.randomUUID();
   const timestamp = new Date().toISOString();
-  return [
-    db
-      .prepare(
-        `UPDATE user_message_foundations SET status='archived'
-          WHERE id=? AND user_id=? AND status='active'`
-      )
-      .bind(active.id, userId),
-    db
-      .prepare(
-        `INSERT INTO user_message_foundations
-          (id,user_id,version,name,status,voice_rules_json,templates_json,
-           created_at,activated_at)
-         VALUES (?,?,?,?,'active',?,?,?,?)`
-      )
-      .bind(
-        id,
-        userId,
-        active.version + 1,
-        active.name,
-        JSON.stringify(rules),
-        active.templates_json,
-        timestamp,
-        timestamp
-      ),
-  ];
+  return {
+    condition: {
+      clause: `EXISTS (
+        SELECT 1 FROM user_message_foundations completion_foundation
+         WHERE completion_foundation.id=?
+           AND completion_foundation.user_id=?
+           AND completion_foundation.version=?
+           AND completion_foundation.status='active'
+      )`,
+      values: [active.id, userId, active.version],
+    },
+    writes: [
+      {
+        expectedChanges: 1,
+        statement: db
+          .prepare(
+            `UPDATE user_message_foundations SET status='archived'
+              WHERE id=? AND user_id=? AND status='active'
+                AND ${fence.clause}`
+          )
+          .bind(active.id, userId, ...fence.values),
+      },
+      {
+        expectedChanges: 1,
+        statement: db
+          .prepare(
+            `INSERT INTO user_message_foundations
+              (id,user_id,version,name,status,voice_rules_json,templates_json,
+               created_at,activated_at)
+             SELECT ?,?,?,?,'active',?,?,?,? WHERE ${fence.clause}`
+          )
+          .bind(
+            id,
+            userId,
+            active.version + 1,
+            active.name,
+            JSON.stringify(rules),
+            active.templates_json,
+            timestamp,
+            timestamp,
+            ...fence.values
+          ),
+      },
+    ],
+  };
 }

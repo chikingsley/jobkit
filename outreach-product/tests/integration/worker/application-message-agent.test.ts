@@ -66,7 +66,7 @@ describe("Codex application message tasks", () => {
     });
     const question = advertisedPositionQuestion(new Date(), "UTC");
     const message = `Hello,\n\nI wanted to follow up on my earlier message about the English instructor role.\n\n${question}\n\nBest,\nIntegration User\nE: ${email}`;
-    const completed = await completeTask(token, generation.runId, {
+    const completed = await completeTask(token, generation, {
       message,
       summary: "Followed up briefly on the advertised role.",
     });
@@ -214,6 +214,7 @@ describe("Codex application message tasks", () => {
       preferredName: "Integration",
     });
     await seedMessageFoundation(userId, timestamp);
+    await seedCompleteCorePacket(cookie, "job-revision");
     await upsertJob(
       testEnv.DB,
       JobImportSchema.parse({
@@ -251,7 +252,7 @@ describe("Codex application message tasks", () => {
       question,
       "I have taught adult English learners in classroom settings and would be glad to discuss this university position."
     );
-    const completed = await completeTask(token, generation.runId, {
+    const completed = await completeTask(token, generation, {
       message: firstMessage,
       summary: "Used the candidate's adult teaching experience.",
     });
@@ -288,7 +289,7 @@ describe("Codex application message tasks", () => {
       question,
       "I have taught adult English learners in classroom settings, including university review lectures, and would be glad to discuss this position."
     );
-    await completeTask(token, revision.runId, {
+    await completeTask(token, revision, {
       message: revisedMessage,
       summary: "Added the relevant university classroom context.",
     });
@@ -314,6 +315,7 @@ describe("Codex application message tasks", () => {
       preferredName: "Integration",
     });
     await seedMessageFoundation(userId, timestamp);
+    await seedCompleteCorePacket(cookie, "anesl-revision");
     const firstJobId = await seedAneslPosition("BJ1001", timestamp);
     const secondJobId = await seedAneslPosition("SH2002", timestamp);
 
@@ -336,7 +338,7 @@ describe("Codex application message tasks", () => {
     const firstMessage = aneslMessageFor(
       "I am interested in positions BJ1001 and SH2002 and would be glad to discuss the relevant teaching needs."
     );
-    await completeTask(token, generation.runId, {
+    await completeTask(token, generation, {
       message: firstMessage,
       summary: "Referenced both selected ANESL positions.",
     });
@@ -360,7 +362,7 @@ describe("Codex application message tasks", () => {
     const revisedMessage = aneslMessageFor(
       "I am interested in positions BJ1001 and SH2002 and would be glad to discuss which location is the strongest current match."
     );
-    await completeTask(token, revision.runId, {
+    await completeTask(token, revision, {
       message: revisedMessage,
       summary: "Added the requested location emphasis.",
     });
@@ -428,7 +430,7 @@ describe("Codex application message tasks", () => {
     const generation = await claimTask(token);
     const question = advertisedPositionQuestion(new Date(), "UTC");
     const generatedMessage = `Hello,\n\nI have taught adult English learners and would be glad to discuss this position.\n\n${question}\n\nBest,\nIntegration User\nE: ${email}`;
-    await completeTask(token, generation.runId, {
+    await completeTask(token, generation, {
       message: generatedMessage,
       summary: "Used the candidate's adult teaching experience.",
     });
@@ -468,7 +470,7 @@ describe("Codex application message tasks", () => {
     });
     const revisionTask = await claimTask(token);
     const revisedMessage = `Hello,\n\nI have taught adult English learners in several classroom settings and would be glad to discuss this position.\n\n${question}\n\nBest,\nIntegration User\nE: ${email}`;
-    await completeTask(token, revisionTask.runId, {
+    await completeTask(token, revisionTask, {
       guidance: {
         instruction:
           "Describe adult teaching experience in direct, ordinary language.",
@@ -515,6 +517,30 @@ function messageFor(question: string, body: string) {
 
 function aneslMessageFor(body: string) {
   return `Hello Mr. Yang,\n\n${body}\n\nWould you be open to talking about which of these positions and locations you are currently recruiting for?\n\nBest,\nIntegration User\nE: anesl-message-agent@example.test`;
+}
+
+async function seedCompleteCorePacket(cookie: string, prefix: string) {
+  for (const category of ["resume", "degree", "tefl"]) {
+    const bytes = new Uint8Array([37, 80, 68, 70, 45, 49, 46, 52]);
+    // biome-ignore lint/performance/noAwaitInLoops: Each upload rebuilds the packet from the preceding committed document state.
+    const response = await exports.default.fetch(
+      "https://outreach.test/api/documents",
+      {
+        body: bytes,
+        headers: {
+          "content-length": String(bytes.byteLength),
+          "content-type": "application/pdf",
+          cookie,
+          "x-jobkit-category": category,
+          "x-jobkit-filename": `${prefix}-${category}.pdf`,
+        },
+        method: "PUT",
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`Core packet fixture upload failed (${response.status})`);
+    }
+  }
 }
 
 async function seedMessageFoundation(userId: string, timestamp: string) {
@@ -735,6 +761,7 @@ async function claimTask(token: string) {
   const payload = (await response.json()) as {
     task: {
       model: string;
+      leaseToken: string;
       prompt: string;
       promptVersion: string;
       runId: string;
@@ -747,10 +774,13 @@ async function claimTask(token: string) {
 
 function completeTask(
   token: string,
-  runId: string,
+  task: { leaseToken: string; runId: string },
   output: Record<string, unknown>
 ) {
-  return agentPost(`/api/agent-tasks/${runId}/complete`, token, { output });
+  return agentPost(`/api/agent-tasks/${task.runId}/complete`, token, {
+    leaseToken: task.leaseToken,
+    output,
+  });
 }
 
 function sessionPost(

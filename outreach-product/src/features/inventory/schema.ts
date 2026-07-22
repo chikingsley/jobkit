@@ -3,6 +3,50 @@ import { JobMarketSegmentSchema } from "../organizations/market-segments";
 
 export const InventoryMarketSegmentSchema = JobMarketSegmentSchema;
 
+export const InventorySourceDateEvidenceSchema = z.discriminatedUnion(
+  "provenance",
+  [
+    z
+      .object({
+        date: z.iso.date(),
+        provenance: z.literal("board-published"),
+        raw: z.string().trim().min(1).max(500),
+      })
+      .strict(),
+    z
+      .object({
+        date: z.null(),
+        provenance: z.literal("unresolved"),
+        raw: z.string().trim().min(1).max(500),
+      })
+      .strict(),
+    z
+      .object({
+        date: z.null(),
+        provenance: z.literal("unknown"),
+        raw: z.literal(""),
+      })
+      .strict(),
+  ]
+);
+
+const UNKNOWN_SOURCE_DATE = {
+  date: null,
+  provenance: "unknown",
+  raw: "",
+} as const;
+
+export const InventorySourceDatesSchema = z
+  .object({
+    expires: InventorySourceDateEvidenceSchema.default(UNKNOWN_SOURCE_DATE),
+    posted: InventorySourceDateEvidenceSchema.default(UNKNOWN_SOURCE_DATE),
+  })
+  .strict()
+  .default({
+    expires: UNKNOWN_SOURCE_DATE,
+    posted: UNKNOWN_SOURCE_DATE,
+  });
+
 export const InventoryCompensationSchema = z
   .object({
     amountMaximum: z.number().nonnegative().nullable(),
@@ -25,11 +69,13 @@ export const InventoryJobSchema = z
     contactName: z.string().max(240),
     country: z.string().max(160),
     description: z.string().max(50_000),
+    employerId: z.string().max(500),
     id: z.string().min(1).max(500),
     lastSeenAt: z.iso.datetime(),
     location: z.string().max(300),
     marketSegments: z.array(InventoryMarketSegmentSchema).max(8),
     salary: z.string().max(1000),
+    sourceDates: InventorySourceDatesSchema,
     sourceReference: z.string().max(500),
     sourceUrl: z.union([z.literal(""), z.url()]),
     title: z.string().min(1).max(1000),

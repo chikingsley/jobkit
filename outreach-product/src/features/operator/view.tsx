@@ -1,5 +1,5 @@
+import { useNavigate } from "@tanstack/react-router";
 import { FlaskConical } from "lucide-react";
-import { useNavigate } from "react-router";
 import { SettingsPage } from "@/components/settings-page";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +35,7 @@ export function OperatorView({ request }: { request: ApiRequest }) {
         </CardHeader>
         <CardContent>
           <Button
-            onClick={() => navigate(workspacePaths.testLab)}
+            onClick={() => void navigate({ to: workspacePaths.testLab })}
             variant="outline"
           >
             Open Test Lab

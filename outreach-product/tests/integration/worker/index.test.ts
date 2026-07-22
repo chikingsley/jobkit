@@ -36,6 +36,21 @@ describe("outreach Worker", () => {
     expect(document.openapi).toBe("3.1.0");
   });
 
+  it("keeps unknown API routes inside the JSON API boundary", async () => {
+    const { cookie } = await createAuthenticatedUser("missing@example.test");
+    const response = await exports.default.fetch(
+      "https://outreach.test/api/missing",
+      { headers: { cookie } }
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    expect(await response.json()).toEqual({
+      message: "Route not found",
+      ok: false,
+    });
+  });
+
   it("rejects malformed profile data as a client error", async () => {
     const { cookie } = await createAuthenticatedUser("profile@example.test");
     const response = await exports.default.fetch(

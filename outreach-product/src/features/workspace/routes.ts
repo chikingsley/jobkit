@@ -1,16 +1,16 @@
 export const workspacePaths = {
-  automation: "/automation",
-  campaigns: "/campaigns",
-  countries: "/campaigns/markets",
-  documents: "/documents",
-  jobs: "/",
-  messageStyle: "/message-style",
-  messages: "/messages",
-  operator: "/operator",
-  preferences: "/preferences",
-  profile: "/profile",
-  settings: "/settings",
-  testLab: "/test-lab",
+  automation: "/app/settings/automation",
+  campaigns: "/app/campaigns",
+  countries: "/app/campaigns/markets",
+  documents: "/app/settings/documents",
+  jobs: "/app/jobs",
+  messageStyle: "/app/settings/writing-style",
+  messages: "/app/messages",
+  operator: "/app/operator",
+  preferences: "/app/settings/preferences",
+  profile: "/app/settings/profile",
+  settings: "/app/settings",
+  testLab: "/app/operator/test-lab",
 } as const;
 
 export type WorkspaceView = keyof typeof workspacePaths;

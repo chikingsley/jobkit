@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "jobkit-outreach",
-  "main": "worker/index.ts",
+  "main": "src/server.ts",
   "compatibility_date": "2026-07-11",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
@@ -13,12 +13,6 @@
       "custom_domain": true
     }
   ],
-  "assets": {
-    "binding": "ASSETS",
-    "directory": "./dist",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/openapi.json"]
-  },
   "d1_databases": [
     {
       "binding": "DB",
@@ -31,8 +25,51 @@
     {
       "binding": "DOCUMENTS",
       "bucket_name": "jobkit-private-documents"
+    },
+    {
+      "binding": "SWEEP_OUTPUTS",
+      "bucket_name": "jobkit-country-sweep-outputs"
     }
   ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "PUBLIC_PROJECTION_QUEUE",
+        "queue": "jobkit-public-projection"
+      },
+      {
+        "binding": "AGENT_MAINTENANCE_QUEUE",
+        "queue": "jobkit-agent-maintenance"
+      },
+      {
+        "binding": "COUNTRY_MATERIALIZATION_QUEUE",
+        "queue": "jobkit-country-materialization"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "jobkit-public-projection",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_retries": 10,
+        "max_concurrency": 1
+      },
+      {
+        "queue": "jobkit-agent-maintenance",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_retries": 10,
+        "max_concurrency": 1
+      },
+      {
+        "queue": "jobkit-country-materialization",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_retries": 10,
+        "max_concurrency": 1
+      }
+    ]
+  },
   "triggers": {
     "crons": ["* * * * *"]
   },

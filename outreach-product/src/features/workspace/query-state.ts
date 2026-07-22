@@ -1,93 +1,206 @@
+import {
+  useNavigate,
+  useRouter,
+  useRouterState,
+  useSearch,
+} from "@tanstack/react-router";
 import { useCallback } from "react";
-import { useSearchParams } from "react-router";
 import type { JobSort } from "@/features/jobs/sorting";
+import {
+  detailCloseNavigationIntent,
+  jobOpenNavigationIntent,
+  messageOpenNavigationIntent,
+  publicJobResolutionNavigationIntent,
+} from "@/features/workspace/query-navigation";
 
-const DEFAULT_COUNTRY_FILTER = "all";
-const DEFAULT_FIT_FILTER = "all";
 const DEFAULT_JOB_SORT: JobSort = "stated-hourly";
-const JOB_SORTS = new Set<JobSort>([
-  "monthly-pay",
-  "review-order",
-  "stated-hourly",
-]);
 
-export function useWorkspaceQueryState() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const update = useCallback(
-    (
-      key: string,
-      value: string,
-      defaultValue = "",
-      resetKeys: string[] = []
-    ) => {
-      setSearchParams(
-        (current) => {
-          const next = new URLSearchParams(current);
-          if (!value || value === defaultValue) {
-            next.delete(key);
-          } else {
-            next.set(key, value);
-          }
-          for (const resetKey of resetKeys) {
-            next.delete(resetKey);
-          }
-          return next;
-        },
-        { replace: true }
-      );
-    },
-    [setSearchParams]
-  );
-  const requestedSort = searchParams.get("sort") as JobSort | null;
+export function useJobsQueryState() {
+  const navigate = useNavigate({ from: "/app/jobs" });
+  const router = useRouter();
+  const search = useSearch({ from: "/app/jobs" });
+  const historyState = useRouterState({
+    select: (state) => state.location.state,
+  });
   const setCountryFilter = useCallback(
-    (value: string) =>
-      update("country", value, DEFAULT_COUNTRY_FILTER, ["detail", "job"]),
-    [update]
+    (country: string) =>
+      navigate({
+        replace: true,
+        search: (current) => ({
+          ...current,
+          country: country === "all" ? undefined : country,
+          detail: undefined,
+          job: undefined,
+          publicJob: undefined,
+        }),
+      }),
+    [navigate]
   );
   const setFitFilter = useCallback(
-    (value: string) =>
-      update("fit", value, DEFAULT_FIT_FILTER, ["detail", "job"]),
-    [update]
-  );
-  const setDetailOpen = useCallback(
-    (value: boolean) => update("detail", value ? "1" : ""),
-    [update]
+    (fit: string) =>
+      navigate({
+        replace: true,
+        search: (current) => ({
+          ...current,
+          detail: undefined,
+          fit: fit === "all" ? undefined : fit,
+          job: undefined,
+          publicJob: undefined,
+        }),
+      }),
+    [navigate]
   );
   const setSelectedJobId = useCallback(
-    (value: string) => update("job", value),
-    [update]
+    (job: string) =>
+      navigate({
+        replace: true,
+        search: (current) => ({
+          ...current,
+          job: job || undefined,
+          publicJob: undefined,
+        }),
+      }),
+    [navigate]
   );
-  const setSelectedThreadId = useCallback(
-    (value: string) => update("thread", value),
-    [update]
+  const resolvePublicJobIntent = useCallback(
+    (job: string) =>
+      navigate({
+        replace: true,
+        search: (current) => publicJobResolutionNavigationIntent(current, job),
+      }),
+    [navigate]
   );
+  const openJob = useCallback(
+    (job: string) => {
+      const intent = jobOpenNavigationIntent(search, job, historyState);
+      return navigate({
+        replace: intent.replace,
+        search: { ...intent.search, publicJob: undefined },
+        state: (current) => ({ ...current, ...intent.state }),
+      });
+    },
+    [historyState, navigate, search]
+  );
+  const closeDetail = useCallback(() => {
+    if (search.publicJob) {
+      void navigate({
+        replace: true,
+        search: (current) => ({
+          ...current,
+          detail: undefined,
+          publicJob: undefined,
+        }),
+      });
+      return;
+    }
+    const intent = detailCloseNavigationIntent("jobs", historyState);
+    if (intent.history === "go") {
+      router.history.go(intent.delta);
+      return;
+    }
+    void navigate({
+      replace: true,
+      search: (current) => ({ ...current, detail: undefined }),
+      state: (current) => ({
+        ...current,
+        jobkitDetailReturnIndex: undefined,
+        jobkitDetailSurface: undefined,
+      }),
+    });
+  }, [historyState, navigate, router.history, search.publicJob]);
   const setShowExcluded = useCallback(
-    (value: boolean) =>
-      update("excluded", value ? "1" : "", "", ["detail", "job"]),
-    [update]
+    (excluded: boolean) =>
+      navigate({
+        replace: true,
+        search: (current) => ({
+          ...current,
+          detail: undefined,
+          excluded: excluded ? true : undefined,
+          job: undefined,
+          publicJob: undefined,
+        }),
+      }),
+    [navigate]
   );
   const setSort = useCallback(
-    (value: JobSort) => update("sort", value, DEFAULT_JOB_SORT),
-    [update]
+    (sort: JobSort) =>
+      navigate({
+        replace: true,
+        search: (current) => ({
+          ...current,
+          sort: sort === DEFAULT_JOB_SORT ? undefined : sort,
+        }),
+      }),
+    [navigate]
   );
 
   return {
-    countryFilter: searchParams.get("country") || DEFAULT_COUNTRY_FILTER,
-    detailOpen: searchParams.get("detail") === "1",
-    fitFilter: searchParams.get("fit") || DEFAULT_FIT_FILTER,
-    selectedJobId: searchParams.get("job") ?? "",
-    selectedThreadId: searchParams.get("thread") ?? "",
+    closeDetail,
+    countryFilter: search.country ?? "all",
+    detailOpen: search.detail ?? false,
+    fitFilter: search.fit ?? "all",
+    openJob,
+    publicJobIntent: search.publicJob ?? "",
+    resolvePublicJobIntent,
+    selectedJobId: search.job ?? "",
     setCountryFilter,
-    setDetailOpen,
     setFitFilter,
     setSelectedJobId,
-    setSelectedThreadId,
     setShowExcluded,
     setSort,
-    showExcluded: searchParams.get("excluded") === "1",
-    sort:
-      requestedSort && JOB_SORTS.has(requestedSort)
-        ? requestedSort
-        : DEFAULT_JOB_SORT,
+    showExcluded: search.excluded ?? false,
+    sort: search.sort ?? DEFAULT_JOB_SORT,
+  };
+}
+
+export function useMessagesQueryState() {
+  const navigate = useNavigate({ from: "/app/messages" });
+  const router = useRouter();
+  const search = useSearch({ from: "/app/messages" });
+  const historyState = useRouterState({
+    select: (state) => state.location.state,
+  });
+  const setSelectedThreadId = useCallback(
+    (thread: string) =>
+      navigate({
+        replace: true,
+        search: (current) => ({ ...current, thread: thread || undefined }),
+      }),
+    [navigate]
+  );
+  const openThread = useCallback(
+    (thread: string) => {
+      const intent = messageOpenNavigationIntent(search, thread, historyState);
+      return navigate({
+        replace: intent.replace,
+        search: intent.search,
+        state: (current) => ({ ...current, ...intent.state }),
+      });
+    },
+    [historyState, navigate, search]
+  );
+  const closeDetail = useCallback(() => {
+    const intent = detailCloseNavigationIntent("messages", historyState);
+    if (intent.history === "go") {
+      router.history.go(intent.delta);
+      return;
+    }
+    void navigate({
+      replace: true,
+      search: (current) => ({ ...current, detail: undefined }),
+      state: (current) => ({
+        ...current,
+        jobkitDetailReturnIndex: undefined,
+        jobkitDetailSurface: undefined,
+      }),
+    });
+  }, [historyState, navigate, router.history]);
+
+  return {
+    closeDetail,
+    detailOpen: search.detail ?? false,
+    openThread,
+    selectedThreadId: search.thread ?? "",
+    setSelectedThreadId,
   };
 }

@@ -16,9 +16,11 @@ import {
 } from "../ai/application-messages";
 import type { AppEnv } from "../env";
 import { upsertApplicationRoutes } from "../repositories/application-routes";
+import { ensureDocumentPackets } from "../repositories/document-packets";
 import {
   copyPacketSnapshotStatements,
-  defaultPacketSnapshotStatements,
+  copyPacketSnapshotWrites,
+  defaultPacketSnapshotWrites,
 } from "../repositories/draft-attachments";
 import { jobEventStatement } from "../repositories/job-events";
 import { upsertJob, upsertUserJob } from "../repositories/jobs";
@@ -32,6 +34,10 @@ import {
   createAgentTaskRequest,
   readActiveAgentTaskRequest,
 } from "./agent-task-requests";
+import type {
+  AgentTaskCompletionFence,
+  AgentTaskCompletionWrite,
+} from "./agent-tasks/run-store";
 
 export class DraftProfileRequiredError extends Error {}
 export class DraftMessageFoundationRequiredError extends Error {}
@@ -138,6 +144,7 @@ export async function queueJobDraftGeneration(
 ) {
   await ensureUserJobForDraftGeneration(env.DB, userId, jobId);
   await readJobForDraftGeneration(env.DB, userId, jobId);
+  await ensureDocumentPackets(env.DB, userId);
   return queueJobDraftTask(env.DB, userId, jobId, {
     jobId,
     kind: "job_draft",
@@ -225,10 +232,6 @@ export async function prepareJobDraftTask(
   userId: string,
   input: JobDraftTaskInput
 ): Promise<PreparedJobDraftTask> {
-  const [profile, styleGuidance] = await Promise.all([
-    savedProfile(env.DB, userId),
-    readMessageStyleGuidance(env.DB, userId),
-  ]);
   if (input.mode === "revise") {
     const current = await currentJobAndDraft(env.DB, userId, input.jobId);
     if (current.draftId !== input.expectedDraftId) {
@@ -238,6 +241,10 @@ export async function prepareJobDraftTask(
         409
       );
     }
+    const [profile, styleGuidance] = await Promise.all([
+      savedProfile(env.DB, userId),
+      readMessageStyleGuidance(env.DB, userId),
+    ]);
     const context = await messageContext(env, userId, current.job);
     return {
       context,
@@ -256,6 +263,10 @@ export async function prepareJobDraftTask(
     };
   }
   const row = await readJobForDraftGeneration(env.DB, userId, input.jobId);
+  const [profile, styleGuidance] = await Promise.all([
+    savedProfile(env.DB, userId),
+    readMessageStyleGuidance(env.DB, userId),
+  ]);
   const job = jobImportFromRow(row);
   const context = await messageContext(env, userId, job);
   return {
@@ -278,7 +289,8 @@ export async function buildJobDraftTaskCompletion(
   userId: string,
   input: JobDraftTaskInput,
   rawOutput: unknown,
-  modelId: string
+  modelId: string,
+  fence: AgentTaskCompletionFence
 ) {
   const state = await prepareJobDraftTask(env, userId, input);
   const generated = validateCodexApplicationMessage(
@@ -287,74 +299,56 @@ export async function buildJobDraftTaskCompletion(
     modelId
   );
   if (state.current) {
-    return buildDraftMutationPlan(env, userId, state.current, {
-      changeSummary: generated.summary,
-      eventType: "draft_revised",
-      foundationId: state.context.foundationId,
-      message: generated.message,
-      modelId: generated.modelId,
-      modelProvider: generated.provider,
-      revisionInstruction: input.instruction ?? "",
-      revisionSource: "ai_revision",
-      snapshotDraftId: state.current.draftId,
-      templateKey: state.context.templateKey,
-    });
+    return buildFencedDraftMutationPlan(
+      env,
+      userId,
+      state.current,
+      {
+        changeSummary: generated.summary,
+        eventType: "draft_revised",
+        foundationId: state.context.foundationId,
+        message: generated.message,
+        modelId: generated.modelId,
+        modelProvider: generated.provider,
+        revisionInstruction: input.instruction ?? "",
+        revisionSource: "ai_revision",
+        snapshotDraftId: state.current.draftId,
+        templateKey: state.context.templateKey,
+      },
+      fence
+    );
   }
-  return buildGeneratedJobDraftPlan(env, userId, state, generated);
+  return buildGeneratedJobDraftPlan(env, userId, state, generated, fence);
 }
 
 async function buildGeneratedJobDraftPlan(
   env: AppEnv,
   userId: string,
   state: PreparedJobDraftTask,
-  generated: ReturnType<typeof validateCodexApplicationMessage>
+  generated: ReturnType<typeof validateCodexApplicationMessage>,
+  fence: AgentTaskCompletionFence
 ) {
   const draftId = crypto.randomUUID();
   const timestamp = new Date().toISOString();
   const version = state.latestVersion + 1;
-  const snapshotStatements = await defaultPacketSnapshotStatements(
+  const snapshotStatements = await defaultPacketSnapshotWrites(
     env,
     userId,
     draftId,
-    timestamp
+    timestamp,
+    fence
   );
-  const statements = [
-    env.DB.prepare(
-      "UPDATE application_drafts SET status='superseded' WHERE user_job_id=? AND status='draft'"
-    ).bind(state.userJobId),
-    env.DB.prepare(
-      `INSERT INTO application_drafts
-        (id,user_job_id,version,message,required_opening,change_summary,
-         model_provider,model_id,message_foundation_id,message_template_key,
-         revision_source,created_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
-    ).bind(
-      draftId,
-      state.userJobId,
-      version,
-      generated.message,
-      openingFor(state.job.contactName),
-      generated.summary,
-      generated.provider,
-      generated.modelId,
-      state.context.foundationId,
-      state.context.templateKey,
-      "generated",
-      timestamp
-    ),
-    ...snapshotStatements,
-    env.DB.prepare(
-      "UPDATE user_listing_states SET status='review',updated_at=? WHERE id=? AND user_id=?"
-    ).bind(timestamp, state.userJobId, userId),
-    jobEventStatement(
-      env.DB,
-      state.userJobId,
-      "draft_generated",
-      generated.summary,
-      draftId
-    ),
-  ];
   return {
+    condition: {
+      clause: `EXISTS (
+        SELECT 1 FROM user_listing_states completion_job
+         WHERE completion_job.id=? AND completion_job.user_id=?
+      ) AND COALESCE((
+        SELECT MAX(version) FROM application_drafts
+         WHERE user_job_id=?
+      ),0)=?`,
+      values: [state.userJobId, userId, state.userJobId, state.latestVersion],
+    },
     result: {
       draft: {
         changeSummary: generated.summary,
@@ -367,7 +361,58 @@ async function buildGeneratedJobDraftPlan(
         version,
       },
     },
-    statements,
+    writes: [
+      {
+        statement: env.DB.prepare(
+          `UPDATE application_drafts SET status='superseded'
+            WHERE user_job_id=? AND status='draft' AND ${fence.clause}`
+        ).bind(state.userJobId, ...fence.values),
+      },
+      {
+        expectedChanges: 1,
+        statement: env.DB.prepare(
+          `INSERT INTO application_drafts
+            (id,user_job_id,version,message,required_opening,change_summary,
+             model_provider,model_id,message_foundation_id,message_template_key,
+             revision_source,created_at)
+           SELECT ?,?,?,?,?,?,?,?,?,?,?,? WHERE ${fence.clause}`
+        ).bind(
+          draftId,
+          state.userJobId,
+          version,
+          generated.message,
+          openingFor(state.job.contactName),
+          generated.summary,
+          generated.provider,
+          generated.modelId,
+          state.context.foundationId,
+          state.context.templateKey,
+          "generated",
+          timestamp,
+          ...fence.values
+        ),
+      },
+      ...snapshotStatements,
+      {
+        expectedChanges: 1,
+        statement: env.DB.prepare(
+          `UPDATE user_listing_states SET status='review',updated_at=?
+            WHERE id=? AND user_id=? AND ${fence.clause}`
+        ).bind(timestamp, state.userJobId, userId, ...fence.values),
+      },
+      {
+        expectedChanges: 1,
+        statement: jobEventStatement(
+          env.DB,
+          state.userJobId,
+          "draft_generated",
+          generated.summary,
+          draftId,
+          {},
+          fence
+        ),
+      },
+    ],
   };
 }
 
@@ -572,6 +617,137 @@ function buildDraftMutationPlan(
       },
     },
     statements,
+  };
+}
+
+async function buildFencedDraftMutationPlan(
+  env: AppEnv,
+  userId: string,
+  current: CurrentDraft,
+  input: DraftMutationInput,
+  fence: AgentTaskCompletionFence
+) {
+  const draftId = crypto.randomUUID();
+  const timestamp = new Date().toISOString();
+  const version = current.version + 1;
+  const packetCopy = await copyPacketSnapshotWrites(
+    env.DB,
+    input.snapshotDraftId,
+    draftId,
+    timestamp,
+    fence
+  );
+  const writes: AgentTaskCompletionWrite[] = [
+    {
+      statement: env.DB.prepare(
+        `UPDATE outbound_recipient_claims
+            SET status='released',released_at=?,updated_at=?
+          WHERE source_kind='application_attempt' AND status='claimed'
+            AND source_id IN (
+              SELECT id FROM application_attempts
+               WHERE draft_id=? AND status='approved'
+                 AND send_requested_at IS NULL AND gmail_draft_id=''
+            ) AND ${fence.clause}`
+      ).bind(timestamp, timestamp, current.draftId, ...fence.values),
+    },
+    {
+      statement: env.DB.prepare(
+        `DELETE FROM application_attempts
+          WHERE draft_id=? AND status='approved' AND send_requested_at IS NULL
+            AND gmail_draft_id='' AND ${fence.clause}`
+      ).bind(current.draftId, ...fence.values),
+    },
+    {
+      expectedChanges: 1,
+      statement: env.DB.prepare(
+        `UPDATE application_drafts SET status='superseded'
+          WHERE id=? AND status IN ('draft','approved') AND ${fence.clause}`
+      ).bind(current.draftId, ...fence.values),
+    },
+    {
+      expectedChanges: 1,
+      statement: env.DB.prepare(
+        `INSERT INTO application_drafts
+          (id,user_job_id,version,message,required_opening,change_summary,
+           revision_instruction,model_provider,model_id,message_foundation_id,
+           message_template_key,revision_source,created_at)
+         SELECT ?,?,?,?,?,?,?,?,?,?,?,?,? WHERE ${fence.clause}`
+      ).bind(
+        draftId,
+        current.userJobId,
+        version,
+        input.message,
+        current.requiredOpening,
+        input.changeSummary,
+        input.revisionInstruction,
+        input.modelProvider,
+        input.modelId,
+        input.foundationId,
+        input.templateKey,
+        input.revisionSource,
+        timestamp,
+        ...fence.values
+      ),
+    },
+    ...packetCopy.writes,
+    {
+      expectedChanges: 1,
+      statement: env.DB.prepare(
+        `UPDATE user_listing_states SET status='review',updated_at=?
+          WHERE id=? AND user_id=? AND ${fence.clause}`
+      ).bind(timestamp, current.userJobId, userId, ...fence.values),
+    },
+    {
+      expectedChanges: 1,
+      statement: jobEventStatement(
+        env.DB,
+        current.userJobId,
+        input.eventType,
+        input.changeSummary,
+        draftId,
+        {},
+        fence
+      ),
+    },
+  ];
+  return {
+    condition: {
+      clause: `EXISTS (
+        SELECT 1 FROM application_drafts completion_draft
+        JOIN user_listing_states completion_job
+          ON completion_job.id=completion_draft.user_job_id
+       WHERE completion_draft.id=?
+         AND completion_draft.user_job_id=?
+         AND completion_draft.version=?
+         AND completion_draft.status IN ('draft','approved')
+         AND completion_job.user_id=?
+      ) AND NOT EXISTS (
+        SELECT 1 FROM application_drafts newer_draft
+         WHERE newer_draft.user_job_id=? AND newer_draft.version>?
+      ) AND (${packetCopy.condition.clause})`,
+      values: [
+        current.draftId,
+        current.userJobId,
+        current.version,
+        userId,
+        current.userJobId,
+        current.version,
+        ...packetCopy.condition.values,
+      ],
+    },
+    result: {
+      draft: {
+        changeSummary: input.changeSummary,
+        createdAt: timestamp,
+        id: draftId,
+        message: input.message,
+        previousMessage: current.message,
+        revisionSource: input.revisionSource,
+        status: "draft" as const,
+        version,
+      },
+    },
+    writes,
   };
 }
 

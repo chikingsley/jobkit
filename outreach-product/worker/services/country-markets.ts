@@ -1,6 +1,11 @@
 import { getCountries } from "libphonenumber-js";
 import { z } from "zod";
-import type { CountrySweepRequest } from "../../src/features/countries/schema";
+import {
+  type CountrySweepRequest,
+  countrySweepCityKey,
+  MAX_COUNTRY_SWEEP_CITIES,
+  normalizeCountrySweepCities,
+} from "../../src/features/countries/schema";
 import type {
   CountryDetail,
   CountryMarketSummary,
@@ -40,6 +45,7 @@ const COUNTRY_NAME_ALIASES = new Map([
   ["taiwan", "TW"],
 ]);
 const D1_ROW_SCHEMA = z.record(z.string(), z.unknown());
+const MAX_D1_BOUND_VALUE_BYTES = 2_000_000;
 
 function nullableString(value: unknown): string | null {
   return value === null || value === undefined ? null : String(value);
@@ -386,13 +392,39 @@ export async function createCountrySweep(
       ? normalizedRequest.cities.map((city) => ({ city, source }))
       : [{ city: "", source }]
   );
+  const tasks = await Promise.all(
+    discoveryScopes.map(async ({ city, source }) => {
+      const inputJson = JSON.stringify({
+        city,
+        countryCode,
+        countryName,
+        phase: "discovery",
+        source,
+      });
+      return {
+        id: crypto.randomUUID(),
+        inputHash: await sha256(inputJson),
+        inputJson,
+        scopeKey: discoveryScopeKey(source, city),
+      };
+    })
+  );
+  const taskRowsJson = JSON.stringify(tasks);
+  if (
+    new TextEncoder().encode(taskRowsJson).byteLength > MAX_D1_BOUND_VALUE_BYTES
+  ) {
+    throw new CountryMarketError(
+      "Country sweep task manifest exceeds the D1 value limit",
+      400
+    );
+  }
   await db.batch([
     db
       .prepare(
         `INSERT INTO country_sweeps
           (id,country_code,country_name,requested_by_user_id,status,
-           requested_scope_json,requested_at,updated_at)
-         VALUES (?,?,?,?,'queued',?,?,?)`
+           requested_scope_json,task_total,requested_at,updated_at)
+         VALUES (?,?,?,?,'queued',?,?,?,?)`
       )
       .bind(
         sweepId,
@@ -400,31 +432,28 @@ export async function createCountrySweep(
         countryName,
         userId,
         requestedScopeJson,
+        tasks.length,
         timestamp,
         timestamp
       ),
-    ...discoveryScopes.map(({ city, source }) =>
-      db
-        .prepare(
-          `INSERT INTO country_sweep_tasks
-            (id,sweep_id,phase,scope_key,status,input_json,created_at,updated_at)
-           VALUES (?,?,'discovery',?,'queued',?,?,?)`
-        )
-        .bind(
-          crypto.randomUUID(),
-          sweepId,
-          discoveryScopeKey(source, city),
-          JSON.stringify({
-            city,
-            countryCode,
-            countryName,
-            phase: "discovery",
-            source,
-          }),
-          timestamp,
-          timestamp
-        )
-    ),
+    db
+      .prepare(
+        `INSERT INTO country_sweep_tasks
+          (id,sweep_id,phase,scope_key,status,input_json,input_hash,
+           created_at,updated_at)
+         SELECT
+           json_extract(value,'$.id'),
+           ?,
+           'discovery',
+           json_extract(value,'$.scopeKey'),
+           'queued',
+           json_extract(value,'$.inputJson'),
+           json_extract(value,'$.inputHash'),
+           ?,
+           ?
+         FROM json_each(?)`
+      )
+      .bind(sweepId, timestamp, timestamp, taskRowsJson),
   ]);
   return {
     completedAt: null,
@@ -435,12 +464,27 @@ export async function createCountrySweep(
   };
 }
 
+async function sha256(value: string) {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(value)
+  );
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 function normalizeSweepRequest(request: CountrySweepRequest) {
+  const cities = normalizeCountrySweepCities(request.cities);
+  if (cities.length > MAX_COUNTRY_SWEEP_CITIES) {
+    throw new CountryMarketError(
+      `Choose at most ${MAX_COUNTRY_SWEEP_CITIES} distinct cities`,
+      400
+    );
+  }
   return {
     ...request,
-    cities: [...new Set(request.cities.map((city) => city.trim()))].sort(
-      (a, b) => a.localeCompare(b)
-    ),
+    cities,
   };
 }
 
@@ -448,11 +492,7 @@ function discoveryScopeKey(source: string, city: string) {
   if (!city) {
     return source;
   }
-  const normalizedCity = city
-    .toLowerCase()
-    .normalize("NFKD")
-    .replaceAll(/[^\p{Letter}\p{Number}]+/gu, "-")
-    .replaceAll(/^-|-$/gu, "");
+  const normalizedCity = countrySweepCityKey(city);
   return `${source}:city:${normalizedCity}`;
 }
 

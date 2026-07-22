@@ -140,6 +140,7 @@ describe("Test Lab", () => {
     const claimPayload = (await claim.json()) as {
       task: {
         model: string;
+        leaseToken: string;
         prompt: string;
         runId: string;
         taskType: string;
@@ -155,7 +156,10 @@ describe("Test Lab", () => {
     const completed = await agentPost(
       `/api/agent-tasks/${claimPayload.task.runId}/complete`,
       token,
-      { output: { label: "english_teaching" } }
+      {
+        leaseToken: claimPayload.task.leaseToken,
+        output: { label: "english_teaching" },
+      }
     );
     expect(completed.status).toBe(200);
 
@@ -262,14 +266,22 @@ describe("Test Lab", () => {
         runnerVersion: "codex-cli test",
       });
       const claimPayload = (await claim.json()) as {
-        task: { model: string; prompt: string; runId: string };
+        task: {
+          leaseToken: string;
+          model: string;
+          prompt: string;
+          runId: string;
+        };
       };
       expect(claimPayload.task.model).toBe("gpt-5.6-luna");
       expect(claimPayload.task.prompt).toContain("<jina-result>");
       await agentPost(
         `/api/agent-tasks/${claimPayload.task.runId}/complete`,
         token,
-        { output: { label: "english_teaching" } }
+        {
+          leaseToken: claimPayload.task.leaseToken,
+          output: { label: "english_teaching" },
+        }
       );
       const run = await sessionRequest(
         `/api/test-lab/runs/${queuedPayload.run.id}`,
@@ -471,6 +483,7 @@ describe("Test Lab", () => {
           sizeBytes: number;
           url: string;
         }>;
+        leaseToken: string;
         prompt: string;
         runId: string;
         taskType: string;
@@ -498,7 +511,10 @@ describe("Test Lab", () => {
     const completed = await agentPost(
       `/api/agent-tasks/${claimPayload.task.runId}/complete`,
       token,
-      { output: { pages: [{ index: 0, markdown: "Visible fixture text" }] } }
+      {
+        leaseToken: claimPayload.task.leaseToken,
+        output: { pages: [{ index: 0, markdown: "Visible fixture text" }] },
+      }
     );
     expect(completed.status).toBe(200);
     const run = await sessionRequest(
