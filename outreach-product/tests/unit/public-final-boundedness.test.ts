@@ -22,7 +22,9 @@ const productionSources = [
     ),
   ...readdirSync(finalGraphServiceDirectory)
     .filter((file) => file.endsWith(".ts"))
-    .map((file) => `../../worker/services/public-projection/final-graph/${file}`),
+    .map(
+      (file) => `../../worker/services/public-projection/final-graph/${file}`
+    ),
 ].map((path) => ({
   path,
   source: readFileSync(new URL(path, import.meta.url), "utf8"),
