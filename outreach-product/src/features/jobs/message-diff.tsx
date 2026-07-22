@@ -1,27 +1,8 @@
-import { diffWordsWithSpace } from "diff";
-import { messageDiffRows } from "@/features/jobs/message-diff-model";
+import {
+  messageDiffRows,
+  messageHighlightRuns,
+} from "@/features/jobs/message-diff-model";
 import { cn } from "@/lib/utils";
-
-function keyedChanges(before: string, after: string) {
-  let beforeOffset = 0;
-  let afterOffset = 0;
-  return diffWordsWithSpace(before, after).map((change) => {
-    let kind = "same";
-    if (change.added) {
-      kind = "added";
-    } else if (change.removed) {
-      kind = "removed";
-    }
-    const key = `${beforeOffset}:${afterOffset}:${kind}:${change.value.length}`;
-    if (!change.added) {
-      beforeOffset += change.value.length;
-    }
-    if (!change.removed) {
-      afterOffset += change.value.length;
-    }
-    return { ...change, key };
-  });
-}
 
 export function MessageText({
   highlightChanges,
@@ -32,15 +13,14 @@ export function MessageText({
   message: string;
   previousMessage: string;
 }) {
-  const changes =
+  const runs =
     highlightChanges && previousMessage
-      ? keyedChanges(previousMessage, message)
+      ? messageHighlightRuns(previousMessage, message)
       : [
           {
-            added: false,
+            highlighted: false,
             key: "message",
-            removed: false,
-            value: message,
+            text: message,
           },
         ];
   return (
@@ -49,20 +29,19 @@ export function MessageText({
       className="min-h-48 whitespace-pre-wrap border-primary/30 border-l-2 py-1 pl-4 text-sm leading-7"
       role="document"
     >
-      {changes.map((change) =>
-        change.removed ? null : (
-          <mark
-            className={cn(
-              "bg-transparent text-inherit",
-              change.added &&
-                "rounded-sm bg-primary/15 shadow-[0_0_0_2px_color-mix(in_oklab,var(--primary)_15%,transparent)]"
-            )}
-            key={change.key}
-          >
-            {change.value}
-          </mark>
-        )
-      )}
+      {runs.map((run) => (
+        <mark
+          className={cn(
+            "bg-transparent text-inherit",
+            run.highlighted &&
+              "-mx-[0.06em] rounded-[0.15em] bg-[oklch(0.92_0.14_100)] box-decoration-clone px-[0.06em] dark:bg-[oklch(0.40_0.08_95)]"
+          )}
+          data-message-change-highlight={run.highlighted ? "true" : undefined}
+          key={run.key}
+        >
+          {run.text}
+        </mark>
+      ))}
     </div>
   );
 }

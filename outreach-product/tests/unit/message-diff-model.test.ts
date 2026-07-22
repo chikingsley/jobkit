@@ -1,5 +1,45 @@
 import { describe, expect, it } from "bun:test";
-import { messageDiffRows } from "../../src/features/jobs/message-diff-model";
+import {
+  messageDiffRows,
+  messageHighlightRuns,
+} from "../../src/features/jobs/message-diff-model";
+
+describe("messageHighlightRuns", () => {
+  it("highlights a revised phrase continuously across a contraction and spaces", () => {
+    const before =
+      "Outside teaching, I work in engineering, so I can bring practical business English.";
+    const after =
+      "Outside teaching, I've also worked in engineering, so I can bring practical business English.";
+
+    const highlights = messageHighlightRuns(before, after)
+      .filter((run) => run.highlighted)
+      .map((run) => run.text);
+
+    expect(highlights).toEqual(["I've also worked"]);
+  });
+
+  it("expands an insertion to the complete connected word", () => {
+    const highlights = messageHighlightRuns(
+      "Use color here.",
+      "Use colour here."
+    )
+      .filter((run) => run.highlighted)
+      .map((run) => run.text);
+
+    expect(highlights).toEqual(["colour"]);
+  });
+
+  it("keeps separate changed phrases separate", () => {
+    const highlights = messageHighlightRuns(
+      "I teach adults and write lessons.",
+      "I coach adults and design lessons."
+    )
+      .filter((run) => run.highlighted)
+      .map((run) => run.text);
+
+    expect(highlights).toEqual(["coach", "design"]);
+  });
+});
 
 describe("messageDiffRows", () => {
   it("collapses distant unchanged lines and keeps context around an edit", () => {

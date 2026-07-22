@@ -1,4 +1,14 @@
-import { diffLines } from "diff";
+import { diffLines, diffWordsWithSpace } from "diff";
+
+const CONNECTED_WORD_CHARACTER = /[\p{L}\p{M}\p{N}_'’]/u;
+const WHITESPACE = /\s/u;
+const WHITESPACE_ONLY = /^\s*$/u;
+
+export interface MessageHighlightRun {
+  highlighted: boolean;
+  key: string;
+  text: string;
+}
 
 export interface MessageDiffRow {
   afterLine: number | null;
@@ -11,6 +21,68 @@ export interface MessageDiffRow {
 
 interface RawDiffRow extends Omit<MessageDiffRow, "key"> {
   kind: "added" | "removed" | "same";
+}
+
+interface TextRange {
+  end: number;
+  start: number;
+}
+
+export function messageHighlightRuns(
+  before: string,
+  after: string
+): MessageHighlightRun[] {
+  if (!before || before === after) {
+    return [{ highlighted: false, key: "message:0", text: after }];
+  }
+
+  let afterOffset = 0;
+  const ranges: TextRange[] = [];
+  for (const change of diffWordsWithSpace(before, after)) {
+    if (change.added) {
+      ranges.push({
+        end: afterOffset + change.value.length,
+        start: afterOffset,
+      });
+    }
+    if (!change.removed) {
+      afterOffset += change.value.length;
+    }
+  }
+
+  const highlights = mergeHighlightRanges(
+    after,
+    ranges.map((range) => expandHighlightRange(after, range))
+  );
+  if (highlights.length === 0) {
+    return [{ highlighted: false, key: "message:0", text: after }];
+  }
+
+  const runs: MessageHighlightRun[] = [];
+  let cursor = 0;
+  for (const [index, highlight] of highlights.entries()) {
+    if (cursor < highlight.start) {
+      runs.push({
+        highlighted: false,
+        key: `text:${cursor}:${highlight.start}`,
+        text: after.slice(cursor, highlight.start),
+      });
+    }
+    runs.push({
+      highlighted: true,
+      key: `highlight:${index}:${highlight.start}:${highlight.end}`,
+      text: after.slice(highlight.start, highlight.end),
+    });
+    cursor = highlight.end;
+  }
+  if (cursor < after.length) {
+    runs.push({
+      highlighted: false,
+      key: `text:${cursor}:${after.length}`,
+      text: after.slice(cursor),
+    });
+  }
+  return runs;
 }
 
 export function messageDiffRows(
@@ -110,4 +182,59 @@ function linesIn(value: string) {
     lines.pop();
   }
   return lines;
+}
+
+function expandHighlightRange(text: string, range: TextRange): TextRange {
+  let { end, start } = range;
+  while (start < end && isWhitespace(text[start])) {
+    start += 1;
+  }
+  while (end > start && isWhitespace(text[end - 1])) {
+    end -= 1;
+  }
+  if (
+    isConnectedWordCharacter(text[start - 1]) &&
+    isConnectedWordCharacter(text[start])
+  ) {
+    while (start > 0 && isConnectedWordCharacter(text[start - 1])) {
+      start -= 1;
+    }
+  }
+  if (
+    isConnectedWordCharacter(text[end - 1]) &&
+    isConnectedWordCharacter(text[end])
+  ) {
+    while (end < text.length && isConnectedWordCharacter(text[end])) {
+      end += 1;
+    }
+  }
+  return { end, start };
+}
+
+function mergeHighlightRanges(text: string, ranges: TextRange[]): TextRange[] {
+  const merged: TextRange[] = [];
+  for (const range of ranges) {
+    if (range.start >= range.end) {
+      continue;
+    }
+    const previous = merged.at(-1);
+    if (
+      previous &&
+      (range.start <= previous.end ||
+        WHITESPACE_ONLY.test(text.slice(previous.end, range.start)))
+    ) {
+      previous.end = Math.max(previous.end, range.end);
+    } else {
+      merged.push({ ...range });
+    }
+  }
+  return merged;
+}
+
+function isConnectedWordCharacter(value: string | undefined) {
+  return Boolean(value && CONNECTED_WORD_CHARACTER.test(value));
+}
+
+function isWhitespace(value: string | undefined) {
+  return Boolean(value && WHITESPACE.test(value));
 }
