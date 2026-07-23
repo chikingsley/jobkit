@@ -79,7 +79,7 @@ async function consumePublicProjectionMessage(
             }
           : ADVANCE_MESSAGE;
       await env.PUBLIC_PROJECTION_QUEUE.send(nextMessage, {
-        delaySeconds: 1,
+        delaySeconds: 0,
       });
       message.ack();
       console.log(
@@ -109,7 +109,7 @@ async function consumePublicProjectionMessage(
             }
           : ADVANCE_MESSAGE;
       await env.PUBLIC_PROJECTION_QUEUE.send(nextMessage, {
-        delaySeconds: 1,
+        delaySeconds: 0,
       });
     }
     message.ack();
