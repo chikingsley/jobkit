@@ -69,6 +69,16 @@ export function publicJobHourlyUsd(job: PublicJob) {
   if (hourly === null || hourly === undefined) {
     return null;
   }
+  const amount = job.compensation?.amount;
+  if (
+    job.compensation?.kind === "amount" &&
+    amount?.currency === "USD" &&
+    amount.period === "hour" &&
+    amount.minimum === hourly.minimum &&
+    amount.maximum === hourly.maximum
+  ) {
+    return null;
+  }
   return `${formatMoneyRange({
     currency: "USD",
     maximum: hourly.maximum,
