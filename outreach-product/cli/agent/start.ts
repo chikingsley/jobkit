@@ -35,35 +35,45 @@ await main();
 
 async function main() {
   do {
-    if (!args["operations-only"]) {
-      // biome-ignore lint/performance/noAwaitInLoops: Each claim depends on the prior leased task reaching a terminal state.
-      const response = await client.post("/api/agent-tasks/claim", {
-        runnerVersion: codexVersion,
-      });
-      const task = AgentTaskEnvelopeSchema.nullable().parse(response.task);
-      if (task) {
-        await runAgentTask(task);
-        if (args.once) {
-          return;
-        }
-        continue;
-      }
-    }
-    if (
-      config.capabilities.includes("operations") &&
-      (await claimAndRunInventoryOperation(client, config))
-    ) {
-      if (args.once) {
-        return;
-      }
-      continue;
-    }
+    // biome-ignore lint/performance/noAwaitInLoops: Each claim depends on the prior leased task reaching a terminal state.
+    const ranWork = await runWorkCycle();
     if (args.once) {
-      console.log("No compatible agent or inventory work is queued.");
+      if (!ranWork) {
+        console.log("No compatible agent or inventory work is queued.");
+      }
       return;
     }
-    await sleep(15_000);
   } while (!args.once);
+}
+
+async function runWorkCycle() {
+  const ranWork = await runNextWork();
+  if (!(ranWork || args.once)) {
+    await sleep(15_000);
+  }
+  return ranWork;
+}
+
+async function runNextWork() {
+  if (!args["operations-only"] && (await claimAndRunAgentTask())) {
+    return true;
+  }
+  return (
+    config.capabilities.includes("operations") &&
+    (await claimAndRunInventoryOperation(client, config))
+  );
+}
+
+async function claimAndRunAgentTask() {
+  const response = await client.post("/api/agent-tasks/claim", {
+    runnerVersion: codexVersion,
+  });
+  const task = AgentTaskEnvelopeSchema.nullable().parse(response.task);
+  if (!task) {
+    return false;
+  }
+  await runAgentTask(task);
+  return true;
 }
 
 async function runAgentTask(

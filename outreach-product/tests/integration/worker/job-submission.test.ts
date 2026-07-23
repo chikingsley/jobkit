@@ -91,6 +91,87 @@ function redirectResponse(setCookies: string[] = []) {
   return new Response(null, { headers, status: 302 });
 }
 
+interface SeriousTeachersMockState {
+  submissionPosts: number;
+  submitted: boolean;
+}
+
+interface SeriousTeachersRequest {
+  appliedDate?: string;
+  applyUrl: string;
+  employerId: string;
+  jobId: string;
+  method: string;
+  state: SeriousTeachersMockState;
+  url: string;
+}
+
+function loginResponse({ method, url }: SeriousTeachersRequest) {
+  if (!url.endsWith("/te2/login")) {
+    return null;
+  }
+  if (method === "GET") {
+    return htmlResponse(
+      '<input name="__RequestVerificationToken" value="login-token">',
+      ["antiforgery=first; Path=/", "ARRAffinity=first; Path=/"]
+    );
+  }
+  return method === "POST"
+    ? redirectResponse(["session=active; Path=/"])
+    : null;
+}
+
+function panelResponse({
+  appliedDate,
+  employerId,
+  jobId,
+  state,
+  url,
+}: SeriousTeachersRequest) {
+  if (!url.includes("/te2/seriousteachers_panel/")) {
+    return null;
+  }
+  const date = appliedDate ?? (state.submitted ? "14 July 2026" : null);
+  return htmlResponse(
+    date
+      ? `<button data-bs-target="#_${jobId}${employerId}">last applied on ${date}</button>`
+      : "<main>No application yet</main>"
+  );
+}
+
+function applicationResponse({
+  applyUrl,
+  method,
+  state,
+  url,
+}: SeriousTeachersRequest) {
+  if (url !== applyUrl) {
+    return null;
+  }
+  if (method === "GET") {
+    return htmlResponse(
+      '<input name="__RequestVerificationToken" value="apply-token"><input name="Teacher.Abroad" value="true"><input name="Teacher.euteacher" value="false">'
+    );
+  }
+  if (method !== "POST") {
+    return null;
+  }
+  state.submitted = true;
+  state.submissionPosts += 1;
+  return redirectResponse();
+}
+
+function seriousTeachersResponse(request: SeriousTeachersRequest) {
+  const response =
+    loginResponse(request) ??
+    panelResponse(request) ??
+    applicationResponse(request);
+  if (response) {
+    return response;
+  }
+  throw new Error(`Unexpected request: ${request.method} ${request.url}`);
+}
+
 function mockSeriousTeachers({
   appliedDate,
   employerId,
@@ -100,8 +181,10 @@ function mockSeriousTeachers({
   employerId: string;
   jobId: string;
 }) {
-  let submitted = false;
-  let submissionPosts = 0;
+  const state: SeriousTeachersMockState = {
+    submissionPosts: 0,
+    submitted: false,
+  };
   const userAgents: (string | null)[] = [];
   const applyUrl = `https://www.seriousteachers.com/te2/respond/${jobId}/${employerId}`;
   const mock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -109,39 +192,19 @@ function mockSeriousTeachers({
     const method = init?.method ?? "GET";
     const headers = new Headers(init?.headers);
     userAgents.push(headers.get("user-agent"));
-
-    if (url.endsWith("/te2/login") && method === "GET") {
-      return htmlResponse(
-        '<input name="__RequestVerificationToken" value="login-token">',
-        ["antiforgery=first; Path=/", "ARRAffinity=first; Path=/"]
-      );
-    }
-    if (url.endsWith("/te2/login") && method === "POST") {
-      return redirectResponse(["session=active; Path=/"]);
-    }
-    if (url.includes("/te2/seriousteachers_panel/")) {
-      const date = appliedDate ?? (submitted ? "14 July 2026" : null);
-      return htmlResponse(
-        date
-          ? `<button data-bs-target="#_${jobId}${employerId}">last applied on ${date}</button>`
-          : "<main>No application yet</main>"
-      );
-    }
-    if (url === applyUrl && method === "GET") {
-      return htmlResponse(
-        '<input name="__RequestVerificationToken" value="apply-token"><input name="Teacher.Abroad" value="true"><input name="Teacher.euteacher" value="false">'
-      );
-    }
-    if (url === applyUrl && method === "POST") {
-      submitted = true;
-      submissionPosts += 1;
-      return redirectResponse();
-    }
-    throw new Error(`Unexpected request: ${method} ${url}`);
+    return seriousTeachersResponse({
+      appliedDate,
+      applyUrl,
+      employerId,
+      jobId,
+      method,
+      state,
+      url,
+    });
   });
   vi.stubGlobal("fetch", mock);
   return {
-    submissionPostCount: () => submissionPosts,
+    submissionPostCount: () => state.submissionPosts,
     userAgents: () => userAgents,
   };
 }

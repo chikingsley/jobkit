@@ -16,6 +16,85 @@ import {
   recordInventoryItemFailure,
 } from "./job-ingestion";
 
+interface ExistingInventoryBatch {
+  id: string;
+  item_count: number;
+  ordinal: number;
+  status: "completed" | "failed" | "processing";
+}
+
+function existingBatchIsComplete(
+  existingBatch: ExistingInventoryBatch | null,
+  input: InventoryRunBatch
+) {
+  if (!existingBatch) {
+    return false;
+  }
+  if (
+    existingBatch.ordinal !== input.ordinal ||
+    existingBatch.item_count !== input.jobs.length
+  ) {
+    throw new InventoryRunError(
+      "Inventory batch key was reused with different contents",
+      409
+    );
+  }
+  return existingBatch.status === "completed";
+}
+
+async function ingestBatchJobs(
+  db: D1Database,
+  run: InventoryRunRow,
+  batchId: string,
+  jobs: InventoryRunBatch["jobs"]
+) {
+  const failures: Array<{ detail: string; transient: boolean }> = [];
+  for (const job of jobs) {
+    try {
+      // biome-ignore lint/performance/noAwaitInLoops: Each source job is a durable checkpoint, allowing an interrupted request to resume.
+      await ingestInventoryJob(db, run, batchId, job);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      await recordInventoryItemFailure(db, run.id, batchId, job, message);
+      failures.push({
+        detail: `${job.id}: ${message}`,
+        transient: isTransientInventoryStorageError(error),
+      });
+    }
+  }
+  return failures;
+}
+
+async function assertBatchSucceeded(
+  db: D1Database,
+  batchId: string,
+  failures: Array<{ detail: string; transient: boolean }>,
+  completedAt: string
+) {
+  if (failures.length === 0) {
+    return;
+  }
+  await db
+    .prepare(
+      `UPDATE inventory_run_batches
+          SET status='failed',error_detail=?,completed_at=?
+        WHERE id=?`
+    )
+    .bind(
+      failures
+        .map((failure) => failure.detail)
+        .join("\n")
+        .slice(0, 4000),
+      completedAt,
+      batchId
+    )
+    .run();
+  throw new InventoryRunError(
+    `${failures.length} inventory item${failures.length === 1 ? "" : "s"} could not be ingested`,
+    failures.every((failure) => failure.transient) ? 503 : 422
+  );
+}
+
 export async function beginInventoryRun(
   db: D1Database,
   runner: AgentRunnerContext,
@@ -144,23 +223,8 @@ export async function ingestInventoryBatch(
         WHERE run_id=? AND batch_key=?`
     )
     .bind(runId, input.batchKey)
-    .first<{
-      id: string;
-      item_count: number;
-      ordinal: number;
-      status: "completed" | "failed" | "processing";
-    }>();
-  if (
-    existingBatch &&
-    (existingBatch.ordinal !== input.ordinal ||
-      existingBatch.item_count !== input.jobs.length)
-  ) {
-    throw new InventoryRunError(
-      "Inventory batch key was reused with different contents",
-      409
-    );
-  }
-  if (existingBatch?.status === "completed") {
+    .first<ExistingInventoryBatch>();
+  if (existingBatchIsComplete(existingBatch, input)) {
     return toInventoryRun(await readOwnedRun(db, runner, runId));
   }
 
@@ -184,43 +248,10 @@ export async function ingestInventoryBatch(
     )
     .run();
 
-  const failures: Array<{ detail: string; transient: boolean }> = [];
-  for (const job of input.jobs) {
-    try {
-      // biome-ignore lint/performance/noAwaitInLoops: Each source job is a durable checkpoint, allowing an interrupted request to resume.
-      await ingestInventoryJob(db, run, batchId, job);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      await recordInventoryItemFailure(db, run.id, batchId, job, message);
-      failures.push({
-        detail: `${job.id}: ${message}`,
-        transient: isTransientInventoryStorageError(error),
-      });
-    }
-  }
+  const failures = await ingestBatchJobs(db, run, batchId, input.jobs);
 
   const completedAt = new Date().toISOString();
-  if (failures.length > 0) {
-    await db
-      .prepare(
-        `UPDATE inventory_run_batches
-            SET status='failed',error_detail=?,completed_at=?
-          WHERE id=?`
-      )
-      .bind(
-        failures
-          .map((failure) => failure.detail)
-          .join("\n")
-          .slice(0, 4000),
-        completedAt,
-        batchId
-      )
-      .run();
-    throw new InventoryRunError(
-      `${failures.length} inventory item${failures.length === 1 ? "" : "s"} could not be ingested`,
-      failures.every((failure) => failure.transient) ? 503 : 422
-    );
-  }
+  await assertBatchSucceeded(db, batchId, failures, completedAt);
   await db
     .prepare(
       `UPDATE inventory_run_batches

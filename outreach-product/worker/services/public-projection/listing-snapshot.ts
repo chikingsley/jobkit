@@ -40,6 +40,7 @@ interface ProjectionListingSnapshotRow {
   current_material_version: number;
   input_hash: string;
   listing_id: string;
+  material_changed_at: string;
   material_hash: string;
   material_hash_version: number;
   material_json: string | null;
@@ -52,6 +53,7 @@ export interface ExactProjectionListingSnapshot {
   inputHash: string;
   listingId: string;
   material: z.infer<typeof ProjectionMaterialSchema>;
+  materialChangedAt: string;
   materialHash: string;
   materialHashVersion: number;
   materialJson: string;
@@ -78,6 +80,7 @@ export async function readExactProjectionListingSnapshot(
               listing.board,listing.material_version current_material_version,
               listing.material_hash current_material_hash,
               listing.material_hash_version current_material_hash_version,
+              listing.material_changed_at,
               version.material_hash,version.material_hash_version,
               version.material_json
          FROM public_projection_listing_items item
@@ -142,6 +145,7 @@ export async function readExactProjectionListingSnapshot(
     inputHash: row.input_hash,
     listingId: row.listing_id,
     material: parsed.data,
+    materialChangedAt: row.material_changed_at,
     materialHash: row.material_hash,
     materialHashVersion: row.material_hash_version,
     materialJson: row.material_json,

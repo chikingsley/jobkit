@@ -1,7 +1,7 @@
 import type { JobMatchSummary } from "@/profile-types";
 import type { JobListItem } from "./types";
 
-interface JobFilters {
+export interface JobFilters {
   country: string;
   fit: string;
   showExcluded: boolean;

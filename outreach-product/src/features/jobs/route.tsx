@@ -1,30 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { filterJobs, selectVisibleJob } from "@/features/jobs/filters";
+import { selectVisibleJob } from "@/features/jobs/filters";
 import { JobToolbar } from "@/features/jobs/job-toolbar";
+import { PRIVATE_JOB_PAGE_SIZE } from "@/features/jobs/list-query";
 import type { DraftMutationResult } from "@/features/jobs/types";
 import { JobsWorkspace } from "@/features/jobs/workspace";
 import { useWorkspaceContext } from "@/features/workspace/context";
 import { useJobsQueryState } from "@/features/workspace/query-state";
 import { apiRequest } from "@/lib/api";
-
-function useVisibleJobs() {
-  const { jobs, matches } = useWorkspaceContext();
-  const { countryFilter, fitFilter, showExcluded } = useJobsQueryState();
-  const boardJobs = useMemo(
-    () => jobs.filter((job) => job.board.toLowerCase() !== "anesl"),
-    [jobs]
-  );
-  return useMemo(
-    () =>
-      filterJobs(boardJobs, matches, {
-        country: countryFilter,
-        fit: fitFilter,
-        showExcluded,
-      }),
-    [boardJobs, countryFilter, fitFilter, matches, showExcluded]
-  );
-}
 
 export function JobsRouteToolbar() {
   const { countries, loadJob, loadJobs, refreshing } = useWorkspaceContext();
@@ -39,8 +22,8 @@ export function JobsRouteToolbar() {
     showExcluded,
     sort,
   } = useJobsQueryState();
-  const visibleJobs = useVisibleJobs();
-  const selected = selectVisibleJob(visibleJobs, selectedJobId);
+  const { jobs } = useWorkspaceContext();
+  const selected = selectVisibleJob(jobs, selectedJobId);
   const refreshJobs = useCallback(async () => {
     await loadJobs();
     if (selected) {
@@ -75,10 +58,12 @@ export function JobsRoute() {
     jobDetailError,
     jobDetailLoading,
     jobDetails,
+    jobPage,
     jobs,
     jobsError,
     loadJob,
     loadJobs,
+    loadMoreJobs,
     matches,
     preferences,
     profile,
@@ -87,21 +72,38 @@ export function JobsRoute() {
   } = useWorkspaceContext();
   const {
     closeDetail,
+    countryFilter,
     detailOpen,
+    fitFilter,
     openJob,
     publicJobIntent,
     resolvePublicJobIntent,
     selectedJobId,
     setSelectedJobId,
+    showExcluded,
     sort,
   } = useJobsQueryState();
-  const visibleJobs = useVisibleJobs();
+
+  useEffect(() => {
+    void loadJobs({
+      query: {
+        country: countryFilter,
+        excludeBoard: "anesl",
+        fit: fitFilter,
+        limit: PRIVATE_JOB_PAGE_SIZE,
+        offset: 0,
+        showExcluded,
+        sort,
+      },
+    }).catch(() => undefined);
+  }, [countryFilter, fitFilter, loadJobs, showExcluded, sort]);
+
   const intendedJob = publicJobIntent
     ? jobs.find((job) => job.publicJobId === publicJobIntent)
     : undefined;
   const selectedListItem = publicJobIntent
     ? intendedJob
-    : selectVisibleJob(visibleJobs, selectedJobId);
+    : selectVisibleJob(jobs, selectedJobId);
   const selectedDetail = selectedListItem
     ? jobDetails.get(selectedListItem.id)
     : undefined;
@@ -208,12 +210,13 @@ export function JobsRoute() {
       busyClaimKey={busyClaimKey}
       detailOpen={detailOpen || Boolean(publicJobIntent)}
       fx={fx}
+      hasMore={jobPage.hasMore}
       instruction={instruction}
       jobDetailError={jobDetailError}
       jobDetailLoading={
         jobDetailLoading !== "" && jobDetailLoading === selectedListItem?.id
       }
-      jobs={visibleJobs}
+      jobs={jobs}
       jobsError={jobsError}
       jobsLoading={refreshing && jobs.length === 0}
       matches={matches}
@@ -221,6 +224,7 @@ export function JobsRoute() {
       onCloseDetail={closeDetail}
       onDraftAction={draftAction}
       onInstruction={setInstruction}
+      onLoadMore={loadMoreJobs}
       onQualificationClaim={saveQualificationClaim}
       onSelect={openJob}
       preferences={preferences}
@@ -237,7 +241,7 @@ export function JobsRoute() {
             }
           : undefined
       }
-      sort={sort}
+      totalCount={jobPage.totalCount}
     />
   );
 }

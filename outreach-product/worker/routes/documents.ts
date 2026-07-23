@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { JobKitApp } from "../app-types";
+import type { AppEnv } from "../env";
 import {
   addDocumentToPacketVacancies,
   listDocumentPackets,
@@ -15,6 +16,61 @@ const allowedContentTypes = new Set([
   "image/png",
 ]);
 const DefaultPacketSchema = z.object({ packetId: z.string().min(1) }).strict();
+
+function validDocumentLength(length: number) {
+  return length > 0 && length <= MAX_DOCUMENT_BYTES;
+}
+
+async function persistUploadedDocument(
+  env: AppEnv,
+  input: {
+    body: ReadableStream<Uint8Array>;
+    category: string;
+    contentType: string;
+    filename: string;
+    length: number;
+    userId: string;
+  }
+) {
+  const id = crypto.randomUUID();
+  const objectKey = `users/${input.userId}/${id}/${input.filename}`;
+  const object = await env.DOCUMENTS.put(objectKey, input.body, {
+    httpMetadata: {
+      contentDisposition: `inline; filename="${input.filename}"`,
+      contentType: input.contentType,
+    },
+  });
+  try {
+    await env.DB.prepare(
+      `INSERT INTO user_documents
+        (id,user_id,category,filename,object_key,content_type,size_bytes,
+         r2_version,etag,created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?)`
+    )
+      .bind(
+        id,
+        input.userId,
+        input.category,
+        input.filename,
+        objectKey,
+        input.contentType,
+        input.length,
+        object?.version ?? "",
+        object?.etag ?? "",
+        new Date().toISOString()
+      )
+      .run();
+  } catch (error) {
+    await env.DOCUMENTS.delete(objectKey);
+    throw error;
+  }
+  if (input.category !== "test_lab") {
+    await addDocumentToPacketVacancies(env.DB, input.userId, {
+      category: input.category,
+      id,
+    });
+  }
+}
 
 export function registerDocumentRoutes(app: JobKitApp) {
   app.get("/api/documents", async (c) => {
@@ -32,7 +88,7 @@ export function registerDocumentRoutes(app: JobKitApp) {
 
   app.put("/api/documents", async (c) => {
     const length = Number(c.req.header("content-length") ?? 0);
-    if (!(length > 0 && length <= MAX_DOCUMENT_BYTES)) {
+    if (!validDocumentLength(length)) {
       return c.json(
         { message: "Files must be between 1 byte and 10 MB", ok: false },
         413
@@ -57,42 +113,15 @@ export function registerDocumentRoutes(app: JobKitApp) {
       return c.json({ message: "File body required", ok: false }, 400);
     }
 
-    const id = crypto.randomUUID();
     const userId = c.get("user").id;
-    const objectKey = `users/${userId}/${id}/${filename}`;
-    const object = await c.env.DOCUMENTS.put(objectKey, c.req.raw.body, {
-      httpMetadata: {
-        contentDisposition: `inline; filename="${filename}"`,
-        contentType,
-      },
+    await persistUploadedDocument(c.env, {
+      body: c.req.raw.body,
+      category,
+      contentType,
+      filename,
+      length,
+      userId,
     });
-    try {
-      await c.env.DB.prepare(
-        `INSERT INTO user_documents
-          (id,user_id,category,filename,object_key,content_type,size_bytes,
-           r2_version,etag,created_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?)`
-      )
-        .bind(
-          id,
-          userId,
-          category,
-          filename,
-          objectKey,
-          contentType,
-          length,
-          object?.version ?? "",
-          object?.etag ?? "",
-          new Date().toISOString()
-        )
-        .run();
-    } catch (error) {
-      await c.env.DOCUMENTS.delete(objectKey);
-      throw error;
-    }
-    if (category !== "test_lab") {
-      await addDocumentToPacketVacancies(c.env.DB, userId, { category, id });
-    }
     return c.json({ message: "Document uploaded", ok: true });
   });
 

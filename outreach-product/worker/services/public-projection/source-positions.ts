@@ -1,13 +1,7 @@
-import { z } from "zod";
 import {
-  type SourcePositionIdentity,
   SourcePositionIdentityError,
   sourcePositionIdentities,
 } from "../../../src/features/public/source-position-identity";
-import {
-  EXACT_PROJECTION_ANALYSIS_GUARD_SQL,
-  exactProjectionAnalysisGuardBindings,
-} from "./analysis-guard";
 import { canonicalJson, canonicalSha256, sha256Hex } from "./hash";
 import {
   assertClaimedUpdate,
@@ -21,62 +15,117 @@ import {
   ProjectionListingSnapshotError,
   readExactProjectionListingSnapshot,
 } from "./listing-snapshot";
+import { readProjectionAnalysisPrerequisites } from "./prerequisites";
+import { SOURCE_POSITION_EXPANSION_PAGE_SIZE } from "./source-positions/model";
 import {
-  type ProjectionAnalysisGuard,
-  readProjectionAnalysisPrerequisites,
-} from "./prerequisites";
+  analysisExpansionGuardStatement,
+  analysisSealMatches,
+  blockClaim,
+  classifyExpansionFailure,
+  expansionProgressChanged,
+  readExpansionProgress,
+  readSealedCheckpoint,
+  requireReadyPositionInputs,
+  sealedMaterialCheckpoint,
+} from "./source-positions/support";
 
-const SealedPrerequisiteCheckpointSchema = z
-  .object({
-    analyses: z
-      .object({
-        content: z
-          .object({
-            payloadHash: z.string().length(64),
-            recordFingerprint: z.string().length(64),
-          })
-          .passthrough(),
-        matchFacts: z
-          .object({
-            payloadHash: z.string().length(64),
-            recordFingerprint: z.string().length(64),
-          })
-          .passthrough(),
-        position: z
-          .object({
-            payloadHash: z.string().length(64),
-            recordFingerprint: z.string().length(64),
-          })
-          .passthrough(),
-      })
-      .passthrough(),
-    materialSnapshot: z
-      .object({
-        analysisSourceHash: z.string().length(64),
-        board: z.string().min(1),
-        inputHash: z.string().length(64),
-        listingId: z.string().min(1),
-        materialHash: z.string().length(64),
-        materialHashVersion: z.literal(1),
-        materialVersion: z.number().int().positive(),
-        state: z.literal("validated"),
-      })
-      .passthrough(),
-    prerequisiteState: z.literal("validated"),
-  })
-  .passthrough();
+type ProjectionCheckpoint = Awaited<ReturnType<typeof readSealedCheckpoint>>;
+type ProjectionPrerequisites = Awaited<
+  ReturnType<typeof readProjectionAnalysisPrerequisites>
+>;
 
-interface ListingCheckpointRow {
-  checkpoint_json: string;
+function sealedAnalysisInputsMatch(
+  checkpoint: ProjectionCheckpoint,
+  snapshot: ExactProjectionListingSnapshot,
+  prerequisites: ProjectionPrerequisites
+) {
+  return (
+    checkpoint.materialSnapshot.analysisSourceHash ===
+      snapshot.analysisSourceHash &&
+    checkpoint.materialSnapshot.board === snapshot.board &&
+    checkpoint.materialSnapshot.inputHash === snapshot.inputHash &&
+    checkpoint.materialSnapshot.listingId === snapshot.listingId &&
+    checkpoint.materialSnapshot.materialHash === snapshot.materialHash &&
+    checkpoint.materialSnapshot.materialVersion === snapshot.materialVersion &&
+    analysisSealMatches(checkpoint.analyses, prerequisites.checkpoint)
+  );
 }
 
-const SOURCE_POSITION_EXPANSION_PAGE_SIZE = 20;
+function commitAnalysisInputsMatch(
+  checkpoint: ProjectionCheckpoint,
+  original: ExactProjectionListingSnapshot,
+  current: ExactProjectionListingSnapshot,
+  prerequisites: ProjectionPrerequisites
+) {
+  return (
+    prerequisites.ready &&
+    current.inputHash === original.inputHash &&
+    current.materialHash === original.materialHash &&
+    current.materialVersion === original.materialVersion &&
+    analysisSealMatches(checkpoint.analyses, prerequisites.checkpoint)
+  );
+}
 
-interface SourcePositionExpansionProgress {
-  inputDigest: string;
-  nextOrdinal: number;
-  state: "expanding";
-  totalPositions: number;
+async function readClaimSnapshot(
+  db: D1Database,
+  claim: ClaimedProjectionListing,
+  timestamp: string,
+  checkpoint: ProjectionCheckpoint
+) {
+  try {
+    return {
+      kind: "snapshot" as const,
+      snapshot: await readExactProjectionListingSnapshot(db, claim.id),
+    };
+  } catch (error) {
+    if (error instanceof ProjectionListingSnapshotError) {
+      return {
+        kind: "blocked" as const,
+        result: await blockClaim(
+          db,
+          claim,
+          timestamp,
+          error.code,
+          error.message,
+          checkpoint
+        ),
+      };
+    }
+    throw error;
+  }
+}
+
+async function readClaimIdentities(
+  db: D1Database,
+  claim: ClaimedProjectionListing,
+  timestamp: string,
+  checkpoint: ProjectionCheckpoint,
+  listingId: string,
+  positionAnalysis: ReturnType<
+    typeof requireReadyPositionInputs
+  >["positionAnalysis"]
+) {
+  try {
+    return {
+      identities: await sourcePositionIdentities(listingId, positionAnalysis),
+      kind: "identities" as const,
+    };
+  } catch (error) {
+    if (error instanceof SourcePositionIdentityError) {
+      return {
+        kind: "blocked" as const,
+        result: await blockClaim(
+          db,
+          claim,
+          timestamp,
+          error.code,
+          error.message,
+          checkpoint
+        ),
+      };
+    }
+    throw error;
+  }
 }
 
 export async function processProjectionSourcePositionClaim(
@@ -85,22 +134,16 @@ export async function processProjectionSourcePositionClaim(
   timestamp: string
 ) {
   const previousCheckpoint = await readSealedCheckpoint(db, claim.id);
-  let snapshot: ExactProjectionListingSnapshot;
-  try {
-    snapshot = await readExactProjectionListingSnapshot(db, claim.id);
-  } catch (error) {
-    if (error instanceof ProjectionListingSnapshotError) {
-      return blockClaim(
-        db,
-        claim,
-        timestamp,
-        error.code,
-        error.message,
-        previousCheckpoint
-      );
-    }
-    throw error;
+  const snapshotRead = await readClaimSnapshot(
+    db,
+    claim,
+    timestamp,
+    previousCheckpoint
+  );
+  if (snapshotRead.kind === "blocked") {
+    return snapshotRead.result;
   }
+  const { snapshot } = snapshotRead;
   const prerequisites = await readProjectionAnalysisPrerequisites(db, snapshot);
   if (prerequisites.terminalFailure) {
     return blockClaim(
@@ -141,18 +184,7 @@ export async function processProjectionSourcePositionClaim(
     matchFacts: prerequisites.checkpoint.matchFacts.payloadHash,
     position: prerequisites.checkpoint.position.payloadHash,
   };
-  if (
-    previousCheckpoint.materialSnapshot.analysisSourceHash !==
-      snapshot.analysisSourceHash ||
-    previousCheckpoint.materialSnapshot.board !== snapshot.board ||
-    previousCheckpoint.materialSnapshot.inputHash !== snapshot.inputHash ||
-    previousCheckpoint.materialSnapshot.listingId !== snapshot.listingId ||
-    previousCheckpoint.materialSnapshot.materialHash !==
-      snapshot.materialHash ||
-    previousCheckpoint.materialSnapshot.materialVersion !==
-      snapshot.materialVersion ||
-    !analysisSealMatches(previousCheckpoint.analyses, prerequisites.checkpoint)
-  ) {
+  if (!sealedAnalysisInputsMatch(previousCheckpoint, snapshot, prerequisites)) {
     return blockClaim(
       db,
       claim,
@@ -164,25 +196,18 @@ export async function processProjectionSourcePositionClaim(
   }
   const { analysisGuard, positionAnalysis } =
     requireReadyPositionInputs(prerequisites);
-  let identities: SourcePositionIdentity[];
-  try {
-    identities = await sourcePositionIdentities(
-      snapshot.listingId,
-      positionAnalysis
-    );
-  } catch (error) {
-    if (error instanceof SourcePositionIdentityError) {
-      return blockClaim(
-        db,
-        claim,
-        timestamp,
-        error.code,
-        error.message,
-        previousCheckpoint
-      );
-    }
-    throw error;
+  const identityRead = await readClaimIdentities(
+    db,
+    claim,
+    timestamp,
+    previousCheckpoint,
+    snapshot.listingId,
+    positionAnalysis
+  );
+  if (identityRead.kind === "blocked") {
+    return identityRead.result;
   }
+  const { identities } = identityRead;
   const sealedPositions = await Promise.all(
     identities.map(async (identity) => {
       const position = positionAnalysis.positions[identity.sourceOrdinal];
@@ -252,13 +277,11 @@ export async function processProjectionSourcePositionClaim(
     commitSnapshot
   );
   if (
-    !commitPrerequisites.ready ||
-    commitSnapshot.inputHash !== snapshot.inputHash ||
-    commitSnapshot.materialHash !== snapshot.materialHash ||
-    commitSnapshot.materialVersion !== snapshot.materialVersion ||
-    !analysisSealMatches(
-      previousCheckpoint.analyses,
-      commitPrerequisites.checkpoint
+    !commitAnalysisInputsMatch(
+      previousCheckpoint,
+      snapshot,
+      commitSnapshot,
+      commitPrerequisites
     )
   ) {
     return blockClaim(
@@ -420,199 +443,4 @@ export async function processProjectionSourcePositionClaim(
     );
   }
   return { blocked: 0, expanded: page.length, waiting: 0 };
-}
-
-function readExpansionProgress(
-  checkpoint: Record<string, unknown>
-): SourcePositionExpansionProgress | null {
-  const { sourcePositions } = checkpoint;
-  if (
-    typeof sourcePositions !== "object" ||
-    sourcePositions === null ||
-    !("state" in sourcePositions) ||
-    sourcePositions.state !== "expanding"
-  ) {
-    return null;
-  }
-  const candidate = sourcePositions as Record<string, unknown>;
-  if (
-    typeof candidate.inputDigest !== "string" ||
-    candidate.inputDigest.length !== 64 ||
-    !Number.isInteger(candidate.nextOrdinal) ||
-    Number(candidate.nextOrdinal) < 0 ||
-    !Number.isInteger(candidate.totalPositions) ||
-    Number(candidate.totalPositions) < 1
-  ) {
-    throw new Error("Projection source-position progress is invalid");
-  }
-  return {
-    inputDigest: candidate.inputDigest,
-    nextOrdinal: Number(candidate.nextOrdinal),
-    state: "expanding",
-    totalPositions: Number(candidate.totalPositions),
-  };
-}
-
-function requireReadyPositionInputs(
-  prerequisites: Awaited<ReturnType<typeof readProjectionAnalysisPrerequisites>>
-) {
-  const { guard: analysisGuard, position: positionAnalysis } = prerequisites;
-  if (!(positionAnalysis && analysisGuard)) {
-    throw new Error("Ready projection prerequisites omitted sealed inputs");
-  }
-  return { analysisGuard, positionAnalysis };
-}
-
-function expansionProgressChanged(
-  progress: SourcePositionExpansionProgress | null,
-  inputDigest: string,
-  totalPositions: number
-) {
-  return (
-    progress !== null &&
-    (progress.inputDigest !== inputDigest ||
-      progress.totalPositions !== totalPositions ||
-      progress.nextOrdinal > totalPositions)
-  );
-}
-
-function analysisExpansionGuardStatement(
-  db: D1Database,
-  claim: ClaimedProjectionListing,
-  snapshot: Awaited<ReturnType<typeof readExactProjectionListingSnapshot>>,
-  guard: ProjectionAnalysisGuard,
-  expansionGuardToken: string
-) {
-  return db
-    .prepare(
-      `UPDATE public_projection_listing_items
-          SET checkpoint_json=json_set(
-            checkpoint_json,'$.expansionGuard',?
-          )
-        WHERE id=? AND run_id=?
-          AND status='processing'
-          AND lease_owner=? AND lease_token=?
-          AND lease_expires_at>strftime('%Y-%m-%dT%H:%M:%fZ','now')
-          AND input_hash=?
-          ${EXACT_PROJECTION_ANALYSIS_GUARD_SQL}`
-    )
-    .bind(
-      expansionGuardToken,
-      claim.id,
-      claim.runId,
-      claim.leaseOwner,
-      claim.leaseToken,
-      claim.inputHash,
-      ...exactProjectionAnalysisGuardBindings(snapshot, guard)
-    );
-}
-
-function classifyExpansionFailure(error: unknown) {
-  const detail =
-    error instanceof Error
-      ? error.message
-      : "Source-position persistence failed";
-  if (detail.includes("analysis expansion guard")) {
-    return { code: "analysis_snapshot_changed", detail };
-  }
-  if (
-    detail.includes("source positions are immutable") ||
-    detail.includes("job_source_positions") ||
-    detail.includes("projection position input snapshot is immutable") ||
-    detail.includes("public_projection_position_items")
-  ) {
-    return { code: "source_position_identity_conflict", detail };
-  }
-  return { code: "source_position_persistence_conflict", detail };
-}
-
-async function readSealedCheckpoint(db: D1Database, listingItemId: string) {
-  const row = await db
-    .prepare(
-      `SELECT checkpoint_json FROM public_projection_listing_items
-        WHERE id=? LIMIT 1`
-    )
-    .bind(listingItemId)
-    .first<ListingCheckpointRow>();
-  const parsed = SealedPrerequisiteCheckpointSchema.safeParse(
-    row ? parseJson(row.checkpoint_json) : null
-  );
-  if (!parsed.success) {
-    throw new Error("Projection prerequisite checkpoint is invalid");
-  }
-  return parsed.data;
-}
-
-async function blockClaim(
-  db: D1Database,
-  claim: ClaimedProjectionListing,
-  timestamp: string,
-  errorCode: string,
-  errorDetail: string,
-  checkpoint: Record<string, unknown>
-) {
-  const results = await db.batch([
-    claimedListingUpdateStatement(db, claim, {
-      checkpoint: {
-        ...checkpoint,
-        error: { code: errorCode, detail: errorDetail },
-        sourcePositions: { state: "blocked" },
-      },
-      completedAt: timestamp,
-      errorCode,
-      errorDetail,
-      stage: "source_positions",
-      status: "blocked",
-      timestamp,
-    }),
-    projectionRunCounterStatement(db, claim.runId, timestamp),
-  ]);
-  assertClaimedUpdate(results[0], "source-position block");
-  return { blocked: 1, expanded: 0, waiting: 0 };
-}
-
-function analysisSealMatches(
-  sealed: {
-    content: { payloadHash: string; recordFingerprint: string };
-    matchFacts: { payloadHash: string; recordFingerprint: string };
-    position: { payloadHash: string; recordFingerprint: string };
-  },
-  current: {
-    content: { payloadHash: string | null; recordFingerprint: string };
-    matchFacts: { payloadHash: string | null; recordFingerprint: string };
-    position: { payloadHash: string | null; recordFingerprint: string };
-  }
-) {
-  return (
-    sealed.content.payloadHash === current.content.payloadHash &&
-    sealed.content.recordFingerprint === current.content.recordFingerprint &&
-    sealed.matchFacts.payloadHash === current.matchFacts.payloadHash &&
-    sealed.matchFacts.recordFingerprint ===
-      current.matchFacts.recordFingerprint &&
-    sealed.position.payloadHash === current.position.payloadHash &&
-    sealed.position.recordFingerprint === current.position.recordFingerprint
-  );
-}
-
-function sealedMaterialCheckpoint(
-  snapshot: Awaited<ReturnType<typeof readExactProjectionListingSnapshot>>
-) {
-  return {
-    analysisSourceHash: snapshot.analysisSourceHash,
-    board: snapshot.board,
-    inputHash: snapshot.inputHash,
-    listingId: snapshot.listingId,
-    materialHash: snapshot.materialHash,
-    materialHashVersion: snapshot.materialHashVersion,
-    materialVersion: snapshot.materialVersion,
-    state: "validated",
-  };
-}
-
-function parseJson(value: string): unknown {
-  try {
-    return JSON.parse(value) as unknown;
-  } catch {
-    return null;
-  }
 }

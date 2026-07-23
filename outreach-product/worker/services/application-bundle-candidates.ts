@@ -114,6 +114,7 @@ function toAneslPosition(row: Record<string, unknown>): Job {
     opportunityScope: String(row.opportunity_scope) as Job["opportunityScope"],
     positionAnalysis: null,
     publicJobId: null,
+    resolvedLocations: [],
     sourceReference: String(row.source_reference),
     sourceUrl: String(row.source_url),
     status: String(row.status),

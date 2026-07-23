@@ -39,6 +39,11 @@ interface ClassificationFailure {
   repeat: number;
 }
 
+interface ClassificationRun {
+  labelMode: ClassificationLabelMode;
+  model: JinaExperimentModel;
+}
+
 export async function runClassificationExperiment(
   apiKey: string,
   options: ClassificationExperimentOptions
@@ -60,53 +65,15 @@ export async function runClassificationExperiment(
   const modelResults = await mapInBatches(
     experimentRuns,
     options.concurrency,
-    async ({ labelMode, model }) => {
-      const failures: ClassificationFailure[] = [];
-      const results: ClassificationResult[] = [];
-      const batchLatencies: number[] = [];
-      for (let repeat = 0; repeat < options.repeats; repeat += 1) {
-        const started = performance.now();
-        try {
-          // biome-ignore lint/performance/noAwaitInLoops: Repeats are deliberately sequential so one model does not burst the hosted API.
-          const response = await classifyTexts(
-            env,
-            { labels, texts },
-            model.apiModel,
-            labelMode
-          );
-          const latencyMs = Math.round(performance.now() - started);
-          batchLatencies.push(latencyMs);
-          for (const [index, testCase] of classificationCases.entries()) {
-            const prediction = response.predictions[index];
-            if (!prediction) {
-              throw new Error(`Missing prediction for ${testCase.id}`);
-            }
-            results.push({
-              actual: prediction.label,
-              caseId: testCase.id,
-              expected: String(testCase.expected.label ?? ""),
-              latencyMs,
-              repeat: repeat + 1,
-              score: prediction.score,
-            });
-          }
-        } catch (error) {
-          failures.push({
-            error: error instanceof Error ? error.message : String(error),
-            latencyMs: Math.round(performance.now() - started),
-            repeat: repeat + 1,
-          });
-        }
-      }
-      return {
-        batchTimingMs: timingMetrics(batchLatencies),
-        failures,
-        labelMode,
-        metrics: classificationMetrics(results),
-        model,
-        results,
-      };
-    }
+    (run) =>
+      runClassificationModel(
+        env,
+        classificationCases,
+        labels,
+        texts,
+        options.repeats,
+        run
+      )
   );
   return {
     caseCount: classificationCases.length,
@@ -121,6 +88,87 @@ export async function runClassificationExperiment(
       requestShape: "one batch per model and repeat",
     },
   };
+}
+
+async function runClassificationModel(
+  env: AppEnv,
+  classificationCases: typeof TEST_LAB_CASES,
+  labels: string[],
+  texts: string[],
+  repeats: number,
+  { labelMode, model }: ClassificationRun
+) {
+  const failures: ClassificationFailure[] = [];
+  const results: ClassificationResult[] = [];
+  const batchLatencies: number[] = [];
+  for (let repeat = 0; repeat < repeats; repeat += 1) {
+    // biome-ignore lint/performance/noAwaitInLoops: Repeats are deliberately sequential so one model does not burst the hosted API.
+    await runClassificationRepeat({
+      batchLatencies,
+      classificationCases,
+      env,
+      failures,
+      labelMode,
+      labels,
+      model,
+      repeat,
+      results,
+      texts,
+    });
+  }
+  return {
+    batchTimingMs: timingMetrics(batchLatencies),
+    failures,
+    labelMode,
+    metrics: classificationMetrics(results),
+    model,
+    results,
+  };
+}
+
+async function runClassificationRepeat(input: {
+  batchLatencies: number[];
+  classificationCases: typeof TEST_LAB_CASES;
+  env: AppEnv;
+  failures: ClassificationFailure[];
+  labelMode: ClassificationLabelMode;
+  labels: string[];
+  model: JinaExperimentModel;
+  repeat: number;
+  results: ClassificationResult[];
+  texts: string[];
+}) {
+  const started = performance.now();
+  try {
+    const response = await classifyTexts(
+      input.env,
+      { labels: input.labels, texts: input.texts },
+      input.model.apiModel,
+      input.labelMode
+    );
+    const latencyMs = Math.round(performance.now() - started);
+    input.batchLatencies.push(latencyMs);
+    for (const [index, testCase] of input.classificationCases.entries()) {
+      const prediction = response.predictions[index];
+      if (!prediction) {
+        throw new Error(`Missing prediction for ${testCase.id}`);
+      }
+      input.results.push({
+        actual: prediction.label,
+        caseId: testCase.id,
+        expected: String(testCase.expected.label ?? ""),
+        latencyMs,
+        repeat: input.repeat + 1,
+        score: prediction.score,
+      });
+    }
+  } catch (error) {
+    input.failures.push({
+      error: error instanceof Error ? error.message : String(error),
+      latencyMs: Math.round(performance.now() - started),
+      repeat: input.repeat + 1,
+    });
+  }
 }
 
 async function mapInBatches<Input, Output>(

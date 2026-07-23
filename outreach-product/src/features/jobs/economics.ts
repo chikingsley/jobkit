@@ -151,19 +151,18 @@ export function statedHourlyValue(
   }
   const { payMultiplier, workloadMultiplier } = multipliers;
   const { amountMaximum, amountMinimum } = pay;
-  let minimum: number | null = null;
-  if (amountMinimum && workload.maximum) {
-    minimum =
-      (amountMinimum * payMultiplier) / (workload.maximum * workloadMultiplier);
-  }
-  let maximum: number | null = null;
-  if (workload.minimum) {
-    const upperPay = amountMaximum ?? amountMinimum;
-    if (upperPay) {
-      maximum =
-        (upperPay * payMultiplier) / (workload.minimum * workloadMultiplier);
-    }
-  }
+  const minimum = hourlyBound(
+    amountMinimum,
+    workload.maximum,
+    payMultiplier,
+    workloadMultiplier
+  );
+  const maximum = hourlyBound(
+    amountMaximum ?? amountMinimum,
+    workload.minimum,
+    payMultiplier,
+    workloadMultiplier
+  );
   if (!(minimum || maximum)) {
     return null;
   }
@@ -174,6 +173,17 @@ export function statedHourlyValue(
     minimum,
     taxBasis: pay.taxBasis,
   };
+}
+
+function hourlyBound(
+  amount: number | null,
+  workload: number | null,
+  payMultiplier: number,
+  workloadMultiplier: number
+) {
+  return amount && workload
+    ? (amount * payMultiplier) / (workload * workloadMultiplier)
+    : null;
 }
 
 export function statedHourlyUsd(

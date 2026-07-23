@@ -1,5 +1,7 @@
+import { z } from "zod";
 import type { JobKitApp } from "../app-types";
 import { PublicProjectionRunRequestSchema } from "../services/public-projection/contracts";
+import { promoteProjectionCandidate } from "../services/public-projection/promotion";
 import {
   createPublicProjectionRun,
   getPublicProjectionRun,
@@ -26,6 +28,33 @@ export function registerPublicProjectionRoutes(app: JobKitApp) {
     }
     return c.json({ ok: true, run });
   });
+
+  app.post(
+    "/api/operator/public-projection/runs/:runId/promotions",
+    async (c) => {
+      const user = c.get("user");
+      requireOperator(user.role);
+      const { allocationId } = z
+        .object({ allocationId: z.string().min(1) })
+        .strict()
+        .parse(await c.req.json());
+      const promotion = await promoteProjectionCandidate(c.env.DB, {
+        allocationId,
+        runId: c.req.param("runId"),
+        userId: user.id,
+      });
+      return c.json(
+        {
+          message: promotion.created
+            ? "Projection candidate promoted"
+            : "Projection candidate promotion already exists",
+          ok: true,
+          promotion,
+        },
+        promotion.created ? 201 : 200
+      );
+    }
+  );
 }
 
 function requireOperator(role: "member" | "operator") {

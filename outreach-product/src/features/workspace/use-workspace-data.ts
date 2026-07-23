@@ -1,5 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+  PRIVATE_JOB_PAGE_SIZE,
+  type PrivateJobListQuery,
+  privateJobListSearchParams,
+} from "@/features/jobs/list-query";
 import type {
   DraftMutationResult,
   FxData,
@@ -28,9 +33,38 @@ interface QualificationClaimInput {
 }
 
 const AGENT_TASK_REFRESH_MS = 1500;
+const defaultJobQuery: PrivateJobListQuery = {
+  country: "all",
+  excludeBoard: "anesl",
+  fit: "all",
+  limit: PRIVATE_JOB_PAGE_SIZE,
+  offset: 0,
+  showExcluded: false,
+  sort: "stated-hourly",
+};
+
+interface JobPage {
+  appliedCount: number;
+  hasMore: boolean;
+  limit: number;
+  offset: number;
+  totalAvailable: number;
+  totalCount: number;
+}
+
+const emptyJobPage: JobPage = {
+  appliedCount: 0,
+  hasMore: false,
+  limit: PRIVATE_JOB_PAGE_SIZE,
+  offset: 0,
+  totalAvailable: 0,
+  totalCount: 0,
+};
 
 export function useWorkspaceData({ jobsEnabled }: { jobsEnabled: boolean }) {
   const [jobs, setJobs] = useState<JobListItem[]>([]);
+  const [countries, setCountries] = useState<string[]>([]);
+  const [jobPage, setJobPage] = useState<JobPage>(emptyJobPage);
   const [matches, setMatches] = useState<Map<string, JobMatchSummary>>(
     new Map()
   );
@@ -48,33 +82,71 @@ export function useWorkspaceData({ jobsEnabled }: { jobsEnabled: boolean }) {
   const [qualificationClaims, setQualificationClaims] =
     useState<QualificationClaims>({});
   const [busyClaimKey, setBusyClaimKey] = useState("");
+  const currentJobQuery = useRef(defaultJobQuery);
 
-  const loadJobs = useCallback(async (options: { quiet?: boolean } = {}) => {
-    if (!options.quiet) {
-      setRefreshing(true);
-    }
-    try {
-      setJobsError("");
-      const response = await apiRequest("/api/jobs");
-      const data = (await response.json()) as {
-        fx: FxData;
-        jobs: JobListItem[];
-        matches: Record<string, JobMatchSummary>;
-      };
-      setJobs(data.jobs);
-      setFx(data.fx);
-      setMatches(new Map(Object.entries(data.matches)));
-    } catch (error) {
-      setJobsError(
-        error instanceof Error ? error.message : "Jobs could not load"
-      );
-      throw error;
-    } finally {
-      if (!options.quiet) {
-        setRefreshing(false);
+  const loadJobs = useCallback(
+    async (
+      options: {
+        append?: boolean;
+        query?: PrivateJobListQuery;
+        quiet?: boolean;
+      } = {}
+    ) => {
+      const query = options.query ?? currentJobQuery.current;
+      if (query.offset === 0) {
+        currentJobQuery.current = query;
       }
+      if (!options.quiet) {
+        setRefreshing(true);
+      }
+      try {
+        setJobsError("");
+        const search = privateJobListSearchParams(query);
+        const response = await apiRequest(`/api/jobs?${search}`);
+        const data = (await response.json()) as {
+          countries: string[];
+          fx: FxData;
+          jobs: JobListItem[];
+          matches: Record<string, JobMatchSummary>;
+          page: JobPage;
+        };
+        setJobs((current) =>
+          options.append ? appendUniqueJobs(current, data.jobs) : data.jobs
+        );
+        setCountries(data.countries);
+        setFx(data.fx);
+        setJobPage(data.page);
+        setMatches((current) =>
+          options.append
+            ? new Map([...current, ...Object.entries(data.matches)])
+            : new Map(Object.entries(data.matches))
+        );
+      } catch (error) {
+        setJobsError(
+          error instanceof Error ? error.message : "Jobs could not load"
+        );
+        throw error;
+      } finally {
+        if (!options.quiet) {
+          setRefreshing(false);
+        }
+      }
+    },
+    []
+  );
+
+  const loadMoreJobs = useCallback(async () => {
+    if (!jobPage.hasMore) {
+      return;
     }
-  }, []);
+    await loadJobs({
+      append: true,
+      query: {
+        ...currentJobQuery.current,
+        offset: jobs.length,
+      },
+    });
+  }, [jobPage.hasMore, jobs.length, loadJobs]);
 
   const loadJob = useCallback(async (jobId: string) => {
     setJobDetailError("");
@@ -103,13 +175,6 @@ export function useWorkspaceData({ jobsEnabled }: { jobsEnabled: boolean }) {
     const data = (await response.json()) as { documents: StoredDocument[] };
     setDocuments(data.documents);
   }, []);
-
-  useEffect(() => {
-    if (!jobsEnabled) {
-      return;
-    }
-    void loadJobs().catch(() => undefined);
-  }, [jobsEnabled, loadJobs]);
 
   useEffect(() => {
     if (!jobsEnabled) {
@@ -232,17 +297,19 @@ export function useWorkspaceData({ jobsEnabled }: { jobsEnabled: boolean }) {
   return {
     applyDraftMutation,
     busyClaimKey,
-    countries: [...new Set(jobs.map((job) => job.country))].sort(),
+    countries,
     documents,
     fx,
     jobDetailError,
     jobDetailLoading,
     jobDetails,
+    jobPage,
     jobs,
     jobsError,
     loadDocuments,
     loadJob,
     loadJobs,
+    loadMoreJobs,
     matches,
     preferences,
     profile,
@@ -252,4 +319,12 @@ export function useWorkspaceData({ jobsEnabled }: { jobsEnabled: boolean }) {
     setPreferences,
     setProfile,
   };
+}
+
+function appendUniqueJobs(current: JobListItem[], incoming: JobListItem[]) {
+  const jobs = new Map(current.map((job) => [job.id, job]));
+  for (const job of incoming) {
+    jobs.set(job.id, job);
+  }
+  return [...jobs.values()];
 }

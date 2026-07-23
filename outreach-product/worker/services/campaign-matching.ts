@@ -221,6 +221,7 @@ function matchingJobFromRow(row: CampaignMatchingRow): Job {
     opportunityScope: String(row.opportunity_scope) as Job["opportunityScope"],
     positionAnalysis,
     publicJobId: null,
+    resolvedLocations: [],
     sourceReference: String(row.source_reference),
     sourceUrl: String(row.source_url),
     status: "new",

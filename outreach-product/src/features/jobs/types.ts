@@ -56,6 +56,17 @@ export interface JobAnalysisStatus {
   positions: JobAnalysisState;
 }
 
+export interface ResolvedJobLocation {
+  bounds: [number, number, number, number] | null;
+  coordinateKind: "centroid" | "point";
+  countryCode: string;
+  displayName: string;
+  latitude: number;
+  longitude: number;
+  provider: "mapbox";
+  providerPlaceId: string;
+}
+
 export interface Job {
   analysisStatus: JobAnalysisStatus;
   applicationRoutes: ApplicationRoute[];
@@ -83,6 +94,7 @@ export interface Job {
   opportunityScope: "direct" | "multi_position" | "unknown";
   positionAnalysis: JobPositionAnalysis | null;
   publicJobId: string | null;
+  resolvedLocations: ResolvedJobLocation[];
   sourceReference: string;
   sourceUrl: string;
   status: string;

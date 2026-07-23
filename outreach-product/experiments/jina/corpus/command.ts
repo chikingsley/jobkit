@@ -44,74 +44,88 @@ export async function runCorpusCommand(args: string[]) {
   }
   const options = readOptions(optionArguments);
   const databasePath = resolve(options.get("database") ?? DEFAULT_DATABASE);
-  if (command === "build") {
-    const result = await buildCorpus({
-      databasePath,
-      sampleSize: positiveInteger(options.get("size") ?? "200"),
-    });
-    console.log(JSON.stringify(result, null, 2));
-    return;
+  switch (command) {
+    case "build":
+      await runBuild(databasePath, options);
+      return;
+    case "label":
+      await runLabel(databasePath, options);
+      return;
+    case "status":
+      runStatus(databasePath);
+      return;
+    case "finalize":
+      await runFinalize(databasePath, options);
+      return;
+    case "train-evaluate":
+      await runTrainEvaluate(databasePath, options);
+      return;
+    case "evaluate-zero-shot":
+      await runEvaluateZeroShot(databasePath, options);
+      return;
+    case "export-review":
+      await runExportReview(databasePath, options);
+      return;
+    case "export-frozen":
+      await runExportFrozen(databasePath, options);
+      return;
+    default:
+      throw new Error(`Unknown corpus command: ${command}`);
   }
-  if (command === "label") {
-    const passId = options.get("pass");
-    if (!(passId === "codex-a" || passId === "codex-b")) {
-      throw new Error("--pass must be codex-a or codex-b");
-    }
-    const effort = effortLevel(options.get("effort") ?? "medium");
-    const result = await labelCorpus({
-      chunkSize: positiveInteger(options.get("chunk-size") ?? "20"),
-      databasePath,
-      effort,
-      model: options.get("model") ?? "gpt-5.6-sol",
-      passId,
-    });
-    console.log(JSON.stringify(result, null, 2));
-    return;
+}
+
+async function runBuild(databasePath: string, options: Map<string, string>) {
+  const result = await buildCorpus({
+    databasePath,
+    sampleSize: positiveInteger(options.get("size") ?? "200"),
+  });
+  console.log(JSON.stringify(result, null, 2));
+}
+
+async function runLabel(databasePath: string, options: Map<string, string>) {
+  const passId = options.get("pass");
+  if (!(passId === "codex-a" || passId === "codex-b")) {
+    throw new Error("--pass must be codex-a or codex-b");
   }
-  if (command === "status") {
-    const database = openCorpusLedger(databasePath);
-    try {
-      console.log(
-        JSON.stringify(corpusStatus(database, CORPUS_VERSION), null, 2)
-      );
-    } finally {
-      database.close();
-    }
-    return;
-  }
-  if (command === "finalize") {
-    await runFinalize(databasePath, options);
-    return;
-  }
-  if (command === "train-evaluate") {
-    await runTrainEvaluate(databasePath, options);
-    return;
-  }
-  if (command === "evaluate-zero-shot") {
-    await runEvaluateZeroShot(databasePath, options);
-    return;
-  }
-  if (command === "export-review") {
-    const outputPath = resolve(
-      options.get("output") ??
-        resolve(
-          import.meta.dir,
-          "../../../src/test-lab/classification-review-corpus.json"
-        )
+  const effort = effortLevel(options.get("effort") ?? "medium");
+  const result = await labelCorpus({
+    chunkSize: positiveInteger(options.get("chunk-size") ?? "20"),
+    databasePath,
+    effort,
+    model: options.get("model") ?? "gpt-5.6-sol",
+    passId,
+  });
+  console.log(JSON.stringify(result, null, 2));
+}
+
+function runStatus(databasePath: string) {
+  const database = openCorpusLedger(databasePath);
+  try {
+    console.log(
+      JSON.stringify(corpusStatus(database, CORPUS_VERSION), null, 2)
     );
-    const result = await exportClassificationReview({
-      corpusVersion: CORPUS_VERSION,
-      databasePath,
-      outputPath,
-    });
-    console.log(JSON.stringify(result, null, 2));
-    return;
+  } finally {
+    database.close();
   }
-  if (command === "export-frozen") {
-    await runExportFrozen(databasePath, options);
-    return;
-  }
-  throw new Error(`Unknown corpus command: ${command}`);
+}
+
+async function runExportReview(
+  databasePath: string,
+  options: Map<string, string>
+) {
+  const outputPath = resolve(
+    options.get("output") ??
+      resolve(
+        import.meta.dir,
+        "../../../src/test-lab/classification-review-corpus.json"
+      )
+  );
+  const result = await exportClassificationReview({
+    corpusVersion: CORPUS_VERSION,
+    databasePath,
+    outputPath,
+  });
+  console.log(JSON.stringify(result, null, 2));
 }
 
 async function runExportFrozen(

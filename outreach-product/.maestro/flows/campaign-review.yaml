@@ -4,7 +4,7 @@ tags:
   - campaign-review
 ---
 - runFlow: ../sign-in.yaml
-- openLink: ${JOBKIT_URL}/campaigns/maestro-review-campaign
+- openLink: ${JOBKIT_URL}/app/campaigns/maestro-review-campaign
 - assertVisible: "Review interaction fixture"
 - assertVisible: "Maestro English Teacher"
 - assertVisible: "Writing rules"

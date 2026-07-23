@@ -40,15 +40,15 @@ export function App() {
       >
         <WorkspaceSidebar
           activeView={activeView}
-          applied={
-            workspace.jobs.filter((job) => job.status === "applied").length
-          }
+          applied={workspace.jobPage.appliedCount}
           email={currentUser.email}
           name={currentUser.name}
           onSignOut={() => authClient.signOut()}
           onViewChange={setActiveView}
           role={currentUser.role}
-          totalJobs={activeView === "jobs" ? workspace.jobs.length : null}
+          totalJobs={
+            activeView === "jobs" ? workspace.jobPage.totalAvailable : null
+          }
         />
         <SidebarInset className="h-svh min-h-0 min-w-0 overflow-hidden">
           <WorkspaceHeader

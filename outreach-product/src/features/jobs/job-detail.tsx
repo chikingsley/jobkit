@@ -1,10 +1,11 @@
-import { Banknote, BriefcaseBusiness, Gift, MapPin } from "lucide-react";
+import { Banknote, BriefcaseBusiness, Gift } from "lucide-react";
 import type { ComponentType } from "react";
 import { ApplicationAction } from "@/features/jobs/application-action";
 import { ApplicationDelivery } from "@/features/jobs/application-delivery";
 import { createJobDisplayFacts } from "@/features/jobs/display-facts";
 import { DraftEditor } from "@/features/jobs/draft-editor";
 import { humanize } from "@/features/jobs/format";
+import { JobLocation } from "@/features/jobs/job-location";
 import { MatchPanel } from "@/features/jobs/match";
 import { NormalizedJobDescription } from "@/features/jobs/normalized-description";
 import { PositionAnalysis } from "@/features/jobs/position-analysis";
@@ -198,7 +199,6 @@ function JobDetails({
         " · "
       ),
     },
-    { icon: MapPin, label: "Location", value: facts.location },
   ];
   if (employment) {
     items.push({
@@ -211,11 +211,14 @@ function JobDetails({
     items.push({ icon: Gift, label: "Benefits", value: benefits });
   }
   return (
-    <section className="mt-6 border-t pt-5">
+    <section className="mt-6">
       <h3 className="font-semibold">Job details</h3>
-      <dl className="mt-2 grid gap-x-10 sm:grid-cols-2">
+      <dl className="mt-3 grid gap-3 sm:grid-cols-2">
         {items.map((item) => (
-          <div className="flex gap-3 border-b py-3" key={item.label}>
+          <div
+            className="flex min-h-20 gap-3 rounded-xl bg-muted/35 p-3 ring-1 ring-foreground/10"
+            key={item.label}
+          >
             <item.icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <div className="min-w-0">
               <dt className="font-medium text-muted-foreground text-xs">
@@ -225,6 +228,11 @@ function JobDetails({
             </div>
           </div>
         ))}
+        <JobLocation
+          jobId={job.id}
+          label={facts.location}
+          location={job.resolvedLocations[0]}
+        />
       </dl>
     </section>
   );

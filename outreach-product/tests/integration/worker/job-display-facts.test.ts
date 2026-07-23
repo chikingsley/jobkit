@@ -118,6 +118,7 @@ function detail(): Job {
     opportunityScope: "multi_position",
     positionAnalysis: null,
     publicJobId: null,
+    resolvedLocations: [],
     sourceReference: "",
     sourceUrl: "",
     status: "new",

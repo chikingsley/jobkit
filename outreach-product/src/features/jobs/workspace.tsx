@@ -1,12 +1,11 @@
 import { ChevronLeft } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { groupJobsByContact } from "@/features/jobs/job-contact-groups";
 import { JobDetail } from "@/features/jobs/job-detail";
 import { JobQueueGroup } from "@/features/jobs/job-queue-group";
-import { type JobSort, sortJobs } from "@/features/jobs/sorting";
 import type {
   DraftMutationResult,
   FxData,
@@ -22,7 +21,6 @@ import type {
   Profile,
 } from "@/profile-types";
 
-const INITIAL_VISIBLE_JOBS = 100;
 const JOB_LOADING_ROWS = ["first", "second", "third", "fourth", "fifth"];
 
 export function JobsWorkspace({
@@ -30,6 +28,7 @@ export function JobsWorkspace({
   busyClaimKey,
   detailOpen,
   fx,
+  hasMore,
   instruction,
   jobDetailError,
   jobDetailLoading,
@@ -41,6 +40,7 @@ export function JobsWorkspace({
   onCloseDetail,
   onDraftAction,
   onInstruction,
+  onLoadMore,
   onQualificationClaim,
   onSelect,
   preferences,
@@ -49,12 +49,13 @@ export function JobsWorkspace({
   selectedId,
   selectedMatch,
   selectionNotice,
-  sort,
+  totalCount,
 }: {
   busy: string;
   busyClaimKey: string;
   detailOpen: boolean;
   fx: FxData;
+  hasMore: boolean;
   instruction: string;
   jobDetailError: string;
   jobDetailLoading: boolean;
@@ -69,6 +70,7 @@ export function JobsWorkspace({
     options: { body?: object; method?: "POST" | "PUT" }
   ) => Promise<DraftMutationResult | null>;
   onInstruction: (value: string) => void;
+  onLoadMore: () => Promise<void>;
   onQualificationClaim: (input: {
     answer: QualificationClaimAnswer | null;
     claimKey: string;
@@ -82,69 +84,28 @@ export function JobsWorkspace({
   selectedId?: string;
   selectedMatch?: JobMatch;
   selectionNotice?: { message: string; title: string };
-  sort: JobSort;
+  totalCount: number;
 }) {
-  const [visibleLimit, setVisibleLimit] = useState(INITIAL_VISIBLE_JOBS);
-  const sortedJobs = useMemo(() => sortJobs(jobs, fx, sort), [fx, jobs, sort]);
-  const queueJobs = sortedJobs.slice(0, visibleLimit);
-  const queueGroups = useMemo(
-    () => groupJobsByContact(sortedJobs.slice(0, visibleLimit)),
-    [sortedJobs, visibleLimit]
-  );
-  let detailContent = selectionNotice ? (
-    <>
-      <div className="split-workspace-back border-b bg-background px-4 py-2">
-        <Button onClick={onCloseDetail} variant="ghost">
-          <ChevronLeft /> Jobs
-        </Button>
-      </div>
-      <WorkspaceError
-        message={selectionNotice.message}
-        title={selectionNotice.title}
-      />
-    </>
-  ) : (
-    <div className="grid min-h-[24rem] place-items-center p-8 text-center">
-      <div>
-        <h2 className="font-semibold">No jobs in this view</h2>
-        <p className="mt-1 text-muted-foreground text-sm">
-          Adjust the filters or sync the private board.
-        </p>
-      </div>
-    </div>
-  );
-  if (selected) {
-    detailContent = (
-      <>
-        <div className="split-workspace-back border-b bg-background px-4 py-2">
-          <Button onClick={onCloseDetail} variant="ghost">
-            <ChevronLeft /> Jobs
-          </Button>
-        </div>
-        <JobDetail
-          busy={busy}
-          busyClaimKey={busyClaimKey}
-          fx={fx}
-          instruction={instruction}
-          job={selected}
-          match={profile && preferences ? selectedMatch : undefined}
-          onAction={onAction}
-          onDraftAction={onDraftAction}
-          onInstruction={onInstruction}
-          onQualificationClaim={onQualificationClaim}
-        />
-      </>
-    );
-  } else if (jobDetailLoading) {
-    detailContent = <JobDetailLoading />;
-  } else if (selectedId && jobDetailError) {
-    detailContent = (
-      <WorkspaceError
-        message={jobDetailError}
-        title="Job details could not load"
-      />
-    );
-  }
+  const queueGroups = useMemo(() => groupJobsByContact(jobs), [jobs]);
+  const detailContent = renderJobDetail({
+    busy,
+    busyClaimKey,
+    fx,
+    instruction,
+    jobDetailError,
+    jobDetailLoading,
+    onAction,
+    onCloseDetail,
+    onDraftAction,
+    onInstruction,
+    onQualificationClaim,
+    preferences,
+    profile,
+    selected,
+    selectedId,
+    selectedMatch,
+    selectionNotice,
+  });
   return (
     <SplitWorkspace
       detail={
@@ -163,7 +124,9 @@ export function JobsWorkspace({
               <Skeleton className="h-3 w-20" />
             ) : (
               <p className="text-muted-foreground text-xs">
-                {jobs.length.toLocaleString()} jobs
+                {hasMore
+                  ? `${jobs.length.toLocaleString()} of ${totalCount.toLocaleString()} jobs`
+                  : `${totalCount.toLocaleString()} jobs`}
               </p>
             )}
           </div>
@@ -186,12 +149,10 @@ export function JobsWorkspace({
                   selectedId={selectedId}
                 />
               ))}
-              {queueJobs.length < sortedJobs.length ? (
+              {hasMore ? (
                 <Button
                   className="mt-2 w-full"
-                  onClick={() =>
-                    setVisibleLimit((current) => current + INITIAL_VISIBLE_JOBS)
-                  }
+                  onClick={() => void onLoadMore()}
                   variant="outline"
                 >
                   Show 100 more
@@ -202,6 +163,98 @@ export function JobsWorkspace({
         </>
       }
     />
+  );
+}
+
+function renderJobDetail(input: {
+  busy: string;
+  busyClaimKey: string;
+  fx: FxData;
+  instruction: string;
+  jobDetailError: string;
+  jobDetailLoading: boolean;
+  onAction: (path: string, body?: object) => Promise<void>;
+  onCloseDetail: () => void;
+  onDraftAction: (
+    path: string,
+    options: { body?: object; method?: "POST" | "PUT" }
+  ) => Promise<DraftMutationResult | null>;
+  onInstruction: (value: string) => void;
+  onQualificationClaim: (input: {
+    answer: QualificationClaimAnswer | null;
+    claimKey: string;
+    kind: string;
+    label: string;
+  }) => Promise<void>;
+  preferences: Preferences | null;
+  profile: Profile | null;
+  selected?: Job;
+  selectedId?: string;
+  selectedMatch?: JobMatch;
+  selectionNotice?: { message: string; title: string };
+}) {
+  if (input.selected) {
+    return (
+      <>
+        <DetailBackButton onClose={input.onCloseDetail} />
+        <JobDetail
+          busy={input.busy}
+          busyClaimKey={input.busyClaimKey}
+          fx={input.fx}
+          instruction={input.instruction}
+          job={input.selected}
+          match={
+            input.profile && input.preferences ? input.selectedMatch : undefined
+          }
+          onAction={input.onAction}
+          onDraftAction={input.onDraftAction}
+          onInstruction={input.onInstruction}
+          onQualificationClaim={input.onQualificationClaim}
+        />
+      </>
+    );
+  }
+  if (input.jobDetailLoading) {
+    return <JobDetailLoading />;
+  }
+  if (input.selectedId && input.jobDetailError) {
+    return (
+      <WorkspaceError
+        message={input.jobDetailError}
+        title="Job details could not load"
+      />
+    );
+  }
+  if (input.selectionNotice) {
+    return (
+      <>
+        <DetailBackButton onClose={input.onCloseDetail} />
+        <WorkspaceError
+          message={input.selectionNotice.message}
+          title={input.selectionNotice.title}
+        />
+      </>
+    );
+  }
+  return (
+    <div className="grid min-h-[24rem] place-items-center p-8 text-center">
+      <div>
+        <h2 className="font-semibold">No jobs in this view</h2>
+        <p className="mt-1 text-muted-foreground text-sm">
+          Adjust the filters or sync the private board.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function DetailBackButton({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="split-workspace-back border-b bg-background px-4 py-2">
+      <Button onClick={onClose} variant="ghost">
+        <ChevronLeft /> Jobs
+      </Button>
+    </div>
   );
 }
 

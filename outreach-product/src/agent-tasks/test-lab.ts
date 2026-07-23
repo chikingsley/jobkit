@@ -226,45 +226,75 @@ function validateCaseSpecificOutput(testCase: TestLabCase, output: unknown) {
     return;
   }
   const record = output as Record<string, unknown>;
-  if (testCase.capability === "classification") {
-    const labels = stringArray(testCase.input.labels);
-    if (!labels.includes(String(record.label ?? ""))) {
-      throw new Error("Classifier output used a label outside the case labels");
-    }
+  switch (testCase.capability) {
+    case "classification":
+      validateClassificationOutput(testCase, record);
+      return;
+    case "deduplication":
+      validateDeduplicationOutput(testCase, record);
+      return;
+    case "reranking":
+      validateRerankingOutput(testCase, record);
+      return;
+    case "extraction":
+      validateExtractionOutput(testCase, record);
+      return;
+    default:
   }
-  if (
-    testCase.capability === "deduplication" &&
-    !candidateIds(testCase).includes(String(record.nearestId ?? ""))
-  ) {
+}
+
+function validateClassificationOutput(
+  testCase: TestLabCase,
+  record: Record<string, unknown>
+) {
+  const labels = stringArray(testCase.input.labels);
+  if (!labels.includes(String(record.label ?? ""))) {
+    throw new Error("Classifier output used a label outside the case labels");
+  }
+}
+
+function validateDeduplicationOutput(
+  testCase: TestLabCase,
+  record: Record<string, unknown>
+) {
+  if (!candidateIds(testCase).includes(String(record.nearestId ?? ""))) {
     throw new Error("Deduplication output used an unknown candidate ID");
   }
-  if (testCase.capability === "reranking") {
-    const expectedIds = candidateIds(testCase).toSorted();
-    const outputIds = stringArray(record.orderedIds).toSorted();
-    if (
-      expectedIds.length !== outputIds.length ||
-      expectedIds.some((id, index) => id !== outputIds[index])
-    ) {
-      throw new Error(
-        "Reranking output must include every candidate exactly once"
-      );
-    }
+}
+
+function validateRerankingOutput(
+  testCase: TestLabCase,
+  record: Record<string, unknown>
+) {
+  const expectedIds = candidateIds(testCase).toSorted();
+  const outputIds = stringArray(record.orderedIds).toSorted();
+  if (
+    expectedIds.length !== outputIds.length ||
+    expectedIds.some((id, index) => id !== outputIds[index])
+  ) {
+    throw new Error(
+      "Reranking output must include every candidate exactly once"
+    );
   }
-  if (testCase.capability === "extraction") {
-    const expectedKeys = stringArray(testCase.input.fields).toSorted();
-    const { values } = record;
-    const actualKeys =
-      values && typeof values === "object" && !Array.isArray(values)
-        ? Object.keys(values).toSorted()
-        : [];
-    if (
-      expectedKeys.length !== actualKeys.length ||
-      expectedKeys.some((key, index) => key !== actualKeys[index])
-    ) {
-      throw new Error(
-        "Extraction output keys must exactly match the requested fields"
-      );
-    }
+}
+
+function validateExtractionOutput(
+  testCase: TestLabCase,
+  record: Record<string, unknown>
+) {
+  const expectedKeys = stringArray(testCase.input.fields).toSorted();
+  const { values } = record;
+  const actualKeys =
+    values && typeof values === "object" && !Array.isArray(values)
+      ? Object.keys(values).toSorted()
+      : [];
+  if (
+    expectedKeys.length !== actualKeys.length ||
+    expectedKeys.some((key, index) => key !== actualKeys[index])
+  ) {
+    throw new Error(
+      "Extraction output keys must exactly match the requested fields"
+    );
   }
 }
 

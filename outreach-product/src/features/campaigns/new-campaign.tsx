@@ -45,22 +45,10 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
 
   if (!setup) {
     return (
-      <div className="mx-auto grid min-h-[28rem] w-full max-w-7xl place-items-center px-4 py-5 sm:px-6">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>
-              {setupError
-                ? "Campaign setup is unavailable"
-                : "Loading campaign setup…"}
-            </CardTitle>
-          </CardHeader>
-          {setupError ? (
-            <CardContent>
-              <Button onClick={() => void retrySetup()}>Try again</Button>
-            </CardContent>
-          ) : null}
-        </Card>
-      </div>
+      <CampaignSetupStatus
+        failed={Boolean(setupError)}
+        onRetry={() => void retrySetup()}
+      />
     );
   }
 
@@ -312,6 +300,33 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
           </Card>
         </div>
       </div>
+    </div>
+  );
+}
+
+function CampaignSetupStatus({
+  failed,
+  onRetry,
+}: {
+  failed: boolean;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="mx-auto grid min-h-[28rem] w-full max-w-7xl place-items-center px-4 py-5 sm:px-6">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>
+            {failed
+              ? "Campaign setup is unavailable"
+              : "Loading campaign setup…"}
+          </CardTitle>
+        </CardHeader>
+        {failed ? (
+          <CardContent>
+            <Button onClick={onRetry}>Try again</Button>
+          </CardContent>
+        ) : null}
+      </Card>
     </div>
   );
 }

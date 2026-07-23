@@ -229,34 +229,9 @@ export function inventoryClient(baseUrl: string, token: string) {
       ) {
         try {
           // biome-ignore lint/performance/noAwaitInLoops: Retry attempts must complete in order so an idempotent batch cannot overlap itself.
-          const response = await fetch(url, {
-            body: JSON.stringify(body),
-            headers: {
-              authorization: `Bearer ${token}`,
-              "content-type": "application/json",
-            },
-            method: "POST",
-          });
-          const payload: unknown = await response.json();
-          if (response.ok) {
-            return payload;
-          }
-          const message = z.object({ message: z.string() }).safeParse(payload);
-          const error = new InventoryRequestError(
-            response.status,
-            message.success ? message.data.message : "Unexpected response"
-          );
-          if (
-            attempt === INVENTORY_REQUEST_MAX_ATTEMPTS ||
-            !RETRYABLE_HTTP_STATUSES.has(response.status)
-          ) {
-            throw error;
-          }
+          return await postInventoryRequest(url, token, body);
         } catch (error) {
-          if (
-            error instanceof InventoryRequestError ||
-            attempt === INVENTORY_REQUEST_MAX_ATTEMPTS
-          ) {
+          if (inventoryRetryIsExhausted(error, attempt)) {
             throw error;
           }
         }
@@ -270,9 +245,40 @@ export function inventoryClient(baseUrl: string, token: string) {
 }
 
 class InventoryRequestError extends Error {
+  readonly status: number;
+
   constructor(status: number, message: string) {
     super(`Inventory request failed (${status}): ${message}`);
+    this.status = status;
   }
+}
+
+async function postInventoryRequest(url: string, token: string, body: unknown) {
+  const response = await fetch(url, {
+    body: JSON.stringify(body),
+    headers: {
+      authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+    },
+    method: "POST",
+  });
+  const payload: unknown = await response.json();
+  if (response.ok) {
+    return payload;
+  }
+  const message = z.object({ message: z.string() }).safeParse(payload);
+  throw new InventoryRequestError(
+    response.status,
+    message.success ? message.data.message : "Unexpected response"
+  );
+}
+
+function inventoryRetryIsExhausted(error: unknown, attempt: number) {
+  return (
+    attempt === INVENTORY_REQUEST_MAX_ATTEMPTS ||
+    (error instanceof InventoryRequestError &&
+      !RETRYABLE_HTTP_STATUSES.has(error.status))
+  );
 }
 
 function delay(milliseconds: number) {

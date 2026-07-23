@@ -88,24 +88,7 @@ function fixture(index: number): ProfileImportFixture {
       : "Teacher focused on clear explanations, practical lessons, and steady learner progress.";
   const institution = INSTITUTIONS[index % INSTITUTIONS.length] ?? "";
   const field = FIELDS[index % FIELDS.length] ?? "Education";
-  const education: ExpectedEducation[] = [
-    {
-      country: CITIZENSHIPS[(index + 2) % CITIZENSHIPS.length] ?? "Canada",
-      degree: "Bachelor of Science",
-      field,
-      institution,
-      level: "bachelor" satisfies DegreeLevel,
-    },
-  ];
-  if (index % 6 === 0) {
-    education.push({
-      country: "United Kingdom",
-      degree: "Master of Arts",
-      field: "Applied Linguistics",
-      institution: "Eastborough University",
-      level: "master" satisfies DegreeLevel,
-    });
-  }
+  const education = fixtureEducation(index, institution, field);
   const languages: ExpectedLanguage[] = [
     { language: "English", level: "native" },
     SECOND_LANGUAGES[index % SECOND_LANGUAGES.length] ?? {
@@ -113,34 +96,9 @@ function fixture(index: number): ProfileImportFixture {
       level: "B1",
     },
   ];
-  const credentials =
-    index % 3 === 0 ? ["CELTA"] : ["120-hour TEFL certificate"];
-  if (index % 7 === 0) {
-    credentials.push("State teaching license");
-  }
-  const skills = ["Curriculum planning", "Classroom management"];
-  if (index % 2 === 0) {
-    skills.push("Online teaching");
-  }
-  const primaryWork: ExpectedWorkExperience = {
-    current: index % 4 === 1,
-    employer: EMPLOYERS[index % EMPLOYERS.length] ?? "",
-    endDate: index % 4 === 1 ? "Present" : "June 2025",
-    location: currentLocation,
-    startDate: "August 2021",
-    title: index % 5 === 0 ? "Science Teacher" : "English Teacher",
-  };
-  const workExperience = [primaryWork];
-  if (index % 2 === 0) {
-    workExperience.push({
-      current: false,
-      employer: "Community Learning Project",
-      endDate: "May 2021",
-      location: "Remote",
-      startDate: "September 2019",
-      title: "Volunteer Tutor",
-    });
-  }
+  const credentials = fixtureCredentials(index);
+  const skills = fixtureSkills(index);
+  const workExperience = fixtureWorkExperience(index, currentLocation);
   const expected = {
     citizenship,
     credentials,
@@ -160,6 +118,73 @@ function fixture(index: number): ProfileImportFixture {
     id: `profile-${String(index + 1).padStart(3, "0")}`,
     resume: resumeText(expected, index),
   };
+}
+
+function fixtureEducation(index: number, institution: string, field: string) {
+  const education: ExpectedEducation[] = [
+    {
+      country: CITIZENSHIPS[(index + 2) % CITIZENSHIPS.length] ?? "Canada",
+      degree: "Bachelor of Science",
+      field,
+      institution,
+      level: "bachelor" satisfies DegreeLevel,
+    },
+  ];
+  if (index % 6 === 0) {
+    education.push({
+      country: "United Kingdom",
+      degree: "Master of Arts",
+      field: "Applied Linguistics",
+      institution: "Eastborough University",
+      level: "master" satisfies DegreeLevel,
+    });
+  }
+  return education;
+}
+
+function fixtureCredentials(index: number) {
+  const credentials =
+    index % 3 === 0 ? ["CELTA"] : ["120-hour TEFL certificate"];
+  if (index % 7 === 0) {
+    credentials.push("State teaching license");
+  }
+  return credentials;
+}
+
+function fixtureSkills(index: number) {
+  const skills = ["Curriculum planning", "Classroom management"];
+  if (index % 2 === 0) {
+    skills.push("Online teaching");
+  }
+  return skills;
+}
+
+function fixtureWorkExperience(
+  index: number,
+  currentLocation: string
+): ExpectedWorkExperience[] {
+  const current = index % 4 === 1;
+  const workExperience: ExpectedWorkExperience[] = [
+    {
+      current,
+      employer: EMPLOYERS[index % EMPLOYERS.length] ?? "",
+      endDate: current ? "Present" : "June 2025",
+      location: currentLocation,
+      startDate: "August 2021",
+      title: index % 5 === 0 ? "Science Teacher" : "English Teacher",
+    },
+  ];
+  if (index % 2 === 0) {
+    workExperience.push({
+      current: false,
+      employer: "Community Learning Project",
+      endDate: "May 2021",
+      location: "Remote",
+      startDate: "September 2019",
+      title: "Volunteer Tutor",
+    });
+  }
+  return workExperience;
 }
 
 function resumeText(expected: ProfileImportFixture["expected"], index: number) {

@@ -1,4 +1,5 @@
-import { join } from "node:path";
+import { rm } from "node:fs/promises";
+import { join, resolve } from "node:path";
 import { file, Glob, sleep, spawn } from "bun";
 import { defaultPreferences } from "../../src/features/preferences/schema";
 import { defaultProfile } from "../../src/features/profile/schema";
@@ -11,6 +12,7 @@ const password = "maestro-local-password";
 const flowTag = process.argv[2] ?? "safe";
 const screenSize = process.env.JOBKIT_SCREEN_SIZE ?? "1366x900";
 const maestro = join(process.env.HOME ?? "", ".maestro", "bin", "maestro");
+const persistencePath = resolve("test-results/maestro/state");
 const tagLinePattern = /^\s+-\s+(.+?)\s*$/;
 const yamlExtensionPattern = /\.yaml$/;
 const flowFiles = await matchingFlowFiles(flowTag);
@@ -21,6 +23,7 @@ if (flowFiles.length === 0) {
 }
 
 try {
+  await rm(persistencePath, { force: true, recursive: true });
   await command([
     "bunx",
     "wrangler",
@@ -29,6 +32,8 @@ try {
     "apply",
     "jobkit-outreach",
     "--local",
+    "--persist-to",
+    persistencePath,
   ]);
   await startServer();
   await prepareAccount();
@@ -42,6 +47,8 @@ try {
     "--local",
     "--file",
     "tests/e2e/fixtures/maestro.sql",
+    "--persist-to",
+    persistencePath,
   ]);
   await startServer();
   await flowFiles.reduce(
@@ -211,7 +218,11 @@ async function waitForServer(attempt = 0): Promise<void> {
 async function startServer() {
   server = spawn(
     ["bun", "run", "dev", "--", "--host", host, "--port", String(port)],
-    { stderr: "inherit", stdout: "inherit" }
+    {
+      env: { ...process.env, JOBKIT_PERSIST_STATE: persistencePath },
+      stderr: "inherit",
+      stdout: "inherit",
+    }
   );
   await waitForServer();
 }

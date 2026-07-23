@@ -1,135 +1,36 @@
 import { canonicalJson } from "../services/public-projection/hash";
+import {
+  type DuplicateBatchRow,
+  type DuplicateBatchSnapshot,
+  type DuplicateMemberSnapshot,
+  type DuplicateWorkRow,
+  type ImmutableDuplicateComparison,
+  PUBLIC_DUPLICATE_RETRIEVAL_VERSION,
+} from "./public-projection-duplicate-comparisons/model";
+import {
+  assertBoundedBinding,
+  assertionStatement,
+  assertPageCommit,
+  comparisonFromRow,
+  comparisonInsertRecord,
+  workFromRow,
+} from "./public-projection-duplicate-comparisons/records";
 
-export const PUBLIC_DUPLICATE_RETRIEVAL_VERSION =
-  "public-duplicate-retrieval-v1" as const;
-export const PUBLIC_DUPLICATE_MAX_BINDING_BYTES = 1_000_000;
-
-export interface DuplicateSignalEvidence {
-  hash?: string;
-  kind: string;
-  ownerValue?: string;
-  targetValue?: string;
-  value?: string;
-  version?: number;
-}
-
-interface ComparisonBase {
-  conflictingSignals: DuplicateSignalEvidence[];
-  createdAt: string;
-  id: string;
-  matchingSignals: DuplicateSignalEvidence[];
-  ownerInputHash: string;
-  ownerPositionItemId: string;
-  ownerSourcePositionId: string;
-  reasonCode:
-    | "canonical_identity_only"
-    | "conflicting_stable_identifier"
-    | "duplicate_evidence_conflict"
-    | "same_listing_distinct_position"
-    | "same_source_position"
-    | "same_source_reference_position";
-  relation: "ambiguous" | "different" | "same";
-  runId: string;
-}
-
-export interface SameRunDuplicateComparison extends ComparisonBase {
-  target: {
-    inputHash: string;
-    kind: "same_run";
-    positionItemId: string;
-    sourcePositionId: string;
-  };
-}
-
-export interface ExistingPublicDuplicateComparison extends ComparisonBase {
-  target: {
-    kind: "existing_public";
-    publicJobId: string;
-    publicJobVersion: number;
-    redirectRootId: string;
-  };
-}
-
-export type ImmutableDuplicateComparison =
-  | ExistingPublicDuplicateComparison
-  | SameRunDuplicateComparison;
-
-export interface DuplicateMemberSnapshot {
-  inputHash: string;
-  listingId: string;
-  materialSignalHash: string;
-  ordinal: number;
-  positionItemId: string;
-  positionKey: string;
-  runId: string;
-  sourceKey: string;
-  sourcePositionId: string;
-  sourceReference: string;
-  sourceReferenceSignalHash: null | string;
-}
-
-export type DuplicateWorkPhase =
-  | "existing_public"
-  | "members"
-  | "ready"
-  | "same_run"
-  | "sealed";
-
-export interface DuplicateWorkSnapshot {
-  comparisonCount: number;
-  comparisonDigest: string;
-  createdAt: string;
-  existingPublicCursor: string;
-  expectedMemberCount: number;
-  leaseToken: null | string;
-  memberCount: number;
-  memberCursor: string;
-  memberDigest: string;
-  phase: DuplicateWorkPhase;
-  runId: string;
-  sameRunOwnerCursor: string;
-  sameRunTargetCursor: string;
-  status: "processing" | "queued" | "sealed";
-}
-
-export interface DuplicateBatchSnapshot {
-  comparisonCount: number;
-  comparisonDigest: string;
-  createdAt: string;
-  inputHash: string;
-  memberDigest: string;
-  positionMemberCount: number;
-  runId: string;
-}
-
-interface DuplicateWorkRow {
-  comparison_count: number;
-  comparison_digest: string;
-  created_at: string;
-  existing_public_cursor: string;
-  expected_member_count: number;
-  lease_token: null | string;
-  member_count: number;
-  member_cursor: string;
-  member_digest: string;
-  phase: DuplicateWorkPhase;
-  run_id: string;
-  same_run_owner_cursor: string;
-  same_run_target_cursor: string;
-  status: "processing" | "queued" | "sealed";
-}
-
-interface DuplicateBatchRow {
-  canonical_identity_state: "pending";
-  comparison_count: number;
-  comparison_digest: string;
-  created_at: string;
-  input_hash: string;
-  member_digest: string;
-  position_member_count: number;
-  retrieval_algorithm_version: string;
-  run_id: string;
-}
+export type {
+  DuplicateBatchSnapshot,
+  DuplicateMemberSnapshot,
+  DuplicateSignalEvidence,
+  DuplicateWorkPhase,
+  DuplicateWorkSnapshot,
+  ExistingPublicDuplicateComparison,
+  ImmutableDuplicateComparison,
+  SameRunDuplicateComparison,
+} from "./public-projection-duplicate-comparisons/model";
+// biome-ignore lint/performance/noBarrelFile: This behavior-owning module preserves its stable public API after internal decomposition.
+export {
+  PUBLIC_DUPLICATE_MAX_BINDING_BYTES,
+  PUBLIC_DUPLICATE_RETRIEVAL_VERSION,
+} from "./public-projection-duplicate-comparisons/model";
 
 export async function initializeDuplicateWork(
   db: D1Database,
@@ -550,129 +451,4 @@ export async function readDuplicateComparisonPairPage(
     leftMemberKey: String(row.left_member_key),
     rightMemberKey: String(row.right_member_key),
   }));
-}
-
-function comparisonInsertRecord(comparison: ImmutableDuplicateComparison) {
-  const publicTarget =
-    comparison.target.kind === "existing_public" ? comparison.target : null;
-  const shadowTarget =
-    comparison.target.kind === "same_run" ? comparison.target : null;
-  return {
-    conflictingSignalsJson: canonicalJson(comparison.conflictingSignals),
-    createdAt: comparison.createdAt,
-    id: comparison.id,
-    matchingSignalsJson: canonicalJson(comparison.matchingSignals),
-    ownerInputHash: comparison.ownerInputHash,
-    ownerPositionItemId: comparison.ownerPositionItemId,
-    ownerSourcePositionId: comparison.ownerSourcePositionId,
-    reasonCode: comparison.reasonCode,
-    relation: comparison.relation,
-    targetInputHash: shadowTarget === null ? null : shadowTarget.inputHash,
-    targetKind: comparison.target.kind,
-    targetPositionItemId:
-      shadowTarget === null ? null : shadowTarget.positionItemId,
-    targetPublicJobId: publicTarget === null ? null : publicTarget.publicJobId,
-    targetPublicJobVersion:
-      publicTarget === null ? null : publicTarget.publicJobVersion,
-    targetRedirectRootId:
-      publicTarget === null ? null : publicTarget.redirectRootId,
-    targetSourcePositionId:
-      shadowTarget === null ? null : shadowTarget.sourcePositionId,
-  };
-}
-
-function comparisonFromRow(row: Record<string, unknown>) {
-  const common = {
-    conflictingSignals: parseJsonArray<DuplicateSignalEvidence>(
-      String(row.conflicting_signals_json)
-    ),
-    createdAt: String(row.created_at),
-    id: String(row.id),
-    matchingSignals: parseJsonArray<DuplicateSignalEvidence>(
-      String(row.matching_signals_json)
-    ),
-    ownerInputHash: String(row.owner_input_hash),
-    ownerPositionItemId: String(row.owner_position_item_id),
-    ownerSourcePositionId: String(row.owner_source_position_id),
-    reasonCode: String(row.reason_code) as ComparisonBase["reasonCode"],
-    relation: String(row.relation) as ComparisonBase["relation"],
-    runId: String(row.run_id),
-  };
-  if (row.target_kind === "existing_public") {
-    return {
-      ...common,
-      target: {
-        kind: "existing_public" as const,
-        publicJobId: String(row.target_public_job_id),
-        publicJobVersion: Number(row.target_public_job_version),
-        redirectRootId: String(row.target_redirect_root_id),
-      },
-    } satisfies ExistingPublicDuplicateComparison;
-  }
-  return {
-    ...common,
-    target: {
-      inputHash: String(row.target_input_hash),
-      kind: "same_run" as const,
-      positionItemId: String(row.target_position_item_id),
-      sourcePositionId: String(row.target_source_position_id),
-    },
-  } satisfies SameRunDuplicateComparison;
-}
-
-function workFromRow(row: DuplicateWorkRow): DuplicateWorkSnapshot {
-  return {
-    comparisonCount: row.comparison_count,
-    comparisonDigest: row.comparison_digest,
-    createdAt: row.created_at,
-    existingPublicCursor: row.existing_public_cursor,
-    expectedMemberCount: row.expected_member_count,
-    leaseToken: row.lease_token,
-    memberCount: row.member_count,
-    memberCursor: row.member_cursor,
-    memberDigest: row.member_digest,
-    phase: row.phase,
-    runId: row.run_id,
-    sameRunOwnerCursor: row.same_run_owner_cursor,
-    sameRunTargetCursor: row.same_run_target_cursor,
-    status: row.status,
-  };
-}
-
-function assertPageCommit(
-  results: D1Result<unknown>[],
-  expectedRows: number,
-  label: string
-) {
-  if (
-    (results[0]?.meta.changes ?? 0) !== expectedRows ||
-    (results[2]?.meta.changes ?? 0) !== 1
-  ) {
-    throw new Error(`The ${label} page lost its work lease`);
-  }
-}
-
-function assertionStatement(db: D1Database, expectedChanges: number) {
-  return db
-    .prepare(
-      `INSERT INTO public_projection_duplicate_assertions (
-        expected_changes,actual_changes
-      ) VALUES (?,changes())`
-    )
-    .bind(expectedChanges);
-}
-
-function assertBoundedBinding(payload: string, label: string) {
-  const { byteLength } = new TextEncoder().encode(payload);
-  if (byteLength > PUBLIC_DUPLICATE_MAX_BINDING_BYTES) {
-    throw new Error(`The ${label} payload exceeds the fixed D1 binding limit`);
-  }
-}
-
-function parseJsonArray<T>(value: string): T[] {
-  const parsed = JSON.parse(value) as unknown;
-  if (!Array.isArray(parsed)) {
-    throw new Error("Stored duplicate evidence is not an array");
-  }
-  return parsed as T[];
 }

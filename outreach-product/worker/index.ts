@@ -1,4 +1,5 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { z } from "zod";
 import {
   localDevelopmentAuthEnabled,
@@ -68,6 +69,7 @@ import { ensureLocalDevelopmentUser } from "./services/local-development-user";
 import { searchLocations, searchUniversities } from "./services/lookups";
 import { currentFxData } from "./services/matching-engine";
 import { ResumeUploadError } from "./services/profile-imports";
+import { PublicProjectionPromotionError } from "./services/public-projection/promotion/model";
 import { queuePublicProjectionAdvance } from "./services/public-projection/queue";
 import { PublicProjectionRunError } from "./services/public-projection/runs";
 import { TestLabError } from "./services/test-lab/errors";
@@ -80,6 +82,69 @@ const jsonMessage = z.object({
   message: z.string().optional(),
   ok: z.boolean(),
 });
+
+function fixedErrorStatus(error: Error): ContentfulStatusCode | null {
+  if (error instanceof DocumentConversionError) {
+    return 422;
+  }
+  if (error instanceof DraftProfileRequiredError) {
+    return 409;
+  }
+  if (error instanceof DraftMessageFoundationRequiredError) {
+    return 409;
+  }
+  if (error instanceof OutboundRecipientClaimError) {
+    return 409;
+  }
+  if (error instanceof OnboardingIncompleteError) {
+    return 409;
+  }
+  return null;
+}
+
+function carriedErrorStatus(error: Error): ContentfulStatusCode | null {
+  if (error instanceof ResumeUploadError) {
+    return error.status;
+  }
+  if (error instanceof DraftMutationError) {
+    return error.status;
+  }
+  if (error instanceof EmailAttemptError) {
+    return error.status;
+  }
+  if (error instanceof ApplicationBundleError) {
+    return error.status;
+  }
+  if (error instanceof GmailIntegrationError) {
+    return error.status;
+  }
+  if (error instanceof FollowUpError) {
+    return error.status;
+  }
+  if (error instanceof CountryMarketError) {
+    return error.status;
+  }
+  if (error instanceof CampaignError) {
+    return error.status;
+  }
+  if (error instanceof AgentTaskError) {
+    return error.status;
+  }
+  if (error instanceof TestLabError) {
+    return error.status;
+  }
+  if (error instanceof InventoryRunError) {
+    return error.status;
+  }
+  if (error instanceof PublicProjectionRunError) {
+    return error.status;
+  }
+  if (error instanceof PublicProjectionPromotionError) {
+    return error.status;
+  }
+  return null;
+}
+
 app.onError((error, c) => {
   if (error instanceof z.ZodError) {
     return c.json(
@@ -94,48 +159,6 @@ app.onError((error, c) => {
       path: c.req.path,
     })
   );
-  if (error instanceof ResumeUploadError) {
-    return c.json({ message: error.message, ok: false }, error.status);
-  }
-  if (error instanceof DocumentConversionError) {
-    return c.json({ message: error.message, ok: false }, 422);
-  }
-  if (error instanceof DraftProfileRequiredError) {
-    return c.json({ message: error.message, ok: false }, 409);
-  }
-  if (error instanceof DraftMessageFoundationRequiredError) {
-    return c.json({ message: error.message, ok: false }, 409);
-  }
-  if (error instanceof DraftMutationError) {
-    return c.json({ message: error.message, ok: false }, error.status);
-  }
-  if (error instanceof EmailAttemptError) {
-    return c.json({ message: error.message, ok: false }, error.status);
-  }
-  if (error instanceof OutboundRecipientClaimError) {
-    return c.json({ message: error.message, ok: false }, 409);
-  }
-  if (error instanceof ApplicationBundleError) {
-    return c.json({ message: error.message, ok: false }, error.status);
-  }
-  if (error instanceof GmailIntegrationError) {
-    return c.json({ message: error.message, ok: false }, error.status);
-  }
-  if (error instanceof FollowUpError) {
-    return c.json({ message: error.message, ok: false }, error.status);
-  }
-  if (error instanceof OnboardingIncompleteError) {
-    return c.json({ message: error.message, ok: false }, 409);
-  }
-  if (error instanceof CountryMarketError) {
-    return c.json({ message: error.message, ok: false }, error.status);
-  }
-  if (error instanceof CampaignError) {
-    return c.json({ message: error.message, ok: false }, error.status);
-  }
-  if (error instanceof AgentTaskError) {
-    return c.json({ message: error.message, ok: false }, error.status);
-  }
   if (error instanceof JobAnalysisRecordError) {
     return c.json(
       {
@@ -148,12 +171,9 @@ app.onError((error, c) => {
       error.status
     );
   }
-  if (
-    error instanceof TestLabError ||
-    error instanceof InventoryRunError ||
-    error instanceof PublicProjectionRunError
-  ) {
-    return c.json({ message: error.message, ok: false }, error.status);
+  const status = carriedErrorStatus(error) ?? fixedErrorStatus(error);
+  if (status !== null) {
+    return c.json({ message: error.message, ok: false }, status);
   }
   return c.json({ message: "Internal server error", ok: false }, 500);
 });

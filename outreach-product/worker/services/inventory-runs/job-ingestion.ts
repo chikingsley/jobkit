@@ -14,6 +14,22 @@ import {
   type InventoryRunRow,
 } from "./contracts";
 
+function repeatedRunItemIsComplete(
+  previousItem: InventoryRunItemRow | null,
+  transportHash: string
+) {
+  if (previousItem?.content_hash === undefined) {
+    return false;
+  }
+  if (previousItem.content_hash !== transportHash) {
+    throw new InventoryRunError(
+      "Source job changed inside an immutable inventory snapshot",
+      409
+    );
+  }
+  return previousItem.status !== "failed";
+}
+
 export async function ingestInventoryJob(
   db: D1Database,
   run: InventoryRunRow,
@@ -24,16 +40,8 @@ export async function ingestInventoryJob(
   const materialHash = await inventoryJobMaterialHash(job);
   const materialJson = serializeInventoryJobMaterial(job);
   const previousItem = await readRunItem(db, run.id, job.id);
-  if (previousItem?.content_hash !== undefined) {
-    if (previousItem.content_hash !== transportHash) {
-      throw new InventoryRunError(
-        "Source job changed inside an immutable inventory snapshot",
-        409
-      );
-    }
-    if (previousItem.status !== "failed") {
-      return;
-    }
+  if (repeatedRunItemIsComplete(previousItem, transportHash)) {
+    return;
   }
 
   const existing = await db

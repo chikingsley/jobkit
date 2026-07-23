@@ -5,7 +5,7 @@ tags:
   - automation
 ---
 - runFlow: ../sign-in.yaml
-- openLink: ${JOBKIT_URL}/automation
+- openLink: ${JOBKIT_URL}/app/settings/automation
 - assertVisible: "Global pause"
 - tapOn: "Pause automation"
 - swipe:
@@ -13,7 +13,7 @@ tags:
     end: 50%, 30%
 - tapOn: ".*Save policy.*"
 - assertVisible: "Automation policy saved"
-- openLink: ${JOBKIT_URL}/automation
+- openLink: ${JOBKIT_URL}/app/settings/automation
 - tapOn: "Pause automation"
 - swipe:
     start: 50%, 90%

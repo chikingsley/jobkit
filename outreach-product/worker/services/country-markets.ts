@@ -2,7 +2,6 @@ import { getCountries } from "libphonenumber-js";
 import { z } from "zod";
 import {
   type CountrySweepRequest,
-  countrySweepCityKey,
   MAX_COUNTRY_SWEEP_CITIES,
   normalizeCountrySweepCities,
 } from "../../src/features/countries/schema";
@@ -13,6 +12,11 @@ import type {
   CountryOrganizationSummary,
   CountrySweepSummary,
 } from "../../src/features/countries/types";
+import {
+  countrySweepScopeKey,
+  countrySweepSha256,
+  requestedSweepCities,
+} from "./country-markets/support";
 
 interface CountryCountRow {
   count: number;
@@ -336,7 +340,7 @@ export async function readCountryDetail(
       const row = D1_ROW_SCHEMA.parse(rawRow);
       const id = String(row.id);
       return {
-        cities: requestedCities(row.requested_scope_json),
+        cities: requestedSweepCities(row.requested_scope_json),
         completedAt: nullableString(row.completed_at),
         id,
         requestedAt: String(row.requested_at),
@@ -403,9 +407,9 @@ export async function createCountrySweep(
       });
       return {
         id: crypto.randomUUID(),
-        inputHash: await sha256(inputJson),
+        inputHash: await countrySweepSha256(inputJson),
         inputJson,
-        scopeKey: discoveryScopeKey(source, city),
+        scopeKey: countrySweepScopeKey(source, city),
       };
     })
   );
@@ -464,16 +468,6 @@ export async function createCountrySweep(
   };
 }
 
-async function sha256(value: string) {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value)
-  );
-  return [...new Uint8Array(digest)]
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 function normalizeSweepRequest(request: CountrySweepRequest) {
   const cities = normalizeCountrySweepCities(request.cities);
   if (cities.length > MAX_COUNTRY_SWEEP_CITIES) {
@@ -486,23 +480,4 @@ function normalizeSweepRequest(request: CountrySweepRequest) {
     ...request,
     cities,
   };
-}
-
-function discoveryScopeKey(source: string, city: string) {
-  if (!city) {
-    return source;
-  }
-  const normalizedCity = countrySweepCityKey(city);
-  return `${source}:city:${normalizedCity}`;
-}
-
-function requestedCities(value: unknown) {
-  try {
-    const parsed = JSON.parse(String(value)) as { cities?: unknown };
-    return Array.isArray(parsed.cities)
-      ? parsed.cities.filter((city): city is string => typeof city === "string")
-      : [];
-  } catch {
-    return [];
-  }
 }

@@ -35,6 +35,14 @@ export function assignLeakageGroups(items: CorpusItem[]) {
     "same-company",
     addEdge
   );
+  connectTemplateOverlaps(items, addEdge);
+  return groupAssignments(items, unionFind, edges);
+}
+
+function connectTemplateOverlaps(
+  items: CorpusItem[],
+  addEdge: (edge: GroupEdge) => void
+) {
   const shingleSets = items.map((item) =>
     shingles(`${item.title}\n${item.description}`)
   );
@@ -52,6 +60,13 @@ export function assignLeakageGroups(items: CorpusItem[]) {
       }
     }
   }
+}
+
+function groupAssignments(
+  items: CorpusItem[],
+  unionFind: UnionFind,
+  edges: GroupEdge[]
+) {
   const membersByRoot = new Map<number, number[]>();
   for (let index = 0; index < items.length; index += 1) {
     const root = unionFind.find(index);

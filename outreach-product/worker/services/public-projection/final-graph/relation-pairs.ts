@@ -208,6 +208,32 @@ export const LIVE_CANONICAL_SHADOW_PAGE_SQL = `SELECT shadow.member_key,
       )
     ORDER BY shadow.member_key,shadow.position_item_id LIMIT ?`;
 
+function appendLiveCanonicalCandidates(
+  candidates: CanonicalRelationCandidate[],
+  publicMemberKey: string,
+  signalHash: string,
+  shadows: Array<{ member_key: string; position_item_id: string }>
+) {
+  for (const shadow of shadows) {
+    if (!(publicMemberKey < shadow.member_key)) {
+      throw new FinalDuplicateSnapshotError(
+        "The canonical public/shadow member ordering changed"
+      );
+    }
+    candidates.push({
+      leftMemberKey: publicMemberKey,
+      liveCursor: {
+        publicMemberKey,
+        shadowMemberKey: shadow.member_key,
+        shadowPositionItemId: shadow.position_item_id,
+        signalHash,
+      },
+      rightMemberKey: shadow.member_key,
+      signalHash,
+    });
+  }
+}
+
 export async function readLiveCanonicalPairPage(
   db: D1Database,
   input: {
@@ -276,24 +302,12 @@ export async function readLiveCanonicalPairPage(
         remaining
       )
       .all<{ member_key: string; position_item_id: string }>();
-    for (const shadow of shadows.results) {
-      if (!(publicMemberKey < shadow.member_key)) {
-        throw new FinalDuplicateSnapshotError(
-          "The canonical public/shadow member ordering changed"
-        );
-      }
-      candidates.push({
-        leftMemberKey: publicMemberKey,
-        liveCursor: {
-          publicMemberKey,
-          shadowMemberKey: shadow.member_key,
-          shadowPositionItemId: shadow.position_item_id,
-          signalHash,
-        },
-        rightMemberKey: shadow.member_key,
-        signalHash,
-      });
-    }
+    appendLiveCanonicalCandidates(
+      candidates,
+      publicMemberKey,
+      signalHash,
+      shadows.results
+    );
     if (shadows.results.length === remaining) {
       break;
     }

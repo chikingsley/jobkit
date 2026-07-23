@@ -7,19 +7,54 @@
   ],
   "linter": {
     "rules": {
-      "complexity": { "noVoid": "off" },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": { "maxAllowedComplexity": 15 }
+        },
+        "noVoid": "off"
+      },
       "performance": {
         "noJsxPropsBind": "off"
+      },
+      "style": {
+        "noExcessiveLinesPerFile": {
+          "level": "error",
+          "options": { "maxLines": 500 }
+        }
       }
     }
   },
   "overrides": [
     {
-      "includes": ["src/routes/**", "src/routeTree.gen.ts"],
+      "includes": ["src/routes/**"],
       "linter": {
         "rules": {
           "style": {
             "useFilenamingConvention": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/routeTree.gen.ts", "worker-configuration.d.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noExcessiveLinesPerFile": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["tests/**/*.ts", "**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveCognitiveComplexity": {
+              "level": "error",
+              "options": { "maxAllowedComplexity": 15 }
+            }
           }
         }
       }

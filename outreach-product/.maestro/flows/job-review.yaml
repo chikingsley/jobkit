@@ -6,5 +6,9 @@ tags:
 ---
 - runFlow: ../sign-in.yaml
 - assertVisible: "Maestro English Teacher"
+- tapOn: "Maestro English Teacher"
 - assertVisible: ".*Warsaw, Poland.*"
-- assertVisible: "Full original job description"
+- scrollUntilVisible:
+    element:
+      text: "Full job description"
+    direction: DOWN

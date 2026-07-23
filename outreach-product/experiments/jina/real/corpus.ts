@@ -151,37 +151,15 @@ function buildDeduplicationCases(
   const cases: DeduplicationCase[] = [];
   for (let round = 0; cases.length < size; round += 1) {
     let added = false;
-    for (const [email, group] of groups) {
-      const ordered = stableOrder(group, (job) => `${email}:${job.id}`);
-      const anchor = ordered[round % ordered.length];
-      const expected = ordered[(round + 1) % ordered.length];
-      if (!(anchor && expected) || anchor.id === expected.id) {
+    for (const group of groups) {
+      const deduplicationCase = createDeduplicationCase(jobs, group, round);
+      if (!deduplicationCase) {
         continue;
       }
-      const distractors = stableOrder(
-        jobs.filter(
-          (job) =>
-            job.id !== anchor.id &&
-            job.applyEmail.toLocaleLowerCase("en") !== email &&
-            (job.country === anchor.country || job.board === anchor.board)
-        ),
-        (job) => `${anchor.id}:${job.id}`
-      ).slice(0, 9);
-      if (distractors.length < 9) {
-        continue;
-      }
-      cases.push({
-        anchor: identityDocument(anchor),
-        candidates: stableOrder(
-          [expected, ...distractors].map(identityDocument),
-          (document) => `identity:${anchor.id}:${document.id}`
-        ),
-        expectedId: expected.id,
-        id: `deduplication:${anchor.id}:${expected.id}`,
-      });
+      cases.push(deduplicationCase);
       added = true;
       if (cases.length === size) {
-        break;
+        return cases;
       }
     }
     if (!added || round > 10) {
@@ -189,6 +167,40 @@ function buildDeduplicationCases(
     }
   }
   return cases;
+}
+
+function createDeduplicationCase(
+  jobs: InventoryJob[],
+  [email, group]: [string, InventoryJob[]],
+  round: number
+): DeduplicationCase | null {
+  const ordered = stableOrder(group, (job) => `${email}:${job.id}`);
+  const anchor = ordered[round % ordered.length];
+  const expected = ordered[(round + 1) % ordered.length];
+  if (!(anchor && expected) || anchor.id === expected.id) {
+    return null;
+  }
+  const distractors = stableOrder(
+    jobs.filter(
+      (job) =>
+        job.id !== anchor.id &&
+        job.applyEmail.toLocaleLowerCase("en") !== email &&
+        (job.country === anchor.country || job.board === anchor.board)
+    ),
+    (job) => `${anchor.id}:${job.id}`
+  ).slice(0, 9);
+  if (distractors.length < 9) {
+    return null;
+  }
+  return {
+    anchor: identityDocument(anchor),
+    candidates: stableOrder(
+      [expected, ...distractors].map(identityDocument),
+      (document) => `identity:${anchor.id}:${document.id}`
+    ),
+    expectedId: expected.id,
+    id: `deduplication:${anchor.id}:${expected.id}`,
+  };
 }
 
 function readerMarkers(job: InventoryJob) {

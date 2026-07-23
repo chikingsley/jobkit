@@ -5,7 +5,7 @@ tags:
   - campaigns
 ---
 - runFlow: ../sign-in.yaml
-- openLink: ${JOBKIT_URL}/campaigns/markets/PL
+- openLink: ${JOBKIT_URL}/app/campaigns/markets/PL
 - assertVisible: "Poland"
 - tapOn: "Start campaign"
 - assertVisible: "Choose target markets"
@@ -20,8 +20,8 @@ tags:
 - assertVisible: "Approve the first five messages"
 - tapOn:
     id: "create-campaign"
-- assertVisible: "Live delivery is locked"
-- assertVisible: "Ready for calibration"
+- assertVisible: "Live delivery is locked. Review and simulation remain available."
+- assertVisible: "Review the first five"
 - swipe:
     start: 85%, 85%
     end: 85%, 25%

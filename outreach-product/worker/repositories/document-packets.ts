@@ -15,18 +15,7 @@ interface DocumentRow {
   slug: string;
 }
 
-export async function ensureDocumentPackets(
-  db: D1Database,
-  userId: string
-): Promise<void> {
-  const existing = await db
-    .prepare("SELECT COUNT(*) count FROM user_document_packets WHERE user_id=?")
-    .bind(userId)
-    .first<{ count: number }>();
-  if ((existing?.count ?? 0) > 0) {
-    return;
-  }
-
+async function readPacketSeedDocuments(db: D1Database, userId: string) {
   const documents = await db
     .prepare(
       `SELECT id,category,filename
@@ -45,8 +34,15 @@ export async function ensureDocumentPackets(
       documentByCategory.set(document.category, document);
     }
   }
+  return documentByCategory;
+}
 
-  const timestamp = new Date().toISOString();
+function buildDocumentPacketStatements(
+  db: D1Database,
+  userId: string,
+  documentByCategory: Map<string, { filename: string; id: string }>,
+  timestamp: string
+) {
   const statements: D1PreparedStatement[] = [];
   for (const [
     definitionIndex,
@@ -72,31 +68,58 @@ export async function ensureDocumentPackets(
     );
     for (const [position, category] of definition.categories.entries()) {
       const document = documentByCategory.get(category);
-      if (!document) {
-        continue;
+      if (document) {
+        statements.push(
+          db
+            .prepare(
+              `INSERT INTO user_document_packet_items
+              (packet_id,category,document_id,position,created_at,updated_at)
+             VALUES (?,?,?,?,?,?)`
+            )
+            .bind(
+              packetId,
+              category,
+              document.id,
+              position,
+              timestamp,
+              timestamp
+            )
+        );
       }
-      statements.push(
-        db
-          .prepare(
-            `INSERT INTO user_document_packet_items
-            (packet_id,category,document_id,position,created_at,updated_at)
-           VALUES (?,?,?,?,?,?)`
-          )
-          .bind(packetId, category, document.id, position, timestamp, timestamp)
-      );
     }
   }
+  return statements;
+}
+
+async function documentPacketsExist(db: D1Database, userId: string) {
+  const result = await db
+    .prepare("SELECT COUNT(*) count FROM user_document_packets WHERE user_id=?")
+    .bind(userId)
+    .first<{ count: number }>();
+  return (result?.count ?? 0) > 0;
+}
+
+export async function ensureDocumentPackets(
+  db: D1Database,
+  userId: string
+): Promise<void> {
+  if (await documentPacketsExist(db, userId)) {
+    return;
+  }
+
+  const timestamp = new Date().toISOString();
+  const documentByCategory = await readPacketSeedDocuments(db, userId);
+  const statements = buildDocumentPacketStatements(
+    db,
+    userId,
+    documentByCategory,
+    timestamp
+  );
 
   try {
     await db.batch(statements);
   } catch (error) {
-    const nowExists = await db
-      .prepare(
-        "SELECT COUNT(*) count FROM user_document_packets WHERE user_id=?"
-      )
-      .bind(userId)
-      .first<{ count: number }>();
-    if ((nowExists?.count ?? 0) === 0) {
+    if (!(await documentPacketsExist(db, userId))) {
       throw error;
     }
   }

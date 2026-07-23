@@ -27,21 +27,27 @@ function rejectLocalSecretsInBuild(): Plugin {
   };
 }
 
-export default defineConfig(({ command }) => ({
-  plugins: [
-    cloudflare({
-      ...(command === "build"
-        ? {
-            // Local preview secrets belong outside production output.
-            config: { secrets: { required: [] } },
-          }
-        : {}),
-      viteEnvironment: { name: "ssr" },
-    }),
-    tanstackStart(),
-    react(),
-    tailwindcss(),
-    rejectLocalSecretsInBuild(),
-  ],
-  resolve: { alias: { "@": path.resolve(import.meta.dirname, "./src") } },
-}));
+export default defineConfig(({ command }) => {
+  const persistencePath = process.env.JOBKIT_PERSIST_STATE;
+  return {
+    plugins: [
+      cloudflare({
+        ...(command === "build"
+          ? {
+              // Local preview secrets belong outside production output.
+              config: { secrets: { required: [] } },
+            }
+          : {}),
+        ...(persistencePath
+          ? { persistState: { path: path.resolve(persistencePath) } }
+          : {}),
+        viteEnvironment: { name: "ssr" },
+      }),
+      tanstackStart(),
+      react(),
+      tailwindcss(),
+      rejectLocalSecretsInBuild(),
+    ],
+    resolve: { alias: { "@": path.resolve(import.meta.dirname, "./src") } },
+  };
+});

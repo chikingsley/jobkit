@@ -679,7 +679,7 @@ Scope pages contain at most 256 members and 65,536 canonical JSON bytes. Members
 
 An expansion creates or reuses a successor request and inserts one immutable expansion edge. Its scope must be a strict superset of its predecessor's scope, preserve every predecessor root intent byte-for-byte, and add at least one scope member. `scope_expansion_digest` reduces only added `requestScopeMemberHash` values under `requestScopeExpansionDigest`. The successor receives its deterministic request key. Several predecessors may converge on the same semantic successor through distinct expansion edges. A same-scope submission reuses the existing request and may create another run.
 
-The migration validates against the 57-file chain through `0057_public_projection_final_duplicate_graph.sql`. Migration 0044 renamed `jobs` to `job_listings`; migration 0049 created the 28-column `public_projection_runs` relation; migrations 0051, 0055, and 0057 added direct dependents. The replacement preserves the parent table name, so those foreign-key declarations and all read/update query names remain stable.
+The migration validates against the 62-file chain through `0062_public_projection_final_immutability.sql`. Migration 0044 renamed `jobs` to `job_listings`; migration 0049 created the 28-column `public_projection_runs` relation; migrations 0051, 0055, and 0057 added direct dependents. The replacement preserves the parent table name, so those foreign-key declarations and all read/update query names remain stable.
 
 Before DDL, the migration command generates three deterministic staging relations with the runtime registry and `jobkit-canonical-json-v1`:
 
