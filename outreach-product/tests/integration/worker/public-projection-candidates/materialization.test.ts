@@ -121,7 +121,7 @@ describe("public projection candidate materialization", () => {
     });
   });
 
-  it("promotes one sealed candidate atomically after operator approval", async () => {
+  it("promotes an initial candidate and its successor atomically", async () => {
     const operator = await createAuthenticatedUser(
       "candidate-promotion-operator@example.test"
     );
@@ -199,6 +199,71 @@ describe("public projection candidate materialization", () => {
     await expect(replay.json()).resolves.toMatchObject({
       promotion: { created: false },
     });
+
+    const successorRunId = "candidate-promotion-successor-run";
+    const successorFixture = await seedResolvedRun({
+      advanceable: true,
+      positions: [
+        {
+          canonicalSignalHash: "c".repeat(64),
+          sourcePositionId,
+          sourceReference,
+        },
+      ],
+      runId: successorRunId,
+    });
+    const [successorPosition] = successorFixture.positions;
+    if (!successorPosition) {
+      throw new Error("The successor promotion fixture has no source position");
+    }
+    await seedCandidateAnalyses(successorPosition.listingId, sourceReference);
+    await finishFinalGraph(testEnv.DB, successorRunId, timestamp);
+    await advancePublicProjectionRuns(testEnv.DB);
+    await advancePublicProjectionRuns(testEnv.DB);
+    const successorResult = await candidateResult(successorRunId);
+    if (successorResult.candidate_json === null) {
+      throw new Error("The successor promotion fixture has no candidate");
+    }
+    const successor = PublicProjectionCandidateSchema.parse(
+      JSON.parse(successorResult.candidate_json)
+    );
+    expect(successor).toMatchObject({
+      decision: { decisionVersion: 2, predecessorVersion: 1 },
+      publicJobId: candidate.publicJobId,
+      publicJobVersion: 2,
+      publicJobVersionPredecessor: 1,
+      sourceMappings: [
+        {
+          predecessorMappingVersion: 1,
+          sourcePositionId,
+        },
+      ],
+    });
+
+    const successorResponse = await sessionRequest(
+      `/api/operator/public-projection/runs/${successorRunId}/promotions`,
+      operator.cookie,
+      "POST",
+      { allocationId: successor.allocationId }
+    );
+    expect(successorResponse.status).toBe(201);
+    await expect(successorResponse.json()).resolves.toMatchObject({
+      promotion: {
+        created: true,
+        manifest: {
+          publicJobId: candidate.publicJobId,
+          publicJobVersion: 2,
+          runId: successorRunId,
+        },
+      },
+    });
+    await expect(
+      livePromotionVersions(candidate.publicJobId, sourcePositionId)
+    ).resolves.toEqual({
+      decision_version: 2,
+      job_version: 2,
+      mapping_version: 2,
+    });
   });
 });
 
@@ -264,5 +329,19 @@ function livePromotionSnapshot(publicJobId: string) {
        WHERE public_job_id=?) candidate_count`
   )
     .bind(publicJobId, publicJobId, publicJobId, publicJobId, publicJobId)
+    .first();
+}
+
+function livePromotionVersions(publicJobId: string, sourcePositionId: string) {
+  return testEnv.DB.prepare(
+    `SELECT
+      (SELECT current_version FROM public_job_heads
+        WHERE public_job_id=?) job_version,
+      (SELECT current_decision_version FROM public_job_eligibility_heads
+        WHERE public_job_id=?) decision_version,
+      (SELECT current_version FROM job_source_position_mapping_heads
+        WHERE source_position_id=?) mapping_version`
+  )
+    .bind(publicJobId, publicJobId, sourcePositionId)
     .first();
 }

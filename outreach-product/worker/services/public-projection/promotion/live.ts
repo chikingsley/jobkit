@@ -33,7 +33,7 @@ export function livePromotionStatements(
       input.mappings,
       input.timestamp
     ),
-    sourceMappingHeadsStatement(db, input.mappings, input.timestamp),
+    ...sourceMappingHeadsStatement(db, input.mappings, input.timestamp),
     eligibilityDecisionStatement(
       db,
       input.candidate,
@@ -238,12 +238,24 @@ function publicJobHeadStatement(
   candidate: PublicProjectionCandidate,
   timestamp: string
 ) {
+  if (candidate.publicJobVersionPredecessor !== null) {
+    return db
+      .prepare(
+        `UPDATE public_job_heads
+            SET current_version=?,updated_at=?
+          WHERE public_job_id=? AND current_version=?`
+      )
+      .bind(
+        candidate.publicJobVersion,
+        timestamp,
+        candidate.publicJobId,
+        candidate.publicJobVersionPredecessor
+      );
+  }
   return db
     .prepare(
       `INSERT INTO public_job_heads (public_job_id,current_version,updated_at)
-       VALUES (?,?,?)
-       ON CONFLICT(public_job_id) DO UPDATE SET
-         current_version=excluded.current_version,updated_at=excluded.updated_at`
+       VALUES (?,?,?)`
     )
     .bind(candidate.publicJobId, candidate.publicJobVersion, timestamp);
 }

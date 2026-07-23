@@ -39,19 +39,29 @@ export function sourceMappingHeadsStatement(
   mappings: PreparedMapping[],
   timestamp: string
 ) {
-  return db
-    .prepare(
-      `INSERT INTO job_source_position_mapping_heads (
-        source_position_id,current_version,updated_at
+  return mappings.map((mapping) => {
+    if (mapping.predecessorMappingVersion !== null) {
+      return db
+        .prepare(
+          `UPDATE job_source_position_mapping_heads
+              SET current_version=?,updated_at=?
+            WHERE source_position_id=? AND current_version=?`
+        )
+        .bind(
+          mapping.mappingVersion,
+          timestamp,
+          mapping.sourcePositionId,
+          mapping.predecessorMappingVersion
+        );
+    }
+    return db
+      .prepare(
+        `INSERT INTO job_source_position_mapping_heads (
+          source_position_id,current_version,updated_at
+        ) VALUES (?,?,?)`
       )
-      SELECT json_extract(value,'$.sourcePositionId'),
-             json_extract(value,'$.mappingVersion'),?
-        FROM json_each(?)
-       WHERE true
-      ON CONFLICT(source_position_id) DO UPDATE SET
-        current_version=excluded.current_version,updated_at=excluded.updated_at`
-    )
-    .bind(timestamp, canonicalJson(mappings));
+      .bind(mapping.sourcePositionId, mapping.mappingVersion, timestamp);
+  });
 }
 
 export function eligibilityDecisionStatement(
@@ -132,14 +142,25 @@ export function eligibilityHeadStatement(
   candidate: PublicProjectionCandidate,
   timestamp: string
 ) {
+  if (candidate.decision.predecessorVersion !== null) {
+    return db
+      .prepare(
+        `UPDATE public_job_eligibility_heads
+            SET current_decision_version=?,updated_at=?
+          WHERE public_job_id=? AND current_decision_version=?`
+      )
+      .bind(
+        candidate.decision.decisionVersion,
+        timestamp,
+        candidate.publicJobId,
+        candidate.decision.predecessorVersion
+      );
+  }
   return db
     .prepare(
       `INSERT INTO public_job_eligibility_heads (
         public_job_id,current_decision_version,updated_at
-      ) VALUES (?,?,?)
-      ON CONFLICT(public_job_id) DO UPDATE SET
-        current_decision_version=excluded.current_decision_version,
-        updated_at=excluded.updated_at`
+      ) VALUES (?,?,?)`
     )
     .bind(candidate.publicJobId, candidate.decision.decisionVersion, timestamp);
 }
