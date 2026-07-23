@@ -35,6 +35,7 @@ interface QualificationClaimInput {
 const AGENT_TASK_REFRESH_MS = 1500;
 const defaultJobQuery: PrivateJobListQuery = {
   country: "all",
+  cursor: "",
   excludeBoard: "anesl",
   fit: "all",
   limit: PRIVATE_JOB_PAGE_SIZE,
@@ -84,6 +85,7 @@ export function useWorkspaceData({ jobsEnabled }: { jobsEnabled: boolean }) {
     useState<QualificationClaims>({});
   const [busyClaimKey, setBusyClaimKey] = useState("");
   const currentJobQuery = useRef(defaultJobQuery);
+  const nextJobCursor = useRef("");
 
   const loadJobs = useCallback(
     async (
@@ -94,7 +96,7 @@ export function useWorkspaceData({ jobsEnabled }: { jobsEnabled: boolean }) {
       } = {}
     ) => {
       const query = options.query ?? currentJobQuery.current;
-      if (query.offset === 0) {
+      if (query.offset === 0 && query.cursor === "") {
         currentJobQuery.current = query;
       }
       if (!options.quiet) {
@@ -109,8 +111,10 @@ export function useWorkspaceData({ jobsEnabled }: { jobsEnabled: boolean }) {
           fx: FxData;
           jobs: JobListItem[];
           matches: Record<string, JobMatchSummary>;
+          nextCursor: string | null;
           page: JobPage;
         };
+        nextJobCursor.current = data.nextCursor ?? "";
         setJobs((current) =>
           options.append ? appendUniqueJobs(current, data.jobs) : data.jobs
         );
@@ -144,6 +148,7 @@ export function useWorkspaceData({ jobsEnabled }: { jobsEnabled: boolean }) {
       append: true,
       query: {
         ...currentJobQuery.current,
+        cursor: nextJobCursor.current,
         offset: jobs.length,
       },
     });
