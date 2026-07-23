@@ -4,6 +4,7 @@ export const PRIVATE_JOB_PAGE_SIZE = 100;
 
 export interface PrivateJobListQuery {
   country: string;
+  cursor: string;
   excludeBoard: string;
   fit: string;
   limit: number;
@@ -24,6 +25,7 @@ export function parsePrivateJobListQuery(
 ): PrivateJobListQuery {
   return {
     country: boundedText(search.get("country"), 100) || "all",
+    cursor: boundedText(search.get("cursor"), 600),
     excludeBoard: boundedText(search.get("excludeBoard"), 100),
     fit: boundedText(search.get("fit"), 100) || "all",
     limit: boundedInteger(search.get("limit"), 1, PRIVATE_JOB_PAGE_SIZE, 100),
@@ -42,6 +44,9 @@ export function privateJobListSearchParams(query: PrivateJobListQuery) {
   });
   if (query.country !== "all") {
     search.set("country", query.country);
+  }
+  if (query.cursor) {
+    search.set("cursor", query.cursor);
   }
   if (query.fit !== "all") {
     search.set("fit", query.fit);

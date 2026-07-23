@@ -88,6 +88,7 @@ export function JobsRoute() {
     void loadJobs({
       query: {
         country: countryFilter,
+        cursor: "",
         excludeBoard: "anesl",
         fit: fitFilter,
         limit: PRIVATE_JOB_PAGE_SIZE,
