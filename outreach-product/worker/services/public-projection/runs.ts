@@ -2,6 +2,7 @@ import type { PublicProjectionRunRequest } from "./contracts";
 import {
   canonicalProjectionScope,
   PUBLIC_PROJECTION_CONTRACT_VERSION,
+  PUBLIC_PROJECTION_RUN_STEP_BUDGET,
   PUBLIC_PROJECTOR_VERSION,
 } from "./contracts";
 import { sha256Hex } from "./hash";
@@ -11,6 +12,7 @@ import {
 } from "./snapshots";
 
 interface ProjectionRunRow {
+  advance_step_count: number;
   completed_at: string | null;
   error_code: string;
   error_detail: string;
@@ -178,6 +180,10 @@ async function projectionRunSummary(db: D1Database, row: ProjectionRunRow) {
       .all<ItemCountRow>(),
   ]);
   return {
+    budget: {
+      stepLimit: PUBLIC_PROJECTION_RUN_STEP_BUDGET,
+      steps: row.advance_step_count,
+    },
     completedAt: row.completed_at,
     counters: {
       listings: {
@@ -239,7 +245,8 @@ function runColumns() {
   return `id,mode,status,listing_total,listing_completed,listing_blocked,
     listing_failed,listing_superseded,position_total,position_completed,
     position_blocked,position_failed,position_superseded,selection_complete,
-    error_code,error_detail,requested_at,started_at,completed_at,updated_at`;
+    advance_step_count,error_code,error_detail,requested_at,started_at,
+    completed_at,updated_at`;
 }
 
 function assertCanonicalRequestSnapshot(
