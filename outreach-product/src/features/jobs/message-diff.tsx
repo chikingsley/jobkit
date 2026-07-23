@@ -26,7 +26,7 @@ export function MessageText({
   return (
     <div
       aria-label="Tailored application message"
-      className="min-h-48 whitespace-pre-wrap border-primary/30 border-l-2 py-1 pl-4 text-sm leading-7"
+      className="whitespace-pre-wrap py-1 text-sm leading-7"
       role="document"
     >
       {runs.map((run) => (

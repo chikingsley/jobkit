@@ -221,11 +221,10 @@ export function CampaignDetailView({
         {activeDispatches.length > 0 ? (
           <section className="grid gap-3">
             <h2 className="font-semibold">Messages to review</h2>
-            {activeDispatches.map((dispatch, index) => (
+            {activeDispatches.map((dispatch) => (
               <CampaignDispatchCard
                 campaignId={campaign.id}
                 dispatch={dispatch}
-                index={index}
                 key={dispatch.id}
                 onApproveFailed={() => {
                   setHiddenDispatchIds((current) =>
