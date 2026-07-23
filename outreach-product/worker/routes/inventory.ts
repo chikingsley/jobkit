@@ -35,6 +35,7 @@ export function registerInventoryRoutes(app: JobKitApp) {
   );
 
   app.post("/api/inventory/refreshes", async (c) => {
+    requireOperatorRole(c.get("user").role);
     const input = InventoryRefreshRequestSchema.parse(await c.req.json());
     const refresh = await requestInventoryRefresh(
       c.env.DB,
@@ -48,6 +49,7 @@ export function registerInventoryRoutes(app: JobKitApp) {
   });
 
   app.put("/api/inventory/sources/:sourceId/schedule", async (c) => {
+    requireOperatorRole(c.get("user").role);
     const input = InventorySourceScheduleSchema.parse(await c.req.json());
     const schedule = await updateInventorySourceSchedule(
       c.env.DB,
@@ -155,6 +157,15 @@ export function registerInventoryRoutes(app: JobKitApp) {
     );
     return c.json({ message: "Inventory run failed", ok: true, run });
   });
+}
+
+function requireOperatorRole(role: "member" | "operator") {
+  if (role !== "operator") {
+    throw new InventoryRunError(
+      "Operator access is required for inventory mutations",
+      403
+    );
+  }
 }
 
 function requireOperationsRunner(runner: AgentRunnerContext | null) {

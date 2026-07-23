@@ -56,9 +56,9 @@ function nullableString(value: unknown): string | null {
 }
 
 export class CountryMarketError extends Error {
-  readonly status: 400 | 404 | 409;
+  readonly status: 400 | 403 | 404 | 409;
 
-  constructor(message: string, status: 400 | 404 | 409) {
+  constructor(message: string, status: 400 | 403 | 404 | 409) {
     super(message);
     this.status = status;
   }

@@ -26,6 +26,7 @@ export function registerCountryRoutes(app: JobKitApp) {
   });
 
   app.post("/api/countries/:countryCode/sweeps", async (c) => {
+    requireOperator(c.get("user").role);
     const countryCode = normalizedCountryCode(c.req.param("countryCode"));
     const request = CountrySweepRequestSchema.parse(await c.req.json());
     const sweep = await createCountrySweep(
@@ -42,6 +43,15 @@ export function registerCountryRoutes(app: JobKitApp) {
       sweep,
     });
   });
+}
+
+function requireOperator(role: "member" | "operator") {
+  if (role !== "operator") {
+    throw new CountryMarketError(
+      "Operator access is required for country sweeps",
+      403
+    );
+  }
 }
 
 function normalizedCountryCode(value: string) {
