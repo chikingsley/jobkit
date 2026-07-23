@@ -20,19 +20,7 @@ function CorrectionsPage() {
       introduction="Job data changes. JobKit records corrections against the canonical job and its source evidence."
       sections={[
         {
-          body: (
-            <p>
-              Send the canonical JobKit URL, the corrected fact, and a public
-              source that supports the change to{" "}
-              <a
-                className="underline underline-offset-4"
-                href="mailto:chibuzor.ejimofor@gmail.com?subject=JobKit%20correction"
-              >
-                chibuzor.ejimofor@gmail.com
-              </a>
-              .
-            </p>
-          ),
+          body: "Corrections come from signed-in candidates. Report the issue from your JobKit workspace with the canonical JobKit URL, the corrected fact, and a public source that supports the change.",
           title: "Report a correction",
         },
         {

@@ -305,7 +305,7 @@ Integration User`,
         sentAt: timestamp,
         subject: `Re: ${subject}`,
         testSendId,
-        toAddress: "chibuzor.ejimofor@gmail.com",
+        toAddress: "candidate-mailbox@example.test",
       })
     ).resolves.toEqual({ created: true });
     await expect(
