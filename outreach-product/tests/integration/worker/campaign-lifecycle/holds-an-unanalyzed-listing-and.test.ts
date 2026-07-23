@@ -15,7 +15,6 @@ import {
   agentPost,
   CAMPAIGN_RECIPIENT_PATTERN,
   claimTask,
-  enableSyntheticDelivery,
   pairAgent,
   plainTextBodyOf,
   readOnlyCampaignTarget,
@@ -137,7 +136,20 @@ describe("campaign lifecycle", () => {
       ok: false,
     });
 
-    await enableSyntheticDelivery(userId);
+    const authorized = await sessionPost(
+      "/api/operator/delivery-authorization",
+      cookie,
+      {
+        enabled: true,
+        reason: "Campaign lifecycle integration test",
+        scope: "campaigns",
+      }
+    );
+    expect(authorized.status).toBe(200);
+    await expect(authorized.json()).resolves.toMatchObject({
+      authorization: { authorizedBy: userId, enabled: true },
+      ok: true,
+    });
     const started = await sessionPost(
       `/api/campaigns/${campaignId}/actions`,
       cookie,
