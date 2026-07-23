@@ -1,6 +1,5 @@
 import { CheckCircle2, CircleHelp, Minus, XCircle } from "lucide-react";
 import { useId } from "react";
-import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { QualificationClaimAnswer } from "@/features/matching/claims";
 import type { JobMatch, MatchState } from "@/profile-types";
@@ -37,22 +36,14 @@ export function MatchPanel({
         <div className="mt-3 divide-y">
           {displayed.map((item) => (
             <div
-              className="grid gap-3 py-3 text-sm sm:grid-cols-[minmax(0,1fr)_12rem] sm:items-center"
+              className="flex min-h-11 items-center gap-2 py-1.5 text-sm"
+              data-match-requirement=""
               key={`${item.label}:${item.evidence ?? ""}`}
             >
-              <div className="flex items-start gap-2">
-                <CriterionIcon state={item.state} />
-                <span className="leading-5">
-                  {item.label}
-                  {item.importance === "preferred" ? (
-                    <span className="text-muted-foreground"> (preferred)</span>
-                  ) : null}
-                </span>
-              </div>
-              {item.claimKey && item.state !== "match" ? (
+              {shouldAskQualification(item) ? (
                 <QualificationAnswer
-                  answer={item.claimAnswer ?? null}
                   busy={busyClaimKey === item.claimKey}
+                  label={item.label}
                   onChange={(answer) =>
                     onQualificationClaim({
                       answer,
@@ -61,9 +52,32 @@ export function MatchPanel({
                       label: item.label,
                     })
                   }
+                />
+              ) : (
+                <CriterionStatus
+                  answer={item.claimAnswer}
+                  busy={busyClaimKey === item.claimKey}
+                  label={item.label}
+                  onClear={
+                    item.claimKey && item.claimAnswer
+                      ? () =>
+                          onQualificationClaim({
+                            answer: null,
+                            claimKey: item.claimKey ?? "",
+                            kind: item.claimKind ?? "other",
+                            label: item.label,
+                          })
+                      : undefined
+                  }
                   state={item.state}
                 />
-              ) : null}
+              )}
+              <span className="min-w-0 leading-5">
+                {item.label}
+                {item.importance === "preferred" ? (
+                  <span className="text-muted-foreground"> (preferred)</span>
+                ) : null}
+              </span>
             </div>
           ))}
         </div>
@@ -73,96 +87,93 @@ export function MatchPanel({
 }
 
 function QualificationAnswer({
-  answer,
   busy,
+  label,
   onChange,
-  state,
 }: {
-  answer: QualificationClaimAnswer | null;
   busy: boolean;
+  label: string;
   onChange: (value: QualificationClaimAnswer | null) => Promise<void>;
-  state: MatchState;
 }) {
   const groupId = useId();
-  const displayedAnswer = answer ?? displayedAnswerForState(state);
-  const answerSource = qualificationAnswerSource(answer, state);
   const options = [
     { label: "Yes", value: "yes" },
     { label: "No", value: "no" },
   ] as const;
   return (
-    <div className="grid gap-1.5">
-      <RadioGroup
-        aria-label="Do you meet this requirement?"
-        className="grid auto-cols-fr grid-flow-col gap-0 overflow-hidden rounded-md border border-input shadow-xs"
-        disabled={busy}
-        onValueChange={(next) =>
-          void onChange(next as QualificationClaimAnswer)
-        }
-        value={displayedAnswer}
-      >
-        {options.map((option) => (
-          <label
-            className="flex min-h-11 min-w-0 cursor-pointer items-center justify-center border-input border-l px-2 font-medium text-muted-foreground text-xs transition-colors first:border-l-0 hover:bg-muted hover:text-foreground has-focus-visible:z-10 has-data-checked:bg-primary has-data-checked:text-primary-foreground has-focus-visible:ring-2 has-focus-visible:ring-ring has-data-checked:hover:bg-primary/90 has-data-checked:hover:text-primary-foreground"
-            htmlFor={`${groupId}-${option.value}`}
-            key={option.value}
-          >
-            <RadioGroupItem
-              className="absolute size-px overflow-hidden opacity-0"
-              id={`${groupId}-${option.value}`}
-              value={option.value}
-            />
-            {option.label}
-          </label>
-        ))}
-      </RadioGroup>
-      <div className="flex min-h-6 items-center justify-between gap-2 text-muted-foreground text-xs">
-        <span>{answerSource}</span>
-        {answer ? (
-          <Button
-            className="h-auto px-1 py-0 text-xs"
-            disabled={busy}
-            onClick={() => void onChange(null)}
-            variant="link"
-          >
-            Clear answer
-          </Button>
-        ) : null}
-      </div>
-    </div>
+    <RadioGroup
+      aria-label={`Do you meet the requirement: ${label}?`}
+      className="grid h-7 w-20 shrink-0 auto-cols-fr grid-flow-col gap-0 overflow-visible rounded-md border border-input shadow-xs"
+      disabled={busy}
+      onValueChange={(next) => void onChange(next as QualificationClaimAnswer)}
+      value=""
+    >
+      {options.map((option) => (
+        <label
+          className="relative flex min-w-0 cursor-pointer items-center justify-center border-input border-l font-medium text-muted-foreground text-xs transition-colors after:absolute after:inset-x-0 after:-inset-y-2 first:border-l-0 hover:bg-muted hover:text-foreground has-focus-visible:z-10 has-focus-visible:ring-2 has-focus-visible:ring-ring"
+          htmlFor={`${groupId}-${option.value}`}
+          key={option.value}
+        >
+          <RadioGroupItem
+            className="absolute size-px overflow-hidden opacity-0"
+            id={`${groupId}-${option.value}`}
+            value={option.value}
+          />
+          {option.label}
+        </label>
+      ))}
+    </RadioGroup>
   );
 }
 
-function displayedAnswerForState(state: MatchState) {
-  if (state === "match") {
-    return "yes";
-  }
-  return state === "conflict" ? "no" : "";
+function shouldAskQualification(item: JobMatch["criteria"][number]) {
+  return (
+    Boolean(item.claimKey) &&
+    item.claimAnswer === undefined &&
+    (item.state === "unknown" || item.state === "preference")
+  );
 }
 
-function qualificationAnswerSource(
-  answer: QualificationClaimAnswer | null,
-  state: MatchState
-) {
-  if (answer) {
-    return "Saved to your profile";
+function CriterionStatus({
+  answer,
+  busy,
+  label,
+  onClear,
+  state,
+}: {
+  answer?: QualificationClaimAnswer;
+  busy: boolean;
+  label: string;
+  onClear?: () => Promise<void>;
+  state: MatchState;
+}) {
+  const icon = <CriterionIcon state={state} />;
+  if (!(answer && onClear)) {
+    return icon;
   }
-  return state === "match"
-    ? "Confirmed by your profile"
-    : "Choose once to save this fact";
+  return (
+    <button
+      aria-label={`Change saved answer for ${label}`}
+      className="relative flex size-4 shrink-0 items-center justify-center rounded-full before:absolute before:-inset-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50"
+      disabled={busy}
+      onClick={() => void onClear()}
+      title="Change answer"
+      type="button"
+    >
+      {icon}
+    </button>
+  );
 }
 
 function CriterionIcon({ state }: { state: MatchState }) {
   if (state === "match") {
-    return <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />;
+    return <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />;
   }
   if (state === "conflict") {
-    return <XCircle className="mt-0.5 size-4 shrink-0 text-destructive" />;
+    return <XCircle className="size-4 shrink-0 text-destructive" />;
   }
   if (state === "preference") {
-    return <Minus className="mt-0.5 size-4 shrink-0 text-amber-600" />;
+    return <Minus className="size-4 shrink-0 text-amber-600" />;
   }
-  return (
-    <CircleHelp className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-  );
+  return <CircleHelp className="size-4 shrink-0 text-muted-foreground" />;
 }
