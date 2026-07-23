@@ -113,7 +113,7 @@ export function registerApplicationBundleRoutes(app: JobKitApp) {
     return c.json(
       await sendApplicationBundleTestEmail(
         c.env,
-        c.get("user").id,
+        c.get("user"),
         c.req.param("bundleId"),
         recipient.toLowerCase()
       )

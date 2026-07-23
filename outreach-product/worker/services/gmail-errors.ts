@@ -1,9 +1,9 @@
 export class GmailIntegrationError extends Error {
-  readonly status: 400 | 401 | 409 | 502 | 503;
+  readonly status: 400 | 401 | 403 | 409 | 502 | 503;
 
   constructor(
     message: string,
-    options: ErrorOptions & { status?: 400 | 401 | 409 | 502 | 503 } = {}
+    options: ErrorOptions & { status?: 400 | 401 | 403 | 409 | 502 | 503 } = {}
   ) {
     super(message, options);
     this.status = options.status ?? 502;

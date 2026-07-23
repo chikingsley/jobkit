@@ -1,3 +1,4 @@
+import type { AuthUser } from "../app-types";
 import type { AppEnv } from "../env";
 import {
   createGmailDraft,
@@ -24,10 +25,12 @@ interface TestSendRow {
 
 export async function sendApplicationBundleTestEmail(
   env: AppEnv,
-  userId: string,
+  user: AuthUser,
   bundleId: string,
-  recipient: string
+  rawRecipient: string
 ) {
+  const userId = user.id;
+  const recipient = await requireOwnedTestRecipient(env.DB, user, rawRecipient);
   const connection = await readGmailConnectionStatus(env, userId);
   if (connection.watch?.status !== "active") {
     throw new GmailIntegrationError(
@@ -182,6 +185,31 @@ export async function sendApplicationBundleTestEmail(
         : "Gmail could not create the test email"
     );
   }
+}
+
+async function requireOwnedTestRecipient(
+  db: D1Database,
+  user: AuthUser,
+  recipient: string
+) {
+  const normalized = recipient.trim().toLocaleLowerCase("en");
+  if (normalized === user.email.trim().toLocaleLowerCase("en")) {
+    return normalized;
+  }
+  const allowed = await db
+    .prepare(
+      `SELECT email FROM test_delivery_allowlist
+        WHERE user_id=? AND lower(email)=? LIMIT 1`
+    )
+    .bind(user.id, normalized)
+    .first();
+  if (!allowed) {
+    throw new GmailIntegrationError(
+      "Test sends can only go to your account email or an ownership-verified Test Lab delivery address",
+      { status: 403 }
+    );
+  }
+  return normalized;
 }
 
 async function readTestSend(
