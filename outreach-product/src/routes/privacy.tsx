@@ -32,18 +32,7 @@ function PrivacyPage() {
           title: "Connected accounts",
         },
         {
-          body: (
-            <p>
-              Request correction or deletion by writing to{" "}
-              <a
-                className="underline underline-offset-4"
-                href="mailto:chibuzor.ejimofor@gmail.com?subject=JobKit%20privacy%20request"
-              >
-                chibuzor.ejimofor@gmail.com
-              </a>
-              .
-            </p>
-          ),
+          body: "A signed-in candidate requests correction or deletion of their data from the account area of the JobKit workspace. Deletion removes candidate-owned records while public job facts remain published.",
           title: "Requests",
         },
       ]}
