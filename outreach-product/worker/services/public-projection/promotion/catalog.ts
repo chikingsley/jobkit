@@ -4,6 +4,7 @@ import {
   derivePublicJobSearchEntry,
   type PublicJobCatalogLocationFacet,
   type PublicJobCatalogMembershipEntry,
+  type PublicJobCatalogSearchEntry,
 } from "../../../public-jobs/catalog";
 import {
   parseCatalogItem,
@@ -15,20 +16,23 @@ import {
   candidateLocationFacets,
   candidateSearchRow,
   candidateSearchTerms,
-  copyCatalogMembers,
-  copyLocationFacets,
-  copySearchRows,
-  copySearchTerms,
 } from "./catalog-statements";
 import { assertion } from "./guards";
 import { promotionLocationFacet } from "./location";
 import type { PromotionCatalogHead } from "./model";
 import { PublicProjectionPromotionError } from "./model";
 
+export interface CatalogCopyMember {
+  facetCount: number;
+  publicJobId: string;
+  termCount: number;
+}
+
 export interface PreparedCatalogPromotion {
   candidateEntry: PublicJobCatalogMembershipEntry;
   candidateSearch: ReturnType<typeof derivePublicJobSearchEntry>;
   catalogVersion: string;
+  copyMembers: CatalogCopyMember[];
   locationFacetCount: number;
   memberCount: number;
   membershipHash: string;
@@ -66,6 +70,18 @@ export async function prepareCatalogPromotion(
       "Current public catalog membership failed validation"
     );
   }
+  const currentSearchEntries = currentMembership.entries.map((entry) =>
+    membershipSearchEntry(entry)
+  );
+  const currentSearch =
+    await derivePublicJobCatalogSearch(currentSearchEntries);
+  if (
+    currentSearch.searchContentHash !== input.catalogHead.search_content_hash
+  ) {
+    throw new PublicProjectionPromotionError(
+      "Current public catalog search projection failed validation"
+    );
+  }
   const facets = candidateFacets(input.candidate);
   const payload = liveCatalogPayload(input.candidate, input.timestamp);
   const candidateEntry: PublicJobCatalogMembershipEntry = {
@@ -78,37 +94,26 @@ export async function prepareCatalogPromotion(
     publicJobId: input.candidate.publicJobId,
     publicJobVersion: input.candidate.publicJobVersion,
   };
+  const retained = currentMembership.entries.filter(
+    ({ publicJobId }) => publicJobId !== input.candidate.publicJobId
+  );
+  const retainedSearch = currentSearchEntries.filter(
+    ({ publicJobId }) => publicJobId !== input.candidate.publicJobId
+  );
   const membership = await derivePublicJobCatalogMembership([
-    ...current.filter(
-      ({ publicJobId }) => publicJobId !== input.candidate.publicJobId
-    ),
+    ...retained,
     candidateEntry,
   ]);
-  const search = await derivePublicJobCatalogSearch(
-    membership.entries.map((entry) => ({
-      ...derivePublicJobSearchEntry(parseCatalogItem(entry.itemJson)),
-      publicJobId: entry.publicJobId,
-      publicJobVersion: entry.publicJobVersion,
-    }))
-  );
-  const currentSearch = await derivePublicJobCatalogSearch(
-    currentMembership.entries.map((entry) => ({
-      ...derivePublicJobSearchEntry(parseCatalogItem(entry.itemJson)),
-      publicJobId: entry.publicJobId,
-      publicJobVersion: entry.publicJobVersion,
-    }))
-  );
-  if (
-    currentSearch.searchContentHash !== input.catalogHead.search_content_hash
-  ) {
-    throw new PublicProjectionPromotionError(
-      "Current public catalog search projection failed validation"
-    );
-  }
+  const search = await derivePublicJobCatalogSearch([
+    ...retainedSearch,
+    membershipSearchEntry(candidateEntry),
+  ]);
+  const attempt = crypto.randomUUID().slice(0, 8);
   return {
     candidateEntry,
     candidateSearch: derivePublicJobSearchEntry(input.candidate.item),
-    catalogVersion: `catalog:promotion:${input.candidate.candidateId}`,
+    catalogVersion: `catalog:promotion:${input.candidate.candidateId}:${attempt}`,
+    copyMembers: catalogCopyMembers(retained, retainedSearch),
     locationFacetCount: membership.entries.reduce(
       (count, entry) => count + entry.locationFacets.length,
       0
@@ -117,8 +122,32 @@ export async function prepareCatalogPromotion(
     membershipHash: membership.membershipHash,
     searchContentHash: search.searchContentHash,
     searchTermCount: search.termCount,
-    searchVersion: `search:promotion:${input.candidate.candidateId}`,
+    searchVersion: `search:promotion:${input.candidate.candidateId}:${attempt}`,
   };
+}
+
+function membershipSearchEntry(
+  entry: PublicJobCatalogMembershipEntry
+): PublicJobCatalogSearchEntry {
+  return {
+    ...derivePublicJobSearchEntry(parseCatalogItem(entry.itemJson)),
+    publicJobId: entry.publicJobId,
+    publicJobVersion: entry.publicJobVersion,
+  };
+}
+
+function catalogCopyMembers(
+  retained: PublicJobCatalogMembershipEntry[],
+  retainedSearch: PublicJobCatalogSearchEntry[]
+): CatalogCopyMember[] {
+  const termCounts = new Map(
+    retainedSearch.map((entry) => [entry.publicJobId, entry.terms.length])
+  );
+  return retained.map((entry) => ({
+    facetCount: entry.locationFacets.length,
+    publicJobId: entry.publicJobId,
+    termCount: termCounts.get(entry.publicJobId) ?? 0,
+  }));
 }
 
 async function readCurrentMembership(db: D1Database, catalogVersion: string) {
@@ -155,20 +184,18 @@ async function readCurrentMembership(db: D1Database, catalogVersion: string) {
   );
 }
 
-export function catalogPromotionStatements(
+// The head flip stays a single atomic batch: candidate rows, the immutable
+// seal, and the guarded pointer advance commit together after the copied
+// predecessor rows were staged in bounded chunks.
+export function catalogActivationStatements(
   db: D1Database,
   input: CatalogPromotionStatementInput
 ) {
   const { candidate, catalogHead, prepared, timestamp } = input;
   return [
-    catalogVersionStatement(db, input),
-    copyCatalogMembers(db, input),
     candidateCatalogMember(db, input),
-    copySearchRows(db, input),
     candidateSearchRow(db, input),
-    copySearchTerms(db, input),
     candidateSearchTerms(db, input),
-    copyLocationFacets(db, input),
     candidateLocationFacets(db, input),
     db
       .prepare(
@@ -208,7 +235,7 @@ export function catalogPromotionStatements(
   ];
 }
 
-function catalogVersionStatement(
+export function catalogVersionStatement(
   db: D1Database,
   input: CatalogPromotionStatementInput
 ) {

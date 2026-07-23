@@ -1,9 +1,15 @@
 import { canonicalJson } from "../hash";
 import type { CatalogPromotionStatementInput } from "./catalog";
 
+export interface CatalogCopyRange {
+  afterId: string;
+  throughId: string;
+}
+
 export function copyCatalogMembers(
   db: D1Database,
-  input: CatalogPromotionStatementInput
+  input: CatalogPromotionStatementInput,
+  range: CatalogCopyRange
 ) {
   return db
     .prepare(
@@ -18,13 +24,16 @@ export function copyCatalogMembers(
              eligibility_decision_hash,location_facets_json,
              representation_updated_at,?
         FROM public_job_catalog_members
-       WHERE catalog_version=? AND public_job_id<>?`
+       WHERE catalog_version=? AND public_job_id<>?
+         AND public_job_id>? AND public_job_id<=?`
     )
     .bind(
       input.prepared.catalogVersion,
       input.timestamp,
       input.catalogHead.current_version,
-      input.candidate.publicJobId
+      input.candidate.publicJobId,
+      range.afterId,
+      range.throughId
     );
 }
 
@@ -59,7 +68,8 @@ export function candidateCatalogMember(
 
 export function copySearchRows(
   db: D1Database,
-  input: CatalogPromotionStatementInput
+  input: CatalogPromotionStatementInput,
+  range: CatalogCopyRange
 ) {
   return db
     .prepare(
@@ -73,13 +83,16 @@ export function copySearchRows(
              search.title_sort_key,search.effective_recency,
              search.conservative_hourly_usd,?
         FROM public_job_search_index search
-       WHERE search.search_index_version=? AND search.public_job_id<>?`
+       WHERE search.search_index_version=? AND search.public_job_id<>?
+         AND search.public_job_id>? AND search.public_job_id<=?`
     )
     .bind(
       input.prepared.searchVersion,
       input.timestamp,
       input.catalogHead.search_index_version,
-      input.candidate.publicJobId
+      input.candidate.publicJobId,
+      range.afterId,
+      range.throughId
     );
 }
 
@@ -111,7 +124,8 @@ export function candidateSearchRow(
 
 export function copySearchTerms(
   db: D1Database,
-  input: CatalogPromotionStatementInput
+  input: CatalogPromotionStatementInput,
+  range: CatalogCopyRange
 ) {
   return db
     .prepare(
@@ -121,13 +135,16 @@ export function copySearchTerms(
       )
       SELECT ?,public_job_id,public_job_version,term,score,?
         FROM public_job_search_terms
-       WHERE search_index_version=? AND public_job_id<>?`
+       WHERE search_index_version=? AND public_job_id<>?
+         AND public_job_id>? AND public_job_id<=?`
     )
     .bind(
       input.prepared.searchVersion,
       input.timestamp,
       input.catalogHead.search_index_version,
-      input.candidate.publicJobId
+      input.candidate.publicJobId,
+      range.afterId,
+      range.throughId
     );
 }
 
@@ -156,7 +173,8 @@ export function candidateSearchTerms(
 
 export function copyLocationFacets(
   db: D1Database,
-  input: CatalogPromotionStatementInput
+  input: CatalogPromotionStatementInput,
+  range: CatalogCopyRange
 ) {
   return db
     .prepare(
@@ -168,13 +186,16 @@ export function copyLocationFacets(
       SELECT ?,public_job_id,public_job_version,ordinal,location_role,
              country_code,country_slug,city_slug,display_name,?
         FROM public_browse_job_locations
-       WHERE catalog_version=? AND public_job_id<>?`
+       WHERE catalog_version=? AND public_job_id<>?
+         AND public_job_id>? AND public_job_id<=?`
     )
     .bind(
       input.prepared.catalogVersion,
       input.timestamp,
       input.catalogHead.current_version,
-      input.candidate.publicJobId
+      input.candidate.publicJobId,
+      range.afterId,
+      range.throughId
     );
 }
 
