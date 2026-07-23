@@ -12,6 +12,7 @@ import {
 } from "./email-attempts";
 import {
   createGmailDraft,
+  GmailApiError,
   getGmailMessage,
   getGmailProfile,
   sendGmailDraft,
@@ -27,9 +28,14 @@ import {
   GmailIntegrationError,
   gmailErrorMessage,
 } from "./gmail-errors";
-import { markWatchError, reconcileRecentReplies } from "./gmail-replies";
+import { reconcileRecentReplies } from "./gmail-replies";
 
 const SCOPE_SEPARATOR_PATTERN = /[\s,]+/u;
+
+// Consecutive auth-classified renewal failures before a watch is parked in
+// the terminal 'revoked' status and the cron stops calling Google for it.
+export const GMAIL_WATCH_AUTH_FAILURE_LIMIT = 5;
+const GMAIL_WATCH_BACKOFF_CAP_MINUTES = 360;
 
 interface GmailWatchRow {
   email_address: string;
@@ -37,7 +43,10 @@ interface GmailWatchRow {
   history_id: string;
   last_error: string;
   last_synced_at: string | null;
-  status: "active" | "error" | "expired";
+  next_renewal_attempt_at: string | null;
+  renewal_auth_failure_count: number;
+  renewal_failure_count: number;
+  status: "active" | "error" | "expired" | "revoked";
   user_id: string;
 }
 
@@ -55,6 +64,8 @@ export interface GmailConnectionStatus {
     expirationAt: string;
     lastError: string;
     lastSyncedAt: string | null;
+    nextRenewalAttemptAt: string | null;
+    renewalFailureCount: number;
     status: GmailWatchRow["status"];
   };
 }
@@ -87,6 +98,8 @@ export async function readGmailConnectionStatus(
           expirationAt: watch.expiration_at,
           lastError: watch.last_error,
           lastSyncedAt: watch.last_synced_at,
+          nextRenewalAttemptAt: watch.next_renewal_attempt_at,
+          renewalFailureCount: watch.renewal_failure_count,
           status: watch.status,
         }
       : null,
@@ -203,6 +216,8 @@ export async function startOrRenewGmailWatch(env: AppEnv, userId: string) {
        email_address=excluded.email_address,
        history_id=gmail_mailbox_watches.history_id,
        expiration_at=excluded.expiration_at,status='active',last_error='',
+       renewal_failure_count=0,renewal_auth_failure_count=0,
+       next_renewal_attempt_at=NULL,
        updated_at=excluded.updated_at`
   )
     .bind(
@@ -230,28 +245,104 @@ export async function startOrRenewGmailWatch(env: AppEnv, userId: string) {
 }
 
 export async function renewExpiringGmailWatches(env: AppEnv) {
-  const threshold = new Date(
-    Date.now() + 2 * 24 * 60 * 60 * 1000
-  ).toISOString();
+  const now = Date.now();
+  const threshold = new Date(now + 2 * 24 * 60 * 60 * 1000).toISOString();
   const rows = await env.DB.prepare(
-    `SELECT user_id FROM gmail_mailbox_watches
-      WHERE status<>'active' OR expiration_at<?`
+    `SELECT user_id,renewal_failure_count,renewal_auth_failure_count
+       FROM gmail_mailbox_watches
+      WHERE (
+              status IN ('error','expired')
+              OR (status='active' AND expiration_at<?)
+            )
+        AND (next_renewal_attempt_at IS NULL OR next_renewal_attempt_at<=?)`
   )
-    .bind(threshold)
-    .all<{ user_id: string }>();
+    .bind(threshold, new Date(now).toISOString())
+    .all<
+      Pick<
+        GmailWatchRow,
+        "renewal_auth_failure_count" | "renewal_failure_count" | "user_id"
+      >
+    >();
   const results = await Promise.all(
     rows.results.map(async (row) => {
       try {
         await startOrRenewGmailWatch(env, row.user_id);
         return true;
       } catch (error) {
-        await markWatchError(env.DB, row.user_id, gmailErrorMessage(error));
+        await recordWatchRenewalFailure(env.DB, row, error);
         return false;
       }
     })
   );
   const renewed = results.filter(Boolean).length;
   return { renewed, total: rows.results.length };
+}
+
+function isGmailAuthFailure(error: unknown) {
+  if (error instanceof GmailApiError) {
+    return error.status === 401 || error.status === 403;
+  }
+  // getGoogleAccessToken wraps every token acquisition failure (missing
+  // account, revoked refresh token) in a 409 GmailIntegrationError.
+  return error instanceof GmailIntegrationError && error.status === 409;
+}
+
+async function recordWatchRenewalFailure(
+  db: D1Database,
+  row: Pick<
+    GmailWatchRow,
+    "renewal_auth_failure_count" | "renewal_failure_count" | "user_id"
+  >,
+  error: unknown
+) {
+  const authFailure = isGmailAuthFailure(error);
+  const failureCount = row.renewal_failure_count + 1;
+  const authFailureCount = authFailure ? row.renewal_auth_failure_count + 1 : 0;
+  const lastError = gmailErrorMessage(error).slice(0, 1000);
+  const timestamp = new Date();
+  if (authFailure && authFailureCount >= GMAIL_WATCH_AUTH_FAILURE_LIMIT) {
+    await db
+      .prepare(
+        `UPDATE gmail_mailbox_watches
+            SET status='revoked',renewal_failure_count=?,
+                renewal_auth_failure_count=?,next_renewal_attempt_at=NULL,
+                last_error=?,updated_at=?
+          WHERE user_id=?`
+      )
+      .bind(
+        failureCount,
+        authFailureCount,
+        lastError,
+        timestamp.toISOString(),
+        row.user_id
+      )
+      .run();
+    return;
+  }
+  const backoffMinutes = Math.min(
+    2 ** failureCount,
+    GMAIL_WATCH_BACKOFF_CAP_MINUTES
+  );
+  const nextAttemptAt = new Date(
+    timestamp.getTime() + backoffMinutes * 60 * 1000
+  ).toISOString();
+  await db
+    .prepare(
+      `UPDATE gmail_mailbox_watches
+          SET status='error',renewal_failure_count=?,
+              renewal_auth_failure_count=?,next_renewal_attempt_at=?,
+              last_error=?,updated_at=?
+        WHERE user_id=?`
+    )
+    .bind(
+      failureCount,
+      authFailureCount,
+      nextAttemptAt,
+      lastError,
+      timestamp.toISOString(),
+      row.user_id
+    )
+    .run();
 }
 
 async function createAndRecordGmailDraft(

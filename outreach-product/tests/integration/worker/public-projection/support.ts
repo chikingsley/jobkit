@@ -17,6 +17,7 @@ export interface TestEnv extends Env {
 
 export interface ProjectionRunResponse {
   run: {
+    budget: { stepLimit: number; steps: number };
     counters: {
       listings: { blocked: number; total: number };
     };

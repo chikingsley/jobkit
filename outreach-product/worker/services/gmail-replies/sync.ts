@@ -4,6 +4,7 @@ import {
   recordCampaignReply,
 } from "../campaign-replies";
 import {
+  GmailApiError,
   type GmailHistoryPage,
   type GmailMessage,
   getGmailMessage,
@@ -81,11 +82,12 @@ export async function syncInboundMessages(
       .filter((route) => route.kind === "campaign")
       .map((route) => [route.gmail_thread_id, route])
   );
-  const messages = await Promise.all(
+  const fetched = await Promise.all(
     [...new Set(messageIds)].map((messageId) =>
-      getGmailMessage(accessToken, messageId, "full")
+      fetchSyncableMessage(accessToken, messageId)
     )
   );
+  const messages = fetched.filter((message) => message !== null);
   const inbound = messages.flatMap((message) => {
     const headers = messageHeaders(message);
     const testSendId = matchingTestSendId(
@@ -139,6 +141,20 @@ export async function syncInboundMessages(
     })
   );
   return results.filter((result) => result.created).length;
+}
+
+async function fetchSyncableMessage(accessToken: string, messageId: string) {
+  try {
+    return await getGmailMessage(accessToken, messageId, "full");
+  } catch (error) {
+    // Listings lag deletions: a message removed after it was listed returns
+    // 404 forever, and failing the whole sync would make Pub/Sub redeliver
+    // the notification indefinitely. Skip the tombstone instead.
+    if (error instanceof GmailApiError && error.status === 404) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 function isInboxReply(message: GmailMessage) {

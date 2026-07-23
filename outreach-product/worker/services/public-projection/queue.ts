@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { AppEnv } from "../../env";
 import { advancePublicProjectionRuns } from "./advancement";
+import { consumeProjectionRunStepBudget } from "./advancement/budget";
 import { finalizeCanonicalDuplicateGraph } from "./final-graph";
 import { createMapboxPermanentLocationResolver } from "./mapbox-location-resolver";
 
@@ -65,6 +66,16 @@ async function consumePublicProjectionMessage(
 
   try {
     if (parsed.data.kind === "final_duplicate_page") {
+      const budget = await consumeProjectionRunStepBudget(
+        env.DB,
+        parsed.data.runId,
+        new Date().toISOString()
+      );
+      if (budget.exhausted) {
+        message.ack();
+        logRunBudgetExhausted(message.id, parsed.data.runId, budget.steps);
+        return;
+      }
       const finalGraph = await finalizeCanonicalDuplicateGraph(
         env.DB,
         parsed.data.runId,
@@ -99,6 +110,16 @@ async function consumePublicProjectionMessage(
       ),
     });
     if (projection.runId !== null) {
+      const budget = await consumeProjectionRunStepBudget(
+        env.DB,
+        projection.runId,
+        new Date().toISOString()
+      );
+      if (budget.exhausted) {
+        message.ack();
+        logRunBudgetExhausted(message.id, projection.runId, budget.steps);
+        return;
+      }
       const nextMessage: PublicProjectionQueueMessage =
         "finalDuplicateState" in projection &&
         projection.finalDuplicateState === "pending"
@@ -130,4 +151,19 @@ async function consumePublicProjectionMessage(
     );
     message.retry();
   }
+}
+
+function logRunBudgetExhausted(
+  messageId: string,
+  runId: string,
+  steps: number
+) {
+  console.error(
+    JSON.stringify({
+      event: "public_projection_run_budget_exhausted",
+      messageId,
+      runId,
+      steps,
+    })
+  );
 }
