@@ -322,6 +322,10 @@ export function locationAssertions(inputs: ResolutionInputs) {
     }
   }
   return [...unique.values()].map((candidate) => {
+    const explicitCountry =
+      candidate.semanticKind === "country"
+        ? countryCodeForLabel(candidate.label)
+        : null;
     const parentCountries = [
       ...new Set(
         candidate.parentGeographies
@@ -333,11 +337,9 @@ export function locationAssertions(inputs: ResolutionInputs) {
     const assertedCountries = [
       ...new Set(
         [
-          assertedCountry,
+          explicitCountry ? null : assertedCountry,
           ...parentCountries,
-          candidate.semanticKind === "country"
-            ? countryCodeForLabel(candidate.label)
-            : null,
+          explicitCountry,
         ].filter((country): country is string => Boolean(country))
       ),
     ];
@@ -361,11 +363,7 @@ export function locationAssertions(inputs: ResolutionInputs) {
     return {
       ...candidate,
       countryCode:
-        assertedCountry ??
-        parentCountries[0] ??
-        (candidate.semanticKind === "country"
-          ? countryCodeForLabel(candidate.label)
-          : null),
+        explicitCountry ?? assertedCountry ?? parentCountries[0] ?? null,
       sourceConflict,
     };
   });

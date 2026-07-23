@@ -57,6 +57,66 @@ describe("private jobs list query", () => {
     expect(second.jobs.map(({ id }) => id)).toEqual(["georgia-low"]);
     expect(second.page).toMatchObject({ hasMore: false, offset: 1 });
   });
+
+  it("resolves an explicit public job handoff outside the current page", async () => {
+    const user = await createAuthenticatedUser("public-handoff@example.test");
+    const timestamp = "2026-07-22T12:00:00.000Z";
+    const publicJobId = `pjob_v1_${"a".repeat(64)}`;
+    await testEnv.DB.batch([
+      jobStatement("public-target", "tefl", "China", 1000, timestamp),
+      jobStatement("higher-ranked", "tefl", "Poland", 9000, timestamp),
+      testEnv.DB.prepare(
+        `UPDATE job_listings
+            SET material_hash=?,material_hash_version=1,
+                material_changed_at=?
+          WHERE id='public-target'`
+      ).bind("b".repeat(64), timestamp),
+      testEnv.DB.prepare(
+        `INSERT INTO job_listing_versions (
+          listing_id,material_version,material_hash,material_hash_version,
+          material_json,created_at
+        ) VALUES ('public-target',1,?,1,'{}',?)`
+      ).bind("b".repeat(64), timestamp),
+      testEnv.DB.prepare(
+        "INSERT INTO public_jobs (id,created_at) VALUES (?,?)"
+      ).bind(publicJobId, timestamp),
+      testEnv.DB.prepare(
+        `INSERT INTO job_source_positions (
+          id,listing_id,source_key,position_key,position_kind,created_at
+        ) VALUES (
+          'source-position-public-target','public-target','tefl','direct',
+          'direct',?
+        )`
+      ).bind(timestamp),
+      testEnv.DB.prepare(
+        `INSERT INTO job_source_position_mapping_versions (
+          source_position_id,version,predecessor_version,listing_id,
+          listing_material_version,mapping_state,public_job_id,reason_code,
+          mapping_hash,idempotency_key,created_at
+        ) VALUES (
+          'source-position-public-target',1,NULL,'public-target',1,'mapped',?,
+          'initial',?,'public-handoff',?
+        )`
+      ).bind(publicJobId, "c".repeat(64), timestamp),
+      testEnv.DB.prepare(
+        `INSERT INTO job_source_position_mapping_heads (
+          source_position_id,current_version,updated_at
+        ) VALUES ('source-position-public-target',1,?)`
+      ).bind(timestamp),
+    ]);
+
+    const result = await jobsRequest(
+      user.cookie,
+      `excludeBoard=anesl&limit=100&offset=0&publicJob=${publicJobId}`
+    );
+
+    expect(result.jobs.map(({ id }) => id)).toEqual(["public-target"]);
+    expect(result.page).toMatchObject({
+      hasMore: false,
+      totalCount: 1,
+    });
+    expect(result.page.totalAvailable).toBeGreaterThan(1);
+  });
 });
 
 function jobStatement(

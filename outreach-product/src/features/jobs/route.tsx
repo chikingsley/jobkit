@@ -92,11 +92,12 @@ export function JobsRoute() {
         fit: fitFilter,
         limit: PRIVATE_JOB_PAGE_SIZE,
         offset: 0,
+        publicJob: publicJobIntent,
         showExcluded,
         sort,
       },
     }).catch(() => undefined);
-  }, [countryFilter, fitFilter, loadJobs, showExcluded, sort]);
+  }, [countryFilter, fitFilter, loadJobs, publicJobIntent, showExcluded, sort]);
 
   const intendedJob = publicJobIntent
     ? jobs.find((job) => job.publicJobId === publicJobIntent)
@@ -104,8 +105,9 @@ export function JobsRoute() {
   const selectedListItem = publicJobIntent
     ? intendedJob
     : selectVisibleJob(jobs, selectedJobId);
-  const selectedDetail = selectedListItem
-    ? jobDetails.get(selectedListItem.id)
+  const selectedDetailId = intendedJob?.id ?? selectedJobId;
+  const selectedDetail = selectedDetailId
+    ? jobDetails.get(selectedDetailId)
     : undefined;
   const selected = selectedDetail?.job;
 
@@ -128,14 +130,14 @@ export function JobsRoute() {
 
   useEffect(() => {
     if (
-      !selectedListItem ||
+      !selectedDetailId ||
       selectedDetail ||
-      jobDetailLoading === selectedListItem.id
+      jobDetailLoading === selectedDetailId
     ) {
       return;
     }
-    void loadJob(selectedListItem.id).catch(() => undefined);
-  }, [jobDetailLoading, loadJob, selectedDetail, selectedListItem]);
+    void loadJob(selectedDetailId).catch(() => undefined);
+  }, [jobDetailLoading, loadJob, selectedDetail, selectedDetailId]);
 
   async function action(path: string, body?: object) {
     if (!selected) {
@@ -214,7 +216,7 @@ export function JobsRoute() {
       instruction={instruction}
       jobDetailError={jobDetailError}
       jobDetailLoading={
-        jobDetailLoading !== "" && jobDetailLoading === selectedListItem?.id
+        jobDetailLoading !== "" && jobDetailLoading === selectedDetailId
       }
       jobs={jobs}
       jobsError={jobsError}
@@ -230,7 +232,7 @@ export function JobsRoute() {
       preferences={preferences}
       profile={profile}
       selected={selected}
-      selectedId={selectedListItem?.id}
+      selectedId={selectedDetailId}
       selectedMatch={selectedDetail?.match}
       selectionNotice={
         publicJobIntent && !refreshing && !intendedJob

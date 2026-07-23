@@ -99,7 +99,18 @@ export async function recoverOneExpiredItem(db: D1Database) {
   return { inspected: 1, recovered, runId: affected.run_id };
 }
 
-export async function awakenReadyAnalysisWaiters(db: D1Database) {
+export async function awakenReadyAnalysisWaiters(
+  db: D1Database,
+  runId: string | null = null
+): Promise<{
+  awakened: number;
+  drift: {
+    code: "policy_heads_changed" | "source_watermark_changed";
+    runId: string;
+  } | null;
+  inspected: number;
+  runId: string | null;
+}> {
   const waiting = await db
     .prepare(
       `SELECT item.id,item.run_id,item.stage,run.scope_json,
@@ -108,9 +119,11 @@ export async function awakenReadyAnalysisWaiters(db: D1Database) {
          JOIN public_projection_runs run ON run.id=item.run_id
         WHERE run.status='running' AND item.status='waiting_analysis'
           AND item.stage IN ('prerequisites','source_positions')
+          AND (? IS NULL OR item.run_id=?)
         ORDER BY item.updated_at,run.requested_at,item.listing_id,item.id
         LIMIT 1`
     )
+    .bind(runId, runId)
     .all<WaitingListingRow>();
   const runs = new Map<
     string,
@@ -193,7 +206,8 @@ export async function awakenReadyAnalysisWaiters(db: D1Database) {
     const result = await db
       .prepare(
         `UPDATE public_projection_listing_items
-            SET status='queued',error_code='',error_detail='',updated_at=?
+            SET status='queued',attempt_count=0,
+                error_code='',error_detail='',updated_at=?
           WHERE id=? AND status='waiting_analysis'`
       )
       .bind(timestamp, item.id)

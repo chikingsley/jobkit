@@ -52,7 +52,7 @@ describe("projection prerequisites, source positions, and identity", () => {
 
     const item = await listingItem(runId);
     expect(item).toMatchObject({
-      attempt_count: 2,
+      attempt_count: 1,
       error_code: "",
       stage: "completed",
       status: "completed",
@@ -103,15 +103,8 @@ describe("projection prerequisites, source positions, and identity", () => {
     ]);
   });
 
-  it("expands 30 positions through resumable D1 batches below 50 statements", async () => {
+  it("expands 30 positions after an analysis wait without spending the retry budget on successful pages", async () => {
     const listing = await seedListing("phase-c-bounded-expansion");
-    await seedAnalyses(listing, {
-      positions: Array.from({ length: 30 }, (_, index) =>
-        position(`English Teacher ${index + 1}`, "English")
-      ),
-      reviewNotes: [],
-      scope: "multi_position",
-    });
     const operator = await createAuthenticatedUser(
       "phase-c-bounded-expansion@example.test"
     );
@@ -120,7 +113,38 @@ describe("projection prerequisites, source positions, and identity", () => {
       listingIds: [listing.job.id],
     });
     await advancePublicProjectionRuns(testEnv.DB);
-    await advancePublicProjectionRuns(testEnv.DB);
+    await expect(
+      advancePublicProjectionRuns(testEnv.DB)
+    ).resolves.toMatchObject({
+      prerequisiteReady: 0,
+      prerequisiteWaiting: 1,
+      runId,
+    });
+    expect(await listingItem(runId)).toMatchObject({
+      attempt_count: 1,
+      stage: "prerequisites",
+      status: "waiting_analysis",
+    });
+
+    await seedAnalyses(listing, {
+      positions: Array.from({ length: 30 }, (_, index) =>
+        position(`English Teacher ${index + 1}`, "English")
+      ),
+      reviewNotes: [],
+      scope: "multi_position",
+    });
+    await expect(
+      advancePublicProjectionRuns(testEnv.DB)
+    ).resolves.toMatchObject({
+      awakened: 1,
+      prerequisiteReady: 1,
+      runId,
+    });
+    expect(await listingItem(runId)).toMatchObject({
+      attempt_count: 0,
+      stage: "source_positions",
+      status: "queued",
+    });
 
     const observedBatchSizes: number[] = [];
     const boundedDb = new Proxy(testEnv.DB, {
@@ -142,7 +166,7 @@ describe("projection prerequisites, source positions, and identity", () => {
     expect(observedBatchSizes.length).toBeGreaterThanOrEqual(2);
     expect(Math.max(...observedBatchSizes)).toBeLessThanOrEqual(50);
     expect(await listingItem(runId)).toMatchObject({
-      attempt_count: 3,
+      attempt_count: 1,
       stage: "completed",
       status: "completed",
     });
@@ -197,7 +221,7 @@ describe("projection prerequisites, source positions, and identity", () => {
         runId,
       });
       expect(await listingItem(runId)).toMatchObject({
-        attempt_count: 2,
+        attempt_count: 0,
         stage: "source_positions",
         status: "queued",
       });
@@ -205,7 +229,7 @@ describe("projection prerequisites, source positions, and identity", () => {
         advancePublicProjectionRuns(testEnv.DB)
       ).resolves.toMatchObject({ expanded: 1, runId });
       expect(await listingItem(runId)).toMatchObject({
-        attempt_count: 3,
+        attempt_count: 1,
         stage: "completed",
         status: "completed",
       });

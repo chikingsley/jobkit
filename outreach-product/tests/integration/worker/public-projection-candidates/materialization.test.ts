@@ -154,6 +154,12 @@ describe("public projection candidate materialization", () => {
     const candidate = PublicProjectionCandidateSchema.parse(
       JSON.parse(result.candidate_json)
     );
+    const catalog = await testEnv.DB.prepare(
+      "SELECT version FROM public_job_catalog_head"
+    ).first<{ version: string }>();
+    if (!catalog) {
+      throw new Error("The promotion fixture has no active public catalog");
+    }
 
     const response = await sessionRequest(
       `/api/operator/public-projection/runs/${runId}/promotions`,
@@ -167,7 +173,7 @@ describe("public projection candidate materialization", () => {
       promotion: {
         created: true,
         manifest: {
-          activatedCatalogVersion: "public-catalog-v0",
+          activatedCatalogVersion: catalog.version,
           publicJobId: candidate.publicJobId,
           runId,
         },

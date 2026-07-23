@@ -1,3 +1,4 @@
+import { countrySlugForCode } from "../../../../src/lib/country-routing";
 import type { PublicProjectionCandidate } from "../candidates/model";
 
 type CandidateLocation = PublicProjectionCandidate["locations"][number];
@@ -31,7 +32,7 @@ function promotionLocationRouting(location: CandidateLocation) {
     citySlug: location.publicValue.locality
       ? slugify(location.publicValue.locality)
       : null,
-    countrySlug: location.publicValue.countryCode.toLowerCase(),
+    countrySlug: countrySlugForCode(location.publicValue.countryCode),
   };
 }
 

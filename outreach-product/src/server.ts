@@ -5,6 +5,7 @@ import {
 import type { AppEnv } from "../worker/env";
 import worker from "../worker/index";
 import type { JobKitQueueMessage } from "../worker/services/background-queue";
+import { publicSearchAssetResponse } from "../worker/services/public-search-assets";
 import type {
   JobKitStartRegister,
   JobKitStartRequestContext,
@@ -16,7 +17,8 @@ const startHandler =
 
 export default createRoutedWorker<AppEnv, JobKitQueueMessage>({
   fetchHono: (request, env, ctx) => worker.fetch(request, env, ctx),
-  fetchStart: (request, env, executionContext) =>
+  fetchStart: async (request, env, executionContext) =>
+    (await publicSearchAssetResponse(request, env)) ??
     startHandler(request, {
       context: {
         env,

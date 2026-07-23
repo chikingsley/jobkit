@@ -8,6 +8,7 @@ export interface PrivateJobListQuery {
   fit: string;
   limit: number;
   offset: number;
+  publicJob: string;
   showExcluded: boolean;
   sort: JobSort;
 }
@@ -27,6 +28,7 @@ export function parsePrivateJobListQuery(
     fit: boundedText(search.get("fit"), 100) || "all",
     limit: boundedInteger(search.get("limit"), 1, PRIVATE_JOB_PAGE_SIZE, 100),
     offset: boundedInteger(search.get("offset"), 0, 100_000, 0),
+    publicJob: boundedText(search.get("publicJob"), 100),
     showExcluded: search.get("excluded") === "true",
     sort: jobSort(search.get("sort")),
   };
@@ -43,6 +45,9 @@ export function privateJobListSearchParams(query: PrivateJobListQuery) {
   }
   if (query.fit !== "all") {
     search.set("fit", query.fit);
+  }
+  if (query.publicJob) {
+    search.set("publicJob", query.publicJob);
   }
   if (query.showExcluded) {
     search.set("excluded", "true");

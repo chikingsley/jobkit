@@ -62,6 +62,15 @@ export function GmailConnection({ request }: { request: ApiRequest }) {
     return null;
   }
   const watchActive = status.watch?.status === "active";
+  const reconnectRequired =
+    status.watch?.status === "error" &&
+    status.watch.lastError.includes("Connect Gmail");
+  let actionLabel = "Connect Google account";
+  if (reconnectRequired) {
+    actionLabel = "Reconnect Gmail";
+  } else if (status.connected) {
+    actionLabel = "Enable reply sync";
+  }
   if (status.connected && watchActive) {
     return (
       <div className="flex items-center gap-2 border-b px-4 py-2 text-muted-foreground text-xs">
@@ -131,11 +140,15 @@ export function GmailConnection({ request }: { request: ApiRequest }) {
       <Button
         className="w-full"
         disabled={busy || !status.available}
-        onClick={() => void (status.connected ? startWatch() : connect())}
+        onClick={() =>
+          void (status.connected && !reconnectRequired
+            ? startWatch()
+            : connect())
+        }
         size="sm"
       >
         {busy ? <LoaderCircleIcon className="animate-spin" /> : <MailIcon />}
-        {status.connected ? "Enable reply sync" : "Connect Google account"}
+        {actionLabel}
       </Button>
     </div>
   );

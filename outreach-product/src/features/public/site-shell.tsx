@@ -38,6 +38,23 @@ export function PublicSiteShell({ children }: PropsWithChildren) {
         </div>
       </header>
       {children}
+      <footer className="border-t">
+        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-6 text-muted-foreground text-xs sm:px-6">
+          <span>JobKit</span>
+          <Link className="hover:text-foreground" to="/methodology">
+            Methodology
+          </Link>
+          <Link className="hover:text-foreground" to="/corrections">
+            Corrections
+          </Link>
+          <Link className="hover:text-foreground" to="/privacy">
+            Privacy
+          </Link>
+          <Link className="hover:text-foreground" to="/terms">
+            Terms
+          </Link>
+        </div>
+      </footer>
     </div>
   );
 }

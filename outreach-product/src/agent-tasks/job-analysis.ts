@@ -14,7 +14,7 @@ export const JOB_MATCH_FACTS_PROMPT_VERSION = "job-match-facts-v3";
 export const JOB_CONTENT_TASK_TYPE = "job.content_analysis";
 export const JOB_CONTENT_PROMPT_VERSION = "job-content-analysis-v1";
 export const JOB_POSITION_TASK_TYPE = "job.position_analysis";
-export const JOB_POSITION_PROMPT_VERSION = "job-position-analysis-v2";
+export const JOB_POSITION_PROMPT_VERSION = "job-position-analysis-v3";
 
 export const JOB_ANALYSIS_MODELS = {
   [JOB_CONTENT_TASK_TYPE]: {

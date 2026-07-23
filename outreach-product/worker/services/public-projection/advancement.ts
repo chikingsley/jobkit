@@ -47,14 +47,14 @@ async function startProjectionRun(
   }
 }
 
-export async function advancePublicProjectionRuns(
+async function recoverProjectionRun(
   db: D1Database,
   options: PublicProjectionAdvanceOptions = {}
 ) {
   const recovery = await recoverOneExpiredItem(db);
   const requeued = recovery.recovered;
   if (recovery.inspected > 0) {
-    return {
+    const result = {
       advanced: 0,
       awakened: 0,
       blocked: 0,
@@ -67,11 +67,13 @@ export async function advancePublicProjectionRuns(
       runId: recovery.runId,
       selected: 0,
     };
+    return { kind: "complete" as const, result };
   }
-  const waiterRecovery = await awakenReadyAnalysisWaiters(db);
+  let run = await nextActiveRun(db, options.locationResolver !== undefined);
+  const waiterRecovery = await awakenReadyAnalysisWaiters(db, run?.id ?? null);
   const { awakened } = waiterRecovery;
   if (waiterRecovery.drift) {
-    return {
+    const result = {
       advanced: 0,
       awakened,
       blocked: 0,
@@ -85,10 +87,13 @@ export async function advancePublicProjectionRuns(
       runId: waiterRecovery.drift.runId,
       selected: 0,
     };
+    return { kind: "complete" as const, result };
   }
-  const run = await nextActiveRun(db, options.locationResolver !== undefined);
+  if (!run && awakened > 0) {
+    run = await nextActiveRun(db, options.locationResolver !== undefined);
+  }
   if (!run) {
-    return {
+    const result = {
       advanced: 0,
       awakened,
       blocked: 0,
@@ -100,7 +105,26 @@ export async function advancePublicProjectionRuns(
       runId: null,
       selected: 0,
     };
+    return { kind: "complete" as const, result };
   }
+  return {
+    awakened,
+    kind: "run" as const,
+    requeued,
+    run,
+    waiterInspected: waiterRecovery.inspected,
+  };
+}
+
+export async function advancePublicProjectionRuns(
+  db: D1Database,
+  options: PublicProjectionAdvanceOptions = {}
+) {
+  const recovered = await recoverProjectionRun(db, options);
+  if (recovered.kind === "complete") {
+    return recovered.result;
+  }
+  const { awakened, requeued, run, waiterInspected } = recovered;
 
   const timestamp = new Date().toISOString();
   await startProjectionRun(db, run, timestamp);
@@ -229,7 +253,7 @@ export async function advancePublicProjectionRuns(
   // A waiter inspection may serve a different run than the one selected for
   // advancement. It can share a bounded normal stage, while the fixed-budget
   // D2 finalizer always starts after an invocation with zero waiter work.
-  if (waiterRecovery.inspected > 0) {
+  if (waiterInspected > 0) {
     return {
       advanced: 0,
       awakened,

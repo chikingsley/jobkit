@@ -10,7 +10,11 @@ import {
   PublicJobCursorError,
   PublicJobQueryError,
 } from "../../../worker/public-jobs/query";
-import type { PublicJobDetailResponse } from "../../../worker/public-jobs/schemas";
+import type {
+  PublicJobDetailResponse,
+  PublicJobListResponse,
+  PublicJobListScope,
+} from "../../../worker/public-jobs/schemas";
 import {
   publicJobDetailEtag,
   publicJobListEtag,
@@ -24,6 +28,7 @@ import {
 import type { JobKitStartRequestContext } from "../../server-context";
 import { resolvePublicJobCursorSecret } from "./cursor-secret";
 import {
+  type PublicJobsSearch,
   publicJobsSearchParameters,
   publicJobsSearchSchema,
 } from "./job-search";
@@ -48,6 +53,19 @@ const PublicJobDetailServerInputSchema = z
   })
   .strict();
 
+export type PublicJobListResult =
+  | { data: PublicJobListResponse; kind: "success" }
+  | { code: string; kind: "bad_request" | "stale_cursor" };
+
+export type PublicJobDetailResult =
+  | {
+      data: PublicJobDetailResponse;
+      jobPostingEligible: boolean;
+      kind: "success";
+      noindex: boolean;
+    }
+  | { kind: "gone" };
+
 export const getPublicJobList = createServerFn({ method: "GET" })
   .validator(PublicJobListServerInputSchema)
   .handler(async ({ data }) => {
@@ -63,6 +81,17 @@ export const getPublicJobList = createServerFn({ method: "GET" })
       if (scope === null) {
         setResponseStatus(404);
         throw notFound();
+      }
+      const canonicalMarketPath = publicMarketCanonicalRedirect({
+        market: data.market,
+        scope,
+        search: data.search,
+      });
+      if (canonicalMarketPath) {
+        throw redirect({
+          href: canonicalMarketPath,
+          statusCode: 308,
+        });
       }
       const request = normalizePublicJobListRequest(
         publicJobsSearchParameters(data.search),
@@ -100,38 +129,54 @@ export const getPublicJobList = createServerFn({ method: "GET" })
     }
   });
 
+function publicMarketCanonicalRedirect(input: {
+  market?: { citySlug?: string; countrySlug: string };
+  scope: PublicJobListScope | { kind: "global" };
+  search: PublicJobsSearch;
+}) {
+  if (
+    !input.market ||
+    input.scope.kind === "global" ||
+    input.scope.countrySlug === input.market.countrySlug
+  ) {
+    return null;
+  }
+  const canonicalPath =
+    input.scope.kind === "city"
+      ? `/jobs/${input.scope.countrySlug}/${input.scope.citySlug}`
+      : `/jobs/${input.scope.countrySlug}`;
+  const search = publicJobsSearchParameters(input.search).toString();
+  return search ? `${canonicalPath}?${search}` : canonicalPath;
+}
+
 export const getPublicJobDetail = createServerFn({ method: "GET" })
   .validator(PublicJobDetailServerInputSchema)
-  .handler(
-    async ({
-      data,
-    }): Promise<
-      { data: PublicJobDetailResponse; kind: "success" } | { kind: "gone" }
-    > => {
-      const context = requireJobKitStartContext();
-      const result = await readPublicJobDetailWithMetadata(
-        context.env.DB,
-        data
-      );
-      if (result.kind === "missing") {
-        setResponseStatus(404);
-        throw notFound();
-      }
-      if (result.kind === "redirect") {
-        throw redirect({ href: result.targetPath, statusCode: 308 });
-      }
-      if (result.kind === "gone") {
-        setResponseStatus(410);
-        return { kind: "gone" } as const;
-      }
-      applyPublicValidatorHeaders({
-        etag: await publicJobDetailEtag(result.metadata),
-        lastModified: result.metadata.representationUpdatedAt,
-      });
-      setResponseStatus(200);
-      return { data: result.data, kind: "success" } as const;
+  .handler(async ({ data }): Promise<PublicJobDetailResult> => {
+    const context = requireJobKitStartContext();
+    const result = await readPublicJobDetailWithMetadata(context.env.DB, data);
+    if (result.kind === "missing") {
+      setResponseStatus(404);
+      throw notFound();
     }
-  );
+    if (result.kind === "redirect") {
+      throw redirect({ href: result.targetPath, statusCode: 308 });
+    }
+    if (result.kind === "gone") {
+      setResponseStatus(410);
+      return { kind: "gone" } as const;
+    }
+    applyPublicValidatorHeaders({
+      etag: await publicJobDetailEtag(result.metadata),
+      lastModified: result.metadata.representationUpdatedAt,
+    });
+    setResponseStatus(200);
+    return {
+      data: result.data,
+      jobPostingEligible: result.metadata.jobPostingEligible,
+      kind: "success",
+      noindex: result.noindex,
+    } as const;
+  });
 
 function applyPublicValidatorHeaders(validators: {
   etag: string;

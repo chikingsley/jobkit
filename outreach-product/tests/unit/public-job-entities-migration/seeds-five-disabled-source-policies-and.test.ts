@@ -20,7 +20,7 @@ afterEach(() => {
 });
 
 describe("public job entity migration", () => {
-  test("seeds five disabled source policies and zero public projections", () => {
+  test("seeds reviewed source policies and zero public projections", () => {
     const database = migratedDatabase();
 
     expect(
@@ -37,8 +37,14 @@ describe("public job entity migration", () => {
     ).toEqual([
       policyRow("ajarn", "rejected", "blocked"),
       policyRow("anesl", "rejected", "blocked"),
-      policyRow("eslcafe-modern", "pending", "metadata_only"),
-      policyRow("seriousteachers", "pending", "metadata_only"),
+      policyRow("eslcafe-modern", "approved", "fact_summary", {
+        enabled: 1,
+        version: 2,
+      }),
+      policyRow("seriousteachers", "approved", "fact_summary", {
+        enabled: 1,
+        version: 2,
+      }),
       policyRow("tefl", "rejected", "blocked"),
     ]);
     expect(publicCounts(database)).toEqual({
@@ -82,32 +88,32 @@ describe("public job entity migration", () => {
       })
     ).toThrow();
     insertPolicyVersion(database, {
-      approval: "approved",
-      enabled: 1,
-      predecessor: 1,
-      scope: "metadata_only",
+      approval: "revoked",
+      enabled: 0,
+      predecessor: 2,
+      scope: "fact_summary",
       source: "eslcafe-modern",
-      version: 2,
+      version: 3,
     });
     expect(() =>
       insertPolicyVersion(database, {
         approval: "approved",
         enabled: 1,
-        predecessor: 2,
-        scope: "metadata_only",
+        predecessor: 3,
+        scope: "fact_summary",
         source: "eslcafe-modern",
-        version: 3,
+        version: 4,
       })
     ).toThrow("policy version must extend the current head");
     database.exec(
       `UPDATE source_publication_policy_heads
-          SET current_version=2,updated_at='${timestamp}'
+          SET current_version=3,updated_at='${timestamp}'
         WHERE source_key='eslcafe-modern'`
     );
     expect(() =>
       database.exec(
         `UPDATE source_publication_policy_heads
-            SET current_version=1
+            SET current_version=2
           WHERE source_key='eslcafe-modern'`
       )
     ).toThrow("policy head must advance one version");
@@ -116,20 +122,20 @@ describe("public job entity migration", () => {
   test("accepts exact successor replays and rejects changed hashes", () => {
     const database = migratedDatabase();
     insertPolicyVersion(database, {
-      approval: "approved",
-      enabled: 1,
-      predecessor: 1,
-      scope: "metadata_only",
+      approval: "revoked",
+      enabled: 0,
+      predecessor: 2,
+      scope: "fact_summary",
       source: "eslcafe-modern",
-      version: 2,
+      version: 3,
     });
     database.exec(
       `UPDATE source_publication_policy_heads
-          SET current_version=2,updated_at='${timestamp}'
+          SET current_version=3,updated_at='${timestamp}'
         WHERE source_key='eslcafe-modern';
        INSERT OR IGNORE INTO source_publication_policy_versions
        SELECT * FROM source_publication_policy_versions
-        WHERE source_key='eslcafe-modern' AND version=2;`
+        WHERE source_key='eslcafe-modern' AND version=3;`
     );
     expect(
       database
@@ -139,7 +145,7 @@ describe("public job entity migration", () => {
             WHERE source_key='eslcafe-modern'`
         )
         .get()
-    ).toEqual({ count: 2 });
+    ).toEqual({ count: 3 });
     expect(() =>
       database.exec(
         `INSERT OR IGNORE INTO source_publication_policy_versions(
@@ -155,7 +161,7 @@ describe("public job entity migration", () => {
                 terms_checked_at,robots_url,robots_checked_at,evidence_json,
                 decision_note,'${hashC}',idempotency_key,created_at
            FROM source_publication_policy_versions
-          WHERE source_key='eslcafe-modern' AND version=2`
+          WHERE source_key='eslcafe-modern' AND version=3`
       )
     ).toThrow("policy idempotency key conflicts with existing hash");
   });

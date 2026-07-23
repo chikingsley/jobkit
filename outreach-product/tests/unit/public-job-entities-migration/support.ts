@@ -37,12 +37,13 @@ export function migratedDatabase(): Database {
 export function policyRow(
   source_key: string,
   approval_state: string,
-  publication_scope: string
+  publication_scope: string,
+  input: { enabled?: 0 | 1; version?: number } = {}
 ) {
   return {
     approval_state,
-    current_version: 1,
-    publication_enabled: 0,
+    current_version: input.version ?? 1,
+    publication_enabled: input.enabled ?? 0,
     publication_scope,
     source_key,
   };
@@ -113,19 +114,8 @@ export function seededPublishedDatabase(): Database {
   const database = migratedDatabase();
   seedListing(database);
   seedOrganization(database);
-  insertPolicyVersion(database, {
-    approval: "approved",
-    enabled: 1,
-    predecessor: 1,
-    scope: "fact_summary",
-    source: "eslcafe-modern",
-    version: 2,
-  });
   database.exec(
-    `UPDATE source_publication_policy_heads
-        SET current_version=2,updated_at='${timestamp}'
-      WHERE source_key='eslcafe-modern';
-     INSERT INTO canonical_locations(
+    `INSERT INTO canonical_locations(
        id,resolution_state,input_label,display_name,country_code,region,
        locality,provider,provider_place_id,latitude,longitude,
        resolution_evidence_json,created_at,updated_at

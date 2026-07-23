@@ -313,12 +313,26 @@ function locationCandidateIsViable(
   ) {
     return false;
   }
+  if (countryFeatureMatchesAssertion(assertion, countryCode)) {
+    return true;
+  }
   const label = normalizeText(assertion.label);
   const firstComponent = normalizeText(assertion.label.split(",")[0] ?? "");
   return (
     label === normalizeText(preferredName) ||
     label === normalizeText(fullName) ||
     firstComponent === normalizeText(preferredName)
+  );
+}
+
+function countryFeatureMatchesAssertion(
+  assertion: ReturnType<typeof locationAssertions>[number],
+  countryCode: string | null
+) {
+  return (
+    assertion.semanticKind === "country" &&
+    Boolean(assertion.countryCode) &&
+    assertion.countryCode === countryCode?.toUpperCase()
   );
 }
 

@@ -138,6 +138,7 @@ export async function buildProjectionCandidate(
     contractVersion: 1 as const,
     decision: candidateDecision({
       decisionVersion,
+      jobPostingEligible: false,
       predecessorVersion: live?.current_decision_version ?? null,
       publishable,
       routeAvailable: route !== null,

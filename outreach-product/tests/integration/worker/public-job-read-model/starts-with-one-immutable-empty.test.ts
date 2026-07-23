@@ -31,13 +31,13 @@ beforeAll(async () => {
 });
 
 describe("public job read model", () => {
-  it("starts with one immutable empty catalog and publishes zero jobs", async () => {
+  it("starts with the immutable policy-reviewed empty catalog", async () => {
     const response = await readPublicJobList(
       testEnv.DB,
       request(new URLSearchParams())
     );
     expect(response).toMatchObject({
-      catalog: { version: "public-catalog-v0" },
+      catalog: { version: "policy-invalidation:seriousteachers:2" },
       items: [],
       page: { hasMore: false, nextCursor: null },
       schemaVersion: "public-job-list-v1",
@@ -61,7 +61,7 @@ describe("public job read model", () => {
       testEnv.DB.prepare(
         "SELECT COUNT(*) count FROM public_job_catalog_head_history"
       ).first()
-    ).resolves.toEqual({ count: 1 });
+    ).resolves.toEqual({ count: 3 });
   });
 
   it("blocks activation until the exact immutable catalog seal is complete", async () => {

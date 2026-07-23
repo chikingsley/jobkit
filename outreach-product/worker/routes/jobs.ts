@@ -217,11 +217,13 @@ export function registerJobRoutes(app: JobKitApp) {
     const countries = [...new Set(eligibleBoardJobs.map((job) => job.country))]
       .filter(Boolean)
       .sort((left, right) => left.localeCompare(right));
-    const filtered = filterJobs(eligibleBoardJobs, matches, {
-      country: query.country,
-      fit: query.fit,
-      showExcluded: query.showExcluded,
-    });
+    const filtered = query.publicJob
+      ? eligibleBoardJobs.filter((job) => job.publicJobId === query.publicJob)
+      : filterJobs(eligibleBoardJobs, matches, {
+          country: query.country,
+          fit: query.fit,
+          showExcluded: query.showExcluded,
+        });
     const sorted = sortJobs(filtered, context.fx, query.sort);
     const jobs = sorted.slice(query.offset, query.offset + query.limit);
     return c.json({

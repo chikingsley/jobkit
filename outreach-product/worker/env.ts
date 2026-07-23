@@ -8,6 +8,7 @@ export interface AppEnv extends Env {
   FX_RATES_JSON?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
+  GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON?: string;
   GOOGLE_PUBSUB_AUDIENCE?: string;
   GOOGLE_PUBSUB_SERVICE_ACCOUNT?: string;
   GOOGLE_PUBSUB_TOPIC?: string;

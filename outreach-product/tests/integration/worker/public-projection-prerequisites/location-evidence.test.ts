@@ -8,15 +8,19 @@ import { createAuthenticatedUser } from ".././auth";
 import {
   addressAnalysis,
   directAnalysis,
+  explicitChinaAnalysis,
   parentAndChildAnalysis,
   parentMismatchAnalysis,
   sourceCountryConflictAnalysis,
   sourceParentConflictAnalysis,
+  zhangjiajieAnalysis,
 } from "./support/analyses";
 import {
   mapboxAddressFixture,
+  mapboxChinaFixture,
   mapboxGeorgiaFixture,
   mapboxTbilisiFixture,
+  mapboxZhangjiajieFixture,
   permanentFixtureResponse,
 } from "./support/mapbox";
 import { futureTimestamp, resetPrerequisiteDb, testEnv } from "./support/model";
@@ -29,6 +33,84 @@ import {
 beforeEach(resetPrerequisiteDb);
 
 describe("projection prerequisites, source positions, and identity", () => {
+  it("resolves position countries over board buckets and country aliases", async () => {
+    const listing = await seedListing("phase-d3-explicit-country", {
+      country: "Georgia",
+      location: "China",
+    });
+    await seedAnalyses(listing, explicitChinaAnalysis());
+    await seedResolvableOrganization();
+    const operator = await createAuthenticatedUser(
+      "phase-d3-explicit-country@example.test"
+    );
+    const { claim, runId } = await canonicalResolutionClaim(
+      listing,
+      operator.cookie
+    );
+
+    await processProjectionCanonicalResolutionClaim(
+      testEnv.DB,
+      claim,
+      futureTimestamp,
+      createMapboxPermanentLocationResolver("fixture-token", () =>
+        Promise.resolve(Response.json(mapboxChinaFixture()))
+      )
+    );
+
+    await expect(
+      testEnv.DB.prepare(
+        `SELECT asserted_country_code,country_code,state,reason_code
+           FROM public_projection_location_resolutions WHERE run_id=?`
+      )
+        .bind(runId)
+        .first()
+    ).resolves.toEqual({
+      asserted_country_code: "CN",
+      country_code: "CN",
+      reason_code: "location_countrywide_match",
+      state: "resolved",
+    });
+  });
+
+  it("matches a country parent through its canonical country code", async () => {
+    const listing = await seedListing("phase-d3-country-parent-alias", {
+      country: "China",
+      location: "Zhangjiajie, Hunan, China",
+    });
+    await seedAnalyses(listing, zhangjiajieAnalysis());
+    await seedResolvableOrganization();
+    const operator = await createAuthenticatedUser(
+      "phase-d3-country-parent-alias@example.test"
+    );
+    const { claim, runId } = await canonicalResolutionClaim(
+      listing,
+      operator.cookie
+    );
+
+    await processProjectionCanonicalResolutionClaim(
+      testEnv.DB,
+      claim,
+      futureTimestamp,
+      createMapboxPermanentLocationResolver("fixture-token", () =>
+        Promise.resolve(Response.json(mapboxZhangjiajieFixture()))
+      )
+    );
+
+    await expect(
+      testEnv.DB.prepare(
+        `SELECT asserted_country_code,country_code,state,reason_code
+           FROM public_projection_location_resolutions WHERE run_id=?`
+      )
+        .bind(runId)
+        .first()
+    ).resolves.toEqual({
+      asserted_country_code: "CN",
+      country_code: "CN",
+      reason_code: "location_exact_provider_match",
+      state: "resolved",
+    });
+  });
+
   it("rolls back D3 before artifacts when the exact guard loses", async () => {
     const listing = await seedListing("phase-d3-guard-rollback");
     await seedAnalyses(listing, directAnalysis());

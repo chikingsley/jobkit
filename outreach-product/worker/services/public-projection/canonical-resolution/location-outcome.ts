@@ -185,6 +185,13 @@ export function featureMatchesParentGeography(
     ],
   }[parent.semanticKind];
   const expected = normalizeText(parent.value);
+  if (
+    parent.semanticKind === "country" &&
+    countryCodeForLabel(parent.value) ===
+      context.country?.country_code?.toUpperCase()
+  ) {
+    return true;
+  }
   return parentNames.some(
     (value) => typeof value === "string" && normalizeText(value) === expected
   );

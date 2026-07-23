@@ -172,6 +172,7 @@ function resolvePublicJobDetailRow(
       metadata: {
         canonicalPath: data.canonicalPath,
         eligibilityDecisionHash: row.eligibility_decision_hash,
+        jobPostingEligible: row.job_posting_eligible === 1,
         publicContentHash: row.public_content_hash,
         representationUpdatedAt: row.representation_updated_at,
       },
@@ -199,7 +200,15 @@ export async function readPublicJobDetailWithMetadata(
          resolution.route_action,resolution.target_path,resolution.noindex,
          resolution.detail_json,resolution.public_content_hash,
          resolution.eligibility_decision_hash,
-         resolution.representation_updated_at
+         resolution.representation_updated_at,
+         CASE WHEN EXISTS (
+           SELECT 1 FROM job_posting_jobs posting
+            WHERE posting.public_job_id=resolution.public_job_id
+              AND posting.public_job_version=CAST(
+                json_extract(resolution.detail_json,'$.publicJobVersion')
+                AS INTEGER
+              )
+         ) THEN 1 ELSE 0 END AS job_posting_eligible
        FROM public_job_route_resolutions resolution
       WHERE resolution.public_job_id=? AND resolution.requested_slug=?
         LIMIT 2`

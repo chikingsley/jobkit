@@ -39,6 +39,7 @@ const defaultJobQuery: PrivateJobListQuery = {
   fit: "all",
   limit: PRIVATE_JOB_PAGE_SIZE,
   offset: 0,
+  publicJob: "",
   showExcluded: false,
   sort: "stated-hourly",
 };

@@ -122,8 +122,10 @@ export async function resolveOrganization(
              (? IS NULL OR organization.country_code=?)
              AND (
                lower(organization.name)=lower(?)
-               OR lower(organization.canonical_domain)=lower(?)
-               OR lower(organization.canonical_domain)=lower(?)
+               OR lower(NULLIF(organization.canonical_domain,''))=
+                  lower(NULLIF(?,''))
+               OR lower(NULLIF(organization.canonical_domain,''))=
+                  lower(NULLIF(?,''))
              )
            )
         ORDER BY organization.id LIMIT ?`

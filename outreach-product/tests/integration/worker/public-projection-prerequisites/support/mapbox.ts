@@ -61,6 +61,66 @@ export function mapboxGeorgiaFixture() {
   };
 }
 
+export function mapboxChinaFixture() {
+  return {
+    attribution: "Mapbox fixture",
+    features: [
+      {
+        bbox: [73.5, 18.2, 134.8, 53.6],
+        geometry: { coordinates: [104.2, 35.9], type: "Point" },
+        id: "china-feature",
+        properties: {
+          context: {
+            country: {
+              country_code: "cn",
+              mapbox_id: "china",
+              name: "People's Republic of China",
+            },
+          },
+          feature_type: "country",
+          full_address: "People's Republic of China",
+          mapbox_id: "china",
+          match_code: { confidence: "exact" },
+          name: "People's Republic of China",
+        },
+        type: "Feature",
+      },
+    ],
+    type: "FeatureCollection",
+  };
+}
+
+export function mapboxZhangjiajieFixture() {
+  return {
+    attribution: "Mapbox fixture",
+    features: [
+      {
+        geometry: { coordinates: [110.5, 29.1], type: "Point" },
+        id: "zhangjiajie-feature",
+        properties: {
+          context: {
+            country: {
+              country_code: "cn",
+              mapbox_id: "china",
+              name: "People's Republic of China",
+            },
+            place: { mapbox_id: "zhangjiajie", name: "Zhangjiajie" },
+            region: { mapbox_id: "hunan", name: "Hunan" },
+          },
+          feature_type: "place",
+          full_address: "Zhangjiajie, Hunan, People's Republic of China",
+          mapbox_id: "zhangjiajie",
+          match_code: { confidence: "exact" },
+          name: "Zhangjiajie",
+          place_formatted: "Hunan, People's Republic of China",
+        },
+        type: "Feature",
+      },
+    ],
+    type: "FeatureCollection",
+  };
+}
+
 export function mapboxCityFixture(name: string, padding: string) {
   return {
     attribution: "Mapbox fixture",
@@ -144,8 +204,10 @@ export function permanentFixtureResponse(
   fixture: ReturnType<
     | typeof mapboxCityFixture
     | typeof mapboxAddressFixture
+    | typeof mapboxChinaFixture
     | typeof mapboxGeorgiaFixture
     | typeof mapboxTbilisiFixture
+    | typeof mapboxZhangjiajieFixture
   >,
   label: string
 ) {

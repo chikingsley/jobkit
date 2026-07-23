@@ -32,6 +32,7 @@ import {
   jobPositionAnalysisStatements,
   readJobListingSource,
 } from "../job-analysis-records";
+import { awakenProjectionWaitersForListing } from "../public-projection/analysis-waiters";
 import type { AgentTaskRunRow } from "./contracts";
 import { completeAgentTaskRunWithDomainWrites } from "./run-store";
 
@@ -70,6 +71,7 @@ export async function completeJobPositionTask(
         fence
       )
   );
+  await awakenProjectionWaiters(env, run.source_task_id);
   await refreshCampaignMatchesForJob(env, run.source_task_id);
   return {
     jobId: run.source_task_id,
@@ -109,6 +111,7 @@ export async function completeJobMatchFactsTask(
         fence
       )
   );
+  await awakenProjectionWaiters(env, run.source_task_id);
   await refreshCampaignMatchesForJob(env, run.source_task_id);
   return {
     jobId: run.source_task_id,
@@ -152,10 +155,15 @@ export async function completeJobContentTask(
       ),
     ]
   );
+  await awakenProjectionWaiters(env, run.source_task_id);
   return {
     jobId: run.source_task_id,
     schemaVersion: JOB_CONTENT_ANALYSIS_SCHEMA_VERSION,
   };
+}
+
+async function awakenProjectionWaiters(env: AppEnv, listingId: string) {
+  await awakenProjectionWaitersForListing(env.DB, listingId);
 }
 
 async function assertCurrentJobSource(

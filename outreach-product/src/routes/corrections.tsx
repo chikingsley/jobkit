@@ -9,14 +9,44 @@ export const Route = createFileRoute("/corrections")({
   head: () =>
     foundationHead(
       "Corrections | JobKit",
-      "JobKit's correction process is being prepared with the public catalog."
+      "How to report an inaccurate, closed, duplicated, or privately exposed JobKit listing.",
+      "/corrections"
     ),
 });
 
 function CorrectionsPage() {
   return (
-    <PublicFoundationPage title="Corrections">
-      The public correction channel will open with the verified job catalog.
+    <PublicFoundationPage
+      introduction="Job data changes. JobKit records corrections against the canonical job and its source evidence."
+      sections={[
+        {
+          body: (
+            <p>
+              Send the canonical JobKit URL, the corrected fact, and a public
+              source that supports the change to{" "}
+              <a
+                className="underline underline-offset-4"
+                href="mailto:chibuzor.ejimofor@gmail.com?subject=JobKit%20correction"
+              >
+                chibuzor.ejimofor@gmail.com
+              </a>
+              .
+            </p>
+          ),
+          title: "Report a correction",
+        },
+        {
+          body: "Reports can cover a closed role, incorrect title, employer or location, duplicate position, invalid application route, or exposed private contact information.",
+          title: "What to include",
+        },
+        {
+          body: "A verified correction updates the current canonical record, preserves the prior version, and removes or redirects pages when the position has closed or merged.",
+          title: "What happens next",
+        },
+      ]}
+      title="Corrections"
+    >
+      Corrections
     </PublicFoundationPage>
   );
 }

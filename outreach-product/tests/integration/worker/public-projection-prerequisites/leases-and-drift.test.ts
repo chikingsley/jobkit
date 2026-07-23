@@ -388,7 +388,7 @@ describe("projection prerequisites, source positions, and identity", () => {
       selected: 1,
     });
     expect(await listingItem(firstRunId)).toMatchObject({
-      attempt_count: 1,
+      attempt_count: 0,
       stage: "source_positions",
       status: "queued",
     });

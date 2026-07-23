@@ -47,6 +47,67 @@ export function directAnalysis(): JobPositionAnalysis {
   };
 }
 
+export function explicitChinaAnalysis(): JobPositionAnalysis {
+  const value = position("English Teacher", "English");
+  return {
+    positions: [
+      {
+        ...value,
+        locations: [
+          {
+            addressComponents: [],
+            evidence: "in China",
+            parentGeographies: [],
+            role: "worksite",
+            scope: "countrywide",
+            semanticKind: "country",
+            value: "China",
+            workplaceType: "onsite",
+          },
+        ],
+      },
+    ],
+    reviewNotes: [],
+    scope: "direct",
+  };
+}
+
+export function zhangjiajieAnalysis(): JobPositionAnalysis {
+  const value = position("English Teacher", "English");
+  return {
+    positions: [
+      {
+        ...value,
+        locations: [
+          {
+            addressComponents: [],
+            evidence: "Zhangjiajie, Hunan, China",
+            parentGeographies: [
+              {
+                evidence: "Hunan",
+                semanticKind: "region",
+                value: "Hunan",
+              },
+              {
+                evidence: "China",
+                semanticKind: "country",
+                value: "China",
+              },
+            ],
+            role: "worksite",
+            scope: "locality",
+            semanticKind: "city",
+            value: "Zhangjiajie",
+            workplaceType: "onsite",
+          },
+        ],
+      },
+    ],
+    reviewNotes: [],
+    scope: "direct",
+  };
+}
+
 export function parentAndChildAnalysis(): JobPositionAnalysis {
   const value = position("English Teacher", "English");
   return {

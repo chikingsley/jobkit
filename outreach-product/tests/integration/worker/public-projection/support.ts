@@ -219,6 +219,16 @@ export async function advanceUntilFinalDuplicateComplete() {
 }
 
 export async function rotatePolicyHead(sourceKey: string) {
+  const head = await testEnv.DB.prepare(
+    `SELECT current_version FROM source_publication_policy_heads
+      WHERE source_key=?`
+  )
+    .bind(sourceKey)
+    .first<{ current_version: number }>();
+  if (!head) {
+    throw new Error(`Publication policy head is missing for ${sourceKey}`);
+  }
+  const nextVersion = head.current_version + 1;
   await testEnv.DB.prepare(
     `INSERT INTO source_publication_policy_versions (
       source_key,version,predecessor_version,approval_state,
@@ -227,20 +237,28 @@ export async function rotatePolicyHead(sourceKey: string) {
       terms_checked_at,robots_url,robots_checked_at,evidence_json,
       decision_note,policy_hash,idempotency_key,created_at
     )
-    SELECT source_key,2,1,approval_state,publication_scope,
+    SELECT source_key,?,?,approval_state,publication_scope,
            publication_enabled,allowed_fields_json,attribution_mode,
            max_verbatim_chars,source_origin_url,terms_url,terms_checked_at,
            robots_url,robots_checked_at,evidence_json,'Policy rotation test',
            ?,?,?
       FROM source_publication_policy_versions
-     WHERE source_key=? AND version=1`
+     WHERE source_key=? AND version=?`
   )
-    .bind("e".repeat(64), "projection-policy-v2", timestamp, sourceKey)
+    .bind(
+      nextVersion,
+      head.current_version,
+      "e".repeat(64),
+      `projection-policy-v${nextVersion}`,
+      timestamp,
+      sourceKey,
+      head.current_version
+    )
     .run();
   await testEnv.DB.prepare(
     `UPDATE source_publication_policy_heads
-        SET current_version=2,updated_at=? WHERE source_key=?`
+        SET current_version=?,updated_at=? WHERE source_key=?`
   )
-    .bind(timestamp, sourceKey)
+    .bind(nextVersion, timestamp, sourceKey)
     .run();
 }

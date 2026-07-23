@@ -61,6 +61,7 @@ import { EmailAttemptError } from "./services/email-attempts";
 import { FollowUpError, queueDueFollowUps } from "./services/followups";
 import { GmailIntegrationError } from "./services/gmail-errors";
 import { renewExpiringGmailWatches } from "./services/gmail-integration";
+import { processGoogleIndexingOutbox } from "./services/google-indexing";
 import { queueDueInventoryRefreshes } from "./services/inventory-refreshes";
 import { InventoryRunError } from "./services/inventory-runs/contracts";
 import { JobAnalysisRecordError } from "./services/job-analysis-records";
@@ -432,6 +433,7 @@ export default {
     ctx.waitUntil(
       Promise.all([
         renewExpiringGmailWatches(env),
+        processGoogleIndexingOutbox(env),
         queueDueFollowUps(env),
         runCampaignMatchingPass(env),
         runCampaignScheduler(env),
@@ -444,6 +446,7 @@ export default {
       ]).then(
         ([
           gmail,
+          indexing,
           followUps,
           matching,
           campaigns,
@@ -464,6 +467,7 @@ export default {
               event: "scheduled_maintenance",
               followUps,
               gmail,
+              indexing,
               inventory,
               matching,
               projectionWake,

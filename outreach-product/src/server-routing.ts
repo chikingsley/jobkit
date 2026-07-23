@@ -12,20 +12,26 @@ export function applyDocumentCachePolicy(
 ): Response {
   const headers = new Headers(response.headers);
   const contentType = headers.get("content-type") ?? "";
-  const isPublicDocument =
+  const isPublicHtml =
     contentType.includes("text/html") &&
     !pathname.startsWith("/app/") &&
     pathname !== "/app";
-  if (isPublicDocument) {
+  const isPublicSearchAsset =
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    pathname.startsWith("/sitemaps/");
+  const isPublicResponse = isPublicHtml || isPublicSearchAsset;
+  if (isPublicResponse) {
     headers.delete("set-cookie");
     removeVaryField(headers, "cookie");
   }
-  headers.set(
-    "cache-control",
-    isPublicDocument
-      ? "public, max-age=0, must-revalidate"
-      : "private, no-store"
-  );
+  let cacheControl = "private, no-store";
+  if (isPublicSearchAsset) {
+    cacheControl = "public, max-age=300, s-maxage=300";
+  } else if (isPublicHtml) {
+    cacheControl = "public, max-age=0, must-revalidate";
+  }
+  headers.set("cache-control", cacheControl);
   return new Response(response.body, {
     headers,
     status: response.status,

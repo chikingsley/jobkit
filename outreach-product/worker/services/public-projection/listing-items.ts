@@ -108,7 +108,9 @@ export function claimedListingUpdateStatement(
     .prepare(
       `UPDATE public_projection_listing_items
           SET stage=?,status=?,lease_owner=NULL,lease_token=NULL,
-              lease_expires_at=NULL,checkpoint_json=?,error_code=?,
+              lease_expires_at=NULL,
+              attempt_count=CASE WHEN ?='queued' THEN 0 ELSE attempt_count END,
+              checkpoint_json=?,error_code=?,
               error_detail=?,completed_at=?,updated_at=?
         WHERE id=? AND run_id=? AND status='processing'
           AND lease_owner=? AND lease_token=?
@@ -120,6 +122,7 @@ export function claimedListingUpdateStatement(
     )
     .bind(
       input.stage,
+      input.status,
       input.status,
       canonicalJson(input.checkpoint),
       input.errorCode ?? "",

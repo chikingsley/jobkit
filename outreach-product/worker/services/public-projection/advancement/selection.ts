@@ -67,6 +67,7 @@ export function nextActiveRun(
                  SELECT 1 FROM public_projection_listing_items item
                   WHERE item.run_id=public_projection_runs.id
                     AND item.status='queued'
+                    AND item.attempt_count<item.max_attempts
                     AND item.stage IN (
                       'selected','prerequisites','source_positions'
                     )
@@ -83,6 +84,7 @@ export function nextActiveRun(
                    WHERE item.run_id=public_projection_runs.id
                      AND item.stage='canonical_resolution'
                      AND item.status='queued'
+                     AND item.attempt_count<item.max_attempts
                      AND batch.canonical_identity_state='pending'
                      AND NOT EXISTS (
                        SELECT 1 FROM public_projection_resolution_seals seal
@@ -95,6 +97,7 @@ export function nextActiveRun(
                  SELECT 1 FROM public_projection_position_items item
                   WHERE item.run_id=public_projection_runs.id
                     AND item.status='queued'
+                    AND item.attempt_count<item.max_attempts
                     AND item.stage='identity'
                )
                OR (

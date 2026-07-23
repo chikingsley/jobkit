@@ -292,4 +292,107 @@ describe("projection prerequisites, source positions, and identity", () => {
         .run()
     ).rejects.toThrow("location resolutions are append-only");
   });
+
+  it("ignores blank organization domains when a listing has one route host", async () => {
+    const listing = await seedListing("phase-d3-one-route-host", {
+      applyUrl: "https://jobs.example.test/opening",
+      company: "Linked School",
+      country: "",
+      sourceUrl: "https://jobs.example.test/opening",
+    });
+    await seedAnalyses(listing, directAnalysis());
+    const operator = await createAuthenticatedUser(
+      "phase-d3-one-route-host@example.test"
+    );
+    const unrelatedOrganizations = Array.from({ length: 51 }, (_, index) =>
+      testEnv.DB.prepare(
+        `INSERT INTO organizations (
+          id,country_code,country_name,name,identity_key,city,region,
+          website_url,canonical_domain,market_segment,status,
+          outreach_eligibility,created_at,updated_at
+        ) VALUES (?, 'ZZ','Unspecified',?,?,'','','','','school','active',
+                  'review',?,?)`
+      ).bind(
+        `organization:blank-domain:${index}`,
+        `Unrelated School ${index}`,
+        `unrelated-school-${index}`,
+        futureTimestamp,
+        futureTimestamp
+      )
+    );
+    await testEnv.DB.batch([
+      ...unrelatedOrganizations,
+      testEnv.DB.prepare(
+        `INSERT INTO organizations (
+          id,country_code,country_name,name,identity_key,city,region,
+          website_url,canonical_domain,market_segment,status,
+          outreach_eligibility,created_at,updated_at
+        ) VALUES (
+          'organization:linked-school','ZZ','Unspecified','Linked School',
+          'linked-school','','','','','school','active','review',?,?
+        )`
+      ).bind(futureTimestamp, futureTimestamp),
+      testEnv.DB.prepare(
+        `INSERT INTO organization_opportunities (
+          organization_id,job_id,evidence_url,linked_at
+        ) VALUES ('organization:linked-school',?,?,?)`
+      ).bind(listing.job.id, listing.job.sourceUrl, futureTimestamp),
+      testEnv.DB.prepare(
+        `INSERT INTO organization_opportunity_acceptances (
+          organization_id,job_id,accepted_by_user_id,accepted_at,created_at
+        ) VALUES ('organization:linked-school',?,?,?,?)`
+      ).bind(listing.job.id, operator.userId, futureTimestamp, futureTimestamp),
+    ]);
+    const runId = await createRun(operator.cookie, {
+      boards: [],
+      listingIds: [listing.job.id],
+    });
+    await advanceRunThroughExpansion();
+    await expect(
+      advancePublicProjectionRuns(testEnv.DB)
+    ).resolves.toMatchObject({ identified: 1, runId });
+    await expect(
+      advancePublicProjectionRuns(testEnv.DB)
+    ).resolves.toMatchObject({ duplicateState: "complete", runId });
+    const claim = await claimProjectionPosition(
+      testEnv.DB,
+      runId,
+      "canonical_resolution",
+      futureTimestamp,
+      { requireUnsealedCanonicalResolution: true }
+    );
+    if (!claim) {
+      throw new Error("Expected a canonical-resolution claim");
+    }
+    const resolver = createMapboxPermanentLocationResolver(
+      "fixture-token",
+      async () => Response.json(mapboxTbilisiFixture())
+    );
+
+    await expect(
+      processProjectionCanonicalResolutionClaim(
+        testEnv.DB,
+        claim,
+        futureTimestamp,
+        resolver
+      )
+    ).resolves.toMatchObject({
+      blocked: 0,
+      resolved: 1,
+      sealed: 1,
+    });
+    await expect(
+      testEnv.DB.prepare(
+        `SELECT candidate_count,reason_code,selected_organization_id,state
+           FROM public_projection_organization_resolutions WHERE run_id=?`
+      )
+        .bind(runId)
+        .first()
+    ).resolves.toEqual({
+      candidate_count: 1,
+      reason_code: "organization_explicit_link",
+      selected_organization_id: "organization:linked-school",
+      state: "resolved",
+    });
+  });
 });

@@ -1,3 +1,7 @@
+import {
+  countryCodeForSlug,
+  countrySlugForCode,
+} from "../../../src/lib/country-routing";
 import type {
   PublicJobDetailResponse,
   PublicJobListResponse,
@@ -36,6 +40,7 @@ export interface PublicJobListRow extends PublicJobReadRow {
 export interface RouteResolutionRow {
   detail_json: string | null;
   eligibility_decision_hash: string | null;
+  job_posting_eligible: number;
   noindex: number;
   public_content_hash: string | null;
   representation_updated_at: string | null;
@@ -75,6 +80,7 @@ export async function resolvePublicJobMarketScope(
     return null;
   }
   const city = input.citySlug ?? null;
+  const routedCountryCode = countryCodeForSlug(input.countrySlug);
   const row = await db
     .prepare(
       `SELECT
@@ -87,12 +93,23 @@ export async function resolvePublicJobMarketScope(
        FROM public_job_catalog_head_pointer head
        JOIN public_browse_job_locations facet
          ON facet.catalog_version=head.current_version
-      WHERE facet.country_slug=?
+      WHERE (
+        facet.country_slug=?
+        OR (? IS NOT NULL AND facet.country_code=?)
+      )
         AND (? IS NULL OR (
           facet.city_slug=? AND facet.location_role='worksite'
         ))`
     )
-    .bind(city, city, input.countrySlug, city, city)
+    .bind(
+      city,
+      city,
+      input.countrySlug,
+      routedCountryCode,
+      routedCountryCode,
+      city,
+      city
+    )
     .first<PublicMarketScopeRow>();
   if (row?.country_count !== 1) {
     return null;
@@ -100,7 +117,7 @@ export async function resolvePublicJobMarketScope(
   if (city === null) {
     return {
       countryCode: row.country_code,
-      countrySlug: row.country_slug,
+      countrySlug: countrySlugForCode(row.country_code),
       kind: "country",
     };
   }
@@ -110,7 +127,7 @@ export async function resolvePublicJobMarketScope(
   return {
     citySlug: row.city_slug,
     countryCode: row.country_code,
-    countrySlug: row.country_slug,
+    countrySlug: countrySlugForCode(row.country_code),
     displayName: row.display_name,
     kind: "city",
   };
@@ -123,6 +140,7 @@ export type PublicJobDetailServerResult =
       metadata: {
         canonicalPath: string;
         eligibilityDecisionHash: string;
+        jobPostingEligible: boolean;
         publicContentHash: string;
         representationUpdatedAt: string;
       };

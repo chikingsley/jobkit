@@ -285,6 +285,7 @@ function publicDate(value: string | null, fields: string[], field: string) {
 
 export function candidateDecision(input: {
   decisionVersion: number;
+  jobPostingEligible: boolean;
   predecessorVersion: number | null;
   publishable: boolean;
   routeAvailable: boolean;
@@ -293,13 +294,18 @@ export function candidateDecision(input: {
     browseEligible: input.publishable,
     contentReviewState: "approved",
     decisionVersion: input.decisionVersion,
-    jobPostingEligible: input.publishable,
+    jobPostingEligible: input.publishable && input.jobPostingEligible,
     organicIndexEligible: input.publishable,
     predecessorVersion: input.predecessorVersion,
     privacyState: "passed",
     publicationState: input.publishable ? "published" : "private",
     reasonCodes: input.publishable
-      ? ["candidate_published"]
+      ? [
+          "candidate_published",
+          ...(input.jobPostingEligible
+            ? ["job_posting_eligible"]
+            : ["job_posting_original_date_missing"]),
+        ]
       : [
           input.routeAvailable
             ? "source_policy_private"

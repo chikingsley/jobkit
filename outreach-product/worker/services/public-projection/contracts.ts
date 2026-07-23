@@ -25,7 +25,7 @@ export interface PublicProjectionScope {
 }
 
 export const PUBLIC_PROJECTION_CONTRACT_VERSION = 1;
-export const PUBLIC_PROJECTOR_VERSION = "shadow-projector-v1";
+export const PUBLIC_PROJECTOR_VERSION = "shadow-projector-v3";
 export const PUBLIC_PROJECTION_SELECTION_PAGE_SIZE = 100;
 export const PUBLIC_PROJECTION_ADVANCE_LIMIT = 25;
 
