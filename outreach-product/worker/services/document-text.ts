@@ -1,6 +1,10 @@
 import { Buffer } from "node:buffer";
 import { z } from "zod";
+import { MODEL_PROVIDERS, resolveModel } from "../../src/model/registry";
 import type { AppEnv } from "../env";
+
+const MISTRAL_API = MODEL_PROVIDERS.mistral.baseUrl;
+const MISTRAL_OCR_MODEL = resolveModel("documentOcr").model;
 
 export const RESUME_CONTENT_TYPES = new Set([
   "application/pdf",
@@ -195,7 +199,7 @@ async function convertUploadedDocument(
     );
     form.set("purpose", "ocr");
     form.set("visibility", "user");
-    const upload = await fetch("https://api.mistral.ai/v1/files", {
+    const upload = await fetch(`${MISTRAL_API}/files`, {
       body: form,
       headers: mistralHeaders(env),
       method: "POST",
@@ -205,7 +209,7 @@ async function convertUploadedDocument(
       await parseMistralResponse(upload, MistralFileSchema, input, "upload")
     ).id;
     const signedUrlResponse = await fetch(
-      `https://api.mistral.ai/v1/files/${encodeURIComponent(fileId)}/url?expiry=1`,
+      `${MISTRAL_API}/files/${encodeURIComponent(fileId)}/url?expiry=1`,
       {
         headers: mistralHeaders(env),
         signal: AbortSignal.timeout(15_000),
@@ -231,7 +235,7 @@ async function convertDocumentUrl(
   type: "document_url" | "image_url",
   url: string
 ) {
-  const response = await fetch("https://api.mistral.ai/v1/ocr", {
+  const response = await fetch(`${MISTRAL_API}/ocr`, {
     body: JSON.stringify({
       document: {
         [type]: url,
@@ -239,7 +243,7 @@ async function convertDocumentUrl(
       },
       image_limit: 0,
       include_image_base64: false,
-      model: "mistral-ocr-latest",
+      model: MISTRAL_OCR_MODEL,
     }),
     headers: mistralHeaders(env, true),
     method: "POST",
@@ -318,7 +322,7 @@ async function deleteMistralFile(
 ) {
   try {
     const response = await fetch(
-      `https://api.mistral.ai/v1/files/${encodeURIComponent(fileId)}`,
+      `${MISTRAL_API}/files/${encodeURIComponent(fileId)}`,
       {
         headers: mistralHeaders(env),
         method: "DELETE",
