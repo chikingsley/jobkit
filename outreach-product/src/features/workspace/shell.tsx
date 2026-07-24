@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Bot,
   BriefcaseBusiness,
@@ -85,7 +85,11 @@ export function WorkspaceSidebar({
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip="JobKit">
+            <SidebarMenuButton
+              render={<Link aria-label="JobKit public site" to="/" />}
+              size="lg"
+              tooltip="JobKit public site"
+            >
               <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary font-semibold text-primary-foreground text-sm">
                 J
               </div>

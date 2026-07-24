@@ -29,6 +29,7 @@ export const jobsSearchSchema = z
     fit: z.string().max(100).optional().catch(undefined),
     job: optionalSearchString,
     publicJob: optionalSearchString,
+    signup: optionalSearchBoolean,
     sort: z
       .enum(["monthly-pay", "review-order", "stated-hourly"])
       .optional()
