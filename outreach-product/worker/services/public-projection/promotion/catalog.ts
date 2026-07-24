@@ -16,29 +16,24 @@ import {
   candidateLocationFacets,
   candidateSearchRow,
   candidateSearchTerms,
+  closeSupersededCatalogMember,
 } from "./catalog-statements";
 import { assertion } from "./guards";
 import { promotionLocationFacet } from "./location";
 import type { PromotionCatalogHead } from "./model";
 import { PublicProjectionPromotionError } from "./model";
 
-export interface CatalogCopyMember {
-  facetCount: number;
-  publicJobId: string;
-  termCount: number;
-}
-
 export interface PreparedCatalogPromotion {
   candidateEntry: PublicJobCatalogMembershipEntry;
   candidateSearch: ReturnType<typeof derivePublicJobSearchEntry>;
   catalogVersion: string;
-  copyMembers: CatalogCopyMember[];
   locationFacetCount: number;
   memberCount: number;
   membershipHash: string;
   searchContentHash: string;
   searchTermCount: number;
   searchVersion: string;
+  supersededMemberCount: number;
 }
 
 export interface CatalogPromotionStatementInput {
@@ -113,7 +108,6 @@ export async function prepareCatalogPromotion(
     candidateEntry,
     candidateSearch: derivePublicJobSearchEntry(input.candidate.item),
     catalogVersion: `catalog:promotion:${input.candidate.candidateId}:${attempt}`,
-    copyMembers: catalogCopyMembers(retained, retainedSearch),
     locationFacetCount: membership.entries.reduce(
       (count, entry) => count + entry.locationFacets.length,
       0
@@ -123,6 +117,7 @@ export async function prepareCatalogPromotion(
     searchContentHash: search.searchContentHash,
     searchTermCount: search.termCount,
     searchVersion: `search:promotion:${input.candidate.candidateId}:${attempt}`,
+    supersededMemberCount: currentMembership.entries.length - retained.length,
   };
 }
 
@@ -136,28 +131,19 @@ function membershipSearchEntry(
   };
 }
 
-function catalogCopyMembers(
-  retained: PublicJobCatalogMembershipEntry[],
-  retainedSearch: PublicJobCatalogSearchEntry[]
-): CatalogCopyMember[] {
-  const termCounts = new Map(
-    retainedSearch.map((entry) => [entry.publicJobId, entry.terms.length])
-  );
-  return retained.map((entry) => ({
-    facetCount: entry.locationFacets.length,
-    publicJobId: entry.publicJobId,
-    termCount: termCounts.get(entry.publicJobId) ?? 0,
-  }));
-}
-
 async function readCurrentMembership(db: D1Database, catalogVersion: string) {
   const rows = await db
     .prepare(
-      `SELECT public_job_id,public_job_version,eligibility_decision_version,
-              item_json,detail_json,location_facets_json,public_content_hash,
-              eligibility_decision_hash
-         FROM public_job_catalog_members
-        WHERE catalog_version=? ORDER BY public_job_id`
+      `SELECT member.public_job_id,member.public_job_version,
+              member.eligibility_decision_version,member.item_json,
+              member.detail_json,member.location_facets_json,
+              member.public_content_hash,member.eligibility_decision_hash
+         FROM public_job_catalog_versions target
+         JOIN public_job_catalog_members member
+           ON member.valid_from_ordinal<=target.ordinal
+          AND (member.valid_to_ordinal IS NULL
+            OR member.valid_to_ordinal>target.ordinal)
+        WHERE target.version=? ORDER BY member.public_job_id`
     )
     .bind(catalogVersion)
     .all<{
@@ -184,19 +170,37 @@ async function readCurrentMembership(db: D1Database, catalogVersion: string) {
   );
 }
 
-// The head flip stays a single atomic batch: candidate rows, the immutable
-// seal, and the guarded pointer advance commit together after the copied
-// predecessor rows were staged in bounded chunks.
+// One atomic batch writes the new catalog version, closes the superseded
+// member span, inserts the candidate rows, seals the version, and advances
+// the guarded head pointer. Retained members are never rewritten.
 export function catalogActivationStatements(
   db: D1Database,
   input: CatalogPromotionStatementInput
 ) {
   const { candidate, catalogHead, prepared, timestamp } = input;
   return [
+    catalogVersionStatement(db, input),
+    assertion(db, 1, "SELECT changes()", []),
+    closeSupersededCatalogMember(db, input),
+    assertion(db, prepared.supersededMemberCount, "SELECT changes()", []),
     candidateCatalogMember(db, input),
+    assertion(db, 1, "SELECT changes()", []),
     candidateSearchRow(db, input),
+    assertion(db, 1, "SELECT changes()", []),
     candidateSearchTerms(db, input),
+    assertion(
+      db,
+      prepared.candidateSearch.terms.length,
+      "SELECT changes()",
+      []
+    ),
     candidateLocationFacets(db, input),
+    assertion(
+      db,
+      prepared.candidateEntry.locationFacets.length,
+      "SELECT changes()",
+      []
+    ),
     db
       .prepare(
         `INSERT INTO public_job_catalog_seals (
@@ -235,7 +239,7 @@ export function catalogActivationStatements(
   ];
 }
 
-export function catalogVersionStatement(
+function catalogVersionStatement(
   db: D1Database,
   input: CatalogPromotionStatementInput
 ) {
@@ -250,8 +254,11 @@ export function catalogVersionStatement(
         version,predecessor_version,membership_hash,member_count,
         search_document_count,search_content_hash,search_term_count,
         location_facet_count,representation_updated_at,material_changed_at,
-        search_index_version,created_at
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
+        search_index_version,created_at,ordinal
+      )
+      SELECT ?,?,?,?,?,?,?,?,?,?,?,?,
+             (SELECT COALESCE(MAX(version.ordinal),0)+1
+                FROM public_job_catalog_versions version)`
     )
     .bind(
       prepared.catalogVersion,

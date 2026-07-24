@@ -85,6 +85,19 @@ export async function appendTerminalDecision(
   ]);
 }
 
+interface OpenSpanRow {
+  detail_json: string;
+  eligibility_decision_hash: string;
+  eligibility_decision_version: number;
+  item_json: string;
+  location_facets_json: string;
+  public_content_hash: string;
+  public_job_id: string;
+  public_job_version: number;
+  representation_updated_at: string;
+  valid_from_ordinal: number;
+}
+
 export async function publishCatalog(
   label: string,
   publicJobIds: string[],
@@ -131,8 +144,11 @@ export async function publishCatalog(
       version,predecessor_version,membership_hash,member_count,
       search_document_count,search_content_hash,search_term_count,
       location_facet_count,representation_updated_at,
-      material_changed_at,search_index_version,created_at
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`
+      material_changed_at,search_index_version,created_at,ordinal
+    )
+    SELECT ?,?,?,?,?,?,?,?,?,?,?,?,
+           (SELECT COALESCE(MAX(version.ordinal),0)+1
+              FROM public_job_catalog_versions version)`
   )
     .bind(
       catalogVersion,
@@ -150,11 +166,52 @@ export async function publishCatalog(
     )
     .run();
 
-  for (const candidate of candidates) {
+  const headOrdinal = await testEnv.DB.prepare(
+    `SELECT version.ordinal FROM public_job_catalog_head_pointer pointer
+       JOIN public_job_catalog_versions version
+         ON version.version=pointer.current_version
+      WHERE pointer.singleton=1`
+  ).first<{ ordinal: number }>();
+  const openSpans = await testEnv.DB.prepare(
+    `SELECT public_job_id,public_job_version,eligibility_decision_version,
+            item_json,detail_json,public_content_hash,
+            eligibility_decision_hash,location_facets_json,
+            representation_updated_at,valid_from_ordinal
+       FROM public_job_catalog_members
+      WHERE valid_to_ordinal IS NULL`
+  ).all<OpenSpanRow>();
+  const pending = new Map(
+    candidates.map((candidate) => [
+      candidate.candidate.public_job_id,
+      candidate,
+    ])
+  );
+  const closures: D1PreparedStatement[] = [];
+  for (const span of openSpans.results) {
+    const next = pending.get(span.public_job_id);
+    const visibleAtHead =
+      span.valid_from_ordinal <= (headOrdinal?.ordinal ?? 0);
+    if (visibleAtHead && next && spanMatchesCandidate(span, next)) {
+      pending.delete(span.public_job_id);
+      continue;
+    }
+    closures.push(
+      testEnv.DB.prepare(
+        `UPDATE public_job_catalog_members
+            SET valid_to_ordinal=(
+              SELECT ordinal FROM public_job_catalog_versions WHERE version=?
+            )
+          WHERE public_job_id=? AND valid_to_ordinal IS NULL`
+      ).bind(catalogVersion, span.public_job_id)
+    );
+  }
+  if (closures.length > 0) {
+    await testEnv.DB.batch(closures);
+  }
+  for (const candidate of pending.values()) {
     const statements = catalogMemberStatements(
       candidate,
       catalogVersion,
-      searchVersion,
       options
     );
     // biome-ignore lint/performance/noAwaitInLoops: the fixture materializes each immutable catalog member before one head advance.
@@ -231,10 +288,28 @@ async function prepareCatalogCandidate(
   };
 }
 
+function spanMatchesCandidate(
+  span: OpenSpanRow,
+  prepared: PreparedCatalogCandidate
+) {
+  return (
+    span.public_job_version === prepared.item.publicJobVersion &&
+    span.eligibility_decision_version ===
+      prepared.candidate.eligibility_decision_version &&
+    span.item_json === prepared.itemJson &&
+    span.detail_json === prepared.detailJson &&
+    span.public_content_hash === prepared.candidate.public_content_hash &&
+    span.eligibility_decision_hash ===
+      prepared.candidate.eligibility_decision_hash &&
+    span.location_facets_json === JSON.stringify(prepared.facets) &&
+    span.representation_updated_at ===
+      prepared.candidate.representation_updated_at
+  );
+}
+
 function catalogMemberStatements(
   prepared: PreparedCatalogCandidate,
   catalogVersion: string,
-  searchVersion: string,
   options: PublishCatalogOptions
 ) {
   const {
@@ -248,13 +323,14 @@ function catalogMemberStatements(
   return [
     testEnv.DB.prepare(
       `INSERT INTO public_job_catalog_members (
-        catalog_version,public_job_id,public_job_version,
+        public_job_id,valid_from_ordinal,public_job_version,
         eligibility_decision_version,item_json,detail_json,public_content_hash,
         eligibility_decision_hash,location_facets_json,
         representation_updated_at,created_at
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?)`
+      )
+      SELECT ?,version.ordinal,?,?,?,?,?,?,?,?,?
+        FROM public_job_catalog_versions version WHERE version.version=?`
     ).bind(
-      catalogVersion,
       candidate.public_job_id,
       item.publicJobVersion,
       candidate.eligibility_decision_version,
@@ -264,41 +340,47 @@ function catalogMemberStatements(
       candidate.eligibility_decision_hash,
       JSON.stringify(facets),
       candidate.representation_updated_at,
-      timestamp
+      timestamp,
+      catalogVersion
     ),
     ...(options.omitSearch
       ? []
       : [
           testEnv.DB.prepare(
             `INSERT INTO public_job_search_index (
-              public_job_id,public_job_version,search_index_version,
-              search_document,search_terms_json,title_sort_key,effective_recency,
-              conservative_hourly_usd,created_at
-            ) VALUES (?,?,?,?,?,?,?,?,?)`
+              public_job_id,valid_from_ordinal,public_job_version,
+              search_document,search_terms_json,title_sort_key,
+              effective_recency,conservative_hourly_usd,created_at
+            )
+            SELECT ?,version.ordinal,?,?,?,?,?,?,?
+              FROM public_job_catalog_versions version WHERE version.version=?`
           ).bind(
             candidate.public_job_id,
             item.publicJobVersion,
-            searchVersion,
             derived.searchDocument,
             JSON.stringify(derived.terms),
             derived.titleSortKey,
             derived.effectiveRecency,
             derived.conservativeHourlyUsd,
-            timestamp
+            timestamp,
+            catalogVersion
           ),
           ...derived.terms.map(({ score, term }) =>
             testEnv.DB.prepare(
               `INSERT INTO public_job_search_terms (
-                search_index_version,public_job_id,public_job_version,
+                public_job_id,valid_from_ordinal,public_job_version,
                 term,score,created_at
-              ) VALUES (?,?,?,?,?,?)`
+              )
+              SELECT ?,version.ordinal,?,?,?,?
+                FROM public_job_catalog_versions version
+               WHERE version.version=?`
             ).bind(
-              searchVersion,
               candidate.public_job_id,
               item.publicJobVersion,
               term,
               score,
-              timestamp
+              timestamp,
+              catalogVersion
             )
           ),
         ]),
@@ -307,12 +389,13 @@ function catalogMemberStatements(
       : item.locations.map((_location, ordinal) =>
           testEnv.DB.prepare(
             `INSERT INTO public_browse_job_locations (
-              catalog_version,public_job_id,public_job_version,ordinal,
+              public_job_id,valid_from_ordinal,public_job_version,ordinal,
               location_role,country_code,country_slug,city_slug,display_name,
               created_at
-            ) VALUES (?,?,?,?,?,?,?,?,?,?)`
+            )
+            SELECT ?,version.ordinal,?,?,?,?,?,?,?,?
+              FROM public_job_catalog_versions version WHERE version.version=?`
           ).bind(
-            catalogVersion,
             candidate.public_job_id,
             item.publicJobVersion,
             ordinal,
@@ -321,7 +404,8 @@ function catalogMemberStatements(
             facets[ordinal]?.countrySlug,
             facets[ordinal]?.citySlug,
             facets[ordinal]?.displayName,
-            timestamp
+            timestamp,
+            catalogVersion
           )
         )),
   ];

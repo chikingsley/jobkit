@@ -144,6 +144,7 @@ describe("public job entity migration", () => {
       "catalog_version",
       "public_job_id",
       "public_job_version",
+      "valid_from_ordinal",
       "canonical_slug",
       "title",
       "organization_name",

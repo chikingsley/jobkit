@@ -115,8 +115,10 @@ describe("public job read model", () => {
       testEnv.DB.prepare(
         `UPDATE public_job_search_index
             SET search_document='forged mutable search'
-          WHERE search_index_version='search:search-authority'`
-      ).run()
+          WHERE public_job_id=?`
+      )
+        .bind(job.publicId)
+        .run()
     ).rejects.toThrow(searchImmutablePattern);
     await expect(search()).resolves.toMatchObject({
       items: [{ publicId: job.publicId }],
@@ -171,9 +173,9 @@ describe("public job read model", () => {
     const plan = await testEnv.DB.prepare(
       `EXPLAIN QUERY PLAN
        SELECT public_job_id FROM public_job_search_terms
-        WHERE search_index_version=? AND term=?`
+        WHERE term=?`
     )
-      .bind("search:ranked-search", "seoul")
+      .bind("seoul")
       .all<{ detail: string }>();
     expect(plan.results.map(({ detail }) => detail).join(" ")).toContain(
       "idx_public_job_search_terms_lookup"

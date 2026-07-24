@@ -91,8 +91,15 @@ export async function resolvePublicJobMarketScope(
            AS display_name,
          COUNT(DISTINCT facet.country_code) AS country_count
        FROM public_job_catalog_head_pointer head
+       JOIN public_job_catalog_versions head_version
+         ON head_version.version=head.current_version
+       JOIN public_job_catalog_members member
+         ON member.valid_from_ordinal<=head_version.ordinal
+        AND (member.valid_to_ordinal IS NULL
+          OR member.valid_to_ordinal>head_version.ordinal)
        JOIN public_browse_job_locations facet
-         ON facet.catalog_version=head.current_version
+         ON facet.public_job_id=member.public_job_id
+        AND facet.valid_from_ordinal=member.valid_from_ordinal
       WHERE (
         facet.country_slug=?
         OR (? IS NOT NULL AND facet.country_code=?)
