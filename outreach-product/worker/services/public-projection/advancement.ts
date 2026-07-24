@@ -9,18 +9,16 @@ import {
   recoverOneExpiredItem,
 } from "./advancement/recovery";
 import {
-  advanceSelectedListings,
   finalDuplicateSealExists,
   finalizeRunDuplicateGraph,
-  nextActiveRun,
   selectListingPage,
 } from "./advancement/selection";
 import {
-  expandSourcePositions,
-  failRun,
-  processPositionIdentities,
-  processPrerequisiteListings,
-} from "./advancement/stages";
+  type ItemStageProgress,
+  nextActiveRun,
+  PROJECTION_ITEM_STAGES,
+} from "./advancement/stage-machine";
+import { failRun } from "./advancement/stages";
 import { processNextProjectionCandidate } from "./candidates/store";
 import { processProjectionCanonicalResolutionClaim } from "./canonical-resolution";
 import {
@@ -171,83 +169,22 @@ export async function advancePublicProjectionRuns(
     };
   }
 
-  const advanced = await advanceSelectedListings(db, run.id, timestamp);
-  if (advanced > 0) {
-    await completeTerminalSelectionRun(db, run.id, timestamp);
-    return {
-      advanced,
-      awakened,
-      blocked: selection.blocked,
-      expanded: 0,
-      identified: 0,
-      invariantFailed: false,
-      prerequisiteReady: 0,
-      prerequisiteWaiting: 0,
-      requeued,
-      runId: run.id,
-      selected: selection.selected,
-    };
-  }
-
-  const prerequisites = await processPrerequisiteListings(
-    db,
-    run.id,
-    timestamp
-  );
-  if (prerequisites.processed > 0) {
-    await completeTerminalSelectionRun(db, run.id, timestamp);
-    return {
-      advanced: 0,
-      awakened,
-      blocked: selection.blocked + prerequisites.blocked,
-      expanded: 0,
-      identified: 0,
-      invariantFailed: false,
-      prerequisiteReady: prerequisites.ready,
-      prerequisiteWaiting: prerequisites.waiting,
-      requeued,
-      runId: run.id,
-      selected: selection.selected,
-    };
-  }
-
-  const sourcePositions = await expandSourcePositions(db, run.id, timestamp);
-  if (sourcePositions.processed > 0) {
-    await completeTerminalSelectionRun(db, run.id, timestamp);
-    return {
-      advanced: 0,
-      awakened,
-      blocked: selection.blocked + sourcePositions.blocked,
-      expanded: sourcePositions.expanded,
-      identified: 0,
-      invariantFailed: false,
-      prerequisiteReady: 0,
-      prerequisiteWaiting: sourcePositions.waiting,
-      requeued,
-      runId: run.id,
-      selected: selection.selected,
-    };
-  }
-
-  const identities = await processPositionIdentities(db, run.id, timestamp);
-  // Duplicate finalization has its own fixed statement budget. A call that
-  // performed identity writes yields here so the resumable D2 pass begins in
-  // a clean invocation with only read-only upstream probes ahead of it.
-  if (identities.processed > 0) {
-    await completeTerminalSelectionRun(db, run.id, timestamp);
-    return {
-      advanced: 0,
-      awakened,
-      blocked: selection.blocked + identities.blocked,
-      expanded: 0,
-      identified: identities.identified,
-      invariantFailed: false,
-      prerequisiteReady: 0,
-      prerequisiteWaiting: 0,
-      requeued,
-      runId: run.id,
-      selected: selection.selected,
-    };
+  // The item stages run in the order the stage machine declares. Duplicate
+  // finalization has its own fixed statement budget, so a call that performed
+  // item writes yields here and the resumable D2 pass begins in a clean
+  // invocation with only read-only upstream probes ahead of it.
+  for (const stage of PROJECTION_ITEM_STAGES) {
+    // biome-ignore lint/performance/noAwaitInLoops: Each stage claims bounded work and the loop stops at the first stage that progressed.
+    const progress = await stage.execute(db, run.id, timestamp);
+    if (progress.processed > 0) {
+      await completeTerminalSelectionRun(db, run.id, timestamp);
+      return itemStageResult(progress, {
+        awakened,
+        requeued,
+        runId: run.id,
+        selection,
+      });
+    }
   }
 
   // A waiter inspection may serve a different run than the one selected for
@@ -257,9 +194,9 @@ export async function advancePublicProjectionRuns(
     return {
       advanced: 0,
       awakened,
-      blocked: selection.blocked + identities.blocked,
+      blocked: selection.blocked,
       expanded: 0,
-      identified: identities.identified,
+      identified: 0,
       invariantFailed: false,
       prerequisiteReady: 0,
       prerequisiteWaiting: 0,
@@ -286,10 +223,10 @@ export async function advancePublicProjectionRuns(
     return {
       advanced: 0,
       awakened,
-      blocked: selection.blocked + identities.blocked,
+      blocked: selection.blocked,
       drift: error.code,
       expanded: 0,
-      identified: identities.identified,
+      identified: 0,
       invariantFailed: false,
       prerequisiteReady: 0,
       prerequisiteWaiting: 0,
@@ -301,16 +238,40 @@ export async function advancePublicProjectionRuns(
 
   return advanceAfterDuplicatePass(db, {
     awakened,
-    blocked: selection.blocked + identities.blocked,
+    blocked: selection.blocked,
     deferFinalDuplicate: options.deferFinalDuplicate ?? false,
     duplicateComparisons,
-    identified: identities.identified,
+    identified: 0,
     locationResolver: options.locationResolver,
     requeued,
     runId: run.id,
     selected: selection.selected,
     timestamp,
   });
+}
+
+function itemStageResult(
+  progress: ItemStageProgress,
+  context: {
+    awakened: number;
+    requeued: number;
+    runId: string;
+    selection: { blocked: number; selected: number };
+  }
+) {
+  return {
+    advanced: progress.advanced,
+    awakened: context.awakened,
+    blocked: context.selection.blocked + progress.blockedDelta,
+    expanded: progress.expanded,
+    identified: progress.identified,
+    invariantFailed: false,
+    prerequisiteReady: progress.prerequisiteReady,
+    prerequisiteWaiting: progress.prerequisiteWaiting,
+    requeued: context.requeued,
+    runId: context.runId,
+    selected: context.selection.selected,
+  };
 }
 
 async function advanceAfterDuplicatePass(

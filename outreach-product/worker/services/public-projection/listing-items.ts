@@ -1,3 +1,4 @@
+import { claimableListingItemSql } from "./advancement/stage-sql";
 import { canonicalJson } from "./hash";
 
 const PROJECTION_ITEM_LEASE_MS = 5 * 60 * 1000;
@@ -50,13 +51,13 @@ export async function claimProjectionListing(
               lease_owner=?,lease_token=?,lease_expires_at=?,
               started_at=COALESCE(started_at,?),updated_at=?
         WHERE id=(
-          SELECT id FROM public_projection_listing_items
-           WHERE run_id=? AND stage=? AND status='queued'
-             AND attempt_count<max_attempts
-           ORDER BY listing_id,id LIMIT 1
+          SELECT item.id FROM public_projection_listing_items item
+           WHERE item.run_id=? AND item.stage=?
+             AND ${claimableListingItemSql("item")}
+           ORDER BY item.listing_id,item.id LIMIT 1
         )
-          AND run_id=? AND stage=? AND status='queued'
-          AND attempt_count<max_attempts
+          AND run_id=? AND stage=?
+          AND ${claimableListingItemSql("public_projection_listing_items")}
       RETURNING id,run_id,listing_id,material_version,input_hash,stage,
                 attempt_count,max_attempts,lease_owner,lease_token,
                 lease_expires_at`

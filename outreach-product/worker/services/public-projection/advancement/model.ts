@@ -36,9 +36,9 @@ export interface ExpiredProjectionItemRow {
 }
 
 export interface RunCompletionRow {
-  candidate_seal_count: number;
-  duplicate_batch_count: number;
-  final_duplicate_seal_count: number;
+  candidate_sealed: number;
+  duplicate_batch_present: number;
+  final_duplicate_sealed: number;
   listing_blocked: number;
   listing_completed: number;
   listing_failed: number;

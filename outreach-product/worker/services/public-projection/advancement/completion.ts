@@ -4,6 +4,11 @@ import {
   publicProjectionSourceWatermark,
 } from "../snapshots";
 import type { ActiveRunRow, RunCompletionRow } from "./model";
+import {
+  candidateSealExistsSql,
+  duplicateBatchExistsSql,
+  finalDuplicateSealExistsSql,
+} from "./stage-sql";
 
 export async function projectionSnapshotDrift(
   db: D1Database,
@@ -37,32 +42,23 @@ export async function completeTerminalSelectionRun(
               ,listing_completed,listing_failed,listing_superseded
               ,position_total,position_completed,position_blocked
               ,position_failed,position_superseded
-              ,(SELECT COUNT(*)
-                  FROM public_projection_duplicate_batches batch
-                 WHERE batch.run_id=public_projection_runs.id
-                ) duplicate_batch_count
-              ,(SELECT COUNT(*)
-                  FROM public_projection_final_duplicate_seals seal
-                 WHERE seal.run_id=public_projection_runs.id
-                ) final_duplicate_seal_count
-              ,(SELECT COUNT(*)
-                  FROM public_projection_candidate_seals seal
-                 WHERE seal.run_id=public_projection_runs.id
-                ) candidate_seal_count
-         FROM public_projection_runs WHERE id=?`
+              ,${duplicateBatchExistsSql("run")} duplicate_batch_present
+              ,${finalDuplicateSealExistsSql("run")} final_duplicate_sealed
+              ,${candidateSealExistsSql("run")} candidate_sealed
+         FROM public_projection_runs run WHERE run.id=?`
     )
     .bind(runId)
     .first<RunCompletionRow>();
   if (row?.selection_complete !== 1) {
     return;
   }
-  if (row.duplicate_batch_count !== 1) {
+  if (row.duplicate_batch_present !== 1) {
     return;
   }
-  if (row.final_duplicate_seal_count !== 1) {
+  if (row.final_duplicate_sealed !== 1) {
     return;
   }
-  if (row.candidate_seal_count !== 1) {
+  if (row.candidate_sealed !== 1) {
     return;
   }
   if (row.listing_total === 0) {
@@ -115,18 +111,9 @@ export async function completeTerminalSelectionRunAfterCandidates(
               )>0 THEN 'completed_with_blocks' ELSE 'completed' END,
               completed_at=?,updated_at=?
         WHERE id=? AND status='running' AND selection_complete=1
-          AND EXISTS (
-            SELECT 1 FROM public_projection_duplicate_batches batch
-             WHERE batch.run_id=public_projection_runs.id
-          )
-          AND EXISTS (
-            SELECT 1 FROM public_projection_final_duplicate_seals seal
-             WHERE seal.run_id=public_projection_runs.id
-          )
-          AND EXISTS (
-            SELECT 1 FROM public_projection_candidate_seals seal
-             WHERE seal.run_id=public_projection_runs.id
-          )
+          AND ${duplicateBatchExistsSql("public_projection_runs")}
+          AND ${finalDuplicateSealExistsSql("public_projection_runs")}
+          AND ${candidateSealExistsSql("public_projection_runs")}
           AND (
             listing_total=0
             OR (

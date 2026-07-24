@@ -1,3 +1,7 @@
+import {
+  claimablePositionItemSql,
+  unsealedCanonicalResolutionGateSql,
+} from "./advancement/stage-sql";
 import { canonicalJson } from "./hash";
 
 const PROJECTION_LEASE_OWNER = "public-projection-scheduler-v1";
@@ -56,39 +60,20 @@ export async function claimProjectionPosition(
               ),
               started_at=COALESCE(started_at,?),updated_at=?
         WHERE id=(
-          SELECT id FROM public_projection_position_items
-           WHERE run_id=? AND stage=? AND status='queued'
-             AND attempt_count<max_attempts
+          SELECT item.id FROM public_projection_position_items item
+           WHERE item.run_id=? AND item.stage=?
+             AND ${claimablePositionItemSql("item")}
              AND (
-               ?=0 OR NOT EXISTS (
-                 SELECT 1 FROM public_projection_resolution_seals seal
-                  WHERE seal.run_id=public_projection_position_items.run_id
-                    AND seal.position_item_id=public_projection_position_items.id
-               )
+               ?=0 OR (${unsealedCanonicalResolutionGateSql("item")})
              )
-           ORDER BY source_position_id,id LIMIT 1
+           ORDER BY item.source_position_id,item.id LIMIT 1
         )
-          AND run_id=? AND stage=? AND status='queued'
-          AND attempt_count<max_attempts
+          AND run_id=? AND stage=?
+          AND ${claimablePositionItemSql("public_projection_position_items")}
           AND (
-            ?=0 OR (
-              NOT EXISTS (
-                SELECT 1 FROM public_projection_resolution_seals seal
-                 WHERE seal.run_id=public_projection_position_items.run_id
-                   AND seal.position_item_id=public_projection_position_items.id
-              )
-              AND EXISTS (
-                SELECT 1
-                  FROM public_projection_duplicate_batches batch
-                  JOIN public_projection_duplicate_batch_members member
-                    ON member.run_id=batch.run_id
-                 WHERE batch.run_id=public_projection_position_items.run_id
-                   AND batch.canonical_identity_state='pending'
-                   AND member.position_item_id=public_projection_position_items.id
-                   AND member.source_position_id=public_projection_position_items.source_position_id
-                   AND member.input_hash=public_projection_position_items.input_hash
-              )
-            )
+            ?=0 OR (${unsealedCanonicalResolutionGateSql(
+              "public_projection_position_items"
+            )})
           )
       RETURNING id,run_id,listing_item_id,source_position_id,input_hash,
                 stage,checkpoint_json,attempt_count,max_attempts,lease_owner,
