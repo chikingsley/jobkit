@@ -1,23 +1,35 @@
+import { and, asc, desc, eq, isNull, ne } from "drizzle-orm";
 import type { StoredDocument } from "../../src/profile-types";
+import { getDb } from "../db/client";
+import { userDocuments } from "../db/schema/user-profile";
 
-export async function listUserDocuments(
+export function listUserDocuments(
   db: D1Database,
   userId: string,
   scope: "application" | "all" | "test_lab" = "application"
 ): Promise<StoredDocument[]> {
   const categoryFilter = {
-    all: "",
-    application: "AND category<>'test_lab'",
-    test_lab: "AND category='test_lab'",
+    all: undefined,
+    application: ne(userDocuments.category, "test_lab"),
+    test_lab: eq(userDocuments.category, "test_lab"),
   }[scope];
-  const rows = await db
-    .prepare(
-      `SELECT id,category,filename,content_type,size_bytes,is_default,created_at
-         FROM user_documents
-        WHERE user_id=? AND archived_at IS NULL ${categoryFilter}
-        ORDER BY category,created_at DESC`
+  return getDb(db)
+    .select({
+      category: userDocuments.category,
+      content_type: userDocuments.contentType,
+      created_at: userDocuments.createdAt,
+      filename: userDocuments.filename,
+      id: userDocuments.id,
+      is_default: userDocuments.isDefault,
+      size_bytes: userDocuments.sizeBytes,
+    })
+    .from(userDocuments)
+    .where(
+      and(
+        eq(userDocuments.userId, userId),
+        isNull(userDocuments.archivedAt),
+        categoryFilter
+      )
     )
-    .bind(userId)
-    .all<StoredDocument>();
-  return rows.results;
+    .orderBy(asc(userDocuments.category), desc(userDocuments.createdAt));
 }

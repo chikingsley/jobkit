@@ -1,3 +1,7 @@
+// Every statement in this module participates in completion-fence guarded
+// multi-statement D1 batches with dynamically composed WHERE clauses and
+// expected-change assertions; batch atomicity depends on prepared-statement
+// ordering, so the module stays raw SQL with typed row mapping.
 import { documentPacketDefinitions } from "../../src/features/documents/types";
 import type { AppEnv } from "../env";
 import type {

@@ -1,25 +1,18 @@
+import { and, desc, eq, gt, gte, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
   type AgentCapability,
   AgentCapabilitySchema,
 } from "../../src/features/agents/schema";
 import type { AgentRunnerContext } from "../app-types";
+import { getDb } from "../db/client";
+import { agentRunnerPairings, agentRunners } from "../db/schema/agent-tasks";
+import { users } from "../db/schema/auth";
 
 const BEARER_PREFIX_PATTERN = /^Bearer\s+/iu;
 const PAIRING_LIFETIME_MS = 10 * 60 * 1000;
 const RUNNER_ONLINE_WINDOW_MS = 60 * 1000;
 const CAPABILITIES_SCHEMA = z.array(AgentCapabilitySchema).min(1);
-
-interface AgentRunnerRow {
-  capabilities_json: string;
-  codex_version: string;
-  email: string;
-  id: string;
-  name: string;
-  role: "member" | "operator";
-  user_id: string;
-  user_name: string;
-}
 
 export async function createAgentRunnerPairing(
   db: D1Database,
@@ -29,20 +22,16 @@ export async function createAgentRunnerPairing(
   const code = `jobkit_pair_${randomHex(16)}`;
   const createdAt = new Date().toISOString();
   const expiresAt = new Date(Date.now() + PAIRING_LIFETIME_MS).toISOString();
-  await db
-    .prepare(
-      `INSERT INTO agent_runner_pairings
-        (id,user_id,code_hash,capabilities_json,expires_at,created_at)
-       VALUES (?,?,?,?,?,?)`
-    )
-    .bind(
-      crypto.randomUUID(),
-      userId,
-      await sha256(code),
-      JSON.stringify(capabilities),
+  await getDb(db)
+    .insert(agentRunnerPairings)
+    .values({
+      capabilitiesJson: JSON.stringify(capabilities),
+      codeHash: await sha256(code),
+      createdAt,
       expiresAt,
-      createdAt
-    )
+      id: crypto.randomUUID(),
+      userId,
+    })
     .run();
   return { code, createdAt, expiresAt };
 }
@@ -54,42 +43,43 @@ export async function exchangeAgentRunnerPairing(
   codexVersion: string
 ) {
   const timestamp = new Date().toISOString();
-  const pairing = await db
-    .prepare(
-      `UPDATE agent_runner_pairings
-          SET consumed_at=?
-        WHERE code_hash=? AND consumed_at IS NULL AND expires_at>?
-      RETURNING user_id,capabilities_json`
+  const pairing = await getDb(db)
+    .update(agentRunnerPairings)
+    .set({ consumedAt: timestamp })
+    .where(
+      and(
+        eq(agentRunnerPairings.codeHash, await sha256(code.trim())),
+        isNull(agentRunnerPairings.consumedAt),
+        gt(agentRunnerPairings.expiresAt, timestamp)
+      )
     )
-    .bind(timestamp, await sha256(code.trim()), timestamp)
-    .first<{ capabilities_json: string; user_id: string }>();
+    .returning({
+      capabilitiesJson: agentRunnerPairings.capabilitiesJson,
+      userId: agentRunnerPairings.userId,
+    })
+    .get();
   if (!pairing) {
     return null;
   }
 
   const capabilities = CAPABILITIES_SCHEMA.parse(
-    JSON.parse(pairing.capabilities_json)
+    JSON.parse(pairing.capabilitiesJson)
   );
   const runnerId = crypto.randomUUID();
   const token = `jobkit_agent_${randomHex(32)}`;
-  await db
-    .prepare(
-      `INSERT INTO agent_runners
-        (id,user_id,name,token_hash,capabilities_json,codex_version,
-         last_seen_at,created_at,updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?)`
-    )
-    .bind(
-      runnerId,
-      pairing.user_id,
-      runnerName.trim(),
-      await sha256(token),
-      JSON.stringify(capabilities),
-      codexVersion.trim(),
-      timestamp,
-      timestamp,
-      timestamp
-    )
+  await getDb(db)
+    .insert(agentRunners)
+    .values({
+      capabilitiesJson: JSON.stringify(capabilities),
+      codexVersion: codexVersion.trim(),
+      createdAt: timestamp,
+      id: runnerId,
+      lastSeenAt: timestamp,
+      name: runnerName.trim(),
+      tokenHash: await sha256(token),
+      updatedAt: timestamp,
+      userId: pairing.userId,
+    })
     .run();
   return { capabilities, runnerId, token };
 }
@@ -99,63 +89,69 @@ export async function authenticateAgentRunner(
   authorization: string
 ): Promise<AgentRunnerContext | null> {
   const token = authorization.replace(BEARER_PREFIX_PATTERN, "").trim();
-  if (!token.startsWith("jobkit_agent_") || token.length < 40) {
+  if (!(token.startsWith("jobkit_agent_") && token.length >= 40)) {
     return null;
   }
-  const row = await db
-    .prepare(
-      `SELECT r.id,r.user_id,r.name,r.capabilities_json,r.codex_version,
-              u.email,u.name user_name,u.role
-         FROM agent_runners r
-         JOIN users u ON u.id=r.user_id
-        WHERE r.token_hash=? AND r.revoked_at IS NULL`
+  const row = await getDb(db)
+    .select({
+      capabilitiesJson: agentRunners.capabilitiesJson,
+      codexVersion: agentRunners.codexVersion,
+      email: users.email,
+      id: agentRunners.id,
+      name: agentRunners.name,
+      role: users.role,
+      userId: agentRunners.userId,
+      userName: users.name,
+    })
+    .from(agentRunners)
+    .innerJoin(users, eq(users.id, agentRunners.userId))
+    .where(
+      and(
+        eq(agentRunners.tokenHash, await sha256(token)),
+        isNull(agentRunners.revokedAt)
+      )
     )
-    .bind(await sha256(token))
-    .first<AgentRunnerRow>();
+    .get();
   if (!row) {
     return null;
   }
   await touchAgentRunner(db, row.id);
   return {
-    capabilities: CAPABILITIES_SCHEMA.parse(JSON.parse(row.capabilities_json)),
-    codexVersion: row.codex_version,
+    capabilities: CAPABILITIES_SCHEMA.parse(JSON.parse(row.capabilitiesJson)),
+    codexVersion: row.codexVersion,
     id: row.id,
     name: row.name,
     user: {
       email: row.email,
-      id: row.user_id,
-      name: row.user_name,
-      role: row.role,
+      id: row.userId,
+      name: row.userName,
+      role: row.role as "member" | "operator",
     },
   };
 }
 
 export async function listAgentRunners(db: D1Database, userId: string) {
-  const rows = await db
-    .prepare(
-      `SELECT id,name,capabilities_json,codex_version,last_seen_at,revoked_at,
-              created_at
-         FROM agent_runners
-        WHERE user_id=? ORDER BY created_at DESC`
-    )
-    .bind(userId)
-    .all<{
-      capabilities_json: string;
-      codex_version: string;
-      created_at: string;
-      id: string;
-      last_seen_at: string | null;
-      name: string;
-      revoked_at: string | null;
-    }>();
-  return rows.results.map((row) => ({
-    capabilities: CAPABILITIES_SCHEMA.parse(JSON.parse(row.capabilities_json)),
-    codexVersion: row.codex_version,
-    createdAt: row.created_at,
+  const rows = await getDb(db)
+    .select({
+      capabilitiesJson: agentRunners.capabilitiesJson,
+      codexVersion: agentRunners.codexVersion,
+      createdAt: agentRunners.createdAt,
+      id: agentRunners.id,
+      lastSeenAt: agentRunners.lastSeenAt,
+      name: agentRunners.name,
+      revokedAt: agentRunners.revokedAt,
+    })
+    .from(agentRunners)
+    .where(eq(agentRunners.userId, userId))
+    .orderBy(desc(agentRunners.createdAt));
+  return rows.map((row) => ({
+    capabilities: CAPABILITIES_SCHEMA.parse(JSON.parse(row.capabilitiesJson)),
+    codexVersion: row.codexVersion,
+    createdAt: row.createdAt,
     id: row.id,
-    lastSeenAt: row.last_seen_at,
+    lastSeenAt: row.lastSeenAt,
     name: row.name,
-    revokedAt: row.revoked_at,
+    revokedAt: row.revokedAt,
   }));
 }
 
@@ -164,15 +160,21 @@ export async function hasAgentRunnerCapability(
   userId: string,
   capability: AgentCapability
 ) {
-  const rows = await db
-    .prepare(
-      `SELECT capabilities_json FROM agent_runners
-        WHERE user_id=? AND revoked_at IS NULL AND last_seen_at>=?`
-    )
-    .bind(userId, new Date(Date.now() - RUNNER_ONLINE_WINDOW_MS).toISOString())
-    .all<{ capabilities_json: string }>();
-  return rows.results.some((row) =>
-    CAPABILITIES_SCHEMA.parse(JSON.parse(row.capabilities_json)).includes(
+  const rows = await getDb(db)
+    .select({ capabilitiesJson: agentRunners.capabilitiesJson })
+    .from(agentRunners)
+    .where(
+      and(
+        eq(agentRunners.userId, userId),
+        isNull(agentRunners.revokedAt),
+        gte(
+          agentRunners.lastSeenAt,
+          new Date(Date.now() - RUNNER_ONLINE_WINDOW_MS).toISOString()
+        )
+      )
+    );
+  return rows.some((row) =>
+    CAPABILITIES_SCHEMA.parse(JSON.parse(row.capabilitiesJson)).includes(
       capability
     )
   );
@@ -183,14 +185,17 @@ export async function revokeAgentRunner(
   userId: string,
   runnerId: string
 ) {
-  const runnerResult = await db
-    .prepare(
-      `UPDATE agent_runners
-          SET revoked_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
-              updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
-        WHERE id=? AND user_id=? AND revoked_at IS NULL`
+  const now = sql`strftime('%Y-%m-%dT%H:%M:%fZ','now')`;
+  const runnerResult = await getDb(db)
+    .update(agentRunners)
+    .set({ revokedAt: now, updatedAt: now })
+    .where(
+      and(
+        eq(agentRunners.id, runnerId),
+        eq(agentRunners.userId, userId),
+        isNull(agentRunners.revokedAt)
+      )
     )
-    .bind(runnerId, userId)
     .run();
   return (runnerResult.meta.changes ?? 0) === 1;
 }
@@ -205,9 +210,10 @@ export async function updateAgentRunnerVersion(
     return;
   }
   const timestamp = new Date().toISOString();
-  await db
-    .prepare("UPDATE agent_runners SET codex_version=?,updated_at=? WHERE id=?")
-    .bind(version, timestamp, runnerId)
+  await getDb(db)
+    .update(agentRunners)
+    .set({ codexVersion: version, updatedAt: timestamp })
+    .where(eq(agentRunners.id, runnerId))
     .run();
 }
 
@@ -220,9 +226,10 @@ export function agentRunnerHasCapability(
 
 async function touchAgentRunner(db: D1Database, runnerId: string) {
   const timestamp = new Date().toISOString();
-  await db
-    .prepare("UPDATE agent_runners SET last_seen_at=?,updated_at=? WHERE id=?")
-    .bind(timestamp, timestamp, runnerId)
+  await getDb(db)
+    .update(agentRunners)
+    .set({ lastSeenAt: timestamp, updatedAt: timestamp })
+    .where(eq(agentRunners.id, runnerId))
     .run();
 }
 

@@ -1,3 +1,7 @@
+import { desc, eq, sql } from "drizzle-orm";
+import { getDb } from "../db/client";
+import { messageExemplars } from "../db/schema/message-style";
+
 export interface MessageExemplar {
   body: string;
   country: string;
@@ -7,41 +11,31 @@ export interface MessageExemplar {
   subject: string;
 }
 
-interface ExemplarRow {
-  body: string;
-  country: string;
-  outcome: string;
-  outcome_grade: number;
-  sent_at: string;
-  subject: string;
-}
-
 // Prefer exemplars from the same country, then the best outcomes, then the
 // most recent voice. An empty table simply yields no examples.
-export async function readMessageExemplars(
+export function readMessageExemplars(
   db: D1Database,
   userId: string,
   country: string,
   limit = 3
 ): Promise<MessageExemplar[]> {
-  const rows = await db
-    .prepare(
-      `SELECT subject,body,country,outcome,outcome_grade,sent_at
-         FROM message_exemplars
-        WHERE user_id=?1
-        ORDER BY (country<>'' AND country=?2) DESC,
-                 outcome_grade DESC,
-                 sent_at DESC
-        LIMIT ?3`
+  return getDb(db)
+    .select({
+      body: messageExemplars.body,
+      country: messageExemplars.country,
+      outcome: messageExemplars.outcome,
+      outcomeGrade: messageExemplars.outcomeGrade,
+      sentAt: messageExemplars.sentAt,
+      subject: messageExemplars.subject,
+    })
+    .from(messageExemplars)
+    .where(eq(messageExemplars.userId, userId))
+    .orderBy(
+      desc(
+        sql`(${messageExemplars.country}<>'' AND ${messageExemplars.country}=${country})`
+      ),
+      desc(messageExemplars.outcomeGrade),
+      desc(messageExemplars.sentAt)
     )
-    .bind(userId, country, limit)
-    .all<ExemplarRow>();
-  return rows.results.map((row) => ({
-    body: row.body,
-    country: row.country,
-    outcome: row.outcome,
-    outcomeGrade: row.outcome_grade,
-    sentAt: row.sent_at,
-    subject: row.subject,
-  }));
+    .limit(limit);
 }

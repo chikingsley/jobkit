@@ -1,22 +1,26 @@
+import { eq } from "drizzle-orm";
 import {
   type MessageStyleChoice,
   type MessageStyleChoices,
   messageStyleComparisons,
   messageStyleGuidance,
 } from "../../src/features/message-style/calibration";
+import { excluded, getDb } from "../db/client";
+import { userMessageStyleChoices } from "../db/schema/message-style";
 
 export async function readMessageStyleChoices(
   db: D1Database,
   userId: string
 ): Promise<MessageStyleChoices> {
-  const rows = await db
-    .prepare(
-      "SELECT comparison_id,choice FROM user_message_style_choices WHERE user_id=?"
-    )
-    .bind(userId)
-    .all<{ choice: MessageStyleChoice; comparison_id: string }>();
+  const rows = await getDb(db)
+    .select({
+      choice: userMessageStyleChoices.choice,
+      comparisonId: userMessageStyleChoices.comparisonId,
+    })
+    .from(userMessageStyleChoices)
+    .where(eq(userMessageStyleChoices.userId, userId));
   return Object.fromEntries(
-    rows.results.map((row) => [row.comparison_id, row.choice])
+    rows.map((row) => [row.comparisonId, row.choice as MessageStyleChoice])
   );
 }
 
@@ -37,14 +41,24 @@ export async function writeMessageStyleChoice(
     throw new Error("Unknown message-style comparison");
   }
   const timestamp = new Date().toISOString();
-  await db
-    .prepare(
-      `INSERT INTO user_message_style_choices
-        (user_id,comparison_id,choice,created_at,updated_at)
-       VALUES (?,?,?,?,?)
-       ON CONFLICT(user_id,comparison_id) DO UPDATE SET
-         choice=excluded.choice,updated_at=excluded.updated_at`
-    )
-    .bind(userId, comparisonId, choice, timestamp, timestamp)
+  await getDb(db)
+    .insert(userMessageStyleChoices)
+    .values({
+      choice,
+      comparisonId,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      userId,
+    })
+    .onConflictDoUpdate({
+      set: {
+        choice: excluded(userMessageStyleChoices.choice),
+        updatedAt: excluded(userMessageStyleChoices.updatedAt),
+      },
+      target: [
+        userMessageStyleChoices.userId,
+        userMessageStyleChoices.comparisonId,
+      ],
+    })
     .run();
 }

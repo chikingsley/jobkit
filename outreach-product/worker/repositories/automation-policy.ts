@@ -1,53 +1,50 @@
+import { eq } from "drizzle-orm";
 import {
   type AutomationPolicy,
   AutomationPolicySchema,
   defaultAutomationPolicy,
 } from "../../src/features/automation/schema";
-
-interface AutomationPolicyRow {
-  allowed_boards_json: string;
-  board_form_daily_limit: number;
-  board_form_mode: string;
-  email_daily_limit: number;
-  email_mode: string;
-  excluded_market_segments_json: string;
-  follow_up_delays_json: string;
-  minimum_fit: string;
-  paused: number;
-  require_known_compensation: number;
-  route_freshness_days: number;
-  updated_at: string;
-}
+import { excluded, getDb } from "../db/client";
+import { userAutomationPolicies } from "../db/schema/user-profile";
 
 export async function readAutomationPolicy(db: D1Database, userId: string) {
-  const row = await db
-    .prepare(
-      `SELECT email_mode,email_daily_limit,board_form_mode,board_form_daily_limit,
-              allowed_boards_json,excluded_market_segments_json,
-              follow_up_delays_json,minimum_fit,
-              require_known_compensation,route_freshness_days,paused,updated_at
-       FROM user_automation_policies WHERE user_id=?`
-    )
-    .bind(userId)
-    .first<AutomationPolicyRow>();
+  const row = await getDb(db)
+    .select({
+      allowedBoardsJson: userAutomationPolicies.allowedBoardsJson,
+      boardFormDailyLimit: userAutomationPolicies.boardFormDailyLimit,
+      boardFormMode: userAutomationPolicies.boardFormMode,
+      emailDailyLimit: userAutomationPolicies.emailDailyLimit,
+      emailMode: userAutomationPolicies.emailMode,
+      excludedMarketSegmentsJson:
+        userAutomationPolicies.excludedMarketSegmentsJson,
+      followUpDelaysJson: userAutomationPolicies.followUpDelaysJson,
+      minimumFit: userAutomationPolicies.minimumFit,
+      paused: userAutomationPolicies.paused,
+      requireKnownCompensation: userAutomationPolicies.requireKnownCompensation,
+      routeFreshnessDays: userAutomationPolicies.routeFreshnessDays,
+      updatedAt: userAutomationPolicies.updatedAt,
+    })
+    .from(userAutomationPolicies)
+    .where(eq(userAutomationPolicies.userId, userId))
+    .get();
   if (!row) {
     return { updatedAt: null, value: defaultAutomationPolicy };
   }
   const value = AutomationPolicySchema.parse({
-    allowedBoards: JSON.parse(row.allowed_boards_json),
+    allowedBoards: JSON.parse(row.allowedBoardsJson),
     boardForm: {
-      dailyLimit: row.board_form_daily_limit,
-      mode: row.board_form_mode,
+      dailyLimit: row.boardFormDailyLimit,
+      mode: row.boardFormMode,
     },
-    email: { dailyLimit: row.email_daily_limit, mode: row.email_mode },
-    excludedMarketSegments: JSON.parse(row.excluded_market_segments_json),
-    followUpDelaysDays: JSON.parse(row.follow_up_delays_json),
-    minimumFit: row.minimum_fit,
+    email: { dailyLimit: row.emailDailyLimit, mode: row.emailMode },
+    excludedMarketSegments: JSON.parse(row.excludedMarketSegmentsJson),
+    followUpDelaysDays: JSON.parse(row.followUpDelaysJson),
+    minimumFit: row.minimumFit,
     paused: Boolean(row.paused),
-    requireKnownCompensation: Boolean(row.require_known_compensation),
-    routeFreshnessDays: row.route_freshness_days,
+    requireKnownCompensation: Boolean(row.requireKnownCompensation),
+    routeFreshnessDays: row.routeFreshnessDays,
   });
-  return { updatedAt: row.updated_at, value };
+  return { updatedAt: row.updatedAt, value };
 }
 
 export async function writeAutomationPolicy(
@@ -57,45 +54,47 @@ export async function writeAutomationPolicy(
 ) {
   const policy: AutomationPolicy = AutomationPolicySchema.parse(input);
   const updatedAt = new Date().toISOString();
-  await db
-    .prepare(
-      `INSERT INTO user_automation_policies
-        (user_id,email_mode,email_daily_limit,board_form_mode,
-         board_form_daily_limit,allowed_boards_json,
-         excluded_market_segments_json,follow_up_delays_json,minimum_fit,
-         require_known_compensation,route_freshness_days,paused,created_at,
-         updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-       ON CONFLICT(user_id) DO UPDATE SET
-         email_mode=excluded.email_mode,
-         email_daily_limit=excluded.email_daily_limit,
-         board_form_mode=excluded.board_form_mode,
-         board_form_daily_limit=excluded.board_form_daily_limit,
-         allowed_boards_json=excluded.allowed_boards_json,
-         excluded_market_segments_json=excluded.excluded_market_segments_json,
-         follow_up_delays_json=excluded.follow_up_delays_json,
-         minimum_fit=excluded.minimum_fit,
-         require_known_compensation=excluded.require_known_compensation,
-         route_freshness_days=excluded.route_freshness_days,
-         paused=excluded.paused,
-         updated_at=excluded.updated_at`
-    )
-    .bind(
-      userId,
-      policy.email.mode,
-      policy.email.dailyLimit,
-      policy.boardForm.mode,
-      policy.boardForm.dailyLimit,
-      JSON.stringify(policy.allowedBoards),
-      JSON.stringify(policy.excludedMarketSegments),
-      JSON.stringify(policy.followUpDelaysDays),
-      policy.minimumFit,
-      Number(policy.requireKnownCompensation),
-      policy.routeFreshnessDays,
-      Number(policy.paused),
+  await getDb(db)
+    .insert(userAutomationPolicies)
+    .values({
+      allowedBoardsJson: JSON.stringify(policy.allowedBoards),
+      boardFormDailyLimit: policy.boardForm.dailyLimit,
+      boardFormMode: policy.boardForm.mode,
+      createdAt: updatedAt,
+      emailDailyLimit: policy.email.dailyLimit,
+      emailMode: policy.email.mode,
+      excludedMarketSegmentsJson: JSON.stringify(policy.excludedMarketSegments),
+      followUpDelaysJson: JSON.stringify(policy.followUpDelaysDays),
+      minimumFit: policy.minimumFit,
+      paused: Number(policy.paused),
+      requireKnownCompensation: Number(policy.requireKnownCompensation),
+      routeFreshnessDays: policy.routeFreshnessDays,
       updatedAt,
-      updatedAt
-    )
+      userId,
+    })
+    .onConflictDoUpdate({
+      set: {
+        allowedBoardsJson: excluded(userAutomationPolicies.allowedBoardsJson),
+        boardFormDailyLimit: excluded(
+          userAutomationPolicies.boardFormDailyLimit
+        ),
+        boardFormMode: excluded(userAutomationPolicies.boardFormMode),
+        emailDailyLimit: excluded(userAutomationPolicies.emailDailyLimit),
+        emailMode: excluded(userAutomationPolicies.emailMode),
+        excludedMarketSegmentsJson: excluded(
+          userAutomationPolicies.excludedMarketSegmentsJson
+        ),
+        followUpDelaysJson: excluded(userAutomationPolicies.followUpDelaysJson),
+        minimumFit: excluded(userAutomationPolicies.minimumFit),
+        paused: excluded(userAutomationPolicies.paused),
+        requireKnownCompensation: excluded(
+          userAutomationPolicies.requireKnownCompensation
+        ),
+        routeFreshnessDays: excluded(userAutomationPolicies.routeFreshnessDays),
+        updatedAt: excluded(userAutomationPolicies.updatedAt),
+      },
+      target: userAutomationPolicies.userId,
+    })
     .run();
   return { updatedAt, value: policy };
 }

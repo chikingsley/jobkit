@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import {
   defaultPreferences,
   PREFERENCES_SCHEMA_VERSION,
@@ -10,12 +11,8 @@ import {
   type Profile,
   ProfileSchema,
 } from "../../src/features/profile/schema";
-
-interface VersionedRow {
-  payload: string;
-  schema_version: number;
-  updated_at: string;
-}
+import { excluded, getDb } from "../db/client";
+import { userPreferences, userProfiles } from "../db/schema/user-profile";
 
 interface VersionedValue<Value> {
   updatedAt: string | null;
@@ -26,20 +23,23 @@ export async function readProfile(
   db: D1Database,
   userId: string
 ): Promise<VersionedValue<Profile>> {
-  const row = await db
-    .prepare(
-      "SELECT profile_json AS payload,schema_version,updated_at FROM user_profiles WHERE user_id=?"
-    )
-    .bind(userId)
-    .first<VersionedRow>();
+  const row = await getDb(db)
+    .select({
+      payload: userProfiles.profileJson,
+      schemaVersion: userProfiles.schemaVersion,
+      updatedAt: userProfiles.updatedAt,
+    })
+    .from(userProfiles)
+    .where(eq(userProfiles.userId, userId))
+    .get();
   if (!row) {
     return { updatedAt: null, value: defaultProfile };
   }
   const payload = JSON.parse(row.payload);
   return {
-    updatedAt: row.updated_at,
+    updatedAt: row.updatedAt,
     value: ProfileSchema.parse(
-      upgradeProfilePayload(payload, row.schema_version)
+      upgradeProfilePayload(payload, row.schemaVersion)
     ),
   };
 }
@@ -51,17 +51,23 @@ export async function writeProfile(
 ) {
   const profile = ProfileSchema.parse(input);
   const updatedAt = new Date().toISOString();
-  await db
-    .prepare(
-      "INSERT INTO user_profiles (id,user_id,profile_json,updated_at,schema_version) VALUES (?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET profile_json=excluded.profile_json,updated_at=excluded.updated_at,schema_version=excluded.schema_version"
-    )
-    .bind(
-      crypto.randomUUID(),
-      userId,
-      JSON.stringify(profile),
+  await getDb(db)
+    .insert(userProfiles)
+    .values({
+      id: crypto.randomUUID(),
+      profileJson: JSON.stringify(profile),
+      schemaVersion: PROFILE_SCHEMA_VERSION,
       updatedAt,
-      PROFILE_SCHEMA_VERSION
-    )
+      userId,
+    })
+    .onConflictDoUpdate({
+      set: {
+        profileJson: excluded(userProfiles.profileJson),
+        schemaVersion: excluded(userProfiles.schemaVersion),
+        updatedAt: excluded(userProfiles.updatedAt),
+      },
+      target: userProfiles.userId,
+    })
     .run();
   return { updatedAt, value: profile };
 }
@@ -70,22 +76,25 @@ export async function readPreferences(
   db: D1Database,
   userId: string
 ): Promise<VersionedValue<Preferences>> {
-  const row = await db
-    .prepare(
-      "SELECT preferences_json AS payload,schema_version,updated_at FROM user_preferences WHERE user_id=?"
-    )
-    .bind(userId)
-    .first<VersionedRow>();
+  const row = await getDb(db)
+    .select({
+      payload: userPreferences.preferencesJson,
+      schemaVersion: userPreferences.schemaVersion,
+      updatedAt: userPreferences.updatedAt,
+    })
+    .from(userPreferences)
+    .where(eq(userPreferences.userId, userId))
+    .get();
   if (!row) {
     return { updatedAt: null, value: defaultPreferences };
   }
   requireSchemaVersion(
     "preferences",
-    row.schema_version,
+    row.schemaVersion,
     PREFERENCES_SCHEMA_VERSION
   );
   return {
-    updatedAt: row.updated_at,
+    updatedAt: row.updatedAt,
     value: PreferencesSchema.parse(JSON.parse(row.payload)),
   };
 }
@@ -97,17 +106,23 @@ export async function writePreferences(
 ) {
   const preferences = PreferencesSchema.parse(input);
   const updatedAt = new Date().toISOString();
-  await db
-    .prepare(
-      "INSERT INTO user_preferences (id,user_id,preferences_json,updated_at,schema_version) VALUES (?,?,?,?,?) ON CONFLICT(user_id) DO UPDATE SET preferences_json=excluded.preferences_json,updated_at=excluded.updated_at,schema_version=excluded.schema_version"
-    )
-    .bind(
-      crypto.randomUUID(),
-      userId,
-      JSON.stringify(preferences),
+  await getDb(db)
+    .insert(userPreferences)
+    .values({
+      id: crypto.randomUUID(),
+      preferencesJson: JSON.stringify(preferences),
+      schemaVersion: PREFERENCES_SCHEMA_VERSION,
       updatedAt,
-      PREFERENCES_SCHEMA_VERSION
-    )
+      userId,
+    })
+    .onConflictDoUpdate({
+      set: {
+        preferencesJson: excluded(userPreferences.preferencesJson),
+        schemaVersion: excluded(userPreferences.schemaVersion),
+        updatedAt: excluded(userPreferences.updatedAt),
+      },
+      target: userPreferences.userId,
+    })
     .run();
   return { updatedAt, value: preferences };
 }

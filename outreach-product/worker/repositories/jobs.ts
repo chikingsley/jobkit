@@ -1,4 +1,6 @@
 import type { Compensation } from "../../src/features/jobs/types";
+import { excluded, getDb } from "../db/client";
+import { jobListings, userListingStates } from "../db/schema/jobs";
 import type { JobImport } from "../schemas";
 
 export async function upsertJob(
@@ -6,52 +8,51 @@ export async function upsertJob(
   job: JobImport,
   timestamp: string
 ) {
-  await db
-    .prepare(
-      `INSERT INTO job_listings (
-        id,board,title,company,contact_name,country,location,salary,description,
-        source_url,apply_url,employer_id,source_reference,first_seen_at,updated_at,
-        opportunity_scope,market_segments_json,message_route
-      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-      ON CONFLICT(id) DO UPDATE SET
-        title=excluded.title,
-        company=excluded.company,
-        contact_name=excluded.contact_name,
-        country=excluded.country,
-        location=excluded.location,
-        salary=excluded.salary,
-        description=excluded.description,
-        source_url=excluded.source_url,
-        apply_url=excluded.apply_url,
-        employer_id=excluded.employer_id,
-        source_reference=excluded.source_reference,
-        opportunity_scope=excluded.opportunity_scope,
-        market_segments_json=excluded.market_segments_json,
-        message_route=excluded.message_route,
-        updated_at=excluded.updated_at`
-    )
-    .bind(
-      job.id,
-      job.board,
-      job.title,
-      job.company,
-      job.contactName,
-      job.country,
-      job.location,
-      job.salary,
-      job.description,
-      job.sourceUrl,
-      job.applyUrl,
-      job.employerId,
-      job.sourceReference,
-      timestamp,
-      timestamp,
-      job.opportunityScope,
-      JSON.stringify(job.marketSegments),
-      job.opportunityScope === "multi_position"
-        ? "multi_position"
-        : job.messageRoute
-    )
+  await getDb(db)
+    .insert(jobListings)
+    .values({
+      applyUrl: job.applyUrl,
+      board: job.board,
+      company: job.company,
+      contactName: job.contactName,
+      country: job.country,
+      description: job.description,
+      employerId: job.employerId,
+      firstSeenAt: timestamp,
+      id: job.id,
+      location: job.location,
+      marketSegmentsJson: JSON.stringify(job.marketSegments),
+      messageRoute:
+        job.opportunityScope === "multi_position"
+          ? "multi_position"
+          : job.messageRoute,
+      opportunityScope: job.opportunityScope,
+      salary: job.salary,
+      sourceReference: job.sourceReference,
+      sourceUrl: job.sourceUrl,
+      title: job.title,
+      updatedAt: timestamp,
+    })
+    .onConflictDoUpdate({
+      set: {
+        applyUrl: excluded(jobListings.applyUrl),
+        company: excluded(jobListings.company),
+        contactName: excluded(jobListings.contactName),
+        country: excluded(jobListings.country),
+        description: excluded(jobListings.description),
+        employerId: excluded(jobListings.employerId),
+        location: excluded(jobListings.location),
+        marketSegmentsJson: excluded(jobListings.marketSegmentsJson),
+        messageRoute: excluded(jobListings.messageRoute),
+        opportunityScope: excluded(jobListings.opportunityScope),
+        salary: excluded(jobListings.salary),
+        sourceReference: excluded(jobListings.sourceReference),
+        sourceUrl: excluded(jobListings.sourceUrl),
+        title: excluded(jobListings.title),
+        updatedAt: excluded(jobListings.updatedAt),
+      },
+      target: jobListings.id,
+    })
     .run();
 }
 
@@ -62,18 +63,26 @@ export async function upsertUserJob(
   priority: number,
   timestamp: string
 ): Promise<string> {
-  const row = await db
-    .prepare(
-      `INSERT INTO user_listing_states
-        (id,user_id,job_id,status,priority,created_at,updated_at)
-       VALUES (?,?,?,'new',?,?,?)
-       ON CONFLICT(user_id,job_id) DO UPDATE SET
-         priority=excluded.priority,
-         updated_at=excluded.updated_at
-       RETURNING id`
-    )
-    .bind(crypto.randomUUID(), userId, jobId, priority, timestamp, timestamp)
-    .first<{ id: string }>();
+  const row = await getDb(db)
+    .insert(userListingStates)
+    .values({
+      createdAt: timestamp,
+      id: crypto.randomUUID(),
+      jobId,
+      priority,
+      status: "new",
+      updatedAt: timestamp,
+      userId,
+    })
+    .onConflictDoUpdate({
+      set: {
+        priority: excluded(userListingStates.priority),
+        updatedAt: excluded(userListingStates.updatedAt),
+      },
+      target: [userListingStates.userId, userListingStates.jobId],
+    })
+    .returning({ id: userListingStates.id })
+    .get();
   if (!row) {
     throw new Error("User job could not be saved");
   }
