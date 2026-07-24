@@ -32,7 +32,19 @@ function PrivacyPage() {
           title: "Connected accounts",
         },
         {
-          body: "A signed-in candidate requests correction or deletion of their data from the account area of the JobKit workspace. Deletion removes candidate-owned records while public job facts remain published.",
+          body: (
+            <p>
+              Request correction or deletion of your data by writing to{" "}
+              <a
+                className="underline underline-offset-4"
+                href="mailto:privacy@peacockery.studio?subject=JobKit%20privacy%20request"
+              >
+                privacy@peacockery.studio
+              </a>
+              . Deletion removes candidate-owned records while public job facts
+              remain published.
+            </p>
+          ),
           title: "Requests",
         },
       ]}
