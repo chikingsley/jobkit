@@ -13,8 +13,8 @@ import { CountrySweepTaskOutputSchema } from "../../src/features/countries/schem
 import {
   engineVersionText,
   resolveAgentEngine,
-  resolveEngineModel,
-  runEngineStructuredAgent,
+  resolveTaskAssignment,
+  runTaskAgent,
 } from "../lib/agent-engine";
 import { createAgentClient } from "./client";
 import { readAgentConfig } from "./config";
@@ -33,8 +33,12 @@ const { values: args } = parseArgs({
 });
 const config = await readAgentConfig();
 const client = createAgentClient(config);
-const engine = resolveAgentEngine();
-const runnerVersion = await engineVersionText(engine);
+const forcedEngine = process.env.JOBKIT_AGENT_ENGINE?.trim()
+  ? resolveAgentEngine()
+  : null;
+const runnerVersion = forcedEngine
+  ? await engineVersionText(forcedEngine)
+  : "registry (per-task models)";
 
 await main();
 
@@ -84,8 +88,10 @@ async function claimAndRunAgentTask() {
 async function runAgentTask(
   task: ReturnType<typeof AgentTaskEnvelopeSchema.parse>
 ) {
-  const model = resolveEngineModel(engine, task.taskType, task.model);
-  console.log(`Running ${task.taskType} with ${model} via ${engine}`);
+  const assignment = resolveTaskAssignment(task.taskType, task.model);
+  console.log(
+    `Running ${task.taskType} with ${assignment.model} via ${assignment.provider}`
+  );
   let phase: AgentExecutionPhase = "heartbeat";
   let heartbeatError: Error | null = null;
   let heartbeatInFlight: Promise<void> | null = null;
@@ -123,10 +129,10 @@ async function runAgentTask(
       }))
     );
     phase = "execution";
-    const output = await runEngineStructuredAgent(engine, {
+    const output = await runTaskAgent(assignment, {
       artifacts,
       effort: task.reasoningEffort,
-      model,
+      model: assignment.model,
       outputSchema: task.outputSchema,
       prompt: task.prompt,
       timeoutMs: 900_000,

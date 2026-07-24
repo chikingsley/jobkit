@@ -1,3 +1,8 @@
+import {
+  MODEL_PROVIDERS,
+  type ResolvedModel,
+  resolveAssignment,
+} from "../../src/model/registry";
 import { captureProcess } from "./agent-process";
 import {
   resolveLocalDefaultModel,
@@ -109,6 +114,71 @@ export function resolveEngineModel(
     return resolveMistralModel(taskType, env);
   }
   return envelopeModel;
+}
+
+// Per-task routing: each task gets its assigned model from the registry.
+// JOBKIT_AGENT_ENGINE, when set, forces every task onto one provider (the older
+// single-engine behavior); otherwise each task follows MODEL_ASSIGNMENTS.
+export function resolveTaskAssignment(
+  taskType: string,
+  envelopeModel: string,
+  env: Record<string, string | undefined> = process.env
+): ResolvedModel {
+  if (env.JOBKIT_AGENT_ENGINE?.trim()) {
+    return forcedAssignment(resolveAgentEngine(env), taskType, envelopeModel, env);
+  }
+  return resolveAssignment(taskType, env);
+}
+
+function forcedAssignment(
+  engine: AgentEngine,
+  taskType: string,
+  envelopeModel: string,
+  env: Record<string, string | undefined>
+): ResolvedModel {
+  if (engine === "local") {
+    return {
+      model: resolveLocalModel(taskType, env),
+      provider: "localLlama",
+      providerConfig: MODEL_PROVIDERS.localLlama,
+    };
+  }
+  if (engine === "mistral") {
+    return {
+      model: resolveMistralModel(taskType, env),
+      provider: "mistral",
+      providerConfig: MODEL_PROVIDERS.mistral,
+    };
+  }
+  if (engine === "opencode") {
+    return {
+      model: resolveOpencodeModel(taskType, env),
+      provider: "opencode",
+      providerConfig: MODEL_PROVIDERS.opencode,
+    };
+  }
+  return {
+    model: envelopeModel,
+    provider: "codex",
+    providerConfig: MODEL_PROVIDERS.codex,
+  };
+}
+
+export function runTaskAgent(
+  assignment: ResolvedModel,
+  options: StructuredAgentOptions
+) {
+  const taskOptions = { ...options, model: assignment.model };
+  if (assignment.provider === "localLlama") {
+    return runLocalStructuredAgent(taskOptions);
+  }
+  if (assignment.provider === "mistral") {
+    return runMistralStructuredAgent(taskOptions);
+  }
+  if (assignment.provider === "opencode") {
+    return runOpencodeStructuredAgent(taskOptions);
+  }
+  return runStructuredAgent(taskOptions);
 }
 
 export function runEngineStructuredAgent(

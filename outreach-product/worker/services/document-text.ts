@@ -1,10 +1,10 @@
 import { Buffer } from "node:buffer";
 import { z } from "zod";
-import { MODEL_PROVIDERS, resolveModel } from "../../src/model/registry";
+import { MODEL_PROVIDERS, resolveAssignment } from "../../src/model/registry";
 import type { AppEnv } from "../env";
 
 const MISTRAL_API = MODEL_PROVIDERS.mistral.baseUrl;
-const MISTRAL_OCR_MODEL = resolveModel("documentOcr").model;
+const MISTRAL_OCR_MODEL = resolveAssignment("document.ocr").model;
 
 export const RESUME_CONTENT_TYPES = new Set([
   "application/pdf",

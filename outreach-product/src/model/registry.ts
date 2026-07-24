@@ -1,7 +1,7 @@
-// The single place that defines every model backend and which model does which
-// job. Switch a model by editing one ASSIGNMENTS line, or override without code
-// via an env var: JOBKIT_MODEL_<job>="provider:model" (e.g.
-// JOBKIT_MODEL_emailWriter="localLlama:qwen35-9b-ud-q4-k-xl").
+// The single place that defines every model backend and which model runs each
+// task. Switch a model by editing one MODEL_ASSIGNMENTS line, or override
+// without code via JOBKIT_MODEL_<task>="provider:model" (for example
+// JOBKIT_MODEL_application.message="localLlama:qwen35-9b-ud-q4-k-xl").
 
 export type ProviderKind = "openai-http" | "cli";
 
@@ -33,14 +33,22 @@ export const MODEL_PROVIDERS = {
 
 export type ProviderName = keyof typeof MODEL_PROVIDERS;
 
-// Every job the app asks a model to do, and the model assigned to it.
-export const MODEL_ASSIGNMENTS = {
-  documentOcr: "mistral:mistral-ocr-latest",
-  emailWriter: "mistral:mistral-large-latest",
-  jobAnalysis: "localLlama:qwen35-9b-ud-q4-k-xl",
-} as const satisfies Record<string, string>;
+// Which model runs each task. "default" catches anything unlisted; a
+// "country_sweep." task falls back to "country_sweep.default".
+const DEFAULT_ASSIGNMENT = "mistral:mistral-medium-latest";
 
-export type ModelJob = keyof typeof MODEL_ASSIGNMENTS;
+export const MODEL_ASSIGNMENTS: Record<string, string> = {
+  "application.message": "mistral:mistral-medium-latest",
+  "country_sweep.default": "mistral:mistral-medium-latest",
+  default: DEFAULT_ASSIGNMENT,
+  "document.ocr": "mistral:mistral-ocr-latest",
+  "job.content_analysis": "localLlama:qwen35-9b-ud-q4-k-xl",
+  "job.match_facts": "localLlama:qwen35-9b-ud-q4-k-xl",
+  "job.position_analysis": "localLlama:qwen35-9b-ud-q4-k-xl",
+  "profile.import": "mistral:mistral-medium-latest",
+  "test_lab.document_ocr": "mistral:mistral-ocr-latest",
+  "test_lab.evaluate": "localLlama:qwen35-9b-ud-q4-k-xl",
+};
 
 export interface ResolvedModel {
   model: string;
@@ -50,18 +58,37 @@ export interface ResolvedModel {
 
 const ASSIGNMENT_PATTERN = /^([^:]+):(.+)$/u;
 
-export function resolveModel(
-  job: ModelJob,
+export function assignmentFor(
+  taskType: string,
   env: Record<string, string | undefined> = {}
+): string {
+  const override = env[`JOBKIT_MODEL_${taskType}`]?.trim();
+  if (override) {
+    return override;
+  }
+  const direct = MODEL_ASSIGNMENTS[taskType];
+  if (direct) {
+    return direct;
+  }
+  if (taskType.startsWith("country_sweep.")) {
+    const sweep = MODEL_ASSIGNMENTS["country_sweep.default"];
+    if (sweep) {
+      return sweep;
+    }
+  }
+  return DEFAULT_ASSIGNMENT;
+}
+
+export function parseAssignment(
+  taskType: string,
+  assignment: string
 ): ResolvedModel {
-  const assignment =
-    env[`JOBKIT_MODEL_${job}`]?.trim() || MODEL_ASSIGNMENTS[job];
   const match = ASSIGNMENT_PATTERN.exec(assignment);
   const providerName = match?.[1];
   const model = match?.[2];
   if (!(providerName && model)) {
     throw new Error(
-      `Model assignment for ${job} must be "provider:model", received ${JSON.stringify(assignment)}`
+      `Model assignment for ${taskType} must be "provider:model", received ${JSON.stringify(assignment)}`
     );
   }
   const providerConfig = (MODEL_PROVIDERS as Record<string, ModelProvider>)[
@@ -69,12 +96,15 @@ export function resolveModel(
   ];
   if (!providerConfig) {
     throw new Error(
-      `Unknown model provider ${JSON.stringify(providerName)} for job ${job}`
+      `Unknown model provider ${JSON.stringify(providerName)} for task ${taskType}`
     );
   }
-  return {
-    model,
-    provider: providerName as ProviderName,
-    providerConfig,
-  };
+  return { model, provider: providerName as ProviderName, providerConfig };
+}
+
+export function resolveAssignment(
+  taskType: string,
+  env: Record<string, string | undefined> = {}
+): ResolvedModel {
+  return parseAssignment(taskType, assignmentFor(taskType, env));
 }
