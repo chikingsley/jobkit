@@ -39,6 +39,38 @@ These controls reduce prompt-injection reach. They do not make web or document c
 
 Model choice is part of the versioned task definition, not a user-facing provider menu. A model change therefore produces new provenance and can be evaluated before promotion.
 
+## OpenCode fallback engine
+
+The companion supports a second execution engine for provider outages. `JOBKIT_AGENT_ENGINE=opencode` switches execution from `codex exec` to `opencode run --pure --format json` while every other stage of the contract stays identical: the same claim, lease, heartbeat, artifact verification, JSON output parsing, completion posting, and Worker-side schema, evidence, and invariant revalidation.
+
+Engine differences the fallback compensates for:
+
+- OpenCode has no output-schema flag, so the runner appends the task's JSON Schema to the prompt and extracts the single JSON object from the final assistant message before the normal parse step.
+- OpenCode has no read-only sandbox flag, so the runner sets a deny-by-default `OPENCODE_PERMISSION` for the spawned process, allowing `webfetch` only when the task envelope enables web search. Tasks still run from an empty temporary directory with the same benign environment allowlist.
+- The task envelope's Codex model does not exist on OpenCode, so the runner maps task types to OpenCode models: `opencode-go/deepseek-v4-flash` for extraction and evaluation task types, `opencode-go/glm-5.2` for drafting, vision, OCR, and country sweeps. `JOBKIT_OPENCODE_MODELS` (a JSON object keyed by task type, `country_sweep.*` wildcard supported) and `JOBKIT_OPENCODE_DEFAULT_MODEL` override the mapping without a deploy.
+- Codex reasoning effort has no uniform OpenCode equivalent, so the envelope's effort is not forwarded.
+
+The default engine remains `codex`; the fallback activates only through the environment on the runner host.
+
+### Local OpenAI-compatible endpoints
+
+The fallback engine reaches any model OpenCode can reach, including a locally served model. Declare a custom provider in the runner host's `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "provider": {
+    "local": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Local Docker",
+      "options": { "baseURL": "http://localhost:11434/v1" },
+      "models": { "<model-id>": { "name": "<model-id>" } }
+    }
+  }
+}
+```
+
+Use `http://localhost:11434/v1` for an Ollama container, `http://localhost:12434/engines/v1` for Docker Model Runner with TCP host access enabled, or any other `/v1/chat/completions` endpoint. When the config restricts `enabled_providers`, the custom provider id must be added to that list. The runner then targets it with `JOBKIT_OPENCODE_DEFAULT_MODEL="local/<model-id>"` or per task type through `JOBKIT_OPENCODE_MODELS`; no code change is involved because model ids are opaque `provider/model` strings to the runner.
+
 ## Jina promotion contract
 
 The protected `JINA_API_KEY` may power recorded evaluation variants for Reader, Search, embeddings, reranking, classification, deduplication, and DeepSearch. Each benchmark records input IDs, dataset version, expected output, variant, configuration, raw references, normalized result, timing, usage, errors, and human preference. A Jina capability is promoted independently only when the measured product result justifies the additional dependency. JobKit discloses the active provider for any promoted capability.

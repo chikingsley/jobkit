@@ -1,4 +1,3 @@
-import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { parseArgs } from "node:util";
 import { AgentTaskEnvelopeSchema } from "../../src/features/agents/schema";
@@ -11,7 +10,12 @@ import {
   sha256Hex,
 } from "../../src/features/countries/materialization";
 import { CountrySweepTaskOutputSchema } from "../../src/features/countries/schema";
-import { runStructuredAgent } from "../lib/structured-agent";
+import {
+  engineVersionText,
+  resolveAgentEngine,
+  resolveEngineModel,
+  runEngineStructuredAgent,
+} from "../lib/agent-engine";
 import { createAgentClient } from "./client";
 import { readAgentConfig } from "./config";
 import {
@@ -29,7 +33,8 @@ const { values: args } = parseArgs({
 });
 const config = await readAgentConfig();
 const client = createAgentClient(config);
-const codexVersion = await codexVersionText();
+const engine = resolveAgentEngine();
+const runnerVersion = await engineVersionText(engine);
 
 await main();
 
@@ -66,7 +71,7 @@ async function runNextWork() {
 
 async function claimAndRunAgentTask() {
   const response = await client.post("/api/agent-tasks/claim", {
-    runnerVersion: codexVersion,
+    runnerVersion,
   });
   const task = AgentTaskEnvelopeSchema.nullable().parse(response.task);
   if (!task) {
@@ -79,7 +84,8 @@ async function claimAndRunAgentTask() {
 async function runAgentTask(
   task: ReturnType<typeof AgentTaskEnvelopeSchema.parse>
 ) {
-  console.log(`Running ${task.taskType} with ${task.model}`);
+  const model = resolveEngineModel(engine, task.taskType, task.model);
+  console.log(`Running ${task.taskType} with ${model} via ${engine}`);
   let phase: AgentExecutionPhase = "heartbeat";
   let heartbeatError: Error | null = null;
   let heartbeatInFlight: Promise<void> | null = null;
@@ -117,10 +123,10 @@ async function runAgentTask(
       }))
     );
     phase = "execution";
-    const output = await runStructuredAgent({
+    const output = await runEngineStructuredAgent(engine, {
       artifacts,
       effort: task.reasoningEffort,
-      model: task.model,
+      model,
       outputSchema: task.outputSchema,
       prompt: task.prompt,
       timeoutMs: 900_000,
@@ -242,34 +248,6 @@ async function downloadArtifact(artifact: {
     throw new Error(`Artifact hash changed for ${artifact.filename}`);
   }
   return bytes;
-}
-
-function codexVersionText() {
-  return new Promise<string>((resolveVersion, reject) => {
-    const child = spawn("codex", ["--version"], {
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    let stdout = "";
-    let stderr = "";
-    child.stdout?.on("data", (chunk: Buffer) => {
-      stdout += chunk.toString();
-    });
-    child.stderr?.on("data", (chunk: Buffer) => {
-      stderr += chunk.toString();
-    });
-    child.once("error", reject);
-    child.once("close", (code) => {
-      if (code === 0) {
-        resolveVersion(stdout.trim());
-        return;
-      }
-      reject(
-        new Error(
-          `Codex is not installed or could not report its version: ${stderr}`
-        )
-      );
-    });
-  });
 }
 
 function sleep(milliseconds: number) {
