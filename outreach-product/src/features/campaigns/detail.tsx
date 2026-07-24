@@ -1,7 +1,7 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, MailCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CampaignActivity } from "@/features/campaigns/activity";
@@ -15,11 +15,13 @@ import {
   CampaignWritingRules,
 } from "@/features/campaigns/detail-sections";
 import { CampaignDispatchCard } from "@/features/campaigns/dispatch-card";
-import type {
-  CampaignDetail,
-  CampaignTarget,
-  CampaignTargetPage,
-} from "@/features/campaigns/types";
+import {
+  campaignsKeys,
+  useCampaignAction,
+  useCampaignDetail,
+  useCampaignTargets,
+} from "@/features/campaigns/queries";
+import type { CampaignDetail } from "@/features/campaigns/types";
 import type { ApiRequest } from "@/lib/api";
 
 export function CampaignDetailView({
@@ -36,48 +38,12 @@ export function CampaignDetailView({
   const [busy, setBusy] = useState("");
   const [hiddenDispatchIds, setHiddenDispatchIds] = useState<string[]>([]);
   const [pendingFocusId, setPendingFocusId] = useState("");
-  const [targets, setTargets] = useState<CampaignTarget[]>([]);
-  const [targetPage, setTargetPage] = useState<CampaignTargetPage | null>(null);
-  const {
-    data: campaign,
-    isLoading,
-    mutate,
-  } = useSWR(
-    `/api/campaigns/${campaignId}`,
-    async (path) => {
-      const payload = (await (await request(path)).json()) as {
-        campaign: CampaignDetail;
-      };
-      return payload.campaign;
-    },
-    {
-      refreshInterval: (latest) =>
-        latest?.dispatches.some((dispatch) =>
-          ["calibration", "drafting"].includes(dispatch.status)
-        )
-          ? 1500
-          : 0,
-    }
-  );
-
-  useEffect(() => {
-    setTargets([]);
-    setTargetPage(null);
-    void loadTargetPage(0, true);
-
-    async function loadTargetPage(offset: number, replace: boolean) {
-      const response = await request(
-        `/api/campaigns/${campaignId}/targets?offset=${offset}`
-      );
-      const payload = (await response.json()) as {
-        targets: CampaignTargetPage;
-      };
-      setTargetPage(payload.targets);
-      setTargets((current) =>
-        replace ? payload.targets.items : [...current, ...payload.targets.items]
-      );
-    }
-  }, [campaignId, request]);
+  const queryClient = useQueryClient();
+  const { data: campaign, isLoading } = useCampaignDetail(campaignId);
+  const targetsQuery = useCampaignTargets(campaignId);
+  const campaignAction = useCampaignAction(campaignId);
+  const targets = targetsQuery.data?.pages.flatMap((page) => page.items) ?? [];
+  const targetPage = targetsQuery.data?.pages.at(-1) ?? null;
 
   const activeDispatches = activeCampaignDispatches(
     campaign,
@@ -100,40 +66,15 @@ export function CampaignDetailView({
   }, [pendingFocusId]);
 
   async function loadMore() {
-    if (
-      targetPage?.nextOffset === null ||
-      targetPage?.nextOffset === undefined
-    ) {
-      return;
-    }
-    setBusy("targets");
-    try {
-      const response = await request(
-        `/api/campaigns/${campaignId}/targets?offset=${targetPage.nextOffset}`
-      );
-      const payload = (await response.json()) as {
-        targets: CampaignTargetPage;
-      };
-      setTargetPage(payload.targets);
-      setTargets((current) => [...current, ...payload.targets.items]);
-    } finally {
-      setBusy("");
+    if (targetsQuery.hasNextPage && !targetsQuery.isFetchingNextPage) {
+      await targetsQuery.fetchNextPage();
     }
   }
 
   async function action(nextAction: CampaignAction) {
     setBusy(nextAction);
     try {
-      const response = await request(`/api/campaigns/${campaignId}/actions`, {
-        body: JSON.stringify({ action: nextAction, reason: "" }),
-        headers: { "content-type": "application/json" },
-        method: "POST",
-      });
-      const payload = (await response.json()) as {
-        campaign: CampaignDetail;
-        message: string;
-      };
-      await mutate(payload.campaign, { revalidate: false });
+      const payload = await campaignAction.mutateAsync(nextAction);
       await onChanged();
       toast.success(payload.message);
     } catch (error) {
@@ -244,9 +185,14 @@ export function CampaignDetailView({
                 }}
                 onChanged={async (nextCampaign) => {
                   if (nextCampaign) {
-                    await mutate(nextCampaign, { revalidate: false });
+                    queryClient.setQueryData<CampaignDetail>(
+                      campaignsKeys.detail(campaignId),
+                      nextCampaign
+                    );
                   } else {
-                    await mutate();
+                    await queryClient.invalidateQueries({
+                      queryKey: campaignsKeys.detail(campaignId),
+                    });
                   }
                   await onChanged();
                 }}
@@ -257,10 +203,14 @@ export function CampaignDetailView({
         ) : null}
 
         <CampaignPool
-          busy={busy}
+          busy={targetsQuery.isFetchingNextPage ? "targets" : busy}
           campaign={campaign}
           loadMore={() => void loadMore()}
-          refresh={() => void mutate()}
+          refresh={() =>
+            void queryClient.invalidateQueries({
+              queryKey: campaignsKeys.detail(campaignId),
+            })
+          }
           targetPage={targetPage}
           targets={targets}
         />

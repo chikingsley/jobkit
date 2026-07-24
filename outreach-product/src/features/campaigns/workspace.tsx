@@ -1,10 +1,11 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Globe2, Plus } from "lucide-react";
-import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CampaignDetailView } from "@/features/campaigns/detail";
 import { CampaignStatusBadge } from "@/features/campaigns/detail-sections";
+import { campaignsKeys, useCampaigns } from "@/features/campaigns/queries";
 import type { CampaignSummary } from "@/features/campaigns/types";
 import { SplitWorkspace } from "@/features/workspace/split-workspace";
 import type { ApiRequest } from "@/lib/api";
@@ -18,16 +19,8 @@ export function CampaignsWorkspace({
   request: ApiRequest;
 }) {
   const navigate = useNavigate();
-  const {
-    data: campaigns,
-    isLoading,
-    mutate: mutateCampaigns,
-  } = useSWR("/api/campaigns", async (path) => {
-    const payload = (await (await request(path)).json()) as {
-      campaigns: CampaignSummary[];
-    };
-    return payload.campaigns;
-  });
+  const queryClient = useQueryClient();
+  const { data: campaigns, isLoading } = useCampaigns();
 
   const selectedId = campaignId || campaigns?.[0]?.id || "";
 
@@ -38,7 +31,9 @@ export function CampaignsWorkspace({
           <CampaignDetailView
             campaignId={selectedId}
             onBack={() => void navigate({ to: "/app/campaigns" })}
-            onChanged={() => mutateCampaigns()}
+            onChanged={() =>
+              queryClient.invalidateQueries({ queryKey: campaignsKeys.list })
+            }
             request={request}
           />
         ) : (

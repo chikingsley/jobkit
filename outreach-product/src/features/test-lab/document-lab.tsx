@@ -1,7 +1,6 @@
 import { FileText, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,17 +19,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useDocuments } from "@/features/documents/queries";
+import { useStartDocumentBenchmark } from "@/features/test-lab/queries";
 import { TestLabRunResult } from "@/features/test-lab/run-result";
 import type { TestLabResponse } from "@/features/test-lab/types";
-import type { ApiRequest } from "@/lib/api";
-
-interface DocumentSummary {
-  category: string;
-  content_type: string;
-  filename: string;
-  id: string;
-  size_bytes: number;
-}
 
 type DocumentVariant = "codex_vision" | "deterministic" | "mistral_ocr";
 
@@ -43,20 +35,13 @@ const variantLabels: Record<DocumentVariant, string> = {
 export function DocumentLab({
   data,
   onRefresh,
-  request,
 }: {
   data: TestLabResponse;
   onRefresh: () => Promise<unknown>;
-  request: ApiRequest;
 }) {
-  const { data: documentsData } = useSWR(
-    "/api/documents?scope=all",
-    async (path) =>
-      (await (await request(path)).json()) as {
-        documents: DocumentSummary[];
-      }
-  );
-  const documents = documentsData?.documents ?? [];
+  const { data: documentsData } = useDocuments("all");
+  const documents = documentsData ?? [];
+  const benchmarkMutation = useStartDocumentBenchmark();
   const [documentId, setDocumentId] = useState("");
   const [expectedText, setExpectedText] = useState("");
   const [busy, setBusy] = useState<DocumentVariant | "">("");
@@ -81,12 +66,11 @@ export function DocumentLab({
     }
     setBusy(variant);
     try {
-      const response = await request("/api/test-lab/document-runs", {
-        body: JSON.stringify({ documentId, expectedText, variant }),
-        headers: { "content-type": "application/json" },
-        method: "POST",
+      const result = await benchmarkMutation.mutateAsync({
+        documentId,
+        expectedText,
+        variant,
       });
-      const result = (await response.json()) as { message: string };
       await onRefresh();
       toast.success(result.message);
     } catch (error) {

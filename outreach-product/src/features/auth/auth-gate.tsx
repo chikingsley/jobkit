@@ -1,23 +1,13 @@
-import {
-  createContext,
-  type PropsWithChildren,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, type PropsWithChildren, useContext } from "react";
 import { AuthPage } from "@/features/auth/auth-page";
 import {
   localDevelopmentAuthEnabled,
   localDevelopmentUser,
 } from "@/features/auth/local-development";
+import { type CurrentUser, useAccountAccess } from "@/features/auth/queries";
 import { authClient } from "@/lib/auth-client";
 
-export interface CurrentUser {
-  email: string;
-  id: string;
-  name: string;
-  role: "member" | "operator";
-}
+export type { CurrentUser } from "@/features/auth/queries";
 
 const CurrentUserContext = createContext<CurrentUser | null>(null);
 
@@ -34,40 +24,17 @@ export function AuthGate({ children }: PropsWithChildren) {
 
 function SessionAuthGate({ children }: PropsWithChildren) {
   const session = authClient.useSession();
-  const [user, setUser] = useState<CurrentUser | null>(null);
-
-  useEffect(() => {
-    if (!session.data) {
-      setUser(null);
-      return;
-    }
-    let active = true;
-    void fetch("/api/me", { credentials: "include" })
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error("Account access could not be loaded");
+  const account = useAccountAccess(session.data?.user.id);
+  const fallbackUser: CurrentUser | null =
+    account.isError && session.data
+      ? {
+          email: session.data.user.email,
+          id: session.data.user.id,
+          name: session.data.user.name,
+          role: "member",
         }
-        return (await response.json()) as { user: CurrentUser };
-      })
-      .then((result) => {
-        if (active) {
-          setUser(result.user);
-        }
-      })
-      .catch(() => {
-        if (active && session.data) {
-          setUser({
-            email: session.data.user.email,
-            id: session.data.user.id,
-            name: session.data.user.name,
-            role: "member",
-          });
-        }
-      });
-    return () => {
-      active = false;
-    };
-  }, [session.data]);
+      : null;
+  const user = session.data ? (account.data?.user ?? fallbackUser) : null;
 
   if (session.isPending || (session.data && !user)) {
     return (

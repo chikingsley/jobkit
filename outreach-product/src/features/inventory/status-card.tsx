@@ -1,5 +1,5 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Database, TriangleAlert } from "lucide-react";
-import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -8,43 +8,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  ACTIVE_INVENTORY_REFRESH_STATUSES,
+  inventoryKeys,
+  useInventoryStatus,
+} from "@/features/inventory/queries";
 import type { ApiRequest } from "@/lib/api";
 import { InventoryRefreshControls } from "./refresh-controls";
-import {
-  type InventoryRefreshSummary,
-  type InventoryRunSummary,
-  InventoryStatusSchema,
-} from "./status";
+import type { InventoryRefreshSummary, InventoryRunSummary } from "./status";
 
 const SOURCE_ID = "job-search-sqlite";
-const ACTIVE_REFRESH_STATUSES = new Set([
-  "queued",
-  "claimed",
-  "crawling",
-  "publishing",
-]);
 
 export function InventoryStatusCard({ request }: { request: ApiRequest }) {
-  const { data, isLoading, mutate } = useSWR(
-    "/api/inventory/status",
-    async (path) =>
-      InventoryStatusSchema.parse(await (await request(path)).json()),
-    {
-      refreshInterval(latestData) {
-        return latestData?.refreshes.some((refresh) =>
-          ACTIVE_REFRESH_STATUSES.has(refresh.status)
-        )
-          ? 3000
-          : 0;
-      },
-    }
-  );
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useInventoryStatus();
   const source = data?.sources.find((candidate) => candidate.id === SOURCE_ID);
   const run = data?.runs.find((candidate) => candidate.sourceId === SOURCE_ID);
   const activeRefresh = data?.refreshes.find(
     (candidate) =>
       candidate.sourceId === SOURCE_ID &&
-      ACTIVE_REFRESH_STATUSES.has(candidate.status)
+      ACTIVE_INVENTORY_REFRESH_STATUSES.has(candidate.status)
   );
   const latestRefresh = data?.refreshes.find(
     (candidate) => candidate.sourceId === SOURCE_ID
@@ -106,7 +89,9 @@ export function InventoryStatusCard({ request }: { request: ApiRequest }) {
         {source?.canOperate ? (
           <InventoryRefreshControls
             activeRefresh={activeRefresh}
-            onChanged={() => mutate()}
+            onChanged={() =>
+              queryClient.invalidateQueries({ queryKey: inventoryKeys.status })
+            }
             request={request}
             source={source}
           />

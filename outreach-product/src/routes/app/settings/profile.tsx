@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useProfile, useSetProfile } from "@/features/profile/queries";
 import { ProfileView } from "@/features/profile/view";
-import { useWorkspaceContext } from "@/features/workspace/context";
 import { ViewLoading, WorkspacePage } from "@/features/workspace/shell";
 import { apiRequest } from "@/lib/api";
 
@@ -9,13 +9,14 @@ export const Route = createFileRoute("/app/settings/profile")({
 });
 
 function ProfileRoute() {
-  const { profile, setProfile } = useWorkspaceContext();
+  const profileQuery = useProfile();
+  const setProfile = useSetProfile();
   return (
     <WorkspacePage>
-      {profile ? (
+      {profileQuery.data ? (
         <ProfileView
           onSaved={setProfile}
-          profile={profile}
+          profile={profileQuery.data}
           request={apiRequest}
         />
       ) : (

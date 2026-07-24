@@ -11,7 +11,6 @@ import { SettingsPage } from "@/components/settings-page";
 import { Button } from "@/components/ui/button";
 import { AgentRunnerConnectionCard } from "@/features/agents/runner-connection-card";
 import { workspacePaths } from "@/features/workspace/routes";
-import type { ApiRequest } from "@/lib/api";
 
 const sections = [
   {
@@ -41,7 +40,7 @@ const sections = [
   },
 ] as const;
 
-export function SettingsView({ request }: { request: ApiRequest }) {
+export function SettingsView() {
   const navigate = useNavigate();
   return (
     <SettingsPage>
@@ -64,7 +63,7 @@ export function SettingsView({ request }: { request: ApiRequest }) {
           );
         })}
       </nav>
-      <AgentRunnerConnectionCard request={request} />
+      <AgentRunnerConnectionCard />
     </SettingsPage>
   );
 }

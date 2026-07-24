@@ -1,6 +1,5 @@
 import { LoaderCircle, RefreshCcw, X } from "lucide-react";
 import { toast } from "sonner";
-import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,79 +9,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { ApiRequest } from "@/lib/api";
+import {
+  type AgentTaskRequestSummary,
+  type AutonomousTaskSummary,
+  isActiveAgentTask,
+  useAgentTaskHistory,
+  useAgentTaskMutation,
+} from "@/features/agents/queries";
 
-const ACTIVE_TASK_REFRESH_INTERVAL_MS = 2000;
-
-type TaskStatus = "cancelled" | "claimed" | "completed" | "failed" | "queued";
-
-interface AgentTaskRunSummary {
-  completedAt: string | null;
-  id: string;
-  model: string;
-  promptVersion: string;
-  reasoningEffort: string;
-  runnerName: string;
-  startedAt: string;
-  status: string;
-}
-
-interface AgentTaskRequestSummary {
-  completedAt: string | null;
-  createdAt: string;
-  error: string;
-  id: string;
-  run: AgentTaskRunSummary | null;
-  status: TaskStatus;
-  subjectId: string;
-  subjectType: string;
-  taskType: string;
-  updatedAt: string;
-}
-
-interface AutonomousTaskSummary {
-  completedAt: string | null;
-  error: string;
-  id: string;
-  model: string;
-  promptVersion: string;
-  reasoningEffort: string;
-  runnerName: string;
-  sourceTaskId: string;
-  startedAt: string;
-  status: string;
-  taskType: string;
-}
-
-interface AgentTaskHistoryResponse {
-  autonomousRuns: AutonomousTaskSummary[];
-  requests: AgentTaskRequestSummary[];
-}
-
-export function AgentTaskHistory({ request }: { request: ApiRequest }) {
-  const { data, mutate } = useSWR(
-    "/api/agent-tasks",
-    async (path) =>
-      (await (await request(path)).json()) as AgentTaskHistoryResponse,
-    {
-      refreshInterval: (history) =>
-        history?.requests.some(isActiveTask)
-          ? ACTIVE_TASK_REFRESH_INTERVAL_MS
-          : 0,
-    }
-  );
+export function AgentTaskHistory() {
+  const { data } = useAgentTaskHistory();
+  const taskMutation = useAgentTaskMutation();
 
   async function mutateTask(
     task: AgentTaskRequestSummary,
     action: "cancel" | "retry"
   ) {
-    const path =
-      action === "retry"
-        ? `/api/agent-task-requests/${task.id}/retry`
-        : `/api/agent-task-requests/${task.id}`;
     try {
-      await request(path, { method: action === "retry" ? "POST" : "DELETE" });
-      await mutate();
+      await taskMutation.mutateAsync({ action, taskId: task.id });
       toast.success(
         action === "retry" ? "Codex task queued again" : "Codex task cancelled"
       );
@@ -139,7 +83,7 @@ function TaskRequestRow({
     <div className="grid gap-2 rounded-lg border p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          {isActiveTask(task) ? (
+          {isActiveAgentTask(task) ? (
             <LoaderCircle className="size-4 animate-spin text-muted-foreground" />
           ) : null}
           <span className="font-medium text-sm">
@@ -200,10 +144,6 @@ function AutonomousRunRow({ run }: { run: AutonomousTaskSummary }) {
       ) : null}
     </div>
   );
-}
-
-function isActiveTask(task: AgentTaskRequestSummary) {
-  return task.status === "queued" || task.status === "claimed";
 }
 
 function taskLabel(taskType: string) {

@@ -1,19 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CountriesView } from "@/features/countries/view";
-import { useWorkspaceContext } from "@/features/workspace/context";
+import { usePreferences } from "@/features/preferences/queries";
 import { ViewLoading, WorkspacePage } from "@/features/workspace/shell";
-import { apiRequest } from "@/lib/api";
 
 export const Route = createFileRoute("/app/campaigns/markets/")({
   component: MarketsRoute,
 });
 
 function MarketsRoute() {
-  const { preferences } = useWorkspaceContext();
+  const preferencesQuery = usePreferences();
   return (
     <WorkspacePage>
-      {preferences ? (
-        <CountriesView preferences={preferences} request={apiRequest} />
+      {preferencesQuery.data ? (
+        <CountriesView preferences={preferencesQuery.data} />
       ) : (
         <ViewLoading />
       )}
