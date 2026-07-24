@@ -1,7 +1,10 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { runStructuredAgent } from "../../cli/lib/structured-agent";
+import {
+  type AgentEngine,
+  runEngineStructuredAgent,
+} from "../../cli/lib/agent-engine";
 import {
   JOB_CONTENT_OUTPUT_JSON_SCHEMA,
   JOB_MATCH_FACTS_OUTPUT_JSON_SCHEMA,
@@ -35,24 +38,34 @@ import type {
 import { readAnalysisCases } from "./corpus";
 import { summarizeAnalysisRuns } from "./metrics";
 
-const DEFAULT_MODELS: ModelConfiguration[] = [
+const CODEX_DEFAULT_MODELS: ModelConfiguration[] = [
   { effort: "low", model: "gpt-5.3-codex-spark" },
   { effort: "medium", model: "gpt-5.6-luna" },
   { effort: "medium", model: "gpt-5.6-terra" },
+];
+
+const OPENCODE_DEFAULT_MODELS: ModelConfiguration[] = [
+  { effort: "medium", model: "opencode-go/deepseek-v4-flash" },
+  { effort: "medium", model: "opencode-go/glm-5.2" },
+  { effort: "medium", model: "opencode/ling-3.0-flash-free" },
 ];
 
 const { values } = parseArgs({
   options: {
     concurrency: { default: "3", type: "string" },
     count: { default: "3", type: "string" },
+    engine: { default: "codex", type: "string" },
+    models: { default: "", type: "string" },
     output: { type: "string" },
   },
   strict: true,
 });
+const engine = parseEngine(values.engine);
+const models = parseModels(values.models, engine);
 const count = positiveInteger(values.count, "count");
 const concurrency = positiveInteger(values.concurrency, "concurrency");
 const cases = readAnalysisCases(count);
-const work = DEFAULT_MODELS.flatMap((model) =>
+const work = models.flatMap((model) =>
   cases.flatMap((analysisCase) =>
     (["content", "facts", "positions"] as AnalysisTask[]).map((task) => ({
       analysisCase,
@@ -66,7 +79,7 @@ const results = await mapConcurrent(
   concurrency,
   ({ analysisCase, model, task }) => runAnalysis(analysisCase, model, task)
 );
-const summary = summarizeAnalysisRuns(results, DEFAULT_MODELS, cases.length);
+const summary = summarizeAnalysisRuns(results, models, cases.length);
 const outputPath = resolve(
   values.output ??
     `experiments/job-analysis/artifacts/bakeoff-${new Date().toISOString().replaceAll(":", "-")}.json`
@@ -78,7 +91,7 @@ await writeFile(
     {
       cases,
       generatedAt: new Date().toISOString(),
-      protocol: { concurrency, models: DEFAULT_MODELS },
+      protocol: { concurrency, engine, models },
       results,
       summary,
     },
@@ -96,7 +109,7 @@ async function runAnalysis(
 ): Promise<AnalysisRunResult> {
   const started = performance.now();
   try {
-    const raw = await runStructuredAgent({
+    const raw = await runEngineStructuredAgent(engine, {
       effort: configuration.effort,
       model: configuration.model,
       outputSchema: schemaFor(task),
@@ -226,6 +239,42 @@ function evidenceCount(
       position.requirements.length,
     0
   );
+}
+
+function parseEngine(value: string): AgentEngine {
+  if (value === "codex" || value === "opencode") {
+    return value;
+  }
+  throw new Error(
+    `engine must be "codex" or "opencode", received ${JSON.stringify(value)}`
+  );
+}
+
+function parseModels(raw: string, targetEngine: AgentEngine) {
+  if (!raw.trim()) {
+    return targetEngine === "opencode"
+      ? OPENCODE_DEFAULT_MODELS
+      : CODEX_DEFAULT_MODELS;
+  }
+  return raw.split(",").map((entry): ModelConfiguration => {
+    const [model, effort = "medium"] = entry.trim().split("@");
+    if (!model) {
+      throw new Error(
+        "models entries must be formatted as model or model@effort"
+      );
+    }
+    if (
+      !(
+        effort === "low" ||
+        effort === "medium" ||
+        effort === "high" ||
+        effort === "xhigh"
+      )
+    ) {
+      throw new Error(`Unsupported effort in models entry: ${entry}`);
+    }
+    return { effort, model };
+  });
 }
 
 function positiveInteger(value: string, label: string) {
