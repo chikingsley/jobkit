@@ -7,7 +7,7 @@ import {
   staticSitemap,
 } from "../../worker/services/public-search-assets";
 
-const origin = "https://outreach-product.peacockery.studio";
+const origin = "https://jobkit.peacockery.studio";
 
 describe("public search assets", () => {
   it("keeps private product routes out of crawling and advertises the index", () => {

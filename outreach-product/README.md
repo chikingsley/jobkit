@@ -2,7 +2,7 @@
 
 The active JobKit web application: a Cloudflare Worker and React interface for reviewing teaching jobs, resolving qualification facts, creating application messages, sending through a user's Gmail account, and tracking replies.
 
-Production: <https://outreach-product.peacockery.studio>
+Production: <https://jobkit.peacockery.studio>
 
 ## What is live
 

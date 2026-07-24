@@ -5,12 +5,13 @@ import { dirname } from "node:path";
 import { parseArgs } from "node:util";
 import { z } from "zod";
 import { AgentCapabilitySchema } from "../../src/features/agents/schema";
+import { CANONICAL_SITE_ORIGIN } from "../../src/lib/site-origin";
 import { agentConfigPath } from "./config";
 
 const { values: args } = parseArgs({
   options: {
     base: {
-      default: "https://outreach-product.peacockery.studio",
+      default: CANONICAL_SITE_ORIGIN,
       type: "string",
     },
     code: { type: "string" },

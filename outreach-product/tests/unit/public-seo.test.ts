@@ -97,7 +97,7 @@ describe("public job SEO", () => {
       "/jobs/georgia"
     );
     expect(head.links).toContainEqual({
-      href: "https://outreach-product.peacockery.studio/jobs/georgia",
+      href: "https://jobkit.peacockery.studio/jobs/georgia",
       rel: "canonical",
     });
     expect(head.meta).toContainEqual({

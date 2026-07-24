@@ -15,7 +15,7 @@ export default defineConfig({
       main: "./src/server.ts",
       miniflare: {
         bindings: {
-          APP_ORIGIN: "https://outreach.test",
+          APP_ORIGIN: "https://jobkit.peacockery.studio",
           BETTER_AUTH_SECRET: "integration-test-secret-at-least-32-characters",
           PUBLIC_JOB_CURSOR_SECRET: "public-start-integration-secret",
           TEST_MIGRATIONS: migrations,

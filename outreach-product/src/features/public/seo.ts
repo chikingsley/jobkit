@@ -3,9 +3,9 @@ import type {
   PublicJobListResponse,
 } from "../../../worker/public-jobs/schemas";
 import { countrySlugForCode } from "../../lib/country-routing";
+import { CANONICAL_SITE_ORIGIN } from "../../lib/site-origin";
 
-export const PUBLIC_SITE_ORIGIN =
-  "https://outreach-product.peacockery.studio" as const;
+export const PUBLIC_SITE_ORIGIN = CANONICAL_SITE_ORIGIN;
 
 export function publicJobListHead(result: unknown, canonicalPath: string) {
   if (!isPublicListSuccess(result)) {

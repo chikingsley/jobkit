@@ -1,3 +1,4 @@
+import { CANONICAL_SITE_ORIGIN } from "../../src/lib/site-origin";
 import { createAuth } from "../auth";
 import type { AppEnv } from "../env";
 import { GmailIntegrationError } from "./gmail-errors";
@@ -43,7 +44,8 @@ export function gmailConfigurationIsAvailable(env: AppEnv) {
 }
 
 function appOrigin(env: AppEnv) {
-  return (
-    env.APP_ORIGIN || "https://outreach-product.peacockery.studio"
-  ).replace(TRAILING_SLASH_PATTERN, "");
+  return (env.APP_ORIGIN || CANONICAL_SITE_ORIGIN).replace(
+    TRAILING_SLASH_PATTERN,
+    ""
+  );
 }

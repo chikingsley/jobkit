@@ -5,11 +5,11 @@
   "compatibility_date": "2026-07-11",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
-    "APP_ORIGIN": "https://outreach-product.peacockery.studio"
+    "APP_ORIGIN": "https://jobkit.peacockery.studio"
   },
   "routes": [
     {
-      "pattern": "outreach-product.peacockery.studio",
+      "pattern": "jobkit.peacockery.studio",
       "custom_domain": true
     }
   ],

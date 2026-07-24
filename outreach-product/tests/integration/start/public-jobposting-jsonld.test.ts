@@ -110,7 +110,7 @@ describe("public job detail JobPosting JSON-LD", () => {
     expect(typeof posting.description).toBe("string");
     expect((posting.description as string).length).toBeGreaterThan(0);
     expect(posting.url).toBe(
-      `https://outreach-product.peacockery.studio${canonicalPath}`
+      `https://jobkit.peacockery.studio${canonicalPath}`
     );
     expect(posting).not.toHaveProperty("directApply");
     expect(posting).not.toHaveProperty("jobLocationType");
