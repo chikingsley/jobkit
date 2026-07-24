@@ -35,13 +35,9 @@ export function listStatement(input: {
 }) {
   const conditions = [
     "browse.catalog_version=?",
-    "search.search_index_version=?",
     "search.public_job_version=browse.public_job_version",
   ];
-  const conditionBindings: unknown[] = [
-    input.catalog.version,
-    input.catalog.search_index_version,
-  ];
+  const conditionBindings: unknown[] = [input.catalog.version];
   const joinBindings: unknown[] = [];
   let rankingJoin = "";
   let searchRank = "0.0";
@@ -51,21 +47,16 @@ export function listStatement(input: {
       conditions.push("0");
     } else {
       rankingJoin = `JOIN (
-        SELECT term.public_job_id,term.public_job_version,
+        SELECT term.public_job_id,term.valid_from_ordinal,
                -SUM(term.score) AS search_rank
           FROM public_job_search_terms term
           JOIN json_each(?) query_term ON query_term.value=term.term
-         WHERE term.search_index_version=?
-         GROUP BY term.public_job_id,term.public_job_version
+         GROUP BY term.public_job_id,term.valid_from_ordinal
         HAVING COUNT(DISTINCT term.term)=?
       ) ranked
         ON ranked.public_job_id=browse.public_job_id
-       AND ranked.public_job_version=browse.public_job_version`;
-      joinBindings.push(
-        JSON.stringify(terms),
-        input.catalog.search_index_version,
-        terms.length
-      );
+       AND ranked.valid_from_ordinal=browse.valid_from_ordinal`;
+      joinBindings.push(JSON.stringify(terms), terms.length);
       searchRank = "ranked.search_rank";
     }
   }
@@ -77,9 +68,8 @@ export function listStatement(input: {
     conditions.push(
       `EXISTS (
         SELECT 1 FROM public_browse_job_locations facet
-        WHERE facet.catalog_version=browse.catalog_version
-          AND facet.public_job_id=browse.public_job_id
-          AND facet.public_job_version=browse.public_job_version
+        WHERE facet.public_job_id=browse.public_job_id
+          AND facet.valid_from_ordinal=browse.valid_from_ordinal
           AND facet.country_code=? AND facet.city_slug=?
           AND facet.location_role='worksite'
       )`
@@ -89,9 +79,8 @@ export function listStatement(input: {
     conditions.push(
       `EXISTS (
         SELECT 1 FROM public_browse_job_locations facet
-        WHERE facet.catalog_version=browse.catalog_version
-          AND facet.public_job_id=browse.public_job_id
-          AND facet.public_job_version=browse.public_job_version
+        WHERE facet.public_job_id=browse.public_job_id
+          AND facet.valid_from_ordinal=browse.valid_from_ordinal
           AND facet.country_code=?
           AND (
             facet.location_role='worksite'
@@ -146,7 +135,7 @@ export function listStatement(input: {
           FROM public_browse_jobs browse
           JOIN public_job_search_index search
             ON search.public_job_id=browse.public_job_id
-           AND search.public_job_version=browse.public_job_version
+           AND search.valid_from_ordinal=browse.valid_from_ordinal
           ${rankingJoin}
          WHERE ${conditions.join(" AND ")}
          ORDER BY ${order}

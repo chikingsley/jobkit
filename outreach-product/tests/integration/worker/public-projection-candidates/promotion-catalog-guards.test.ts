@@ -11,7 +11,6 @@ import {
   catalogActivationStatements,
   prepareCatalogPromotion,
 } from "../../../../worker/services/public-projection/promotion/catalog";
-import { catalogStagingBatches } from "../../../../worker/services/public-projection/promotion/catalog-staging";
 import {
   preparePromotionMappings,
   promotionDecisionHash,
@@ -47,12 +46,28 @@ const allocationRow = () =>
     .bind(runId)
     .first<{ allocation_id: string }>();
 
+const catalogFootprint = () =>
+  testEnv.DB.prepare(
+    `SELECT
+       (SELECT current_version FROM public_job_catalog_head_pointer
+         WHERE singleton=1) head_version,
+       (SELECT COUNT(*) FROM public_job_catalog_versions) versions,
+       (SELECT COUNT(*) FROM public_job_catalog_seals) seals,
+       (SELECT COUNT(*) FROM public_job_catalog_members) members,
+       (SELECT COUNT(*) FROM public_job_catalog_members
+         WHERE valid_to_ordinal IS NULL) open_members,
+       (SELECT COUNT(*) FROM public_job_search_index) search_rows,
+       (SELECT COUNT(*) FROM public_job_search_terms) search_terms,
+       (SELECT COUNT(*) FROM public_browse_job_locations) facets,
+       (SELECT COUNT(*) FROM public_projection_promotion_manifests) manifests`
+  ).first<Record<string, unknown>>();
+
 beforeEach(async () => {
   await applyD1Migrations(testEnv.DB, testEnv.TEST_MIGRATIONS);
 });
 
 describe("public projection promotion catalog guards", () => {
-  it("aborts staging and activation when the catalog head moves concurrently", async () => {
+  it("aborts a promotion against a stale head with no partial state", async () => {
     await approveTeflPublication();
     const source = "promotion-guards";
     await seedSource(source);
@@ -80,55 +95,12 @@ describe("public projection promotion catalog guards", () => {
     if (!stalePrepared) {
       throw new Error("The guard fixture prepared no catalog promotion");
     }
-
-    await publishCatalog("guard-moved", [second.publicId]);
-    const staleBatches = catalogStagingBatches(testEnv.DB, {
-      candidate: context.candidate,
-      candidateHash: context.candidateHash,
-      candidateSealDigest: context.candidateSealDigest,
-      catalogHead: staleHead,
-      prepared: stalePrepared,
-      timestamp,
-    });
-    await expect(testEnv.DB.batch(staleBatches[0] ?? [])).rejects.toThrow();
-    await expect(
-      testEnv.DB.prepare(
-        "SELECT COUNT(*) versions FROM public_job_catalog_versions WHERE version=?"
-      )
-        .bind(stalePrepared.catalogVersion)
-        .first()
-    ).resolves.toEqual({ versions: 0 });
-
-    const movedHead = await readPromotionCatalogHead(testEnv.DB);
-    const prepared = await prepareCatalogPromotion(testEnv.DB, {
-      candidate: context.candidate,
-      catalogHead: movedHead,
-      decisionHash,
-      timestamp,
-    });
-    if (!prepared) {
-      throw new Error("The guard fixture prepared no staged promotion");
-    }
-    const batches = catalogStagingBatches(testEnv.DB, {
-      candidate: context.candidate,
-      candidateHash: context.candidateHash,
-      candidateSealDigest: context.candidateSealDigest,
-      catalogHead: movedHead,
-      prepared,
-      timestamp,
-    });
-    for (const batch of batches) {
-      // biome-ignore lint/performance/noAwaitInLoops: staged copy chunks commit in order.
-      await testEnv.DB.batch(batch);
-    }
-
-    await publishCatalog("guard-final", [first.publicId, second.publicId]);
-    const flip = [
+    const staleBatch = [
       ...promotionGuardStatements(testEnv.DB, {
         candidate: context.candidate,
         candidateHash: context.candidateHash,
         candidateSealDigest: context.candidateSealDigest,
-        catalogHeadVersion: movedHead.current_version,
+        catalogHeadVersion: staleHead.current_version,
         mappings,
       }),
       ...livePromotionStatements(testEnv.DB, {
@@ -139,28 +111,33 @@ describe("public projection promotion catalog guards", () => {
       }),
       ...catalogActivationStatements(testEnv.DB, {
         candidate: context.candidate,
-        catalogHead: movedHead,
-        prepared,
+        catalogHead: staleHead,
+        prepared: stalePrepared,
         timestamp,
       }),
     ];
-    await expect(testEnv.DB.batch(flip)).rejects.toThrow();
+
+    await publishCatalog("guard-moved", [second.publicId]);
+    const before = await catalogFootprint();
+    await expect(testEnv.DB.batch(staleBatch)).rejects.toThrow();
+    await expect(catalogFootprint()).resolves.toEqual(before);
+    expect(before?.head_version).toBe("catalog:guard-moved");
     await expect(
       testEnv.DB.prepare(
-        `SELECT
-             (SELECT current_version FROM public_job_catalog_head_pointer
-               WHERE singleton=1) head_version,
-             (SELECT COUNT(*) FROM public_job_catalog_head_history
-               WHERE catalog_version=?1) activated,
-             (SELECT COUNT(*) FROM public_projection_promotion_manifests) manifests`
+        `SELECT COUNT(*) count FROM public_job_catalog_versions
+          WHERE version=?`
       )
-        .bind(prepared.catalogVersion)
+        .bind(stalePrepared.catalogVersion)
         .first()
-    ).resolves.toEqual({
-      activated: 0,
-      head_version: "catalog:guard-final",
-      manifests: 0,
-    });
+    ).resolves.toEqual({ count: 0 });
+    await expect(
+      testEnv.DB.prepare(
+        `SELECT COUNT(*) count FROM public_job_catalog_members
+          WHERE public_job_id=?`
+      )
+        .bind(context.candidate.publicJobId)
+        .first()
+    ).resolves.toEqual({ count: 0 });
 
     const operator = await createAuthenticatedUser(
       "promotion-guard-operator@example.test"
@@ -172,16 +149,21 @@ describe("public projection promotion catalog guards", () => {
     });
     expect(result.created).toBe(true);
     expect(result.manifest.predecessorCatalogVersion).toBe(
-      "catalog:guard-final"
+      "catalog:guard-moved"
     );
     await expect(
       testEnv.DB.prepare(
-        `SELECT COUNT(*) members FROM public_job_catalog_members
-            WHERE catalog_version=?`
+        `SELECT COUNT(*) members
+           FROM public_job_catalog_versions target
+           JOIN public_job_catalog_members member
+             ON member.valid_from_ordinal<=target.ordinal
+            AND (member.valid_to_ordinal IS NULL
+              OR member.valid_to_ordinal>target.ordinal)
+          WHERE target.version=?`
       )
         .bind(result.manifest.activatedCatalogVersion)
         .first()
-    ).resolves.toEqual({ members: 3 });
+    ).resolves.toEqual({ members: 2 });
   }, 120_000);
 });
 

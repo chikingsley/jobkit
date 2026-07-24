@@ -81,19 +81,19 @@ export async function liveGraphSnapshot() {
     ).all(),
     testEnv.DB.prepare(
       `SELECT * FROM public_job_catalog_members
-        ORDER BY catalog_version,public_job_id`
+        ORDER BY public_job_id,valid_from_ordinal`
     ).all(),
     testEnv.DB.prepare(
       `SELECT * FROM public_job_search_index
-        ORDER BY public_job_id,public_job_version,search_index_version`
+        ORDER BY public_job_id,valid_from_ordinal`
     ).all(),
     testEnv.DB.prepare(
       `SELECT * FROM public_job_search_terms
-        ORDER BY search_index_version,public_job_id,public_job_version,term`
+        ORDER BY public_job_id,valid_from_ordinal,term`
     ).all(),
     testEnv.DB.prepare(
       `SELECT * FROM public_browse_job_locations
-        ORDER BY catalog_version,public_job_id,public_job_version,ordinal`
+        ORDER BY public_job_id,valid_from_ordinal,ordinal`
     ).all(),
     testEnv.DB.prepare("SELECT * FROM work_outbox ORDER BY id").all(),
   ]);

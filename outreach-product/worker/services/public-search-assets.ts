@@ -66,18 +66,12 @@ export async function readSitemapMarkets(db: D1Database) {
     .prepare(
       `SELECT facet.country_code,facet.country_slug,facet.city_slug,
               MAX(browse.material_changed_at) material_changed_at
-         FROM public_job_catalog_head_pointer head
+         FROM organic_index_jobs browse
          JOIN public_browse_job_locations facet
-           ON facet.catalog_version=head.current_version
-         JOIN organic_index_jobs browse
-           ON browse.catalog_version=facet.catalog_version
-          AND browse.public_job_id=facet.public_job_id
-          AND browse.public_job_version=facet.public_job_version
-        WHERE head.singleton=1
-          AND (
-            facet.city_slug IS NULL
-            OR facet.location_role='worksite'
-          )
+           ON facet.public_job_id=browse.public_job_id
+          AND facet.valid_from_ordinal=browse.valid_from_ordinal
+        WHERE facet.city_slug IS NULL
+           OR facet.location_role='worksite'
         GROUP BY facet.country_code,facet.country_slug,facet.city_slug
         ORDER BY facet.country_code,facet.city_slug`
     )

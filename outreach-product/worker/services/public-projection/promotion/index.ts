@@ -2,7 +2,6 @@ import {
   catalogActivationStatements,
   prepareCatalogPromotion,
 } from "./catalog";
-import { catalogStagingBatches } from "./catalog-staging";
 import {
   preparePromotionMappings,
   promotionDecisionHash,
@@ -60,16 +59,6 @@ export async function promoteProjectionCandidate(
     predecessorCatalogVersion: catalogHead.current_version,
     userId: input.userId,
   });
-  const stagingBatches = catalog
-    ? catalogStagingBatches(db, {
-        candidate,
-        candidateHash,
-        candidateSealDigest,
-        catalogHead,
-        prepared: catalog,
-        timestamp,
-      })
-    : [];
   const statements = [
     ...promotionGuardStatements(db, {
       candidate,
@@ -104,10 +93,6 @@ export async function promoteProjectionCandidate(
     }),
   ];
   try {
-    for (const staging of stagingBatches) {
-      // biome-ignore lint/performance/noAwaitInLoops: each staged copy chunk must commit before the next range is copied.
-      await db.batch(staging);
-    }
     await db.batch(statements);
   } catch (cause) {
     const replay = await readPromotionManifest(

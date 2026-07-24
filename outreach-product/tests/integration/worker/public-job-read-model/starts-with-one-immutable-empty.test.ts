@@ -77,8 +77,11 @@ describe("public job read model", () => {
           version,predecessor_version,membership_hash,member_count,
           search_document_count,search_content_hash,search_term_count,
           location_facet_count,representation_updated_at,
-          material_changed_at,search_index_version,created_at
-        ) VALUES ('catalog:fabricated-empty',?,?,0,0,?,0,0,?,?,?,?)`
+          material_changed_at,search_index_version,created_at,ordinal
+        )
+        SELECT 'catalog:fabricated-empty',?,?,0,0,?,0,0,?,?,?,?,
+               (SELECT COALESCE(MAX(version.ordinal),0)+1
+                  FROM public_job_catalog_versions version)`
       ).bind(
         current.version,
         hash(7001),

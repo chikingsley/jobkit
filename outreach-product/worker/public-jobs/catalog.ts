@@ -147,11 +147,16 @@ export async function sealAndActivatePublicJobCatalog(
 ) {
   const rows = await db
     .prepare(
-      `SELECT public_job_id,public_job_version,eligibility_decision_version,
-              item_json,detail_json,location_facets_json,public_content_hash,
-              eligibility_decision_hash
-         FROM public_job_catalog_members
-        WHERE catalog_version=? ORDER BY public_job_id`
+      `SELECT member.public_job_id,member.public_job_version,
+              member.eligibility_decision_version,member.item_json,
+              member.detail_json,member.location_facets_json,
+              member.public_content_hash,member.eligibility_decision_hash
+         FROM public_job_catalog_versions target
+         JOIN public_job_catalog_members member
+           ON member.valid_from_ordinal<=target.ordinal
+          AND (member.valid_to_ordinal IS NULL
+            OR member.valid_to_ordinal>target.ordinal)
+        WHERE target.version=? ORDER BY member.public_job_id`
     )
     .bind(input.catalogVersion)
     .all<{
@@ -212,10 +217,15 @@ export async function sealAndActivatePublicJobCatalog(
               search.search_document,search.title_sort_key,
               search.effective_recency,search.conservative_hourly_usd,
               search.search_terms_json
-         FROM public_job_search_index search
-         JOIN public_job_catalog_versions version
-           ON version.search_index_version=search.search_index_version
-        WHERE version.version=?
+         FROM public_job_catalog_versions target
+         JOIN public_job_catalog_members member
+           ON member.valid_from_ordinal<=target.ordinal
+          AND (member.valid_to_ordinal IS NULL
+            OR member.valid_to_ordinal>target.ordinal)
+         JOIN public_job_search_index search
+           ON search.public_job_id=member.public_job_id
+          AND search.valid_from_ordinal=member.valid_from_ordinal
+        WHERE target.version=?
         ORDER BY search.public_job_id`
     )
     .bind(input.catalogVersion)
@@ -255,10 +265,15 @@ export async function sealAndActivatePublicJobCatalog(
   const termRows = await db
     .prepare(
       `SELECT term.public_job_id,term.public_job_version,term.term,term.score
-         FROM public_job_search_terms term
-         JOIN public_job_catalog_versions version
-           ON version.search_index_version=term.search_index_version
-        WHERE version.version=?
+         FROM public_job_catalog_versions target
+         JOIN public_job_catalog_members member
+           ON member.valid_from_ordinal<=target.ordinal
+          AND (member.valid_to_ordinal IS NULL
+            OR member.valid_to_ordinal>target.ordinal)
+         JOIN public_job_search_terms term
+           ON term.public_job_id=member.public_job_id
+          AND term.valid_from_ordinal=member.valid_from_ordinal
+        WHERE target.version=?
         ORDER BY term.public_job_id,term.term`
     )
     .bind(input.catalogVersion)

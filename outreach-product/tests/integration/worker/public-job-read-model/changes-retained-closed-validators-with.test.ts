@@ -153,11 +153,14 @@ describe("public job read model", () => {
     await expect(
       testEnv.DB.prepare(
         `INSERT INTO public_job_catalog_members (
-          catalog_version,public_job_id,public_job_version,
+          public_job_id,valid_from_ordinal,public_job_version,
           eligibility_decision_version,item_json,detail_json,public_content_hash,
           eligibility_decision_hash,location_facets_json,
           representation_updated_at,created_at
-        ) VALUES ('catalog:cursor-page',?,1,1,?,?,?,?,?,?,?)`
+        )
+        SELECT ?,version.ordinal,1,1,?,?,?,?,?,?,?
+          FROM public_job_catalog_versions version
+         WHERE version.version='catalog:cursor-page'`
       )
         .bind(
           outsider.publicId,
@@ -182,11 +185,14 @@ describe("public job read model", () => {
     await expect(
       testEnv.DB.prepare(
         `INSERT INTO public_job_search_index (
-          public_job_id,public_job_version,search_index_version,
+          public_job_id,valid_from_ordinal,public_job_version,
           search_document,search_terms_json,title_sort_key,effective_recency,
           conservative_hourly_usd,created_at
-        ) VALUES (?,1,'search:cursor-page','outsider',
-          '[{"term":"outsider","score":1}]','outsider',?,?,?)`
+        )
+        SELECT ?,version.ordinal,1,'outsider',
+               '[{"term":"outsider","score":1}]','outsider',?,?,?
+          FROM public_job_catalog_versions version
+         WHERE version.version='catalog:cursor-page'`
       )
         .bind(outsider.publicId, timestamp, null, timestamp)
         .run()
@@ -194,11 +200,14 @@ describe("public job read model", () => {
     await expect(
       testEnv.DB.prepare(
         `INSERT INTO public_browse_job_locations (
-          catalog_version,public_job_id,public_job_version,ordinal,
+          public_job_id,valid_from_ordinal,public_job_version,ordinal,
           location_role,country_code,country_slug,city_slug,display_name,
           created_at
-        ) VALUES ('catalog:cursor-page',?,1,99,'worksite','KR',
-          'south-korea','seoul','Seoul',?)`
+        )
+        SELECT ?,version.ordinal,1,99,'worksite','KR',
+               'south-korea','seoul','Seoul',?
+          FROM public_job_catalog_versions version
+         WHERE version.version='catalog:cursor-page'`
       )
         .bind(first.publicId, timestamp)
         .run()
