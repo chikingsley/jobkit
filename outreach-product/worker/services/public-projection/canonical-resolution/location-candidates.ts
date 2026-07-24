@@ -188,7 +188,7 @@ function locationCoordinateKind(
   if (!selected) {
     return "";
   }
-  return scope === "countrywide" ? "centroid" : "provider_point";
+  return scope === "countrywide" ? "centroid" : "point";
 }
 
 async function normalizeLocationCandidate(

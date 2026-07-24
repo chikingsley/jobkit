@@ -2,6 +2,7 @@ import {
   inventoryJobMaterialHash,
   serializeInventoryJobMaterial,
 } from "../../../../../src/features/inventory/content";
+import type { InventoryJob } from "../../../../../src/features/inventory/schema";
 import {
   materialCloneSignal,
   sourceReferenceSignal,
@@ -24,6 +25,8 @@ export async function seedResolvedRun(input: {
   beforeD2?: (positions: PositionFixture[]) => Promise<void>;
   positions: {
     canonicalSignalHash: string;
+    coordinateKind?: string;
+    job?: Partial<InventoryJob>;
     sourcePositionId: string;
     sourceReference: string;
   }[];
@@ -35,6 +38,7 @@ export async function seedResolvedRun(input: {
   if (input.advanceable) {
     await seedListingMaterials(
       input.positions.map((position, index) => ({
+        job: position.job,
         listingId: listingIds[index] ?? "",
         sourceReference: position.sourceReference,
       }))
@@ -48,6 +52,7 @@ export async function seedResolvedRun(input: {
     // biome-ignore lint/performance/noAwaitInLoops: Ordered inserts intentionally vary the D2 row order.
     const position = await seedPosition({
       itemId: `${input.runId}:position:${index}`,
+      job: specification.job,
       listingId: listingIds[index] ?? "",
       runId: input.runId,
       sourcePositionId: specification.sourcePositionId,
@@ -62,6 +67,7 @@ export async function seedResolvedRun(input: {
     await seedCanonicalResolution({
       batchInputHash: batch.inputHash,
       canonicalSignalHash: input.positions[index]?.canonicalSignalHash ?? "",
+      coordinateKind: input.positions[index]?.coordinateKind,
       position,
       runId: input.runId,
     });
@@ -123,10 +129,18 @@ export async function seedAdvanceableRun(runId: string, listingIds: string[]) {
 }
 
 export async function seedListingMaterials(
-  listings: { listingId: string; sourceReference: string }[]
+  listings: {
+    job?: Partial<InventoryJob>;
+    listingId: string;
+    sourceReference: string;
+  }[]
 ) {
   for (const listing of listings) {
-    const job = jobFixture(listing.listingId, listing.sourceReference);
+    const job = jobFixture(
+      listing.listingId,
+      listing.sourceReference,
+      listing.job
+    );
     const materialJson = serializeInventoryJobMaterial(job);
     // biome-ignore lint/performance/noAwaitInLoops: Exact listing material fixtures establish the source watermark before the run is sealed.
     const materialHash = await inventoryJobMaterialHash(job);
@@ -162,12 +176,13 @@ export async function seedListingMaterials(
 
 export async function seedPosition(input: {
   itemId: string;
+  job?: Partial<InventoryJob>;
   listingId: string;
   runId: string;
   sourcePositionId: string;
   sourceReference: string;
 }) {
-  const job = jobFixture(input.listingId, input.sourceReference);
+  const job = jobFixture(input.listingId, input.sourceReference, input.job);
   const materialJson = serializeInventoryJobMaterial(job);
   const materialHash = await inventoryJobMaterialHash(job);
   await testEnv.DB.batch([

@@ -59,6 +59,7 @@ function candidateLocation(row: CandidateLocationRow): CandidateLocation {
 }
 
 function publicLocation(row: CandidateLocationRow) {
+  const coordinateKind = publicCoordinateKind(row.coordinate_kind);
   if (
     !(
       row.country_code &&
@@ -66,7 +67,7 @@ function publicLocation(row: CandidateLocationRow) {
       row.longitude !== null &&
       (row.role === "worksite" || row.role === "applicant_area") &&
       ["address", "countrywide", "locality", "region"].includes(row.scope) &&
-      (row.coordinate_kind === "point" || row.coordinate_kind === "centroid")
+      coordinateKind !== null
     )
   ) {
     throw new CandidateInputError(
@@ -78,7 +79,7 @@ function publicLocation(row: CandidateLocationRow) {
     bounds: row.bounds_json
       ? (JSON.parse(row.bounds_json) as [number, number, number, number])
       : null,
-    coordinateKind: row.coordinate_kind,
+    coordinateKind,
     coordinates: { latitude: row.latitude, longitude: row.longitude },
     countryCode: row.country_code,
     displayName: row.display_name,
@@ -88,6 +89,22 @@ function publicLocation(row: CandidateLocationRow) {
     role: row.role === "applicant_area" ? "applicantArea" : "worksite",
     scope: row.scope as "address" | "countrywide" | "locality" | "region",
   } as const;
+}
+
+/**
+ * Sealed resolutions written before the coordinate-kind normalization carry
+ * the provider-internal `provider_point` label for the provider-supplied
+ * coordinates of a finite feature. The public vocabulary calls that a
+ * `point`; resolution rows are immutable, so the value maps forward here.
+ */
+function publicCoordinateKind(kind: string) {
+  if (kind === "point" || kind === "provider_point") {
+    return "point" as const;
+  }
+  if (kind === "centroid") {
+    return "centroid" as const;
+  }
+  return null;
 }
 
 export function publicWorkplaceType(rows: CandidateLocationRow[]) {
@@ -283,18 +300,40 @@ function publicDate(value: string | null, fields: string[], field: string) {
     : null;
 }
 
+/**
+ * A `JobPosting` page needs the posting date the source board published and
+ * a finite worksite (or, for remote work, at least one applicant area whose
+ * countries can express `applicantLocationRequirements`).
+ */
+export function jobPostingLocationEligible(
+  rows: CandidateLocationRow[],
+  workplaceType: "hybrid" | "onsite" | "remote"
+) {
+  if (workplaceType === "remote") {
+    return rows.some((row) => row.role === "applicant_area");
+  }
+  return rows.some(
+    (row) => row.role === "worksite" && row.scope !== "countrywide"
+  );
+}
+
 export function candidateDecision(input: {
+  datePostedPublished: boolean;
   decisionVersion: number;
-  jobPostingEligible: boolean;
+  jobPostingLocationEligible: boolean;
   predecessorVersion: number | null;
   publishable: boolean;
   routeAvailable: boolean;
 }): PublicProjectionCandidate["decision"] {
+  const jobPostingEligible =
+    input.publishable &&
+    input.datePostedPublished &&
+    input.jobPostingLocationEligible;
   return {
     browseEligible: input.publishable,
     contentReviewState: "approved",
     decisionVersion: input.decisionVersion,
-    jobPostingEligible: input.publishable && input.jobPostingEligible,
+    jobPostingEligible,
     organicIndexEligible: input.publishable,
     predecessorVersion: input.predecessorVersion,
     privacyState: "passed",
@@ -302,9 +341,13 @@ export function candidateDecision(input: {
     reasonCodes: input.publishable
       ? [
           "candidate_published",
-          ...(input.jobPostingEligible
-            ? ["job_posting_eligible"]
+          ...(jobPostingEligible ? ["job_posting_eligible"] : []),
+          ...(input.datePostedPublished
+            ? []
             : ["job_posting_original_date_missing"]),
+          ...(input.jobPostingLocationEligible
+            ? []
+            : ["job_posting_location_not_finite"]),
         ]
       : [
           input.routeAvailable

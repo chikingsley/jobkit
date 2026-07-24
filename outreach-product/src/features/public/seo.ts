@@ -56,7 +56,7 @@ export function publicJobDetailHead(result: unknown, requestedPath: string) {
     { content: "website", property: "og:type" },
     { "script:ld+json": breadcrumbList(detailBreadcrumbs(job)) },
   ];
-  if (indexable && result.jobPostingEligible) {
+  if (indexable && result.jobPostingEligible && job.datePosted) {
     metadata.push({ "script:ld+json": jobPosting(job) });
   }
   return {
@@ -216,7 +216,6 @@ function breadcrumbList(crumbs: Array<{ name: string; path: string }>) {
 }
 
 function jobPosting(job: PublicJobDetailResponse) {
-  const location = primaryLocation(job);
   const posting: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
@@ -241,21 +240,16 @@ function jobPosting(job: PublicJobDetailResponse) {
   if (job.validThrough) {
     posting.validThrough = job.validThrough.value;
   }
-  if (location) {
-    posting.jobLocation = {
-      "@type": "Place",
-      address: {
-        "@type": "PostalAddress",
-        addressCountry: location.countryCode,
-        ...(location.locality ? { addressLocality: location.locality } : {}),
-        ...(location.region ? { addressRegion: location.region } : {}),
-        ...(location.postalCode ? { postalCode: location.postalCode } : {}),
-      },
-    };
-  }
-  if (job.workplaceType === "remote") {
+  const applicantAreas =
+    job.workplaceType === "remote" ? remoteApplicantAreas(job) : [];
+  if (applicantAreas.length > 0) {
     posting.jobLocationType = "TELECOMMUTE";
-    posting.applicantLocationRequirements = remoteApplicantAreas(job);
+    posting.applicantLocationRequirements = applicantAreas;
+  } else {
+    const places = worksitePlaces(job);
+    if (places.length > 0) {
+      posting.jobLocation = places.length === 1 ? places[0] : places;
+    }
   }
   const baseSalary = schemaBaseSalary(job);
   if (baseSalary) {
@@ -264,14 +258,41 @@ function jobPosting(job: PublicJobDetailResponse) {
   return posting;
 }
 
+function worksitePlaces(job: PublicJobDetailResponse) {
+  return job.locations
+    .filter(({ role, scope }) => role === "worksite" && scope !== "countrywide")
+    .map((location) => ({
+      "@type": "Place",
+      address: {
+        "@type": "PostalAddress",
+        addressCountry: location.countryCode,
+        ...(location.locality ? { addressLocality: location.locality } : {}),
+        ...(location.region ? { addressRegion: location.region } : {}),
+        ...(location.postalCode ? { postalCode: location.postalCode } : {}),
+      },
+    }));
+}
+
+const SALARY_UNIT_TEXT: Record<string, string> = {
+  day: "DAY",
+  hour: "HOUR",
+  month: "MONTH",
+  week: "WEEK",
+  year: "YEAR",
+};
+
 function schemaBaseSalary(job: PublicJobDetailResponse) {
   const amount = job.compensation?.amount;
   if (!amount) {
     return null;
   }
+  const unitText = SALARY_UNIT_TEXT[amount.period];
+  if (!unitText) {
+    return null;
+  }
   const value: Record<string, unknown> = {
     "@type": "QuantitativeValue",
-    unitText: amount.period.toUpperCase(),
+    unitText,
   };
   if (
     amount.minimum !== null &&
@@ -302,9 +323,9 @@ function remoteApplicantAreas(job: PublicJobDetailResponse) {
         .map(({ countryCode }) => countryCode)
     ),
   ];
-  return countryCodes.map((name) => ({
+  return countryCodes.map((code) => ({
     "@type": "Country",
-    name,
+    name: countryName(code),
   }));
 }
 

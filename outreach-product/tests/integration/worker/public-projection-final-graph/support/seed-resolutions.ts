@@ -26,6 +26,7 @@ export async function finishD2(runId: string) {
 export async function seedCanonicalResolution(input: {
   batchInputHash: string;
   canonicalSignalHash: string;
+  coordinateKind?: string;
   position: PositionFixture;
   runId: string;
 }) {
@@ -148,13 +149,14 @@ export async function seedCanonicalResolution(input: {
         'city','worksite','locality','onsite','GE','resolved',
         'location_exact_provider_match','mapbox-geocoding-v6',
         'place.tbilisi','cloc_fixture_tbilisi','Tbilisi, Georgia','GE','',
-        'Tbilisi','',41.7151,44.8271,NULL,'place','centroid',
+        'Tbilisi','',41.7151,44.8271,NULL,'place',?,
         'mapbox-location-resolver-v1-us',?,?,0,0,?,?,?,?,?,?,?)`
     ).bind(
       locationResolutionId,
       input.runId,
       input.position.itemId,
       input.position.inputHash,
+      input.coordinateKind ?? "centroid",
       await fixtureHash(`map-request:${input.position.sourcePositionId}`),
       await fixtureHash(`map-response:${input.position.sourcePositionId}`),
       await fixtureHash(

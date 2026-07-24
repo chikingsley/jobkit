@@ -165,4 +165,134 @@ describe("public job SEO", () => {
       )
     ).toBeFalse();
   });
+
+  it("covers every Google-required JobPosting property for a worksite job", () => {
+    const job = PublicJobDetailResponseSchema.parse({
+      ...commonJob,
+      descriptionHtml: "<p>Teach adult learners in Tbilisi.</p>",
+      schemaVersion: "public-job-detail-v1",
+      status: "active",
+    });
+    const posting = jobPostingFromHead(job);
+    expect(posting).toMatchObject({
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      datePosted: "2026-07-20",
+      description: "<p>Teach adult learners in Tbilisi.</p>",
+      employmentType: ["FULL_TIME"],
+      hiringOrganization: {
+        "@type": "Organization",
+        name: "Example School",
+      },
+      jobLocation: {
+        "@type": "Place",
+        address: {
+          "@type": "PostalAddress",
+          addressCountry: "GE",
+          addressLocality: "Tbilisi",
+        },
+      },
+      title: "English Teacher",
+    });
+    expect(posting.baseSalary).toMatchObject({
+      "@type": "MonetaryAmount",
+      currency: "USD",
+      value: { "@type": "QuantitativeValue", unitText: "HOUR" },
+    });
+    expect(posting).not.toHaveProperty("directApply");
+    expect(posting).not.toHaveProperty("validThrough");
+  });
+
+  it("emits applicant countries without a physical place for remote jobs", () => {
+    const job = PublicJobDetailResponseSchema.parse({
+      ...commonJob,
+      descriptionHtml: "<p>Teach online learners anywhere in Georgia.</p>",
+      locations: [
+        {
+          bounds: null,
+          coordinateKind: "centroid",
+          coordinates: { latitude: 42.3154, longitude: 43.3569 },
+          countryCode: "GE",
+          displayName: "Georgia",
+          locality: null,
+          postalCode: null,
+          region: null,
+          role: "applicantArea",
+          scope: "countrywide",
+        },
+      ],
+      schemaVersion: "public-job-detail-v1",
+      status: "active",
+      workplaceType: "remote",
+    });
+    const posting = jobPostingFromHead(job);
+    expect(posting.jobLocationType).toBe("TELECOMMUTE");
+    expect(posting.applicantLocationRequirements).toEqual([
+      { "@type": "Country", name: "Georgia" },
+    ]);
+    expect(posting).not.toHaveProperty("jobLocation");
+  });
+
+  it("omits baseSalary rather than misstating a fortnight pay period", () => {
+    const job = PublicJobDetailResponseSchema.parse({
+      ...commonJob,
+      compensation: {
+        amount: {
+          currency: "USD",
+          maximum: 1400,
+          minimum: 1200,
+          period: "fortnight",
+          qualifier: "range",
+          taxBasis: "gross",
+        },
+        hourlyUsd: null,
+        kind: "amount",
+      },
+      descriptionHtml: "<p>Teach adult learners in Tbilisi.</p>",
+      schemaVersion: "public-job-detail-v1",
+      status: "active",
+    });
+    expect(jobPostingFromHead(job)).not.toHaveProperty("baseSalary");
+  });
+
+  it("withholds JobPosting when the posting date is unknown", () => {
+    const job = PublicJobDetailResponseSchema.parse({
+      ...commonJob,
+      datePosted: null,
+      descriptionHtml: "<p>Teach adult learners in Tbilisi.</p>",
+      schemaVersion: "public-job-detail-v1",
+      status: "active",
+    });
+    const head = publicJobDetailHead(
+      { data: job, jobPostingEligible: true, kind: "success", noindex: false },
+      job.canonicalPath
+    );
+    expect(
+      head.meta.some(
+        (entry) =>
+          "script:ld+json" in entry &&
+          (entry["script:ld+json"] as { "@type"?: string })["@type"] ===
+            "JobPosting"
+      )
+    ).toBeFalse();
+  });
 });
+
+function jobPostingFromHead(
+  job: ReturnType<typeof PublicJobDetailResponseSchema.parse>
+) {
+  const head = publicJobDetailHead(
+    { data: job, jobPostingEligible: true, kind: "success", noindex: false },
+    job.canonicalPath
+  );
+  const entry = (head.meta as Record<string, unknown>[]).find(
+    (value) =>
+      "script:ld+json" in value &&
+      (value["script:ld+json"] as { "@type"?: string })["@type"] ===
+        "JobPosting"
+  );
+  if (!entry) {
+    throw new Error("The eligible detail head emitted no JobPosting");
+  }
+  return entry["script:ld+json"] as Record<string, unknown>;
+}

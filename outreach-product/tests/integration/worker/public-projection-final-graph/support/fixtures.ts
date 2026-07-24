@@ -2,7 +2,18 @@ import type { InventoryJob } from "../../../../../src/features/inventory/schema"
 import { canonicalSha256 } from "../../../../../worker/services/public-projection/hash";
 import { testEnv, timestamp } from "./model";
 
-export function jobFixture(id: string, sourceReference: string): InventoryJob {
+export function jobFixture(
+  id: string,
+  sourceReference: string,
+  overrides: Partial<InventoryJob> = {}
+): InventoryJob {
+  return {
+    ...jobFixtureBase(id, sourceReference),
+    ...overrides,
+  };
+}
+
+function jobFixtureBase(id: string, sourceReference: string): InventoryJob {
   return {
     applyEmail: "jobs@example.test",
     applyUrl: "https://example.test/apply",

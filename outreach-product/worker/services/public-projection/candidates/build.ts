@@ -7,6 +7,7 @@ import {
   candidateSourceMappings,
   candidateVersion,
   candidateViews,
+  jobPostingLocationEligible,
   publicCompensation,
   publicFields,
   publicJobId,
@@ -137,8 +138,13 @@ export async function buildProjectionCandidate(
     applicationRouteId: route?.id ?? null,
     contractVersion: 1 as const,
     decision: candidateDecision({
+      datePostedPublished:
+        datePosted !== null && fieldsUsed.includes("date_posted"),
       decisionVersion,
-      jobPostingEligible: false,
+      jobPostingLocationEligible: jobPostingLocationEligible(
+        locations,
+        workplaceType
+      ),
       predecessorVersion: live?.current_decision_version ?? null,
       publishable,
       routeAvailable: route !== null,

@@ -46,7 +46,9 @@ export function readReviewJob(db: D1Database, userId: string, jobId: string) {
                   SELECT json_object(
                     'bounds',CASE WHEN resolution.bounds_json IS NULL
                       THEN NULL ELSE json(resolution.bounds_json) END,
-                    'coordinateKind',resolution.coordinate_kind,
+                    'coordinateKind',CASE resolution.coordinate_kind
+                      WHEN 'provider_point' THEN 'point'
+                      ELSE resolution.coordinate_kind END,
                     'countryCode',resolution.country_code,
                     'displayName',resolution.display_name,
                     'latitude',resolution.latitude,
