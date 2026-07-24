@@ -1,39 +1,37 @@
+import { and, desc, eq } from "drizzle-orm";
 import type {
   QualificationClaim,
   QualificationClaimAnswer,
   QualificationClaims,
 } from "../../src/features/matching/claims";
-
-interface ClaimRow {
-  answer: QualificationClaimAnswer;
-  claim_key: string;
-  kind: string;
-  label: string;
-  updated_at: string;
-}
+import { excluded, getDb } from "../db/client";
+import { userQualificationClaims } from "../db/schema/user-profile";
 
 export async function readQualificationClaims(
   db: D1Database,
   userId: string
 ): Promise<QualificationClaims> {
-  const rows = await db
-    .prepare(
-      `SELECT claim_key,label,kind,answer,updated_at
-         FROM user_qualification_claims
-        WHERE user_id=? ORDER BY updated_at DESC`
-    )
-    .bind(userId)
-    .all<ClaimRow>();
+  const rows = await getDb(db)
+    .select({
+      answer: userQualificationClaims.answer,
+      claimKey: userQualificationClaims.claimKey,
+      kind: userQualificationClaims.kind,
+      label: userQualificationClaims.label,
+      updatedAt: userQualificationClaims.updatedAt,
+    })
+    .from(userQualificationClaims)
+    .where(eq(userQualificationClaims.userId, userId))
+    .orderBy(desc(userQualificationClaims.updatedAt));
   return Object.fromEntries(
-    rows.results.map((row) => {
+    rows.map((row) => {
       const claim: QualificationClaim = {
-        answer: row.answer,
-        claimKey: row.claim_key,
+        answer: row.answer as QualificationClaimAnswer,
+        claimKey: row.claimKey,
         kind: row.kind,
         label: row.label,
-        updatedAt: row.updated_at,
+        updatedAt: row.updatedAt,
       };
-      return [row.claim_key, claim];
+      return [row.claimKey, claim];
     })
   );
 }
@@ -49,33 +47,41 @@ export async function writeQualificationClaim(
   }
 ): Promise<QualificationClaim | null> {
   if (input.answer === null) {
-    await db
-      .prepare(
-        "DELETE FROM user_qualification_claims WHERE user_id=? AND claim_key=?"
+    await getDb(db)
+      .delete(userQualificationClaims)
+      .where(
+        and(
+          eq(userQualificationClaims.userId, userId),
+          eq(userQualificationClaims.claimKey, input.claimKey)
+        )
       )
-      .bind(userId, input.claimKey)
       .run();
     return null;
   }
   const timestamp = new Date().toISOString();
-  await db
-    .prepare(
-      `INSERT INTO user_qualification_claims
-        (user_id,claim_key,label,kind,answer,created_at,updated_at)
-       VALUES (?,?,?,?,?,?,?)
-       ON CONFLICT(user_id,claim_key) DO UPDATE SET
-         label=excluded.label,kind=excluded.kind,answer=excluded.answer,
-         updated_at=excluded.updated_at`
-    )
-    .bind(
+  await getDb(db)
+    .insert(userQualificationClaims)
+    .values({
+      answer: input.answer,
+      claimKey: input.claimKey,
+      createdAt: timestamp,
+      kind: input.kind,
+      label: input.label,
+      updatedAt: timestamp,
       userId,
-      input.claimKey,
-      input.label,
-      input.kind,
-      input.answer,
-      timestamp,
-      timestamp
-    )
+    })
+    .onConflictDoUpdate({
+      set: {
+        answer: excluded(userQualificationClaims.answer),
+        kind: excluded(userQualificationClaims.kind),
+        label: excluded(userQualificationClaims.label),
+        updatedAt: excluded(userQualificationClaims.updatedAt),
+      },
+      target: [
+        userQualificationClaims.userId,
+        userQualificationClaims.claimKey,
+      ],
+    })
     .run();
   return {
     answer: input.answer,

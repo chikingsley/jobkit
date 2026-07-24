@@ -1,9 +1,12 @@
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import {
   type MessageShape,
   type MessageTemplateKey,
   messageTemplateKeyFor,
 } from "../ai/application-message-policy";
+import { getDb } from "../db/client";
+import { userMessageFoundations } from "../db/schema/message-style";
 import type { ApplicationMessageRoute } from "../schemas";
 
 const MessageTemplatesSchema = z.object({
@@ -16,13 +19,6 @@ const MessageTemplatesSchema = z.object({
 });
 
 const VoiceRulesSchema = z.array(z.string().min(1));
-
-interface MessageFoundationRow {
-  id: string;
-  templates_json: string;
-  version: number;
-  voice_rules_json: string;
-}
 
 export interface ActiveMessageFoundation {
   approvedTemplate: string;
@@ -38,27 +34,32 @@ export async function readActiveMessageFoundation(
   route: ApplicationMessageRoute,
   shape: MessageShape
 ): Promise<ActiveMessageFoundation | null> {
-  const row = await db
-    .prepare(
-      `SELECT id,version,voice_rules_json,templates_json
-         FROM user_message_foundations
-        WHERE user_id=? AND status='active'
-        LIMIT 1`
+  const row = await getDb(db)
+    .select({
+      id: userMessageFoundations.id,
+      templatesJson: userMessageFoundations.templatesJson,
+      version: userMessageFoundations.version,
+      voiceRulesJson: userMessageFoundations.voiceRulesJson,
+    })
+    .from(userMessageFoundations)
+    .where(
+      and(
+        eq(userMessageFoundations.userId, userId),
+        eq(userMessageFoundations.status, "active")
+      )
     )
-    .bind(userId)
-    .first<MessageFoundationRow>();
+    .limit(1)
+    .get();
   if (!row) {
     return null;
   }
-  const templates = MessageTemplatesSchema.parse(
-    JSON.parse(row.templates_json)
-  );
+  const templates = MessageTemplatesSchema.parse(JSON.parse(row.templatesJson));
   const templateKey = messageTemplateKeyFor(route, shape);
   return {
     approvedTemplate: templates[templateKey],
     foundationId: row.id,
     foundationVersion: row.version,
     templateKey,
-    voiceRules: VoiceRulesSchema.parse(JSON.parse(row.voice_rules_json)),
+    voiceRules: VoiceRulesSchema.parse(JSON.parse(row.voiceRulesJson)),
   };
 }
