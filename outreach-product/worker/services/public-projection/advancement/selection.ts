@@ -8,13 +8,17 @@ import {
 } from "../final-graph";
 import { sha256Hex } from "../hash";
 import type { ActiveRunRow, SelectionRow } from "./model";
+import {
+  claimableListingItemSql,
+  finalDuplicateSealExistsSql,
+} from "./stage-sql";
 import { failRun } from "./stages";
 
 export function finalDuplicateSealExists(db: D1Database, runId: string) {
   return db
     .prepare(
-      `SELECT 1 present FROM public_projection_final_duplicate_seals
-        WHERE run_id=? LIMIT 1`
+      `SELECT ${finalDuplicateSealExistsSql("run")} present
+         FROM public_projection_runs run WHERE run.id=? LIMIT 1`
     )
     .bind(runId)
     .first<{ present: number }>()
@@ -47,123 +51,6 @@ export async function finalizeRunDuplicateGraph(
     await failRun(db, runId, error.code, timestamp);
     return { errorCode: error.code, finalGraph: null };
   }
-}
-
-export function nextActiveRun(
-  db: D1Database,
-  canonicalResolutionEnabled: boolean
-) {
-  return db
-    .prepare(
-      `SELECT id,scope_json,selection_cursor,selection_complete,
-              policy_heads_hash,source_watermark_json,status
-         FROM public_projection_runs
-        WHERE status='queued'
-           OR (
-             status='running'
-             AND (
-               selection_complete=0
-               OR EXISTS (
-                 SELECT 1 FROM public_projection_listing_items item
-                  WHERE item.run_id=public_projection_runs.id
-                    AND item.status='queued'
-                    AND item.attempt_count<item.max_attempts
-                    AND item.stage IN (
-                      'selected','prerequisites','source_positions'
-                    )
-               )
-               OR (
-                 ?=1
-                 AND EXISTS (
-                   SELECT 1 FROM public_projection_position_items item
-                    JOIN public_projection_duplicate_batch_members member
-                      ON member.run_id=item.run_id
-                     AND member.position_item_id=item.id
-                    JOIN public_projection_duplicate_batches batch
-                      ON batch.run_id=member.run_id
-                   WHERE item.run_id=public_projection_runs.id
-                     AND item.stage='canonical_resolution'
-                     AND item.status='queued'
-                     AND item.attempt_count<item.max_attempts
-                     AND batch.canonical_identity_state='pending'
-                     AND NOT EXISTS (
-                       SELECT 1 FROM public_projection_resolution_seals seal
-                        WHERE seal.run_id=item.run_id
-                          AND seal.position_item_id=item.id
-                     )
-                 )
-               )
-               OR EXISTS (
-                 SELECT 1 FROM public_projection_position_items item
-                  WHERE item.run_id=public_projection_runs.id
-                    AND item.status='queued'
-                    AND item.attempt_count<item.max_attempts
-                    AND item.stage='identity'
-               )
-               OR (
-                 selection_complete=1
-                 AND NOT EXISTS (
-                   SELECT 1 FROM public_projection_duplicate_batches batch
-                    WHERE batch.run_id=public_projection_runs.id
-                 )
-                 AND NOT EXISTS (
-                   SELECT 1 FROM public_projection_listing_items item
-                    WHERE item.run_id=public_projection_runs.id
-                      AND item.status IN (
-                        'queued','processing','waiting_analysis'
-                      )
-                 )
-                 AND NOT EXISTS (
-                   SELECT 1 FROM public_projection_position_items item
-                    WHERE item.run_id=public_projection_runs.id
-                      AND item.stage='identity'
-                      AND item.status IN (
-                        'queued','processing','waiting_analysis'
-                      )
-                 )
-               )
-               OR (
-                 selection_complete=1
-                 AND EXISTS (
-                   SELECT 1 FROM public_projection_duplicate_batches batch
-                    WHERE batch.run_id=public_projection_runs.id
-                      AND batch.canonical_identity_state='pending'
-                 )
-                 AND NOT EXISTS (
-                   SELECT 1
-                     FROM public_projection_duplicate_batch_members member
-                    WHERE member.run_id=public_projection_runs.id
-                      AND NOT EXISTS (
-                        SELECT 1 FROM public_projection_resolution_seals seal
-                         WHERE seal.run_id=member.run_id
-                           AND seal.position_item_id=member.position_item_id
-                      )
-                 )
-                 AND NOT EXISTS (
-                   SELECT 1
-                     FROM public_projection_final_duplicate_seals seal
-                    WHERE seal.run_id=public_projection_runs.id
-                 )
-               )
-               OR (
-                 EXISTS (
-                   SELECT 1 FROM public_projection_final_duplicate_seals seal
-                    WHERE seal.run_id=public_projection_runs.id
-                 )
-                 AND NOT EXISTS (
-                   SELECT 1 FROM public_projection_candidate_seals seal
-                    WHERE seal.run_id=public_projection_runs.id
-                 )
-               )
-             )
-           )
-        ORDER BY updated_at,
-                 CASE WHEN status='queued' THEN 0 ELSE 1 END,
-                 requested_at,id
-        LIMIT 1`
-    )
-    .bind(canonicalResolutionEnabled ? 1 : 0)
-    .first<ActiveRunRow>();
 }
 
 export async function selectListingPage(
@@ -293,9 +180,10 @@ export async function advanceSelectedListings(
               ),
               updated_at=?
         WHERE id IN (
-          SELECT id FROM public_projection_listing_items
-           WHERE run_id=? AND status='queued' AND stage='selected'
-           ORDER BY listing_id,id LIMIT ?
+          SELECT item.id FROM public_projection_listing_items item
+           WHERE item.run_id=? AND item.stage='selected'
+             AND ${claimableListingItemSql("item")}
+           ORDER BY item.listing_id,item.id LIMIT ?
         )
       RETURNING id`
     )

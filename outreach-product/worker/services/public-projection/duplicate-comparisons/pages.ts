@@ -7,6 +7,11 @@ import {
   storeDuplicateComparisonPage,
   storeDuplicateMemberPage,
 } from "../../../repositories/public-projection-duplicate-comparisons";
+import {
+  activeIdentityPositionItemSql,
+  activeListingItemSql,
+  stableCanonicalResolutionPositionSql,
+} from "../advancement/stage-sql";
 import { canonicalJson, compareUtf8Bytes } from "../hash";
 import {
   candidateFromRow,
@@ -167,18 +172,18 @@ export function readStableBoundary(db: D1Database, runId: string) {
     .prepare(
       `SELECT run.id run_id,run.mode,run.status,run.selection_complete,
               (SELECT COUNT(*) FROM public_projection_listing_items item
-                WHERE item.run_id=run.id AND item.status IN (
-                  'queued','processing','waiting_analysis'
-                )) active_listing_count,
-              (SELECT COUNT(*) FROM public_projection_position_items item
-                WHERE item.run_id=run.id AND item.stage='identity'
-                  AND item.status IN (
-                    'queued','processing','waiting_analysis'
-                  )) active_identity_count,
+                WHERE item.run_id=run.id
+                  AND ${activeListingItemSql("item")}) active_listing_count,
               (SELECT COUNT(*) FROM public_projection_position_items item
                 WHERE item.run_id=run.id
-                  AND item.stage='canonical_resolution'
-                  AND item.status='queued') canonical_count
+                  AND ${activeIdentityPositionItemSql(
+                    "item"
+                  )}) active_identity_count,
+              (SELECT COUNT(*) FROM public_projection_position_items item
+                WHERE item.run_id=run.id
+                  AND ${stableCanonicalResolutionPositionSql(
+                    "item"
+                  )}) canonical_count
          FROM public_projection_runs run WHERE run.id=? LIMIT 1`
     )
     .bind(runId)
@@ -209,8 +214,8 @@ async function readStablePositionPage(
            ON version.listing_id=listing_item.listing_id
           AND version.material_version=listing_item.material_version
          JOIN job_listings listing ON listing.id=listing_item.listing_id
-        WHERE item.run_id=? AND item.stage='canonical_resolution'
-          AND item.status='queued' AND item.id>?
+        WHERE item.run_id=? AND ${stableCanonicalResolutionPositionSql("item")}
+          AND item.id>?
         ORDER BY item.id LIMIT ?`
     )
     .bind(runId, cursor, PUBLIC_DUPLICATE_PAGE_SIZE + 1)
