@@ -11,6 +11,9 @@ interface TestEnv extends Env {
   TEST_MIGRATIONS: D1Migration[];
 }
 
+const CANONICAL_LINK_PATTERN = /<link[^>]*rel="canonical"[^>]*>/u;
+const OG_URL_PATTERN = /<meta[^>]*property="og:url"[^>]*>/u;
+
 const testEnv = env as TestEnv;
 
 beforeAll(async () => {
@@ -47,16 +50,14 @@ describe("canonical origin", () => {
   it("emits the canonical link and OG URL on public documents", async () => {
     const response = await dispatch("https://jobkit.peacockery.studio/jobs");
     const html = await response.text();
-    const canonicalLink = html.match(/<link[^>]*rel="canonical"[^>]*>/u)?.[0];
-    const ogUrl = html.match(/<meta[^>]*property="og:url"[^>]*>/u)?.[0];
+    const canonicalLink = html.match(CANONICAL_LINK_PATTERN)?.[0];
+    const ogUrl = html.match(OG_URL_PATTERN)?.[0];
 
     expect(response.status).toBe(200);
     expect(canonicalLink).toContain(
       'href="https://jobkit.peacockery.studio/jobs"'
     );
-    expect(ogUrl).toContain(
-      'content="https://jobkit.peacockery.studio/jobs"'
-    );
+    expect(ogUrl).toContain('content="https://jobkit.peacockery.studio/jobs"');
   });
 
   it("accepts auth traffic on the canonical origin", async () => {
