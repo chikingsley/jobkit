@@ -3,13 +3,15 @@ import {
   DEFAULT_OPENCODE_MODEL,
   resolveAgentEngine,
   resolveEngineModel,
+  resolveLocalModel,
   resolveOpencodeModel,
 } from "../../cli/lib/agent-engine";
+import { DEFAULT_LOCAL_LLM_MODEL } from "../../cli/lib/local-agent";
+import { finalAssistantText } from "../../cli/lib/opencode-agent";
 import {
   extractJsonObjectText,
-  finalAssistantText,
-  opencodeStructuredPrompt,
-} from "../../cli/lib/opencode-agent";
+  structuredJsonPrompt,
+} from "../../cli/lib/structured-json";
 
 const ENGINE_ERROR_PATTERN = /JOBKIT_AGENT_ENGINE/u;
 const VALID_JSON_PATTERN = /valid JSON/u;
@@ -24,6 +26,12 @@ describe("resolveAgentEngine", () => {
   it("selects opencode case-insensitively", () => {
     expect(resolveAgentEngine({ JOBKIT_AGENT_ENGINE: " OpenCode " })).toBe(
       "opencode"
+    );
+  });
+
+  it("selects the local engine", () => {
+    expect(resolveAgentEngine({ JOBKIT_AGENT_ENGINE: " Local " })).toBe(
+      "local"
     );
   });
 
@@ -102,6 +110,54 @@ describe("resolveOpencodeModel", () => {
   });
 });
 
+describe("resolveLocalModel", () => {
+  it("serves every task type from the single local model by default", () => {
+    expect(resolveLocalModel("job.match_facts", {})).toBe(
+      DEFAULT_LOCAL_LLM_MODEL
+    );
+    expect(resolveLocalModel("application.message", {})).toBe(
+      DEFAULT_LOCAL_LLM_MODEL
+    );
+  });
+
+  it("honors the default model environment variable", () => {
+    expect(
+      resolveLocalModel("job.match_facts", {
+        JOBKIT_LOCAL_LLM_MODEL: " qwen4-32b ",
+      })
+    ).toBe("qwen4-32b");
+  });
+
+  it("honors JSON overrides including the country sweep wildcard", () => {
+    const env = {
+      JOBKIT_LOCAL_LLM_MODELS: JSON.stringify({
+        "country_sweep.*": "qwen4-32b",
+        "job.match_facts": "qwen35-9b-instruct",
+      }),
+    };
+    expect(resolveLocalModel("job.match_facts", env)).toBe(
+      "qwen35-9b-instruct"
+    );
+    expect(resolveLocalModel("country_sweep.contacts", env)).toBe("qwen4-32b");
+    expect(resolveLocalModel("profile.import", env)).toBe(
+      DEFAULT_LOCAL_LLM_MODEL
+    );
+  });
+
+  it("rejects malformed override JSON", () => {
+    expect(() =>
+      resolveLocalModel("job.match_facts", {
+        JOBKIT_LOCAL_LLM_MODELS: "not-json",
+      })
+    ).toThrow(VALID_JSON_PATTERN);
+    expect(() =>
+      resolveLocalModel("job.match_facts", {
+        JOBKIT_LOCAL_LLM_MODELS: '{"job.match_facts":""}',
+      })
+    ).toThrow(NON_EMPTY_MODEL_PATTERN);
+  });
+});
+
 describe("resolveEngineModel", () => {
   it("keeps the envelope model for codex", () => {
     expect(
@@ -113,6 +169,12 @@ describe("resolveEngineModel", () => {
     expect(
       resolveEngineModel("opencode", "job.match_facts", "gpt-5.6-luna", {})
     ).toBe("opencode-go/deepseek-v4-flash");
+  });
+
+  it("replaces the envelope model for the local engine", () => {
+    expect(
+      resolveEngineModel("local", "job.match_facts", "gpt-5.6-luna", {})
+    ).toBe(DEFAULT_LOCAL_LLM_MODEL);
   });
 });
 
@@ -159,9 +221,9 @@ describe("extractJsonObjectText", () => {
   });
 });
 
-describe("opencodeStructuredPrompt", () => {
+describe("structuredJsonPrompt", () => {
   it("embeds the task prompt and the output schema", () => {
-    const prompt = opencodeStructuredPrompt({
+    const prompt = structuredJsonPrompt({
       outputSchema: { type: "object" },
       prompt: "Extract the facts.",
     });

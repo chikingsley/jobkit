@@ -5,6 +5,8 @@ import {
   type AgentEngine,
   runEngineStructuredAgent,
 } from "../../cli/lib/agent-engine";
+import { DEFAULT_LOCAL_LLM_MODEL } from "../../cli/lib/local-agent";
+import type { StructuredAgentUsage } from "../../cli/lib/structured-agent";
 import {
   JOB_CONTENT_OUTPUT_JSON_SCHEMA,
   JOB_MATCH_FACTS_OUTPUT_JSON_SCHEMA,
@@ -48,6 +50,10 @@ const OPENCODE_DEFAULT_MODELS: ModelConfiguration[] = [
   { effort: "medium", model: "opencode-go/deepseek-v4-flash" },
   { effort: "medium", model: "opencode-go/glm-5.2" },
   { effort: "medium", model: "opencode/ling-3.0-flash-free" },
+];
+
+const LOCAL_DEFAULT_MODELS: ModelConfiguration[] = [
+  { effort: "medium", model: DEFAULT_LOCAL_LLM_MODEL },
 ];
 
 const { values } = parseArgs({
@@ -108,10 +114,14 @@ async function runAnalysis(
   task: AnalysisTask
 ): Promise<AnalysisRunResult> {
   const started = performance.now();
+  let tokens: StructuredAgentUsage | undefined;
   try {
     const raw = await runEngineStructuredAgent(engine, {
       effort: configuration.effort,
       model: configuration.model,
+      onUsage: (usage) => {
+        tokens = usage;
+      },
       outputSchema: schemaFor(task),
       prompt: promptFor(task, analysisCase),
       timeoutMs: 300_000,
@@ -129,6 +139,7 @@ async function runAnalysis(
       rejectedEvidence: missingEvidence,
       supportedEvidence: missingEvidence.length === 0,
       task,
+      tokens,
     };
   } catch (error) {
     return {
@@ -139,6 +150,7 @@ async function runAnalysis(
       model: configuration.model,
       supportedEvidence: false,
       task,
+      tokens,
     };
   }
 }
@@ -242,18 +254,21 @@ function evidenceCount(
 }
 
 function parseEngine(value: string): AgentEngine {
-  if (value === "codex" || value === "opencode") {
+  if (value === "codex" || value === "opencode" || value === "local") {
     return value;
   }
   throw new Error(
-    `engine must be "codex" or "opencode", received ${JSON.stringify(value)}`
+    `engine must be "codex", "opencode", or "local", received ${JSON.stringify(value)}`
   );
 }
 
 function parseModels(raw: string, targetEngine: AgentEngine) {
   if (!raw.trim()) {
-    return targetEngine === "opencode"
-      ? OPENCODE_DEFAULT_MODELS
+    if (targetEngine === "opencode") {
+      return OPENCODE_DEFAULT_MODELS;
+    }
+    return targetEngine === "local"
+      ? LOCAL_DEFAULT_MODELS
       : CODEX_DEFAULT_MODELS;
   }
   return raw.split(",").map((entry): ModelConfiguration => {

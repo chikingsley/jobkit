@@ -1,3 +1,4 @@
+import type { StructuredAgentUsage } from "../../cli/lib/structured-agent";
 import type { JobContentAnalysis } from "../../src/features/jobs/content-analysis";
 import type { JobPositionAnalysis } from "../../src/features/jobs/position-variants";
 import type { JobMatchFacts } from "../../src/features/matching/schema";
@@ -30,4 +31,5 @@ export interface AnalysisRunResult {
   rejectedEvidence?: string[];
   supportedEvidence: boolean;
   task: AnalysisTask;
+  tokens?: StructuredAgentUsage;
 }

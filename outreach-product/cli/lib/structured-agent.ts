@@ -9,10 +9,17 @@ import { captureProcess, filteredEnvironment } from "./agent-process";
 
 export type { StructuredAgentArtifact } from "./agent-artifacts";
 
+export interface StructuredAgentUsage {
+  completionTokens: number;
+  promptTokens: number;
+  totalTokens: number;
+}
+
 export interface StructuredAgentOptions {
   artifacts?: StructuredAgentArtifact[];
   effort: "high" | "low" | "medium" | "xhigh";
   model: string;
+  onUsage?: (usage: StructuredAgentUsage) => void;
   outputSchema: object;
   prompt: string;
   timeoutMs: number;

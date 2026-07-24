@@ -1,11 +1,15 @@
 import { captureProcess } from "./agent-process";
+import {
+  resolveLocalDefaultModel,
+  runLocalStructuredAgent,
+} from "./local-agent";
 import { runOpencodeStructuredAgent } from "./opencode-agent";
 import {
   runStructuredAgent,
   type StructuredAgentOptions,
 } from "./structured-agent";
 
-export type AgentEngine = "codex" | "opencode";
+export type AgentEngine = "codex" | "local" | "opencode";
 
 export const DEFAULT_OPENCODE_MODEL = "opencode-go/deepseek-v4-flash";
 const COUNTRY_SWEEP_OPENCODE_MODEL = "opencode-go/glm-5.2";
@@ -24,11 +28,11 @@ export function resolveAgentEngine(
   env: Record<string, string | undefined> = process.env
 ): AgentEngine {
   const value = (env.JOBKIT_AGENT_ENGINE ?? "codex").trim().toLowerCase();
-  if (value === "codex" || value === "opencode") {
+  if (value === "codex" || value === "opencode" || value === "local") {
     return value;
   }
   throw new Error(
-    `JOBKIT_AGENT_ENGINE must be "codex" or "opencode", received ${JSON.stringify(value)}`
+    `JOBKIT_AGENT_ENGINE must be "codex", "opencode", or "local", received ${JSON.stringify(value)}`
   );
 }
 
@@ -36,12 +40,11 @@ export function resolveOpencodeModel(
   taskType: string,
   env: Record<string, string | undefined> = process.env
 ) {
-  const overrides = parseModelOverrides(env.JOBKIT_OPENCODE_MODELS);
-  const override =
-    overrides[taskType] ??
-    (taskType.startsWith("country_sweep.")
-      ? overrides["country_sweep.*"]
-      : undefined);
+  const override = modelOverrideFor(
+    taskType,
+    env.JOBKIT_OPENCODE_MODELS,
+    "JOBKIT_OPENCODE_MODELS"
+  );
   if (override) {
     return override;
   }
@@ -55,27 +58,51 @@ export function resolveOpencodeModel(
   );
 }
 
+export function resolveLocalModel(
+  taskType: string,
+  env: Record<string, string | undefined> = process.env
+) {
+  return (
+    modelOverrideFor(
+      taskType,
+      env.JOBKIT_LOCAL_LLM_MODELS,
+      "JOBKIT_LOCAL_LLM_MODELS"
+    ) ?? resolveLocalDefaultModel(env)
+  );
+}
+
 export function resolveEngineModel(
   engine: AgentEngine,
   taskType: string,
   envelopeModel: string,
   env: Record<string, string | undefined> = process.env
 ) {
-  return engine === "opencode"
-    ? resolveOpencodeModel(taskType, env)
-    : envelopeModel;
+  if (engine === "opencode") {
+    return resolveOpencodeModel(taskType, env);
+  }
+  if (engine === "local") {
+    return resolveLocalModel(taskType, env);
+  }
+  return envelopeModel;
 }
 
 export function runEngineStructuredAgent(
   engine: AgentEngine,
   options: StructuredAgentOptions
 ) {
-  return engine === "opencode"
-    ? runOpencodeStructuredAgent(options)
-    : runStructuredAgent(options);
+  if (engine === "opencode") {
+    return runOpencodeStructuredAgent(options);
+  }
+  if (engine === "local") {
+    return runLocalStructuredAgent(options);
+  }
+  return runStructuredAgent(options);
 }
 
 export async function engineVersionText(engine: AgentEngine) {
+  if (engine === "local") {
+    return `local ${resolveLocalDefaultModel()}`;
+  }
   const executable = engine === "opencode" ? "opencode" : "codex";
   let result: Awaited<ReturnType<typeof captureProcess>>;
   try {
@@ -97,7 +124,21 @@ export async function engineVersionText(engine: AgentEngine) {
   return engine === "opencode" ? `opencode ${version}` : version;
 }
 
-function parseModelOverrides(raw: string | undefined) {
+function modelOverrideFor(
+  taskType: string,
+  raw: string | undefined,
+  variableName: string
+) {
+  const overrides = parseModelOverrides(raw, variableName);
+  return (
+    overrides[taskType] ??
+    (taskType.startsWith("country_sweep.")
+      ? overrides["country_sweep.*"]
+      : undefined)
+  );
+}
+
+function parseModelOverrides(raw: string | undefined, variableName: string) {
   if (!raw) {
     return {} as Record<string, string>;
   }
@@ -106,20 +147,20 @@ function parseModelOverrides(raw: string | undefined) {
     parsed = JSON.parse(raw);
   } catch (error) {
     throw new Error(
-      `JOBKIT_OPENCODE_MODELS must be valid JSON: ${error instanceof Error ? error.message : String(error)}`,
+      `${variableName} must be valid JSON: ${error instanceof Error ? error.message : String(error)}`,
       { cause: error }
     );
   }
   if (!(parsed && typeof parsed === "object") || Array.isArray(parsed)) {
     throw new Error(
-      "JOBKIT_OPENCODE_MODELS must be a JSON object mapping task types to opencode models"
+      `${variableName} must be a JSON object mapping task types to models`
     );
   }
   const overrides: Record<string, string> = {};
   for (const [key, value] of Object.entries(parsed)) {
     if (typeof value !== "string" || value.trim().length === 0) {
       throw new Error(
-        `JOBKIT_OPENCODE_MODELS entry ${JSON.stringify(key)} must be a non-empty model string`
+        `${variableName} entry ${JSON.stringify(key)} must be a non-empty model string`
       );
     }
     overrides[key] = value.trim();

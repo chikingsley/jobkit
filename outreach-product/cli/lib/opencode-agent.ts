@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { prepareArtifactImages } from "./agent-artifacts";
 import { captureProcess, filteredEnvironment } from "./agent-process";
 import type { StructuredAgentOptions } from "./structured-agent";
+import { extractJsonObjectText, structuredJsonPrompt } from "./structured-json";
 
 // A denied tool call makes `opencode run` exit 2 even when the final
 // assistant message is complete, so exit 2 with usable text is accepted.
@@ -33,7 +34,7 @@ export async function runOpencodeStructuredAgent(
     for (const imagePath of imagePaths) {
       command.push("--file", imagePath);
     }
-    command.push(opencodeStructuredPrompt(options));
+    command.push(structuredJsonPrompt(options));
     const result = await captureProcess("opencode", command, {
       cwd: directory,
       env: opencodeEnvironment(options.webSearch),
@@ -49,19 +50,6 @@ export async function runOpencodeStructuredAgent(
   } finally {
     await rm(directory, { force: true, recursive: true });
   }
-}
-
-export function opencodeStructuredPrompt(options: {
-  outputSchema: object;
-  prompt: string;
-}) {
-  return `${options.prompt}
-
-Respond with exactly one JSON object that validates against the JSON Schema inside <output-schema>. Output only the JSON object itself: no markdown fences, no commentary, no additional text.
-
-<output-schema>
-${JSON.stringify(options.outputSchema)}
-</output-schema>`;
 }
 
 export function finalAssistantText(stdout: string) {
@@ -107,21 +95,6 @@ function parseEvent(line: string) {
     return null;
   }
   return { messageId, text };
-}
-
-const LEADING_FENCE_PATTERN = /^\s*```(?:json)?/u;
-const TRAILING_FENCE_PATTERN = /```\s*$/u;
-
-export function extractJsonObjectText(text: string) {
-  const withoutFences = text
-    .replace(LEADING_FENCE_PATTERN, "")
-    .replace(TRAILING_FENCE_PATTERN, "");
-  const start = withoutFences.indexOf("{");
-  const end = withoutFences.lastIndexOf("}");
-  if (start < 0 || end <= start) {
-    throw new Error("opencode reply contained no JSON object");
-  }
-  return withoutFences.slice(start, end + 1);
 }
 
 function opencodeEnvironment(webSearch: "disabled" | "live") {

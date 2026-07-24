@@ -71,6 +71,27 @@ The fallback engine reaches any model OpenCode can reach, including a locally se
 
 Use `http://localhost:11434/v1` for an Ollama container, `http://localhost:12434/engines/v1` for Docker Model Runner with TCP host access enabled, or any other `/v1/chat/completions` endpoint. When the config restricts `enabled_providers`, the custom provider id must be added to that list. The runner then targets it with `JOBKIT_OPENCODE_DEFAULT_MODEL="local/<model-id>"` or per task type through `JOBKIT_OPENCODE_MODELS`; no code change is involved because model ids are opaque `provider/model` strings to the runner.
 
+## Local direct engine
+
+`JOBKIT_AGENT_ENGINE=local` is a third engine that posts the task prompt straight to a local OpenAI-compatible `/v1/chat/completions` endpoint with no agent harness in between. It exists for small-context local servers: an agent harness injects tens of thousands of tokens of agent context, while the direct call sends only the task prompt plus the appended JSON Schema — the same schema-embedded contract the OpenCode engine uses. Requests run at temperature 0 with `stream: false`.
+
+Configuration comes from the environment:
+
+- `JOBKIT_LOCAL_LLM_BASE_URL` (default `http://127.0.0.1:8030/v1`; a runner on a different machine than the server sets this to the server's tunnel URL plus `/v1`, e.g. `https://llamacpp.peacockery.studio/v1`)
+- `JOBKIT_LOCAL_LLM_MODEL` (default `qwen35-9b-ud-q4-k-xl`)
+- `JOBKIT_LOCAL_LLM_KEY_FILE` (default `/home/simon/docker/llamacpp-llm/secrets/llamacpp-api-key`) — the bearer key is read from this file and never logged
+- `JOBKIT_LOCAL_LLM_MAX_TOKENS` (default `4096`)
+- `JOBKIT_LOCAL_LLM_MODELS` — optional JSON object keyed by task type (`country_sweep.*` wildcard supported) for multi-model rigs
+- `JOBKIT_LOCAL_LLM_THINKING` (default `0`) — requests send `chat_template_kwargs: {"enable_thinking": false}` unless enabled, matching the validated non-thinking benchmark shape; with thinking enabled, hybrid-reasoning models can exhaust the whole token budget on reasoning before any final content appears
+
+Engine behavior:
+
+- Thinking models return `reasoning_content` alongside the final `content`; the runner reads only `content` and never parses reasoning.
+- A completion that exhausts `max_tokens` before emitting final content fails with a distinct truncation error rather than a generic schema failure.
+- Connection failures are retried a bounded number of times with a short delay inside the task timeout, because an idle local server may be mid-restart. The runner never starts the server itself.
+- Image and PDF artifact tasks fail immediately with an engine-unsupported error and stay queued for a vision-capable engine.
+- Worker-side schema, evidence, and invariant revalidation are identical to the other engines.
+
 ## Jina promotion contract
 
 The protected `JINA_API_KEY` may power recorded evaluation variants for Reader, Search, embeddings, reranking, classification, deduplication, and DeepSearch. Each benchmark records input IDs, dataset version, expected output, variant, configuration, raw references, normalized result, timing, usage, errors, and human preference. A Jina capability is promoted independently only when the measured product result justifies the additional dependency. JobKit discloses the active provider for any promoted capability.
