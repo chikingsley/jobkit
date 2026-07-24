@@ -4,11 +4,11 @@ import {
   DEFAULT_LOCAL_LLM_KEY_FILE,
   DEFAULT_LOCAL_LLM_MAX_TOKENS,
   DEFAULT_LOCAL_LLM_MODEL,
-  extractLocalCompletion,
   resolveLocalAgentConfig,
   resolveLocalDefaultModel,
   runLocalStructuredAgent,
 } from "../../cli/lib/local-agent";
+import { extractCompletion as extractLocalCompletion } from "../../src/model/openai-http";
 
 const POSITIVE_INTEGER_PATTERN = /positive integer/u;
 const NO_CHOICES_PATTERN = /no choices/u;

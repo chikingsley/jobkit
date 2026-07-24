@@ -3,13 +3,17 @@ import {
   resolveLocalDefaultModel,
   runLocalStructuredAgent,
 } from "./local-agent";
+import {
+  resolveMistralDefaultModel,
+  runMistralStructuredAgent,
+} from "./mistral-agent";
 import { runOpencodeStructuredAgent } from "./opencode-agent";
 import {
   runStructuredAgent,
   type StructuredAgentOptions,
 } from "./structured-agent";
 
-export type AgentEngine = "codex" | "local" | "opencode";
+export type AgentEngine = "codex" | "local" | "mistral" | "opencode";
 
 export const DEFAULT_OPENCODE_MODEL = "opencode-go/deepseek-v4-flash";
 const COUNTRY_SWEEP_OPENCODE_MODEL = "opencode-go/glm-5.2";
@@ -28,11 +32,16 @@ export function resolveAgentEngine(
   env: Record<string, string | undefined> = process.env
 ): AgentEngine {
   const value = (env.JOBKIT_AGENT_ENGINE ?? "codex").trim().toLowerCase();
-  if (value === "codex" || value === "opencode" || value === "local") {
+  if (
+    value === "codex" ||
+    value === "opencode" ||
+    value === "local" ||
+    value === "mistral"
+  ) {
     return value;
   }
   throw new Error(
-    `JOBKIT_AGENT_ENGINE must be "codex", "opencode", or "local", received ${JSON.stringify(value)}`
+    `JOBKIT_AGENT_ENGINE must be "codex", "opencode", "local", or "mistral", received ${JSON.stringify(value)}`
   );
 }
 
@@ -71,6 +80,19 @@ export function resolveLocalModel(
   );
 }
 
+export function resolveMistralModel(
+  taskType: string,
+  env: Record<string, string | undefined> = process.env
+) {
+  return (
+    modelOverrideFor(
+      taskType,
+      env.JOBKIT_MISTRAL_MODELS,
+      "JOBKIT_MISTRAL_MODELS"
+    ) ?? resolveMistralDefaultModel(env)
+  );
+}
+
 export function resolveEngineModel(
   engine: AgentEngine,
   taskType: string,
@@ -82,6 +104,9 @@ export function resolveEngineModel(
   }
   if (engine === "local") {
     return resolveLocalModel(taskType, env);
+  }
+  if (engine === "mistral") {
+    return resolveMistralModel(taskType, env);
   }
   return envelopeModel;
 }
@@ -96,12 +121,18 @@ export function runEngineStructuredAgent(
   if (engine === "local") {
     return runLocalStructuredAgent(options);
   }
+  if (engine === "mistral") {
+    return runMistralStructuredAgent(options);
+  }
   return runStructuredAgent(options);
 }
 
 export async function engineVersionText(engine: AgentEngine) {
   if (engine === "local") {
     return `local ${resolveLocalDefaultModel()}`;
+  }
+  if (engine === "mistral") {
+    return `mistral ${resolveMistralDefaultModel()}`;
   }
   const executable = engine === "opencode" ? "opencode" : "codex";
   let result: Awaited<ReturnType<typeof captureProcess>>;
