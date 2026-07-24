@@ -2,7 +2,8 @@ export function isHonoRequest(pathname: string): boolean {
   return (
     pathname === "/api" ||
     pathname.startsWith("/api/") ||
-    pathname === "/openapi.json"
+    pathname === "/openapi.json" ||
+    pathname === "/googlebf69a7f0424212f5.html"
   );
 }
 

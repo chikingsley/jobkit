@@ -420,6 +420,10 @@ app.doc("/openapi.json", {
   openapi: "3.1.0",
 });
 
+app.get("/googlebf69a7f0424212f5.html", (c) =>
+  c.text("google-site-verification: googlebf69a7f0424212f5.html")
+);
+
 app.notFound((c) => c.json({ message: "Route not found", ok: false }, 404));
 
 export default {
