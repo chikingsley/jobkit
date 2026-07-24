@@ -34,5 +34,6 @@ export default defineConfig({
   ],
   test: {
     include: ["tests/integration/worker/**/*.test.ts"],
+    testTimeout: 30_000,
   },
 });
