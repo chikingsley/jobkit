@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import type { PropsWithChildren, ReactNode } from "react";
 import { ModeToggle } from "@/components/mode-toggle";
+import { localDevelopmentAuthEnabled } from "@/features/auth/local-development";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 export function PublicSiteShell({ children }: PropsWithChildren) {
@@ -27,12 +29,7 @@ export function PublicSiteShell({ children }: PropsWithChildren) {
             </Link>
           </nav>
           <div className="ml-auto flex items-center gap-1">
-            <Link
-              className="inline-flex min-h-9 items-center rounded-lg px-3 font-medium text-sm hover:bg-muted"
-              to="/app/jobs"
-            >
-              Workspace
-            </Link>
+            <SiteAccountActions />
             <ModeToggle />
           </div>
         </div>
@@ -56,6 +53,38 @@ export function PublicSiteShell({ children }: PropsWithChildren) {
         </div>
       </footer>
     </div>
+  );
+}
+
+function SiteAccountActions() {
+  const session = authClient.useSession();
+  const signedIn = localDevelopmentAuthEnabled || Boolean(session.data);
+  if (signedIn) {
+    return (
+      <Link
+        className="inline-flex min-h-9 items-center rounded-lg px-3 font-medium text-sm hover:bg-muted"
+        to="/app/jobs"
+      >
+        Workspace
+      </Link>
+    );
+  }
+  return (
+    <>
+      <Link
+        className="inline-flex min-h-9 items-center rounded-lg px-3 font-medium text-sm hover:bg-muted"
+        to="/app/jobs"
+      >
+        Log in
+      </Link>
+      <Link
+        className="inline-flex min-h-9 items-center rounded-lg bg-primary px-3 font-medium text-primary-foreground text-sm hover:bg-primary/90"
+        search={{ signup: true }}
+        to="/app/jobs"
+      >
+        Sign up
+      </Link>
+    </>
   );
 }
 
