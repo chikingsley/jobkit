@@ -1,10 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import {
-  type AgentEngine,
-  runEngineStructuredAgent,
-} from "../../cli/lib/agent-engine";
+import { runTaskAgent } from "../../cli/lib/agent-engine";
 import { DEFAULT_LOCAL_LLM_MODEL } from "../../cli/lib/local-agent";
 import type { StructuredAgentUsage } from "../../cli/lib/structured-agent";
 import {
@@ -18,6 +15,7 @@ import {
 import { JobContentAnalysisSchema } from "../../src/features/jobs/content-analysis";
 import { JobPositionAnalysisSchema } from "../../src/features/jobs/position-variants";
 import { JobMatchFactsSchema } from "../../src/features/matching/schema";
+import { type ProviderName, parseAssignment } from "../../src/model/registry";
 import {
   canonicalizeJobContentEvidence,
   unsupportedContentEvidence,
@@ -116,10 +114,14 @@ async function runAnalysis(
   const started = performance.now();
   let tokens: StructuredAgentUsage | undefined;
   try {
-    const raw = await runEngineStructuredAgent(engine, {
+    const assignment = parseAssignment(
+      `analysis.${task}`,
+      `${engine}:${configuration.model}`
+    );
+    const raw = await runTaskAgent(assignment, {
       effort: configuration.effort,
       model: configuration.model,
-      onUsage: (usage) => {
+      onUsage: (usage: StructuredAgentUsage) => {
         tokens = usage;
       },
       outputSchema: schemaFor(task),
@@ -253,21 +255,29 @@ function evidenceCount(
   );
 }
 
-function parseEngine(value: string): AgentEngine {
-  if (value === "codex" || value === "opencode" || value === "local") {
+function parseEngine(value: string): ProviderName {
+  if (value === "local") {
+    return "localLlama";
+  }
+  if (
+    value === "codex" ||
+    value === "opencode" ||
+    value === "mistral" ||
+    value === "localLlama"
+  ) {
     return value;
   }
   throw new Error(
-    `engine must be "codex", "opencode", or "local", received ${JSON.stringify(value)}`
+    `engine must be "codex", "opencode", "local", or "mistral", received ${JSON.stringify(value)}`
   );
 }
 
-function parseModels(raw: string, targetEngine: AgentEngine) {
+function parseModels(raw: string, targetEngine: ProviderName) {
   if (!raw.trim()) {
     if (targetEngine === "opencode") {
       return OPENCODE_DEFAULT_MODELS;
     }
-    return targetEngine === "local"
+    return targetEngine === "localLlama"
       ? LOCAL_DEFAULT_MODELS
       : CODEX_DEFAULT_MODELS;
   }

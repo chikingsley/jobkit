@@ -1,180 +1,62 @@
 import { describe, expect, it } from "bun:test";
-import {
-  DEFAULT_OPENCODE_MODEL,
-  resolveAgentEngine,
-  resolveEngineModel,
-  resolveLocalModel,
-  resolveOpencodeModel,
-} from "../../cli/lib/agent-engine";
-import { DEFAULT_LOCAL_LLM_MODEL } from "../../cli/lib/local-agent";
 import { finalAssistantText } from "../../cli/lib/opencode-agent";
 import {
   extractJsonObjectText,
   structuredJsonPrompt,
 } from "../../cli/lib/structured-json";
+import { resolveAssignment } from "../../src/model/registry";
 
-const ENGINE_ERROR_PATTERN = /JOBKIT_AGENT_ENGINE/u;
-const VALID_JSON_PATTERN = /valid JSON/u;
-const NON_EMPTY_MODEL_PATTERN = /non-empty model/u;
 const NO_JSON_OBJECT_PATTERN = /no JSON object/u;
+const ASSIGNMENT_SHAPE_PATTERN = /provider:model/u;
+const UNKNOWN_PROVIDER_PATTERN = /Unknown model provider/u;
 
-describe("resolveAgentEngine", () => {
-  it("defaults to codex when the engine is unset", () => {
-    expect(resolveAgentEngine({})).toBe("codex");
+describe("resolveAssignment", () => {
+  it("routes emails to Mistral and analysis to the local model", () => {
+    expect(resolveAssignment("application.message")).toMatchObject({
+      model: "mistral-medium-latest",
+      provider: "mistral",
+    });
+    expect(resolveAssignment("job.content_analysis")).toMatchObject({
+      model: "qwen35-9b-ud-q4-k-xl",
+      provider: "localLlama",
+    });
+    expect(resolveAssignment("job.match_facts").provider).toBe("localLlama");
   });
 
-  it("selects opencode case-insensitively", () => {
-    expect(resolveAgentEngine({ JOBKIT_AGENT_ENGINE: " OpenCode " })).toBe(
-      "opencode"
-    );
+  it("routes OCR to the Mistral OCR model", () => {
+    expect(resolveAssignment("document.ocr").model).toBe("mistral-ocr-latest");
   });
 
-  it("selects the local engine", () => {
-    expect(resolveAgentEngine({ JOBKIT_AGENT_ENGINE: " Local " })).toBe(
-      "local"
+  it("falls back to the default for country sweeps and unknown tasks", () => {
+    expect(resolveAssignment("country_sweep.contacts").provider).toBe(
+      "mistral"
     );
+    expect(resolveAssignment("mystery.task").provider).toBe("mistral");
   });
 
-  it("rejects unknown engines", () => {
-    expect(() => resolveAgentEngine({ JOBKIT_AGENT_ENGINE: "claude" })).toThrow(
-      ENGINE_ERROR_PATTERN
-    );
-  });
-});
-
-describe("resolveOpencodeModel", () => {
-  it("maps job analysis task types to the cheap extraction model", () => {
-    expect(resolveOpencodeModel("job.match_facts", {})).toBe(
-      "opencode-go/deepseek-v4-flash"
-    );
-    expect(resolveOpencodeModel("job.content_analysis", {})).toBe(
-      "opencode-go/deepseek-v4-flash"
-    );
-    expect(resolveOpencodeModel("job.position_analysis", {})).toBe(
-      "opencode-go/deepseek-v4-flash"
-    );
-  });
-
-  it("maps drafting and vision task types to the stronger model", () => {
-    expect(resolveOpencodeModel("application.message", {})).toBe(
-      "opencode-go/glm-5.2"
-    );
-    expect(resolveOpencodeModel("profile.import", {})).toBe(
-      "opencode-go/glm-5.2"
-    );
-  });
-
-  it("routes country sweep task types through the sweep model", () => {
-    expect(resolveOpencodeModel("country_sweep.organizations", {})).toBe(
-      "opencode-go/glm-5.2"
-    );
-  });
-
-  it("falls back to the default model for unknown task types", () => {
-    expect(resolveOpencodeModel("mystery.task", {})).toBe(
-      DEFAULT_OPENCODE_MODEL
-    );
+  it("honors a one-line JOBKIT_MODEL override for a single task", () => {
     expect(
-      resolveOpencodeModel("mystery.task", {
-        JOBKIT_OPENCODE_DEFAULT_MODEL: "opencode/mimo-v2.5-free",
+      resolveAssignment("application.message", {
+        "JOBKIT_MODEL_application.message": "localLlama:qwen4-32b",
       })
-    ).toBe("opencode/mimo-v2.5-free");
+    ).toMatchObject({ model: "qwen4-32b", provider: "localLlama" });
   });
 
-  it("honors JSON overrides including the country sweep wildcard", () => {
-    const env = {
-      JOBKIT_OPENCODE_MODELS: JSON.stringify({
-        "country_sweep.*": "opencode-go/qwen3.7-plus",
-        "job.match_facts": "opencode/ling-3.0-flash-free",
-      }),
-    };
-    expect(resolveOpencodeModel("job.match_facts", env)).toBe(
-      "opencode/ling-3.0-flash-free"
-    );
-    expect(resolveOpencodeModel("country_sweep.contacts", env)).toBe(
-      "opencode-go/qwen3.7-plus"
-    );
+  it("selects a CLI provider the same one-line way", () => {
+    expect(
+      resolveAssignment("job.match_facts", {
+        "JOBKIT_MODEL_job.match_facts": "opencode:opencode-go/glm-5.2",
+      })
+    ).toMatchObject({ model: "opencode-go/glm-5.2", provider: "opencode" });
   });
 
-  it("rejects malformed override JSON", () => {
+  it("rejects a malformed or unknown assignment", () => {
     expect(() =>
-      resolveOpencodeModel("job.match_facts", {
-        JOBKIT_OPENCODE_MODELS: "not-json",
-      })
-    ).toThrow(VALID_JSON_PATTERN);
+      resolveAssignment("x", { JOBKIT_MODEL_x: "no-colon" })
+    ).toThrow(ASSIGNMENT_SHAPE_PATTERN);
     expect(() =>
-      resolveOpencodeModel("job.match_facts", {
-        JOBKIT_OPENCODE_MODELS: '{"job.match_facts":""}',
-      })
-    ).toThrow(NON_EMPTY_MODEL_PATTERN);
-  });
-});
-
-describe("resolveLocalModel", () => {
-  it("serves every task type from the single local model by default", () => {
-    expect(resolveLocalModel("job.match_facts", {})).toBe(
-      DEFAULT_LOCAL_LLM_MODEL
-    );
-    expect(resolveLocalModel("application.message", {})).toBe(
-      DEFAULT_LOCAL_LLM_MODEL
-    );
-  });
-
-  it("honors the default model environment variable", () => {
-    expect(
-      resolveLocalModel("job.match_facts", {
-        JOBKIT_LOCAL_LLM_MODEL: " qwen4-32b ",
-      })
-    ).toBe("qwen4-32b");
-  });
-
-  it("honors JSON overrides including the country sweep wildcard", () => {
-    const env = {
-      JOBKIT_LOCAL_LLM_MODELS: JSON.stringify({
-        "country_sweep.*": "qwen4-32b",
-        "job.match_facts": "qwen35-9b-instruct",
-      }),
-    };
-    expect(resolveLocalModel("job.match_facts", env)).toBe(
-      "qwen35-9b-instruct"
-    );
-    expect(resolveLocalModel("country_sweep.contacts", env)).toBe("qwen4-32b");
-    expect(resolveLocalModel("profile.import", env)).toBe(
-      DEFAULT_LOCAL_LLM_MODEL
-    );
-  });
-
-  it("rejects malformed override JSON", () => {
-    expect(() =>
-      resolveLocalModel("job.match_facts", {
-        JOBKIT_LOCAL_LLM_MODELS: "not-json",
-      })
-    ).toThrow(VALID_JSON_PATTERN);
-    expect(() =>
-      resolveLocalModel("job.match_facts", {
-        JOBKIT_LOCAL_LLM_MODELS: '{"job.match_facts":""}',
-      })
-    ).toThrow(NON_EMPTY_MODEL_PATTERN);
-  });
-});
-
-describe("resolveEngineModel", () => {
-  it("keeps the envelope model for codex", () => {
-    expect(
-      resolveEngineModel("codex", "job.match_facts", "gpt-5.6-luna", {})
-    ).toBe("gpt-5.6-luna");
-  });
-
-  it("replaces the envelope model for opencode", () => {
-    expect(
-      resolveEngineModel("opencode", "job.match_facts", "gpt-5.6-luna", {})
-    ).toBe("opencode-go/deepseek-v4-flash");
-  });
-
-  it("replaces the envelope model for the local engine", () => {
-    expect(
-      resolveEngineModel("local", "job.match_facts", "gpt-5.6-luna", {})
-    ).toBe(DEFAULT_LOCAL_LLM_MODEL);
+      resolveAssignment("x", { JOBKIT_MODEL_x: "ghost:model" })
+    ).toThrow(UNKNOWN_PROVIDER_PATTERN);
   });
 });
 

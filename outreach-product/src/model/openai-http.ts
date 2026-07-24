@@ -55,7 +55,6 @@ export async function callOpenAiChat(
     if (!(outcome.retryable && attempt < RETRY_ATTEMPTS)) {
       throw outcome.error;
     }
-    // biome-ignore lint/performance/noAwaitInLoops: backoff spaces sequential retries.
     await delay(RETRY_DELAY_MS * attempt);
   }
   throw lastError;

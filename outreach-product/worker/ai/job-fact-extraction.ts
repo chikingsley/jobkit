@@ -11,8 +11,8 @@ import {
 } from "../../src/features/matching/schema";
 import { JobMarketSegmentSchema } from "../../src/features/organizations/market-segments";
 import { DegreeLevelSchema } from "../../src/features/profile/schema";
-import { evidenceIsPresent } from "./evidence-text";
 import type { JobImport } from "../schemas";
+import { evidenceIsPresent } from "./evidence-text";
 import {
   JOB_ECONOMICS_INSTRUCTIONS,
   normalizeExtractedEconomics,

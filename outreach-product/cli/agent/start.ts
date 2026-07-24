@@ -10,12 +10,8 @@ import {
   sha256Hex,
 } from "../../src/features/countries/materialization";
 import { CountrySweepTaskOutputSchema } from "../../src/features/countries/schema";
-import {
-  engineVersionText,
-  resolveAgentEngine,
-  resolveTaskAssignment,
-  runTaskAgent,
-} from "../lib/agent-engine";
+import { resolveAssignment } from "../../src/model/registry";
+import { runTaskAgent } from "../lib/agent-engine";
 import { createAgentClient } from "./client";
 import { readAgentConfig } from "./config";
 import {
@@ -33,12 +29,7 @@ const { values: args } = parseArgs({
 });
 const config = await readAgentConfig();
 const client = createAgentClient(config);
-const forcedEngine = process.env.JOBKIT_AGENT_ENGINE?.trim()
-  ? resolveAgentEngine()
-  : null;
-const runnerVersion = forcedEngine
-  ? await engineVersionText(forcedEngine)
-  : "registry (per-task models)";
+const runnerVersion = "registry (per-task models)";
 
 await main();
 
@@ -88,7 +79,7 @@ async function claimAndRunAgentTask() {
 async function runAgentTask(
   task: ReturnType<typeof AgentTaskEnvelopeSchema.parse>
 ) {
-  const assignment = resolveTaskAssignment(task.taskType, task.model);
+  const assignment = resolveAssignment(task.taskType, process.env);
   console.log(
     `Running ${task.taskType} with ${assignment.model} via ${assignment.provider}`
   );

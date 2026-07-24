@@ -5,7 +5,6 @@ import {
   JobPositionLocationSchema,
   JobPositionRoleFamilySchema,
 } from "../../src/features/jobs/position-variants";
-import { evidenceIsPresent, foldEvidencePunctuation } from "./evidence-text";
 import {
   JobAudienceSchema,
   JobEmploymentTypeSchema,
@@ -14,6 +13,7 @@ import {
   RequirementLanguageLevelSchema,
 } from "../../src/features/matching/schema";
 import { DegreeLevelSchema } from "../../src/features/profile/schema";
+import { evidenceIsPresent, foldEvidencePunctuation } from "./evidence-text";
 
 const ProviderRequirementSchema = z
   .object({
@@ -154,14 +154,14 @@ export function canonicalEvidenceQuote(source: string, evidence: string) {
       return candidate;
     }
   }
-  const normalizedSource = foldEvidencePunctuation(source).toLocaleLowerCase("en");
+  const normalizedSource =
+    foldEvidencePunctuation(source).toLocaleLowerCase("en");
   if (normalizedSource.length !== source.length) {
     return quote;
   }
   for (const candidate of candidates) {
-    const normalizedCandidate = foldEvidencePunctuation(candidate).toLocaleLowerCase(
-      "en"
-    );
+    const normalizedCandidate =
+      foldEvidencePunctuation(candidate).toLocaleLowerCase("en");
     if (normalizedCandidate.length !== candidate.length) {
       continue;
     }
