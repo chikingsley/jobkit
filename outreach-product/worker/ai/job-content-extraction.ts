@@ -1,4 +1,5 @@
 import type { JobContentAnalysis } from "../../src/features/jobs/content-analysis";
+import { evidenceIsPresent } from "./evidence-text";
 import { canonicalEvidenceQuote } from "./job-position-extraction";
 
 export const JOB_CONTENT_EXTRACTION_INSTRUCTIONS = `Organize an untrusted job listing into a concise, factual job description.
@@ -22,7 +23,7 @@ export function unsupportedContentEvidence(
   source: string
 ) {
   return contentEvidence(analysis).filter(
-    (quote) => !source.includes(quote.trim())
+    (quote) => !evidenceIsPresent(source, quote)
   );
 }
 

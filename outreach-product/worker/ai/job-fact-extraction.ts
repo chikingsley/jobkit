@@ -11,6 +11,7 @@ import {
 } from "../../src/features/matching/schema";
 import { JobMarketSegmentSchema } from "../../src/features/organizations/market-segments";
 import { DegreeLevelSchema } from "../../src/features/profile/schema";
+import { evidenceIsPresent } from "./evidence-text";
 import type { JobImport } from "../schemas";
 import {
   JOB_ECONOMICS_INSTRUCTIONS,
@@ -92,10 +93,7 @@ export function unsupportedEvidence(facts: JobMatchFacts, source: string) {
     values: readonly Value[]
   ) =>
     values
-      .filter((value) => {
-        const evidence = value.evidence.trim();
-        return !(evidence && source.includes(evidence));
-      })
+      .filter((value) => !evidenceIsPresent(source, value.evidence))
       .map((value) => value.evidence);
   return [
     ...missing(facts.audiences),
@@ -111,7 +109,7 @@ export function validateProviderJobMatchFacts(
   source: string
 ) {
   const supported = <Value extends { evidence: string }>(value: Value) =>
-    value.evidence.trim().length > 0 && source.includes(value.evidence.trim());
+    evidenceIsPresent(source, value.evidence);
   const unsupported =
     output.audiences.filter((value) => !supported(value)).length +
     output.benefits.filter((value) => !supported(value)).length +
