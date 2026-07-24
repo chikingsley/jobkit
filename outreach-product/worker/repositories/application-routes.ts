@@ -1,3 +1,7 @@
+import { and, eq } from "drizzle-orm";
+import { excluded, getDb } from "../db/client";
+import { applicationRoutes } from "../db/schema/applications";
+import { contactChannels } from "../db/schema/organizations";
 import type { JobImport } from "../schemas";
 
 export async function upsertApplicationRoutes(
@@ -50,27 +54,31 @@ function routeKind(
   return board === "tefl" ? "login_gated_form" : "external_url";
 }
 
+async function findEmailChannel(db: D1Database, destination: string) {
+  return await getDb(db)
+    .select({ id: contactChannels.id })
+    .from(contactChannels)
+    .where(
+      and(
+        eq(contactChannels.kind, "email"),
+        eq(contactChannels.normalizedValue, destination)
+      )
+    )
+    .get();
+}
+
 async function upsertEmailContactChannel(
   db: D1Database,
   job: JobImport,
   destination: string,
   timestamp: string
 ): Promise<string> {
-  const existing = await db
-    .prepare(
-      `SELECT id FROM contact_channels
-       WHERE kind='email' AND normalized_value=?`
-    )
-    .bind(destination)
-    .first<{ id: string }>();
+  const existing = await findEmailChannel(db, destination);
   if (existing) {
-    await db
-      .prepare(
-        `UPDATE contact_channels
-         SET value=?,status='active',updated_at=?
-         WHERE id=?`
-      )
-      .bind(destination, timestamp, existing.id)
+    await getDb(db)
+      .update(contactChannels)
+      .set({ status: "active", updatedAt: timestamp, value: destination })
+      .where(eq(contactChannels.id, existing.id))
       .run();
     return existing.id;
   }
@@ -88,6 +96,9 @@ async function upsertEmailContactChannel(
     job.board === "anesl" && destination === "hr@anesl.com"
       ? "board_intermediary"
       : "unknown";
+  // Ordered two-statement D1 batch (the channel insert references the contact
+  // through a foreign key) with a CASE guard in the contact upsert; batch
+  // atomicity depends on statement ordering, so it stays raw SQL.
   await db.batch([
     db
       .prepare(
@@ -129,19 +140,15 @@ async function upsertEmailContactChannel(
         timestamp
       ),
   ]);
-  const channel = await db
-    .prepare(
-      `SELECT id FROM contact_channels
-       WHERE kind='email' AND normalized_value=?`
-    )
-    .bind(destination)
-    .first<{ id: string }>();
+  const channel = await findEmailChannel(db, destination);
   if (!channel) {
     throw new Error("Canonical email contact could not be saved");
   }
   return channel.id;
 }
 
+// Correlated aggregate subqueries with CASE guards inside the SET clause are
+// beyond the drizzle DSL; the statement stays raw SQL.
 async function refreshContactMetadata(
   db: D1Database,
   contactChannelId: string,
@@ -190,32 +197,36 @@ async function upsertRoute(
   destination: string,
   contactChannelId: string | null
 ): Promise<string> {
-  const row = await db
-    .prepare(
-      `INSERT INTO application_routes
-        (id,job_id,kind,destination,contact_channel_id,source_evidence,
-         last_verified_at,status,created_at,updated_at)
-       VALUES (?,?,?,?,?,?,?,'active',?,?)
-       ON CONFLICT(job_id,kind,destination) DO UPDATE SET
-         contact_channel_id=excluded.contact_channel_id,
-         source_evidence=excluded.source_evidence,
-         last_verified_at=excluded.last_verified_at,
-         status='active',
-         updated_at=excluded.updated_at
-       RETURNING id`
-    )
-    .bind(
-      crypto.randomUUID(),
-      job.id,
-      kind,
-      destination,
+  const row = await getDb(db)
+    .insert(applicationRoutes)
+    .values({
       contactChannelId,
-      job.sourceUrl,
-      timestamp,
-      timestamp,
-      timestamp
-    )
-    .first<{ id: string }>();
+      createdAt: timestamp,
+      destination,
+      id: crypto.randomUUID(),
+      jobId: job.id,
+      kind,
+      lastVerifiedAt: timestamp,
+      sourceEvidence: job.sourceUrl,
+      status: "active",
+      updatedAt: timestamp,
+    })
+    .onConflictDoUpdate({
+      set: {
+        contactChannelId: excluded(applicationRoutes.contactChannelId),
+        lastVerifiedAt: excluded(applicationRoutes.lastVerifiedAt),
+        sourceEvidence: excluded(applicationRoutes.sourceEvidence),
+        status: "active",
+        updatedAt: excluded(applicationRoutes.updatedAt),
+      },
+      target: [
+        applicationRoutes.jobId,
+        applicationRoutes.kind,
+        applicationRoutes.destination,
+      ],
+    })
+    .returning({ id: applicationRoutes.id })
+    .get();
   if (!row) {
     throw new Error("Application route could not be saved");
   }

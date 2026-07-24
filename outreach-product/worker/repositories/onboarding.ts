@@ -1,17 +1,26 @@
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import {
   PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION,
   type ProfileImportProposal,
   ProfileImportProposalSchema,
 } from "../../src/features/onboarding/schema";
+import { excluded, getDb } from "../db/client";
+import {
+  profileImports,
+  userDocuments,
+  userOnboarding,
+  userPreferences,
+  userProfiles,
+} from "../db/schema/user-profile";
 
-interface ImportRow {
-  error_message: string | null;
+interface StoredImportRow {
+  errorMessage: string | null;
   id: string;
-  proposal_json: string | null;
-  proposal_schema_version: number;
-  source_text_detail: string;
-  source_text_provider: string;
-  status: "processing" | "ready" | "failed" | "applied";
+  proposalJson: string | null;
+  proposalSchemaVersion: number;
+  sourceTextDetail: string;
+  sourceTextProvider: string;
+  status: string;
 }
 
 export interface StoredProfileImport {
@@ -20,11 +29,14 @@ export interface StoredProfileImport {
   proposal: ProfileImportProposal | null;
   sourceTextDetail: string;
   sourceTextProvider: string;
-  status: ImportRow["status"];
+  status: "processing" | "ready" | "failed" | "applied";
 }
 
 export class OnboardingIncompleteError extends Error {}
 
+// Ordered two-statement D1 batch (the second insert references the first
+// through a foreign key); batch atomicity depends on statement ordering, so
+// it stays raw SQL.
 export async function createProfileImportRecords(
   db: D1Database,
   input: {
@@ -79,19 +91,24 @@ export async function finishProfileImport(
     userId: string;
   }
 ) {
-  const result = await db
-    .prepare(
-      "UPDATE profile_imports SET status='ready',source_text_key=?,proposal_json=?,proposal_schema_version=?,model_provider=?,model_id=?,error_message=NULL,updated_at=? WHERE id=? AND user_id=? AND status='processing'"
-    )
-    .bind(
-      input.sourceTextKey,
-      JSON.stringify(input.proposal),
-      PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION,
-      input.modelProvider,
-      input.modelId,
-      input.updatedAt,
-      input.importId,
-      input.userId
+  const result = await getDb(db)
+    .update(profileImports)
+    .set({
+      errorMessage: null,
+      modelId: input.modelId,
+      modelProvider: input.modelProvider,
+      proposalJson: JSON.stringify(input.proposal),
+      proposalSchemaVersion: PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION,
+      sourceTextKey: input.sourceTextKey,
+      status: "ready",
+      updatedAt: input.updatedAt,
+    })
+    .where(
+      and(
+        eq(profileImports.id, input.importId),
+        eq(profileImports.userId, input.userId),
+        eq(profileImports.status, "processing")
+      )
     )
     .run();
   if ((result.meta.changes ?? 0) !== 1) {
@@ -110,20 +127,20 @@ export async function recordProfileImportSource(
     userId: string;
   }
 ) {
-  const result = await db
-    .prepare(
-      `UPDATE profile_imports
-          SET source_text_key=?,source_text_provider=?,source_text_detail=?,
-              updated_at=?
-        WHERE id=? AND user_id=? AND status='processing'`
-    )
-    .bind(
-      input.sourceTextKey,
-      input.provider,
-      input.detail,
-      input.updatedAt,
-      input.importId,
-      input.userId
+  const result = await getDb(db)
+    .update(profileImports)
+    .set({
+      sourceTextDetail: input.detail,
+      sourceTextKey: input.sourceTextKey,
+      sourceTextProvider: input.provider,
+      updatedAt: input.updatedAt,
+    })
+    .where(
+      and(
+        eq(profileImports.id, input.importId),
+        eq(profileImports.userId, input.userId),
+        eq(profileImports.status, "processing")
+      )
     )
     .run();
   if ((result.meta.changes ?? 0) !== 1) {
@@ -140,15 +157,19 @@ export async function failProfileImport(
     userId: string;
   }
 ) {
-  await db
-    .prepare(
-      "UPDATE profile_imports SET status='failed',error_message=?,updated_at=? WHERE id=? AND user_id=? AND status='processing'"
-    )
-    .bind(
-      input.errorMessage.slice(0, 500),
-      input.updatedAt,
-      input.importId,
-      input.userId
+  await getDb(db)
+    .update(profileImports)
+    .set({
+      errorMessage: input.errorMessage.slice(0, 500),
+      status: "failed",
+      updatedAt: input.updatedAt,
+    })
+    .where(
+      and(
+        eq(profileImports.id, input.importId),
+        eq(profileImports.userId, input.userId),
+        eq(profileImports.status, "processing")
+      )
     )
     .run();
 }
@@ -157,37 +178,46 @@ export async function readLatestProfileImport(
   db: D1Database,
   userId: string
 ): Promise<StoredProfileImport | null> {
-  const row = await db
-    .prepare(
-      "SELECT id,status,proposal_json,proposal_schema_version,error_message,source_text_provider,source_text_detail FROM profile_imports WHERE user_id=? ORDER BY created_at DESC LIMIT 1"
-    )
-    .bind(userId)
-    .first<ImportRow>();
+  const row = await getDb(db)
+    .select({
+      errorMessage: profileImports.errorMessage,
+      id: profileImports.id,
+      proposalJson: profileImports.proposalJson,
+      proposalSchemaVersion: profileImports.proposalSchemaVersion,
+      sourceTextDetail: profileImports.sourceTextDetail,
+      sourceTextProvider: profileImports.sourceTextProvider,
+      status: profileImports.status,
+    })
+    .from(profileImports)
+    .where(eq(profileImports.userId, userId))
+    .orderBy(desc(profileImports.createdAt))
+    .limit(1)
+    .get();
   if (!row) {
     return null;
   }
   const proposal = parseStoredProposal(row);
   return {
-    errorMessage: row.error_message,
+    errorMessage: row.errorMessage,
     id: row.id,
     proposal,
-    sourceTextDetail: row.source_text_detail,
-    sourceTextProvider: row.source_text_provider,
-    status: row.status,
+    sourceTextDetail: row.sourceTextDetail,
+    sourceTextProvider: row.sourceTextProvider,
+    status: row.status as StoredProfileImport["status"],
   };
 }
 
-function parseStoredProposal(row: ImportRow) {
-  if (!row.proposal_json) {
+function parseStoredProposal(row: StoredImportRow) {
+  if (!row.proposalJson) {
     return null;
   }
-  if (row.proposal_schema_version !== PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION) {
+  if (row.proposalSchemaVersion !== PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION) {
     throw new Error(
-      `Unsupported profile import proposal schema version ${row.proposal_schema_version}; expected ${PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION}`
+      `Unsupported profile import proposal schema version ${row.proposalSchemaVersion}; expected ${PROFILE_IMPORT_PROPOSAL_SCHEMA_VERSION}`
     );
   }
   const parsed = ProfileImportProposalSchema.safeParse(
-    JSON.parse(row.proposal_json)
+    JSON.parse(row.proposalJson)
   );
   if (!parsed.success) {
     throw new Error(`Stored profile import ${row.id} failed validation`);
@@ -196,29 +226,39 @@ function parseStoredProposal(row: ImportRow) {
 }
 
 export async function readOnboardingCompletion(db: D1Database, userId: string) {
-  const row = await db
-    .prepare("SELECT completed_at FROM user_onboarding WHERE user_id=?")
-    .bind(userId)
-    .first<{ completed_at: string | null }>();
-  return row?.completed_at ?? null;
+  const row = await getDb(db)
+    .select({ completedAt: userOnboarding.completedAt })
+    .from(userOnboarding)
+    .where(eq(userOnboarding.userId, userId))
+    .get();
+  return row?.completedAt ?? null;
 }
 
 export async function completeOnboarding(db: D1Database, userId: string) {
+  const one = sql<number>`1`;
   const [profile, preferences, resume] = await Promise.all([
-    db
-      .prepare("SELECT 1 present FROM user_profiles WHERE user_id=?")
-      .bind(userId)
-      .first<{ present: number }>(),
-    db
-      .prepare("SELECT 1 present FROM user_preferences WHERE user_id=?")
-      .bind(userId)
-      .first<{ present: number }>(),
-    db
-      .prepare(
-        "SELECT 1 present FROM user_documents WHERE user_id=? AND category='resume' AND archived_at IS NULL LIMIT 1"
+    getDb(db)
+      .select({ present: one })
+      .from(userProfiles)
+      .where(eq(userProfiles.userId, userId))
+      .get(),
+    getDb(db)
+      .select({ present: one })
+      .from(userPreferences)
+      .where(eq(userPreferences.userId, userId))
+      .get(),
+    getDb(db)
+      .select({ present: one })
+      .from(userDocuments)
+      .where(
+        and(
+          eq(userDocuments.userId, userId),
+          eq(userDocuments.category, "resume"),
+          isNull(userDocuments.archivedAt)
+        )
       )
-      .bind(userId)
-      .first<{ present: number }>(),
+      .limit(1)
+      .get(),
   ]);
   if (!(profile && preferences && resume)) {
     throw new OnboardingIncompleteError(
@@ -226,11 +266,16 @@ export async function completeOnboarding(db: D1Database, userId: string) {
     );
   }
   const timestamp = new Date().toISOString();
-  await db
-    .prepare(
-      "INSERT INTO user_onboarding (user_id,completed_at,updated_at) VALUES (?,?,?) ON CONFLICT(user_id) DO UPDATE SET completed_at=excluded.completed_at,updated_at=excluded.updated_at"
-    )
-    .bind(userId, timestamp, timestamp)
+  await getDb(db)
+    .insert(userOnboarding)
+    .values({ completedAt: timestamp, updatedAt: timestamp, userId })
+    .onConflictDoUpdate({
+      set: {
+        completedAt: excluded(userOnboarding.completedAt),
+        updatedAt: excluded(userOnboarding.updatedAt),
+      },
+      target: userOnboarding.userId,
+    })
     .run();
   return timestamp;
 }

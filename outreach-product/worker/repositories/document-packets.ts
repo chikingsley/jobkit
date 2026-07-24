@@ -1,35 +1,33 @@
+import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
 import {
   type DocumentPacket,
   type DocumentPacketSlug,
   documentPacketDefinitions,
 } from "../../src/features/documents/types";
-
-interface DocumentRow {
-  category: string;
-  document_id: string | null;
-  filename: string | null;
-  is_default: number;
-  packet_id: string;
-  packet_name: string;
-  position: number | null;
-  slug: string;
-}
+import { getDb } from "../db/client";
+import {
+  userDocumentPacketItems,
+  userDocumentPackets,
+  userDocuments,
+} from "../db/schema/user-profile";
 
 async function readPacketSeedDocuments(db: D1Database, userId: string) {
-  const documents = await db
-    .prepare(
-      `SELECT id,category,filename
-         FROM user_documents
-        WHERE user_id=? AND archived_at IS NULL
-        ORDER BY is_default DESC,created_at DESC`
+  const documents = await getDb(db)
+    .select({
+      category: userDocuments.category,
+      filename: userDocuments.filename,
+      id: userDocuments.id,
+    })
+    .from(userDocuments)
+    .where(
+      and(eq(userDocuments.userId, userId), isNull(userDocuments.archivedAt))
     )
-    .bind(userId)
-    .all<{ category: string; filename: string; id: string }>();
+    .orderBy(desc(userDocuments.isDefault), desc(userDocuments.createdAt));
   const documentByCategory = new Map<
     string,
     { filename: string; id: string }
   >();
-  for (const document of documents.results) {
+  for (const document of documents) {
     if (!documentByCategory.has(document.category)) {
       documentByCategory.set(document.category, document);
     }
@@ -37,6 +35,9 @@ async function readPacketSeedDocuments(db: D1Database, userId: string) {
   return documentByCategory;
 }
 
+// Ordered multi-statement D1 batch (packet inserts followed by item inserts
+// that reference them); batch atomicity depends on statement ordering, so it
+// stays raw SQL.
 function buildDocumentPacketStatements(
   db: D1Database,
   userId: string,
@@ -92,10 +93,11 @@ function buildDocumentPacketStatements(
 }
 
 async function documentPacketsExist(db: D1Database, userId: string) {
-  const result = await db
-    .prepare("SELECT COUNT(*) count FROM user_document_packets WHERE user_id=?")
-    .bind(userId)
-    .first<{ count: number }>();
+  const result = await getDb(db)
+    .select({ count: count() })
+    .from(userDocumentPackets)
+    .where(eq(userDocumentPackets.userId, userId))
+    .get();
   return (result?.count ?? 0) > 0;
 }
 
@@ -130,49 +132,62 @@ export async function listDocumentPackets(
   userId: string
 ): Promise<DocumentPacket[]> {
   await ensureDocumentPackets(db, userId);
-  const rows = await db
-    .prepare(
-      `SELECT p.id packet_id,p.slug,p.name,p.is_default,
-              i.category,i.position,d.id document_id,d.filename
-         FROM user_document_packets p
-         LEFT JOIN user_document_packet_items i ON i.packet_id=p.id
-         LEFT JOIN user_documents d ON d.id=i.document_id
-        WHERE p.user_id=?
-        ORDER BY p.created_at,i.position`
+  const rows = await getDb(db)
+    .select({
+      category: userDocumentPacketItems.category,
+      documentId: userDocuments.id,
+      filename: userDocuments.filename,
+      isDefault: userDocumentPackets.isDefault,
+      packetId: userDocumentPackets.id,
+      packetName: userDocumentPackets.name,
+      position: userDocumentPacketItems.position,
+      slug: userDocumentPackets.slug,
+    })
+    .from(userDocumentPackets)
+    .leftJoin(
+      userDocumentPacketItems,
+      eq(userDocumentPacketItems.packetId, userDocumentPackets.id)
     )
-    .bind(userId)
-    .all<DocumentRow>();
+    .leftJoin(
+      userDocuments,
+      eq(userDocuments.id, userDocumentPacketItems.documentId)
+    )
+    .where(eq(userDocumentPackets.userId, userId))
+    .orderBy(
+      asc(userDocumentPackets.createdAt),
+      asc(userDocumentPacketItems.position)
+    );
 
   const packets = new Map<string, DocumentPacket>();
-  for (const row of rows.results) {
+  for (const row of rows) {
     const definition = documentPacketDefinitions.find(
       (candidate) => candidate.slug === row.slug
     );
     if (!definition) {
       continue;
     }
-    let packet = packets.get(row.packet_id);
+    let packet = packets.get(row.packetId);
     if (!packet) {
       packet = {
         description: definition.description,
-        id: row.packet_id,
-        isDefault: row.is_default === 1,
+        id: row.packetId,
+        isDefault: row.isDefault === 1,
         items: [],
         missingCategories: [],
-        name: row.packet_name,
+        name: row.packetName,
         slug: definition.slug,
       };
-      packets.set(row.packet_id, packet);
+      packets.set(row.packetId, packet);
     }
     if (
       row.category &&
-      row.document_id &&
+      row.documentId &&
       row.filename &&
       row.position !== null
     ) {
       packet.items.push({
         category: row.category,
-        documentId: row.document_id,
+        documentId: row.documentId,
         filename: row.filename,
         position: row.position,
       });
@@ -191,15 +206,23 @@ export async function listDocumentPackets(
   return [...packets.values()];
 }
 
+// Ordered two-statement D1 batch (clear the previous default, then set the
+// new one); batch atomicity depends on statement ordering, so it stays raw.
 export async function setDefaultDocumentPacket(
   db: D1Database,
   userId: string,
   packetId: string
 ): Promise<void> {
-  const packet = await db
-    .prepare("SELECT id FROM user_document_packets WHERE id=? AND user_id=?")
-    .bind(packetId, userId)
-    .first();
+  const packet = await getDb(db)
+    .select({ id: userDocumentPackets.id })
+    .from(userDocumentPackets)
+    .where(
+      and(
+        eq(userDocumentPackets.id, packetId),
+        eq(userDocumentPackets.userId, userId)
+      )
+    )
+    .get();
   if (!packet) {
     throw new Error("Document packet not found");
   }
@@ -224,39 +247,38 @@ export async function addDocumentToPacketVacancies(
   document: { category: string; id: string }
 ): Promise<void> {
   await ensureDocumentPackets(db, userId);
-  const packets = await db
-    .prepare("SELECT id,slug FROM user_document_packets WHERE user_id=?")
-    .bind(userId)
-    .all<{ id: string; slug: DocumentPacketSlug }>();
+  const packets = await getDb(db)
+    .select({
+      id: userDocumentPackets.id,
+      slug: userDocumentPackets.slug,
+    })
+    .from(userDocumentPackets)
+    .where(eq(userDocumentPackets.userId, userId));
   const timestamp = new Date().toISOString();
-  const statements: D1PreparedStatement[] = [];
-  for (const packet of packets.results) {
+  const rows: (typeof userDocumentPacketItems.$inferInsert)[] = [];
+  for (const packet of packets) {
     const definition = documentPacketDefinitions.find(
-      (candidate) => candidate.slug === packet.slug
+      (candidate) => candidate.slug === (packet.slug as DocumentPacketSlug)
     );
     const categories: readonly string[] = definition?.categories ?? [];
     const position = categories.indexOf(document.category);
     if (position < 0) {
       continue;
     }
-    statements.push(
-      db
-        .prepare(
-          `INSERT OR IGNORE INTO user_document_packet_items
-          (packet_id,category,document_id,position,created_at,updated_at)
-         VALUES (?,?,?,?,?,?)`
-        )
-        .bind(
-          packet.id,
-          document.category,
-          document.id,
-          position,
-          timestamp,
-          timestamp
-        )
-    );
+    rows.push({
+      category: document.category,
+      createdAt: timestamp,
+      documentId: document.id,
+      packetId: packet.id,
+      position,
+      updatedAt: timestamp,
+    });
   }
-  if (statements.length > 0) {
-    await db.batch(statements);
+  if (rows.length > 0) {
+    await getDb(db)
+      .insert(userDocumentPacketItems)
+      .values(rows)
+      .onConflictDoNothing()
+      .run();
   }
 }

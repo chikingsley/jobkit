@@ -1,3 +1,10 @@
+import { and, desc, eq } from "drizzle-orm";
+import { getDb } from "../db/client";
+import {
+  campaignDeliveryAuthorizationEvents,
+  campaignDeliveryAuthorizations,
+} from "../db/schema/campaigns";
+
 export interface CampaignDeliveryAuthorization {
   authorizedAt: string | null;
   authorizedBy: string;
@@ -23,54 +30,44 @@ export interface CampaignDeliveryAuthorizationWrite {
   userId: string;
 }
 
-interface AuthorizationRow {
-  authorized_at: string | null;
-  authorized_by: string;
-  authorized_scope: string;
-  enabled: number;
-  updated_at: string;
-}
-
-interface EventRow {
-  acting_user_id: string;
-  authorized_scope: string;
-  created_at: string;
-  enabled: number;
-  id: string;
-  reason: string;
-}
-
 export async function campaignDeliveryEnabled(db: D1Database, userId: string) {
-  const enabled = await db
-    .prepare(
-      `SELECT enabled FROM campaign_delivery_authorizations
-        WHERE user_id=? AND authorized_scope='campaigns'`
+  const row = await getDb(db)
+    .select({ enabled: campaignDeliveryAuthorizations.enabled })
+    .from(campaignDeliveryAuthorizations)
+    .where(
+      and(
+        eq(campaignDeliveryAuthorizations.userId, userId),
+        eq(campaignDeliveryAuthorizations.authorizedScope, "campaigns")
+      )
     )
-    .bind(userId)
-    .first<number>("enabled");
-  return Boolean(enabled);
+    .get();
+  return Boolean(row?.enabled);
 }
 
 export async function readCampaignDeliveryAuthorization(
   db: D1Database,
   userId: string
 ): Promise<CampaignDeliveryAuthorization | null> {
-  const row = await db
-    .prepare(
-      `SELECT enabled,authorized_scope,authorized_at,authorized_by,updated_at
-         FROM campaign_delivery_authorizations WHERE user_id=?`
-    )
-    .bind(userId)
-    .first<AuthorizationRow>();
+  const row = await getDb(db)
+    .select({
+      authorizedAt: campaignDeliveryAuthorizations.authorizedAt,
+      authorizedBy: campaignDeliveryAuthorizations.authorizedBy,
+      authorizedScope: campaignDeliveryAuthorizations.authorizedScope,
+      enabled: campaignDeliveryAuthorizations.enabled,
+      updatedAt: campaignDeliveryAuthorizations.updatedAt,
+    })
+    .from(campaignDeliveryAuthorizations)
+    .where(eq(campaignDeliveryAuthorizations.userId, userId))
+    .get();
   if (!row) {
     return null;
   }
   return {
-    authorizedAt: row.authorized_at,
-    authorizedBy: row.authorized_by,
+    authorizedAt: row.authorizedAt,
+    authorizedBy: row.authorizedBy,
     enabled: Boolean(row.enabled),
-    scope: row.authorized_scope,
-    updatedAt: row.updated_at,
+    scope: row.authorizedScope,
+    updatedAt: row.updatedAt,
   };
 }
 
@@ -78,24 +75,34 @@ export async function listCampaignDeliveryAuthorizationEvents(
   db: D1Database,
   userId: string
 ): Promise<CampaignDeliveryAuthorizationEvent[]> {
-  const rows = await db
-    .prepare(
-      `SELECT id,acting_user_id,enabled,authorized_scope,reason,created_at
-         FROM campaign_delivery_authorization_events
-        WHERE user_id=? ORDER BY created_at DESC,id DESC LIMIT 200`
+  const rows = await getDb(db)
+    .select({
+      actingUserId: campaignDeliveryAuthorizationEvents.actingUserId,
+      authorizedScope: campaignDeliveryAuthorizationEvents.authorizedScope,
+      createdAt: campaignDeliveryAuthorizationEvents.createdAt,
+      enabled: campaignDeliveryAuthorizationEvents.enabled,
+      id: campaignDeliveryAuthorizationEvents.id,
+      reason: campaignDeliveryAuthorizationEvents.reason,
+    })
+    .from(campaignDeliveryAuthorizationEvents)
+    .where(eq(campaignDeliveryAuthorizationEvents.userId, userId))
+    .orderBy(
+      desc(campaignDeliveryAuthorizationEvents.createdAt),
+      desc(campaignDeliveryAuthorizationEvents.id)
     )
-    .bind(userId)
-    .all<EventRow>();
-  return rows.results.map((row) => ({
-    actingUserId: row.acting_user_id,
-    createdAt: row.created_at,
+    .limit(200);
+  return rows.map((row) => ({
+    actingUserId: row.actingUserId,
+    createdAt: row.createdAt,
     enabled: Boolean(row.enabled),
     id: row.id,
     reason: row.reason,
-    scope: row.authorized_scope,
+    scope: row.authorizedScope,
   }));
 }
 
+// Ordered two-statement D1 batch (authorization upsert plus audit event);
+// batch atomicity depends on statement ordering, so it stays raw SQL.
 export async function writeCampaignDeliveryAuthorization(
   db: D1Database,
   input: CampaignDeliveryAuthorizationWrite
