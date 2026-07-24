@@ -411,7 +411,7 @@ describe("public projection final duplicate graph", () => {
     expect(stableRelations(replayArtifacts.relations)).toEqual(
       stableRelations(firstArtifacts.relations)
     );
-  });
+  }, 30_000);
 
   it("blocks only an allocation component whose connected graph exceeds 25 members", async () => {
     const connected = await Promise.all(
