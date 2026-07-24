@@ -3,6 +3,11 @@ export type ApiRequest = (
   init?: RequestInit
 ) => Promise<Response>;
 
+export async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await apiRequest(path, init);
+  return (await response.json()) as T;
+}
+
 export const apiRequest: ApiRequest = async (path, init) => {
   const response = await fetch(path, { credentials: "same-origin", ...init });
   if (response.ok) {

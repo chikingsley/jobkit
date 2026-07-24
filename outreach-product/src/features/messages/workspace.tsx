@@ -1,15 +1,17 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { ChevronLeftIcon, RefreshCwIcon } from "lucide-react";
 import { useEffect } from "react";
-import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GmailConnection } from "@/features/messages/gmail-connection";
+import {
+  messagesKeys,
+  useMarkThreadRead,
+  useMessageThread,
+  useMessageThreads,
+} from "@/features/messages/queries";
 import { MessageThreadItem } from "@/features/messages/thread-item";
 import { MessageThread } from "@/features/messages/thread-view";
-import type {
-  MessageThreadDetail,
-  MessageThreadSummary,
-} from "@/features/messages/types";
 import { useMessagesQueryState } from "@/features/workspace/query-state";
 import { SplitWorkspace } from "@/features/workspace/split-workspace";
 import type { ApiRequest } from "@/lib/api";
@@ -23,21 +25,8 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
     selectedThreadId,
     setSelectedThreadId,
   } = useMessagesQueryState();
-
-  const {
-    data: threads,
-    isLoading,
-    mutate,
-  } = useSWR(
-    "/api/messages",
-    async (path) => {
-      const payload = (await (await request(path)).json()) as {
-        threads: MessageThreadSummary[];
-      };
-      return payload.threads;
-    },
-    { refreshInterval: 30_000 }
-  );
+  const queryClient = useQueryClient();
+  const { data: threads, isLoading } = useMessageThreads();
 
   const activeThreadId = selectedThreadId || threads?.[0]?.threadId || "";
 
@@ -48,34 +37,20 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
     }
   }, [selectedThreadId, setSelectedThreadId, threads]);
 
-  const {
-    data: detail,
-    isLoading: detailLoading,
-    mutate: mutateDetail,
-  } = useSWR(
-    activeThreadId
-      ? `/api/messages/threads/${encodeURIComponent(activeThreadId)}`
-      : null,
-    async (path) => {
-      const payload = (await (await request(path)).json()) as {
-        thread: MessageThreadDetail;
-      };
-      return payload.thread;
-    }
-  );
+  const { data: detail, isLoading: detailLoading } =
+    useMessageThread(activeThreadId);
+  const markThreadRead = useMarkThreadRead();
 
   const unreadCount =
     threads?.find((thread) => thread.threadId === activeThreadId)
       ?.unreadCount ?? 0;
+  const { isPending: markingRead, mutate: markRead } = markThreadRead;
   useEffect(() => {
-    if (!(detail && activeThreadId) || unreadCount === 0) {
+    if (!(detail && activeThreadId) || unreadCount === 0 || markingRead) {
       return;
     }
-    void request(
-      `/api/messages/threads/${encodeURIComponent(activeThreadId)}/read`,
-      { method: "POST" }
-    ).then(() => mutate());
-  }, [detail, activeThreadId, unreadCount, request, mutate]);
+    markRead(activeThreadId);
+  }, [detail, activeThreadId, unreadCount, markingRead, markRead]);
 
   return (
     <SplitWorkspace
@@ -98,7 +73,11 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
               </div>
               <MessageThread
                 detail={detail}
-                onUpdated={() => mutateDetail()}
+                onUpdated={() =>
+                  queryClient.invalidateQueries({
+                    queryKey: messagesKeys.thread(activeThreadId),
+                  })
+                }
                 request={request}
               />
             </>
@@ -127,14 +106,18 @@ export function MessagesWorkspace({ request }: { request: ApiRequest }) {
             )}
             <Button
               aria-label="Refresh messages"
-              onClick={() => void mutate()}
+              onClick={() =>
+                void queryClient.invalidateQueries({
+                  queryKey: messagesKeys.threads,
+                })
+              }
               size="icon-sm"
               variant="ghost"
             >
               <RefreshCwIcon className={cn(isLoading && "animate-spin")} />
             </Button>
           </div>
-          <GmailConnection request={request} />
+          <GmailConnection />
           <ScrollArea className="min-h-0 flex-1">
             <div className="flex flex-col gap-1 p-2">
               {threads?.map((thread) => (

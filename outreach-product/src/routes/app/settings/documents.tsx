@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  useDocuments,
+  useInvalidateDocuments,
+} from "@/features/documents/queries";
 import { DocumentsView } from "@/features/documents/view";
-import { useWorkspaceContext } from "@/features/workspace/context";
 import { WorkspacePage } from "@/features/workspace/shell";
 import { apiRequest } from "@/lib/api";
 
@@ -9,12 +12,13 @@ export const Route = createFileRoute("/app/settings/documents")({
 });
 
 function DocumentsRoute() {
-  const { documents, loadDocuments } = useWorkspaceContext();
+  const documentsQuery = useDocuments();
+  const invalidateDocuments = useInvalidateDocuments();
   return (
     <WorkspacePage>
       <DocumentsView
-        documents={documents}
-        onChanged={loadDocuments}
+        documents={documentsQuery.data ?? []}
+        onChanged={invalidateDocuments}
         request={apiRequest}
       />
     </WorkspacePage>

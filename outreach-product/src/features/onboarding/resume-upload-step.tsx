@@ -1,6 +1,5 @@
 import { FileText, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,10 +10,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  AgentRunnerConnectionCard,
-  useAgentRunners,
-} from "@/features/agents/runner-connection-card";
+import { useAgentRunners } from "@/features/agents/queries";
+import { AgentRunnerConnectionCard } from "@/features/agents/runner-connection-card";
+import { useProfileImportStatus } from "@/features/onboarding/queries";
 import type {
   OnboardingState,
   ProfileImportQueuedResult,
@@ -49,14 +47,10 @@ export function ResumeUploadStep({
   const [importId, setImportId] = useState<string | null>(() =>
     initialImport?.status === "processing" ? initialImport.id : null
   );
-  const { hasCapability, isLoading: runnersLoading } =
-    useAgentRunners(apiRequest);
+  const { hasCapability, isLoading: runnersLoading } = useAgentRunners();
   const canExtract = hasCapability("extraction");
-  const { data: importState, error: importStatusError } = useSWR(
-    importId ? "/api/onboarding" : null,
-    async (path) => (await (await apiRequest(path)).json()) as OnboardingState,
-    { errorRetryInterval: 3000, refreshInterval: 1500 }
-  );
+  const { data: importState, error: importStatusError } =
+    useProfileImportStatus(importId !== null);
 
   useEffect(() => {
     if (!(importId && importState?.profileImport?.id === importId)) {
@@ -155,7 +149,6 @@ export function ResumeUploadStep({
       {runnersLoading || canExtract ? null : (
         <AgentRunnerConnectionCard
           description="Resume import runs through your Codex login. Pair it once, then this page can extract the resume into reviewable profile facts."
-          request={apiRequest}
           title="Connect Codex before importing"
         />
       )}

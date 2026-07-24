@@ -1,7 +1,6 @@
 import { Pause, Plus, Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import useSWR from "swr";
 import { SettingsPage } from "@/components/settings-page";
 import { SettingsSection } from "@/components/settings-section";
 import { Button } from "@/components/ui/button";
@@ -17,10 +16,13 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import {
+  useAutomationPolicy,
+  useSaveAutomationPolicy,
+} from "@/features/automation/queries";
+import {
   type AutomationPolicy,
   defaultAutomationPolicy,
 } from "@/features/automation/schema";
-import type { ApiRequest } from "@/lib/api";
 
 const modeOptions = [
   { label: "Off", value: "off" },
@@ -28,18 +30,12 @@ const modeOptions = [
   { label: "Send automatically", value: "auto" },
 ] as const;
 
-export function AutomationView({ request }: { request: ApiRequest }) {
-  const { data, isLoading, mutate } = useSWR(
-    "/api/automation-policy",
-    async (path) =>
-      (await (await request(path)).json()) as {
-        policy: AutomationPolicy;
-        updatedAt: string | null;
-      }
-  );
+export function AutomationView() {
+  const { data, isLoading } = useAutomationPolicy();
+  const savePolicy = useSaveAutomationPolicy();
   const [draft, setDraft] = useState<AutomationPolicy>(defaultAutomationPolicy);
   const [dirty, setDirty] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const saving = savePolicy.isPending;
 
   useEffect(() => {
     if (data?.policy) {
@@ -54,25 +50,13 @@ export function AutomationView({ request }: { request: ApiRequest }) {
   }
 
   async function save() {
-    setSaving(true);
     try {
-      const response = await request("/api/automation-policy", {
-        body: JSON.stringify(draft),
-        headers: { "content-type": "application/json" },
-        method: "PUT",
-      });
-      const saved = (await response.json()) as {
-        policy: AutomationPolicy;
-        updatedAt: string;
-      };
-      await mutate(saved, { revalidate: false });
+      await savePolicy.mutateAsync(draft);
       toast.success("Automation policy saved");
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Automation policy failed"
       );
-    } finally {
-      setSaving(false);
     }
   }
 

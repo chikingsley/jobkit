@@ -1,9 +1,11 @@
 import { LoaderCircleIcon, MailCheckIcon, MailIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import useSWR from "swr";
 import { Button } from "@/components/ui/button";
-import type { ApiRequest } from "@/lib/api";
+import {
+  useGmailStatus,
+  useStartGmailWatch,
+} from "@/features/messages/queries";
 import { authClient } from "@/lib/auth-client";
 
 const gmailScopes = [
@@ -11,26 +13,12 @@ const gmailScopes = [
   "https://www.googleapis.com/auth/gmail.readonly",
 ];
 
-interface GmailStatus {
-  available: boolean;
-  connected: boolean;
-  emailAddress: string;
-  watch: null | {
-    expirationAt: string;
-    lastError: string;
-    lastSyncedAt: string | null;
-    status: "active" | "error" | "expired";
-  };
-}
-
-export function GmailConnection({ request }: { request: ApiRequest }) {
+export function GmailConnection() {
   const [busy, setBusy] = useState(false);
   const callbackHandled = useRef(false);
-  const { data: status, mutate } = useSWR(
-    "/api/gmail/status",
-    async (path) => (await (await request(path)).json()) as GmailStatus,
-    { refreshInterval: 60_000 }
-  );
+  const { data: status } = useGmailStatus();
+  const startWatchMutation = useStartGmailWatch();
+  const { mutateAsync: startGmailWatch } = startWatchMutation;
 
   useEffect(() => {
     const linked = new URLSearchParams(window.location.search).get("gmail");
@@ -40,10 +28,8 @@ export function GmailConnection({ request }: { request: ApiRequest }) {
     callbackHandled.current = true;
     window.history.replaceState({}, "", window.location.pathname);
     setBusy(true);
-    void request("/api/gmail/watch", { method: "POST" })
-      .then(async (response) => {
-        const result = (await response.json()) as { messagesRecorded: number };
-        await mutate();
+    startGmailWatch()
+      .then((result) => {
         toast.success(
           result.messagesRecorded > 0
             ? `Gmail connected and ${result.messagesRecorded} existing replies synced`
@@ -56,7 +42,7 @@ export function GmailConnection({ request }: { request: ApiRequest }) {
         )
       )
       .finally(() => setBusy(false));
-  }, [mutate, request]);
+  }, [startGmailWatch]);
 
   if (!status) {
     return null;
@@ -105,8 +91,7 @@ export function GmailConnection({ request }: { request: ApiRequest }) {
   const startWatch = async () => {
     setBusy(true);
     try {
-      await request("/api/gmail/watch", { method: "POST" });
-      await mutate();
+      await startGmailWatch();
       toast.success("Gmail reply sync is active");
     } catch (error) {
       toast.error(

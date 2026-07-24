@@ -1,11 +1,15 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Check, GitCompareArrows, Search } from "lucide-react";
 import { useMemo, useState } from "react";
-import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { classificationLabel } from "@/features/test-lab/classification-labels";
 import { ClassificationReviewDetail } from "@/features/test-lab/classification-review-detail";
+import {
+  testLabKeys,
+  useClassificationReview as useClassificationReviewQuery,
+} from "@/features/test-lab/queries";
 import type {
   ClassificationAdjudication,
   ClassificationReviewResponse,
@@ -23,11 +27,8 @@ export function ClassificationReview({
   setSelectedCaseId: (itemId: string) => void;
 }) {
   const [query, setQuery] = useState("");
-  const { data, isLoading, mutate } = useSWR(
-    "/api/test-lab/classification-review",
-    async (path) =>
-      (await (await request(path)).json()) as ClassificationReviewResponse
-  );
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useClassificationReviewQuery();
   const adjudications = useMemo(
     () =>
       new Map(
@@ -60,7 +61,9 @@ export function ClassificationReview({
   }, [adjudications, data, query]);
 
   async function decisionChanged(itemId: string) {
-    await mutate();
+    await queryClient.invalidateQueries({
+      queryKey: testLabKeys.classificationReview,
+    });
     const next = data?.cases.find(
       (item) => item.itemId !== itemId && !adjudications.has(item.itemId)
     );

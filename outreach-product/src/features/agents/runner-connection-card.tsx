@@ -1,7 +1,6 @@
 import { Copy, Terminal, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,92 +11,49 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { AgentCapability } from "@/features/agents/schema";
-import type { ApiRequest } from "@/lib/api";
-
-export interface AgentRunnerSummary {
-  capabilities: AgentCapability[];
-  codexVersion: string;
-  createdAt: string;
-  id: string;
-  lastSeenAt: string | null;
-  name: string;
-  revokedAt: string | null;
-}
-
-interface AgentPairing {
-  code: string;
-  expiresAt: string;
-}
-
-const RUNNER_ONLINE_WINDOW_MS = 60 * 1000;
-
-export function useAgentRunners(request: ApiRequest) {
-  const result = useSWR(
-    "/api/agent-runners",
-    async (path) =>
-      (await (await request(path)).json()) as {
-        runners: AgentRunnerSummary[];
-      },
-    { refreshInterval: 3000 }
-  );
-  const activeRunners = (result.data?.runners ?? []).filter(isRunnerOnline);
-  return {
-    ...result,
-    activeRunners,
-    hasCapability: (capability: AgentCapability) =>
-      activeRunners.some((runner) => runner.capabilities.includes(capability)),
-  };
-}
+import {
+  type AgentPairing,
+  type AgentRunnerSummary,
+  isRunnerOnline,
+  useAgentRunners,
+  useCreateAgentPairing,
+  useRevokeAgentRunner,
+} from "@/features/agents/queries";
 
 export function AgentRunnerConnectionCard({
   description = "Pair a local Codex login with JobKit. The agent receives only queued task inputs and returns schema-validated results over outbound HTTPS.",
-  request,
   title = "Codex agent",
 }: {
   description?: string;
-  request: ApiRequest;
   title?: string;
 }) {
-  const { activeRunners, data, mutate } = useAgentRunners(request);
+  const { activeRunners, runners } = useAgentRunners();
+  const createPairingMutation = useCreateAgentPairing();
+  const revokeMutation = useRevokeAgentRunner();
   const [pairing, setPairing] = useState<AgentPairing | null>(null);
-  const [busy, setBusy] = useState(false);
+  const busy = createPairingMutation.isPending;
 
   async function createPairing() {
-    setBusy(true);
     try {
-      const response = await request("/api/agent-runner-pairings", {
-        body: JSON.stringify({
-          capabilities: [
-            "research",
-            "extraction",
-            "drafting",
-            "evaluation",
-            "operations",
-          ],
-        }),
-        headers: { "content-type": "application/json" },
-        method: "POST",
-      });
-      const result = (await response.json()) as {
-        message: string;
-        pairing: AgentPairing;
-      };
+      const result = await createPairingMutation.mutateAsync([
+        "research",
+        "extraction",
+        "drafting",
+        "evaluation",
+        "operations",
+      ]);
       setPairing(result.pairing);
       toast.success(result.message);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Agent pairing failed"
       );
-    } finally {
-      setBusy(false);
     }
   }
 
   async function revoke(runnerId: string) {
     try {
-      await request(`/api/agent-runners/${runnerId}`, { method: "DELETE" });
-      await mutate();
+      await revokeMutation.mutateAsync(runnerId);
       toast.success("Codex agent revoked");
     } catch (error) {
       toast.error(
@@ -141,7 +97,7 @@ export function AgentRunnerConnectionCard({
             </Button>
           </div>
         ) : null}
-        {(data?.runners ?? []).map((runner) => (
+        {runners.map((runner) => (
           <div
             className="flex items-center justify-between gap-3 rounded-lg border p-3"
             key={runner.id}
@@ -190,14 +146,6 @@ export function AgentRunnerConnectionCard({
         </Button>
       </CardFooter>
     </Card>
-  );
-}
-
-function isRunnerOnline(runner: AgentRunnerSummary) {
-  return Boolean(
-    !runner.revokedAt &&
-      runner.lastSeenAt &&
-      Date.parse(runner.lastSeenAt) >= Date.now() - RUNNER_ONLINE_WINDOW_MS
   );
 }
 

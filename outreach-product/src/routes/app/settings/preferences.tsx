@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  usePreferences,
+  useSetPreferences,
+} from "@/features/preferences/queries";
 import { PreferencesView } from "@/features/preferences/view";
-import { useWorkspaceContext } from "@/features/workspace/context";
 import { ViewLoading, WorkspacePage } from "@/features/workspace/shell";
 import { apiRequest } from "@/lib/api";
 
@@ -9,13 +12,14 @@ export const Route = createFileRoute("/app/settings/preferences")({
 });
 
 function PreferencesRoute() {
-  const { preferences, setPreferences } = useWorkspaceContext();
+  const preferencesQuery = usePreferences();
+  const setPreferences = useSetPreferences();
   return (
     <WorkspacePage>
-      {preferences ? (
+      {preferencesQuery.data ? (
         <PreferencesView
           onSaved={setPreferences}
-          preferences={preferences}
+          preferences={preferencesQuery.data}
           request={apiRequest}
         />
       ) : (

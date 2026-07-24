@@ -2,7 +2,6 @@ import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ChevronRight, ExternalLink, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import useSWR from "swr";
 import { SettingsPage } from "@/components/settings-page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,30 +14,22 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  useCountryDetail,
+  useQueueCountrySweep,
+} from "@/features/countries/queries";
 import type {
   CountryCampaignReference,
-  CountryDetail,
   CountryOpportunitySummary,
   CountryOrganizationSummary,
   CountrySweepSummary,
 } from "@/features/countries/types";
-import type { ApiRequest } from "@/lib/api";
 
-export function CountryView({
-  countryCode,
-  request,
-}: {
-  countryCode: string;
-  request: ApiRequest;
-}) {
+export function CountryView({ countryCode }: { countryCode: string }) {
   const navigate = useNavigate();
   const [cityInput, setCityInput] = useState("");
-  const { data, isLoading, mutate } = useSWR(
-    countryCode ? `/api/countries/${countryCode}` : null,
-    async (path) =>
-      ((await (await request(path)).json()) as { country: CountryDetail })
-        .country
-  );
+  const { data, isLoading } = useCountryDetail(countryCode);
+  const queueSweep = useQueueCountrySweep(countryCode);
 
   async function refresh() {
     const cities = [
@@ -50,19 +41,7 @@ export function CountryView({
       ),
     ];
     try {
-      const response = await request(`/api/countries/${countryCode}/sweeps`, {
-        body: JSON.stringify({
-          cities,
-          includeDirectories: true,
-          includeKnownSources: true,
-          includeMaps: true,
-          includeSearch: true,
-        }),
-        headers: { "content-type": "application/json" },
-        method: "POST",
-      });
-      const result = (await response.json()) as { message?: string };
-      await mutate();
+      const result = await queueSweep.mutateAsync(cities);
       toast.success(result.message ?? "Country refresh queued");
     } catch (error) {
       toast.error(

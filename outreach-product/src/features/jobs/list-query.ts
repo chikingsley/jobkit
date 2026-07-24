@@ -1,6 +1,44 @@
 import type { JobSort } from "./sorting";
 
 export const PRIVATE_JOB_PAGE_SIZE = 100;
+export const PRIVATE_JOB_EXCLUDED_BOARD = "anesl";
+
+export interface JobListFilters {
+  country: string;
+  fit: string;
+  publicJob: string;
+  showExcluded: boolean;
+  sort: JobSort;
+}
+
+export function jobListFilters(
+  partial: Partial<JobListFilters> = {}
+): JobListFilters {
+  return {
+    country: partial.country ?? "all",
+    fit: partial.fit ?? "all",
+    publicJob: partial.publicJob ?? "",
+    showExcluded: partial.showExcluded ?? false,
+    sort: partial.sort ?? "stated-hourly",
+  };
+}
+
+export function privateJobListQuery(
+  filters: JobListFilters,
+  page: { cursor: string; offset: number }
+): PrivateJobListQuery {
+  return {
+    country: filters.country,
+    cursor: page.cursor,
+    excludeBoard: PRIVATE_JOB_EXCLUDED_BOARD,
+    fit: filters.fit,
+    limit: PRIVATE_JOB_PAGE_SIZE,
+    offset: page.offset,
+    publicJob: filters.publicJob,
+    showExcluded: filters.showExcluded,
+    sort: filters.sort,
+  };
+}
 
 export interface PrivateJobListQuery {
   country: string;

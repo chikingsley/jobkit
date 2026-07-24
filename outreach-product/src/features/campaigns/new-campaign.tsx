@@ -2,7 +2,6 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowLeft, Check, Search } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,15 +9,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import type {
-  CampaignDetail,
-  CampaignMarketOption,
-  CampaignSetup,
-} from "@/features/campaigns/types";
-import type { ApiRequest } from "@/lib/api";
+import {
+  useCampaignSetup,
+  useCreateCampaign,
+} from "@/features/campaigns/queries";
+import type { CampaignMarketOption } from "@/features/campaigns/types";
 import { cn } from "@/lib/utils";
 
-export function NewCampaignView({ request }: { request: ApiRequest }) {
+export function NewCampaignView() {
   const navigate = useNavigate();
   const { country: initialCountry = "" } = useSearch({
     from: "/app/campaigns/new",
@@ -31,17 +29,12 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
   const [stopAfter, setStopAfter] = useState<number | null>(null);
   const [postedPercent, setPostedPercent] = useState<number | null>(null);
   const [firstFive, setFirstFive] = useState(true);
-  const [busy, setBusy] = useState(false);
   const {
     data: setup,
     error: setupError,
-    mutate: retrySetup,
-  } = useSWR("/api/campaigns/setup", async (path) => {
-    const payload = (await (await request(path)).json()) as {
-      setup: CampaignSetup;
-    };
-    return payload.setup;
-  });
+    refetch: retrySetup,
+  } = useCampaignSetup();
+  const createCampaign = useCreateCampaign();
 
   if (!setup) {
     return (
@@ -87,28 +80,21 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
     });
   }
 
+  const busy = createCampaign.isPending;
+
   async function create() {
     if (selected.length === 0) {
       toast.error("Choose at least one country");
       return;
     }
-    setBusy(true);
     try {
-      const response = await request("/api/campaigns", {
-        body: JSON.stringify({
-          countryCodes: selected,
-          dailyPace: effectiveDailyPace,
-          firstFiveRequired: firstFive,
-          postedTargetPercent: effectivePostedPercent,
-          stopAfterHumanReplies: effectiveStopAfter,
-        }),
-        headers: { "content-type": "application/json" },
-        method: "POST",
+      const payload = await createCampaign.mutateAsync({
+        countryCodes: selected,
+        dailyPace: effectiveDailyPace,
+        firstFiveRequired: firstFive,
+        postedTargetPercent: effectivePostedPercent,
+        stopAfterHumanReplies: effectiveStopAfter,
       });
-      const payload = (await response.json()) as {
-        campaign: CampaignDetail;
-        message: string;
-      };
       toast.success(payload.message);
       void navigate({
         params: { campaignId: payload.campaign.id },
@@ -118,8 +104,6 @@ export function NewCampaignView({ request }: { request: ApiRequest }) {
       toast.error(
         error instanceof Error ? error.message : "Campaign could not be created"
       );
-    } finally {
-      setBusy(false);
     }
   }
 

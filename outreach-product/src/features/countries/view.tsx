@@ -1,33 +1,18 @@
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronRight, Globe2, Search } from "lucide-react";
 import { useMemo, useState } from "react";
-import useSWR from "swr";
 import { SettingsPage } from "@/components/settings-page";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useCountryMarkets } from "@/features/countries/queries";
 import type { CountryMarketSummary } from "@/features/countries/types";
 import { countryOptions } from "@/form-options";
-import type { ApiRequest } from "@/lib/api";
 import type { Preferences } from "@/profile-types";
 
-export function CountriesView({
-  preferences,
-  request,
-}: {
-  preferences: Preferences;
-  request: ApiRequest;
-}) {
+export function CountriesView({ preferences }: { preferences: Preferences }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const { data, isLoading } = useSWR(
-    "/api/countries",
-    async (path) =>
-      (
-        (await (await request(path)).json()) as {
-          countries: CountryMarketSummary[];
-        }
-      ).countries
-  );
+  const { data, isLoading } = useCountryMarkets();
   const markets = useMemo(() => {
     const byCode = new Map(
       (data ?? []).map((market) => [market.countryCode, market])

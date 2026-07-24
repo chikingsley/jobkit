@@ -22,7 +22,7 @@ export function OperatorView({ request }: { request: ApiRequest }) {
       title="Operator tools"
     >
       <InventoryStatusCard request={request} />
-      <AgentTaskHistory request={request} />
+      <AgentTaskHistory />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

@@ -1,7 +1,6 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import useSWR from "swr";
 import { SettingsPage } from "@/components/settings-page";
 import {
   AlertDialog,
@@ -22,11 +21,15 @@ import { TestLabCaseBrowser } from "@/features/test-lab/case-browser";
 import { ClassificationReview } from "@/features/test-lab/classification-review";
 import { DeliveryLab } from "@/features/test-lab/delivery-lab";
 import { DocumentLab } from "@/features/test-lab/document-lab";
+import {
+  useInvalidateTestLabOverview,
+  useReplayTestLabRun,
+  useResetTestLab,
+  useTestLabOverview,
+} from "@/features/test-lab/queries";
 import { TestLabRunResult } from "@/features/test-lab/run-result";
-import type { TestLabResponse, TestLabRun } from "@/features/test-lab/types";
+import type { TestLabRun } from "@/features/test-lab/types";
 import type { ApiRequest } from "@/lib/api";
-
-const ACTIVE_REFRESH_MS = 2000;
 
 export function TestLabView({ request }: { request: ApiRequest }) {
   const navigate = useNavigate({ from: "/app/operator/test-lab" });
@@ -34,22 +37,14 @@ export function TestLabView({ request }: { request: ApiRequest }) {
   const selectedCaseId = search.case ?? "";
   const selectedClassificationId = search.classification ?? "";
   const activeTab = search.tab ?? "cases";
-  const { data, isLoading, mutate } = useSWR(
-    "/api/test-lab",
-    async (path) => (await (await request(path)).json()) as TestLabResponse,
-    {
-      refreshInterval: (current) =>
-        current?.summary.active ? ACTIVE_REFRESH_MS : 0,
-    }
-  );
+  const { data, isLoading } = useTestLabOverview();
+  const invalidateOverview = useInvalidateTestLabOverview();
+  const replayMutation = useReplayTestLabRun();
+  const resetMutation = useResetTestLab();
 
   async function replay(run: TestLabRun) {
     try {
-      const response = await request(`/api/test-lab/runs/${run.id}/replay`, {
-        method: "POST",
-      });
-      const result = (await response.json()) as { message: string };
-      await mutate();
+      const result = await replayMutation.mutateAsync(run.id);
       toast.success(result.message);
     } catch (error) {
       toast.error(
@@ -60,8 +55,7 @@ export function TestLabView({ request }: { request: ApiRequest }) {
 
   async function reset() {
     try {
-      await request("/api/test-lab", { method: "DELETE" });
-      await mutate();
+      await resetMutation.mutateAsync();
       toast.success("Test Lab history reset");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Reset failed");
@@ -99,7 +93,11 @@ export function TestLabView({ request }: { request: ApiRequest }) {
           {data.summary.failed} failed
         </Badge>
         <div className="ml-auto flex gap-2">
-          <Button onClick={() => void mutate()} size="sm" variant="outline">
+          <Button
+            onClick={() => void invalidateOverview()}
+            size="sm"
+            variant="outline"
+          >
             <RotateCcw /> Refresh
           </Button>
           <ResetButton onReset={() => void reset()} />
@@ -126,7 +124,7 @@ export function TestLabView({ request }: { request: ApiRequest }) {
         <TabsContent value="cases">
           <TestLabCaseBrowser
             data={data}
-            onRefresh={() => mutate()}
+            onRefresh={invalidateOverview}
             request={request}
             selectedCaseId={selectedCaseId}
             setSelectedCaseId={(caseId) => {
@@ -173,14 +171,10 @@ export function TestLabView({ request }: { request: ApiRequest }) {
           ) : null}
         </TabsContent>
         <TabsContent value="documents">
-          <DocumentLab
-            data={data}
-            onRefresh={() => mutate()}
-            request={request}
-          />
+          <DocumentLab data={data} onRefresh={invalidateOverview} />
         </TabsContent>
         <TabsContent value="delivery">
-          <DeliveryLab request={request} />
+          <DeliveryLab />
         </TabsContent>
       </Tabs>
     </SettingsPage>

@@ -1,20 +1,37 @@
-import { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { selectVisibleJob } from "@/features/jobs/filters";
 import { JobToolbar } from "@/features/jobs/job-toolbar";
-import { PRIVATE_JOB_PAGE_SIZE } from "@/features/jobs/list-query";
+import {
+  flattenJobPages,
+  latestJobListMeta,
+  mergeJobMatches,
+} from "@/features/jobs/list-pages";
+import { jobListFilters } from "@/features/jobs/list-query";
+import {
+  jobsKeys,
+  useDraftAction,
+  useJobAction,
+  useJobDetail,
+  useJobList,
+} from "@/features/jobs/queries";
 import type { DraftMutationResult } from "@/features/jobs/types";
 import { JobsWorkspace } from "@/features/jobs/workspace";
-import { useWorkspaceContext } from "@/features/workspace/context";
+import {
+  type QualificationClaimInput,
+  useQualificationClaimMutation,
+} from "@/features/matching/queries";
+import { usePreferences } from "@/features/preferences/queries";
+import { useProfile } from "@/features/profile/queries";
 import { useJobsQueryState } from "@/features/workspace/query-state";
-import { apiRequest } from "@/lib/api";
 
 export function JobsRouteToolbar() {
-  const { countries, loadJob, loadJobs, refreshing } = useWorkspaceContext();
+  const queryClient = useQueryClient();
   const {
     countryFilter,
     fitFilter,
-    selectedJobId,
+    publicJobIntent,
     setCountryFilter,
     setFitFilter,
     setShowExcluded,
@@ -22,14 +39,18 @@ export function JobsRouteToolbar() {
     showExcluded,
     sort,
   } = useJobsQueryState();
-  const { jobs } = useWorkspaceContext();
-  const selected = selectVisibleJob(jobs, selectedJobId);
+  const filters = jobListFilters({
+    country: countryFilter,
+    fit: fitFilter,
+    publicJob: publicJobIntent,
+    showExcluded,
+    sort,
+  });
+  const listQuery = useJobList(filters);
+  const { countries } = latestJobListMeta(listQuery.data?.pages ?? []);
   const refreshJobs = useCallback(async () => {
-    await loadJobs();
-    if (selected) {
-      await loadJob(selected.id);
-    }
-  }, [loadJob, loadJobs, selected]);
+    await queryClient.invalidateQueries({ queryKey: jobsKeys.all });
+  }, [queryClient]);
 
   return (
     <JobToolbar
@@ -41,7 +62,7 @@ export function JobsRouteToolbar() {
       onRefresh={refreshJobs}
       onShowExcluded={setShowExcluded}
       onSort={setSort}
-      refreshing={refreshing}
+      refreshing={listQuery.isFetching}
       showExcluded={showExcluded}
       sort={sort}
     />
@@ -51,25 +72,6 @@ export function JobsRouteToolbar() {
 export function JobsRoute() {
   const [instruction, setInstruction] = useState("");
   const [busy, setBusy] = useState("");
-  const {
-    applyDraftMutation,
-    busyClaimKey,
-    fx,
-    jobDetailError,
-    jobDetailLoading,
-    jobDetails,
-    jobPage,
-    jobs,
-    jobsError,
-    loadJob,
-    loadJobs,
-    loadMoreJobs,
-    matches,
-    preferences,
-    profile,
-    refreshing,
-    saveQualificationClaim,
-  } = useWorkspaceContext();
   const {
     closeDetail,
     countryFilter,
@@ -83,22 +85,23 @@ export function JobsRoute() {
     showExcluded,
     sort,
   } = useJobsQueryState();
-
-  useEffect(() => {
-    void loadJobs({
-      query: {
-        country: countryFilter,
-        cursor: "",
-        excludeBoard: "anesl",
-        fit: fitFilter,
-        limit: PRIVATE_JOB_PAGE_SIZE,
-        offset: 0,
-        publicJob: publicJobIntent,
-        showExcluded,
-        sort,
-      },
-    }).catch(() => undefined);
-  }, [countryFilter, fitFilter, loadJobs, publicJobIntent, showExcluded, sort]);
+  const filters = jobListFilters({
+    country: countryFilter,
+    fit: fitFilter,
+    publicJob: publicJobIntent,
+    showExcluded,
+    sort,
+  });
+  const listQuery = useJobList(filters);
+  const pages = listQuery.data?.pages;
+  const jobs = useMemo(() => flattenJobPages(pages ?? []), [pages]);
+  const matches = useMemo(() => mergeJobMatches(pages ?? []), [pages]);
+  const { fx, page: jobPage } = latestJobListMeta(pages ?? []);
+  const profileQuery = useProfile();
+  const preferencesQuery = usePreferences();
+  const claimMutation = useQualificationClaimMutation();
+  const jobAction = useJobAction();
+  const refreshing = listQuery.isFetching;
 
   const intendedJob = publicJobIntent
     ? jobs.find((job) => job.publicJobId === publicJobIntent)
@@ -107,9 +110,9 @@ export function JobsRoute() {
     ? intendedJob
     : selectVisibleJob(jobs, selectedJobId);
   const selectedDetailId = intendedJob?.id ?? selectedJobId;
-  const selectedDetail = selectedDetailId
-    ? jobDetails.get(selectedDetailId)
-    : undefined;
+  const detailQuery = useJobDetail(selectedDetailId);
+  const draftAction = useDraftAction(selectedDetailId);
+  const selectedDetail = detailQuery.data;
   const selected = selectedDetail?.job;
 
   useEffect(() => {
@@ -129,45 +132,23 @@ export function JobsRoute() {
     setSelectedJobId,
   ]);
 
-  useEffect(() => {
-    if (
-      !selectedDetailId ||
-      selectedDetail ||
-      jobDetailLoading === selectedDetailId
-    ) {
-      return;
-    }
-    void loadJob(selectedDetailId).catch(() => undefined);
-  }, [jobDetailLoading, loadJob, selectedDetail, selectedDetailId]);
-
   async function action(path: string, body?: object) {
     if (!selected) {
       return;
     }
     setBusy(path);
     try {
-      const response = await apiRequest(path, {
-        body: body ? JSON.stringify(body) : undefined,
-        headers: { "content-type": "application/json" },
-        method: "POST",
-      });
-      const result = (await response.json()) as {
-        message?: string;
-        ok: boolean;
-      };
+      const result = await jobAction.mutateAsync({ body, path });
       setInstruction("");
-      await loadJobs({ quiet: true });
-      await loadJob(selected.id);
       toast.success(result.message ?? "Workspace updated");
     } catch (error) {
-      await loadJobs({ quiet: true }).catch(() => undefined);
       toast.error(error instanceof Error ? error.message : "Request failed");
     } finally {
       setBusy("");
     }
   }
 
-  async function draftAction(
+  async function runDraftAction(
     path: string,
     options: { body?: object; method?: "POST" | "PUT" }
   ): Promise<DraftMutationResult | null> {
@@ -176,27 +157,18 @@ export function JobsRoute() {
     }
     setBusy(path);
     try {
-      const response = await apiRequest(path, {
-        body: options.body ? JSON.stringify(options.body) : undefined,
-        headers: { "content-type": "application/json" },
-        method: options.method ?? "POST",
+      const outcome = await draftAction.mutateAsync({
+        body: options.body,
+        method: options.method,
+        path,
       });
-      if (response.status === 202) {
-        const queued = (await response.json()) as {
-          notice: string;
-          ok: true;
-        };
-        setInstruction("");
-        await loadJobs({ quiet: true });
-        await loadJob(selected.id);
-        toast.success(queued.notice);
+      setInstruction("");
+      if (outcome.kind === "queued") {
+        toast.success(outcome.notice);
         return null;
       }
-      const result = (await response.json()) as DraftMutationResult;
-      applyDraftMutation(selected.id, result);
-      setInstruction("");
-      toast.success(result.notice);
-      return result;
+      toast.success(outcome.result.notice);
+      return outcome.result;
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Draft update failed"
@@ -207,31 +179,47 @@ export function JobsRoute() {
     }
   }
 
+  async function saveQualificationClaim(input: QualificationClaimInput) {
+    try {
+      await claimMutation.mutateAsync(input);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Qualification answer failed"
+      );
+    }
+  }
+
   return (
     <JobsWorkspace
       busy={busy}
-      busyClaimKey={busyClaimKey}
+      busyClaimKey={
+        claimMutation.isPending && claimMutation.variables
+          ? claimMutation.variables.claimKey
+          : ""
+      }
       detailOpen={detailOpen || Boolean(publicJobIntent)}
       fx={fx}
       hasMore={jobPage.hasMore}
       instruction={instruction}
-      jobDetailError={jobDetailError}
-      jobDetailLoading={
-        jobDetailLoading !== "" && jobDetailLoading === selectedDetailId
-      }
+      jobDetailError={detailQuery.error?.message ?? ""}
+      jobDetailLoading={detailQuery.isLoading}
       jobs={jobs}
-      jobsError={jobsError}
+      jobsError={listQuery.error?.message ?? ""}
       jobsLoading={refreshing && jobs.length === 0}
       matches={matches}
       onAction={action}
       onCloseDetail={closeDetail}
-      onDraftAction={draftAction}
+      onDraftAction={runDraftAction}
       onInstruction={setInstruction}
-      onLoadMore={loadMoreJobs}
+      onLoadMore={async () => {
+        if (listQuery.hasNextPage && !listQuery.isFetchingNextPage) {
+          await listQuery.fetchNextPage();
+        }
+      }}
       onQualificationClaim={saveQualificationClaim}
       onSelect={openJob}
-      preferences={preferences}
-      profile={profile}
+      preferences={preferencesQuery.data ?? null}
+      profile={profileQuery.data ?? null}
       selected={selected}
       selectedId={selectedDetailId}
       selectedMatch={selectedDetail?.match}

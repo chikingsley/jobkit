@@ -1,7 +1,6 @@
 import { Download, FileCheck2, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,42 +14,13 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { ApiRequest } from "@/lib/api";
-
-interface DeliveryLabResponse {
-  allowlist: Array<{
-    createdAt: string;
-    email: string;
-    ownershipBasis: string;
-  }>;
-  captures: Array<{
-    attachments: Array<{ filename: string }>;
-    createdAt: string;
-    events: Array<{
-      createdAt: string;
-      detail: string;
-      eventType: string;
-      id: string;
-    }>;
-    id: string;
-    message: string;
-    mimeSha256: string;
-    recipient: string;
-    sizeBytes: number;
-    subject: string;
-  }>;
-  eligibleAddresses: Array<{
-    email: string;
-    ownershipBasis: string;
-  }>;
-}
-
-interface DocumentSummary {
-  content_type: string;
-  filename: string;
-  id: string;
-  size_bytes: number;
-}
+import { useDocuments } from "@/features/documents/queries";
+import {
+  useCaptureDeliveryMime,
+  useDeliveryAllowlistMutation,
+  useDeliveryLab,
+  useSimulateDeliveryEvent,
+} from "@/features/test-lab/queries";
 
 const DEFAULT_TEST_MESSAGE = `Hello,
 
@@ -59,23 +29,17 @@ This is a JobKit Test Lab delivery capture. It must be stored as MIME and must n
 Best,
 JobKit Test`;
 
-export function DeliveryLab({ request }: { request: ApiRequest }) {
-  const { data, mutate } = useSWR(
-    "/api/test-lab/delivery",
-    async (path) => (await (await request(path)).json()) as DeliveryLabResponse
-  );
-  const { data: documentsData } = useSWR(
-    "/api/documents",
-    async (path) =>
-      (await (await request(path)).json()) as {
-        documents: DocumentSummary[];
-      }
-  );
+export function DeliveryLab() {
+  const { data } = useDeliveryLab();
+  const { data: documents } = useDocuments();
+  const allowlistMutation = useDeliveryAllowlistMutation();
+  const captureMutation = useCaptureDeliveryMime();
+  const simulateMutation = useSimulateDeliveryEvent();
   const [recipient, setRecipient] = useState("");
   const [subject, setSubject] = useState("JobKit Test Lab MIME capture");
   const [message, setMessage] = useState(DEFAULT_TEST_MESSAGE);
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
-  const [busy, setBusy] = useState(false);
+  const busy = captureMutation.isPending;
 
   useEffect(() => {
     if (!recipient && data?.allowlist[0]?.email) {
@@ -85,13 +49,8 @@ export function DeliveryLab({ request }: { request: ApiRequest }) {
 
   async function allowlist(email: string) {
     try {
-      await request("/api/test-lab/delivery/allowlist", {
-        body: JSON.stringify({ email }),
-        headers: { "content-type": "application/json" },
-        method: "POST",
-      });
+      await allowlistMutation.mutateAsync({ action: "add", email });
       setRecipient(email);
-      await mutate();
       toast.success("Test address allowlisted");
     } catch (error) {
       toast.error(
@@ -102,14 +61,10 @@ export function DeliveryLab({ request }: { request: ApiRequest }) {
 
   async function removeAllowlist(email: string) {
     try {
-      await request(
-        `/api/test-lab/delivery/allowlist/${encodeURIComponent(email)}`,
-        { method: "DELETE" }
-      );
+      await allowlistMutation.mutateAsync({ action: "remove", email });
       if (recipient === email) {
         setRecipient("");
       }
-      await mutate();
       toast.success("Test address removed");
     } catch (error) {
       toast.error(
@@ -119,27 +74,18 @@ export function DeliveryLab({ request }: { request: ApiRequest }) {
   }
 
   async function capture() {
-    setBusy(true);
     try {
-      const response = await request("/api/test-lab/delivery/captures", {
-        body: JSON.stringify({
-          attachmentDocumentIds: attachmentIds,
-          message,
-          recipient,
-          subject,
-        }),
-        headers: { "content-type": "application/json" },
-        method: "POST",
+      const result = await captureMutation.mutateAsync({
+        attachmentDocumentIds: attachmentIds,
+        message,
+        recipient,
+        subject,
       });
-      const result = (await response.json()) as { message: string };
-      await mutate();
       toast.success(result.message);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "MIME capture failed"
       );
-    } finally {
-      setBusy(false);
     }
   }
 
@@ -148,12 +94,7 @@ export function DeliveryLab({ request }: { request: ApiRequest }) {
     eventType: "automated_reply" | "bounce" | "human_reply"
   ) {
     try {
-      await request(`/api/test-lab/delivery/captures/${captureId}/events`, {
-        body: JSON.stringify({ detail: "Test Lab simulation", eventType }),
-        headers: { "content-type": "application/json" },
-        method: "POST",
-      });
-      await mutate();
+      await simulateMutation.mutateAsync({ captureId, eventType });
       toast.success("Provider event simulated");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Simulation failed");
@@ -267,11 +208,11 @@ export function DeliveryLab({ request }: { request: ApiRequest }) {
               Newlines are preserved exactly in the captured text/plain body.
             </span>
           </label>
-          {(documentsData?.documents ?? []).length > 0 ? (
+          {(documents ?? []).length > 0 ? (
             <div className="grid gap-2">
               <div className="font-medium text-sm">Attachments</div>
               <div className="grid gap-2 md:grid-cols-2">
-                {documentsData?.documents.map((document) => (
+                {documents?.map((document) => (
                   <label
                     className="flex items-start gap-3 rounded-lg border p-3 text-sm"
                     htmlFor={`delivery-document-${document.id}`}
