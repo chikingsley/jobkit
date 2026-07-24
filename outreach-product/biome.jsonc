@@ -27,6 +27,12 @@
   },
   "overrides": [
     {
+      "includes": ["drizzle/meta/**"],
+      "formatter": { "enabled": false },
+      "linter": { "enabled": false },
+      "assist": { "enabled": false }
+    },
+    {
       "includes": ["worker/db/schema/index.ts"],
       "linter": {
         "rules": {
