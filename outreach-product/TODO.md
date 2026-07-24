@@ -52,6 +52,7 @@ Every product slice follows the same sequence: research and contract, implementa
 
 ## 6. Platform hygiene
 
+- [ ] `[CI-001]` There is no CI. Add a GitHub Actions workflow running the full gate (types, lint, line cap, migration-trigger guard, unit, worker integration, start integration, build) on every push to main and every PR.
 - [ ] `[HYGIENE-001]` Gate or slim the public `/openapi.json`; enforce upload size from the actual stream rather than the `content-length` header; make `x-jobkit-category` a validated enum; relocate `worker/routes/job-route-read-model.ts` (a library, not routes); replace the background-queue `safeParse` fallthrough dispatch with explicit message typing.
 - [ ] `[HYGIENE-002]` Run exactly one agent runner, inside tmux; today two `jobkit agent start` processes run detached. Deduplicate robots.txt `User-agent: *` groups; add ETag to public HTML responses.
 - [ ] `[HYGIENE-003]` Promotion still performs O(catalog) read-hashing to preserve seal semantics, and search ranking scans term rows across historical member spans; revisit both if promotion latency or search cost grows with scale.
