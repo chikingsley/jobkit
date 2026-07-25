@@ -1,6 +1,13 @@
 {
   "suites": [
     {
+      "path": "tests/01_ingest/from-ledger.test.ts",
+      "stage": "01_ingest",
+      "category": "contract",
+      "protects": "The path from the collector ledger into the local database, against the real baseline schema: how each board is applied to, that an email address beats an advert url, that a board publishing neither gets no route, that a closed listing stays out of the candidate read, that a board with no extractor still lands as a listing without facts, and that running the ingest twice duplicates nothing. Written when the local database did not exist and the ledger held 15,571 collected listings with nowhere to go.",
+      "target": "tests/01_ingest"
+    },
+    {
       "path": "tests/03_match/candidates.test.ts",
       "stage": "03_match",
       "category": "contract",
