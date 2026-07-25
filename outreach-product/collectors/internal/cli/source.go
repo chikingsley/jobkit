@@ -10,6 +10,7 @@ import (
 	"github.com/chikingsley/jobkit/outreach-product/collectors/internal/boards/anesl"
 	"github.com/chikingsley/jobkit/outreach-product/collectors/internal/boards/eslcafe"
 	"github.com/chikingsley/jobkit/outreach-product/collectors/internal/boards/seriousteachers"
+	"github.com/chikingsley/jobkit/outreach-product/collectors/internal/boards/teacherhorizons"
 	"github.com/chikingsley/jobkit/outreach-product/collectors/internal/boards/tefl"
 	"github.com/chikingsley/jobkit/outreach-product/collectors/internal/inventory"
 )
@@ -20,6 +21,7 @@ var sourceOrigins = map[string]string{
 	"eslcafe-modern":  "https://www.eslcafe.com",
 	"seriousteachers": "https://www.seriousteachers.com",
 	"tefl":            "https://www.tefl.com",
+	"teacherhorizons": "https://www.teacherhorizons.com",
 }
 
 type sourceOptions struct {
@@ -56,6 +58,16 @@ func buildSource(options sourceOptions) (inventory.Source, error) {
 			return nil, err
 		}
 		return eslcafe.NewClient(origin, httpClient, options.requestInterval, sections...)
+	case "teacherhorizons":
+		return teacherhorizons.NewClient(
+			origin,
+			httpClient,
+			options.requestInterval,
+			teacherhorizons.Credentials{
+				Email:    strings.TrimSpace(os.Getenv("TEACHERHORIZONS_EMAIL")),
+				Password: os.Getenv("TEACHERHORIZONS_PASSWORD"),
+			},
+		)
 	case "seriousteachers":
 		return seriousteachers.NewClient(
 			origin,

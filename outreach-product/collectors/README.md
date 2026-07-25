@@ -27,7 +27,7 @@ go run ./cmd/jobkit-collect runs --board eslcafe-modern
 go run ./cmd/jobkit-collect jobs --board tefl --status active
 ```
 
-Supported sources are `ajarn`, `anesl`, `eslcafe-modern` (or `eslcafe`), `seriousteachers`, and `tefl`. The default database is `.jobkit/jobs.sqlite`; Override it with `--db` or `JOBKIT_JOBS_DB_PATH`.
+Supported sources are `ajarn`, `anesl`, `eslcafe-modern` (or `eslcafe`), `seriousteachers`, `teacherhorizons`, and `tefl`. The default database is `.jobkit/jobs.sqlite`; Override it with `--db` or `JOBKIT_JOBS_DB_PATH`.
 
 `refresh` resumes the active run for the exact source, mode, and source scope. Use `--restart` only when the current run should be canceled and rediscovered. A partial run commits its durable result and exits nonzero. The next invocation fetches only unfinished details.
 
