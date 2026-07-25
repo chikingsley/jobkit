@@ -192,3 +192,42 @@ describe("listing normalisation", () => {
     expect(listing.monthlyUsd).toBeNull();
   });
 });
+
+describe("gender restriction precision", () => {
+  it("does not flag a listing that welcomes both genders", () => {
+    expect(
+      statedRestrictions(
+        "ABOUT YOU: English Teacher: Female/Male Native English speaker Age range: 23-40"
+      )
+    ).not.toContain("female-only");
+    expect(
+      statedRestrictions("Female/Male Native English speaker")
+    ).not.toContain("male-only");
+    expect(statedRestrictions("male or female welcome")).toEqual([]);
+    expect(statedRestrictions("open to any gender")).toEqual([]);
+  });
+
+  it("does not flag one gendered role inside a list of positions", () => {
+    expect(
+      statedRestrictions(
+        "Position: - Nursery teacher(Female) - Kindergarten homeroom teacher - Primary English teacher"
+      )
+    ).toEqual([]);
+  });
+
+  it("flags only genuinely restrictive phrasing", () => {
+    expect(statedRestrictions("Female candidates only")).toEqual([
+      "female-only",
+    ]);
+    expect(statedRestrictions("We hire only female teachers")).toEqual([
+      "female-only",
+    ]);
+    expect(statedRestrictions("Applicant must be female")).toEqual([
+      "female-only",
+    ]);
+    expect(statedRestrictions("Male applicants only")).toEqual(["male-only"]);
+    expect(statedRestrictions("women only, boarding school")).toEqual([
+      "female-only",
+    ]);
+  });
+});

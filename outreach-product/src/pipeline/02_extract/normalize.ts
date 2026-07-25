@@ -46,7 +46,7 @@ const MONTHS_PER_YEAR = 12;
 const ASSUMED_WEEKLY_HOURS = 20;
 
 const DECORATION =
-  /\p{Extended_Pictographic}|[\u{2500}-\u{25FF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}]|\uFE0F/gu;
+  /\p{Extended_Pictographic}|\p{Regional_Indicator}|[\u{2190}-\u{21FF}\u{2500}-\u{27BF}\u{2B00}-\u{2BFF}\u{3000}-\u{303F}]|\uFE0F/gu;
 const REPEATED_PUNCTUATION = /([!?.,\-–—*_~|])\1{1,}/gu;
 const WHITESPACE = /\s+/gu;
 
@@ -77,15 +77,39 @@ const COUNTRY_HINTS: [RegExp, string][] = [
   [/\bitaly\b|rome|milan|naples/iu, "Italy"],
   [/\bmongolia\b|ulaanbaatar/iu, "Mongolia"],
   [/\bindonesia\b|jakarta|bali/iu, "Indonesia"],
-  [/\bmaldives\b|male/iu, "Maldives"],
+  [/\bmaldives\b/iu, "Maldives"],
   [/\brussia\b|moscow|st\.? petersburg/iu, "Russia"],
   [/\buzbekistan\b|tashkent/iu, "Uzbekistan"],
   [/hong kong/iu, "Hong Kong"],
+  [/\bkazakhstan\b|astana|almaty/iu, "Kazakhstan"],
+  [/\bmalaysia\b|kuala lumpur|johor bahru|kota kinabalu|penang/iu, "Malaysia"],
+  [/\btajikistan\b|dushanbe|khujand/iu, "Tajikistan"],
+  [/\bmexico\b|guadalajara|monterrey|puebla/iu, "Mexico"],
+  [/\bcambodia\b|phnom penh|siem reap/iu, "Cambodia"],
+  [/\bsaudi\b|riyadh|jeddah|dammam/iu, "Saudi Arabia"],
+  [/\bpoland\b|warsaw|krakow|kraków/iu, "Poland"],
+  [/\bturkey\b|istanbul|ankara/iu, "Turkey"],
+  [/\begypt\b|cairo|alexandria/iu, "Egypt"],
+  [/\bgeorgia\b|tbilisi|batumi/iu, "Georgia"],
+  [/\bkuwait\b/iu, "Kuwait"],
+  [/\bqatar\b|doha/iu, "Qatar"],
+  [/\boman\b|muscat/iu, "Oman"],
+  [/\bindia\b|mumbai|delhi|bangalore/iu, "India"],
+  [/대구|서울|부산|경기/u, "South Korea"],
 ];
 
+const INCLUSIVE_GENDER =
+  /\b(fe)?male\s*[/&+]\s*(fe)?male\b|\b(fe)?male\s+or\s+(fe)?male\b|\bany gender\b|\bregardless of gender\b|\ball genders\b/iu;
+
 const RESTRICTIONS: [RegExp, string][] = [
-  [/\bfemales?\b|\bwomen only\b/iu, "female-only"],
-  [/(?<!fe)\bmales?\b|\bmen only\b/iu, "male-only"],
+  [
+    /\bfemales?\s+(only|candidates?\s+only|applicants?\s+only|teachers?\s+only)\b|\bonly\s+females?\b|\bwomen\s+only\b|\bmust\s+be\s+(a\s+)?female\b/iu,
+    "female-only",
+  ],
+  [
+    /\bmales?\s+(only|candidates?\s+only|applicants?\s+only|teachers?\s+only)\b|\bonly\s+males?\b|\bmen\s+only\b|\bmust\s+be\s+(a\s+)?male\b/iu,
+    "male-only",
+  ],
   [
     /\bunder \d{2}\b|\bage limit\b|\bmaximum age\b|\bage under \d{2}\b/iu,
     "age-limited",
@@ -122,10 +146,35 @@ export function canonicalCountry(
   return hinted ? hinted[1] : "";
 }
 
-export function statedRestrictions(text: string): string[] {
-  return RESTRICTIONS.filter(([pattern]) => pattern.test(text)).map(
-    ([, name]) => name
-  );
+const TITLE_FEMALE_ROLE =
+  /^\s*female\s+[\w\s/&-]*\b(teacher|instructor|tutor|educator)/iu;
+const TITLE_MALE_ROLE =
+  /^\s*male\s+[\w\s/&-]*\b(teacher|instructor|tutor|educator)/iu;
+
+export function statedRestrictions(title: string, description = ""): string[] {
+  const text = `${title} ${description}`;
+  const inclusive = INCLUSIVE_GENDER.test(text);
+  const found = RESTRICTIONS.filter(([pattern, name]) => {
+    if (inclusive && (name === "female-only" || name === "male-only")) {
+      return false;
+    }
+    return pattern.test(text);
+  }).map(([, name]) => name);
+  if (
+    !inclusive &&
+    TITLE_FEMALE_ROLE.test(title) &&
+    !found.includes("female-only")
+  ) {
+    found.push("female-only");
+  }
+  if (
+    !inclusive &&
+    TITLE_MALE_ROLE.test(title) &&
+    !found.includes("male-only")
+  ) {
+    found.push("male-only");
+  }
+  return found;
 }
 
 export function credibleTeachingHours(hours: number | null): number | null {
@@ -189,7 +238,7 @@ export function normalizeListing(raw: RawListing): CanonicalListing {
         ? Math.round(monthlyUsd / (hours * WEEKS_PER_MONTH))
         : null,
     period,
-    restrictions: statedRestrictions(`${title} ${raw.description}`),
+    restrictions: statedRestrictions(title, raw.description),
     teachingHours: hours,
     title,
   };
