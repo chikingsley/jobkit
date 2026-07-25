@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { JobMarketSegmentSchema } from "../../src/features/organizations/market-segments";
+import { DegreeLevelSchema } from "../../src/features/profile/schema";
 import {
   JobAudienceSchema,
   JobBenefitFactSchema,
@@ -8,9 +10,7 @@ import {
   JobRequirementKindSchema,
   RequirementImportanceSchema,
   RequirementLanguageLevelSchema,
-} from "../../src/features/matching/schema";
-import { JobMarketSegmentSchema } from "../../src/features/organizations/market-segments";
-import { DegreeLevelSchema } from "../../src/features/profile/schema";
+} from "../../src/pipeline/03_match/schema";
 import type { JobImport } from "../schemas";
 import { evidenceIsPresent } from "./evidence-text";
 import {

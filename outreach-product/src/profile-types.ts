@@ -1,4 +1,4 @@
-import type { QualificationClaimAnswer } from "@/features/matching/claims";
+import type { QualificationClaimAnswer } from "@/pipeline/03_match/claims";
 
 export type {
   BenefitStrength,

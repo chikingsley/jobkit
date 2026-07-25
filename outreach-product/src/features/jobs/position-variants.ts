@@ -3,7 +3,7 @@ import {
   JobAudienceSchema,
   JobEmploymentTypeSchema,
   JobRequirementSchema,
-} from "../matching/schema";
+} from "../../pipeline/03_match/schema";
 
 export const JOB_POSITION_ANALYSIS_SCHEMA_VERSION = 3;
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { JobEconomicsSchema } from "../jobs/economics";
-import { JobMarketSegmentSchema } from "../organizations/market-segments";
-import { DegreeLevelSchema } from "../profile/schema";
+import { JobEconomicsSchema } from "../../features/jobs/economics";
+import { JobMarketSegmentSchema } from "../../features/organizations/market-segments";
+import { DegreeLevelSchema } from "../../features/profile/schema";
 
 export const JobAudienceSchema = z.enum([
   "preschool",

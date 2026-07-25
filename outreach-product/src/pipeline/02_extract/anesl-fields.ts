@@ -1,4 +1,4 @@
-import type { JobMatchFacts } from "../../features/matching/schema";
+import type { JobMatchFacts } from "../03_match/schema";
 
 export type SourceFields = Record<string, string | undefined>;
 
@@ -17,6 +17,13 @@ const LIST_SEPARATOR = /\s*,\s*/u;
 const MAX_VALUE_LENGTH = 160;
 const EMPTY_BENEFIT_PATTERN = /^(no|none|0)$/iu;
 const ALLOWANCE_PATTERN = /allowance|\/year|\/month/iu;
+
+const CURRENCY_ALIASES: Record<string, string> = { RMB: "CNY", RNB: "CNY" };
+
+function isoCurrency(code: string) {
+  const upper = code.toUpperCase();
+  return CURRENCY_ALIASES[upper] ?? upper;
+}
 
 function clean(value: string | undefined) {
   return value?.replace(ONLY_PREFIX, "").trim() ?? "";
@@ -198,7 +205,7 @@ function compensation(fields: SourceFields) {
   return {
     amountMaximum: credible,
     amountMinimum: minimum,
-    currency: matched[1].toUpperCase(),
+    currency: isoCurrency(matched[1]),
     evidence: [`Salary/M: ${raw}`],
     kind: "amount" as const,
     period: "month" as const,

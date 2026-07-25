@@ -1,14 +1,3 @@
-// Every directory in the repository has an entry here. `bun run check:modules`
-// fails when a directory is missing an entry, or an entry points at a path that
-// does not exist. Status values:
-//
-//   active    load-bearing today
-//   dormant   kept, not running, not depended on
-//   moving    being relocated to `target` during the reorganisation
-//
-// `stage` places a module in the product flow: collect, extract, match,
-// compose, campaigns, deliver, respond. Modules that serve every stage use
-// "platform"; developer tooling uses "ops".
 {
   "modules": [
     {
@@ -17,39 +6,23 @@
       "stage": "collect",
       "status": "active",
       "language": "go",
-      "owns": "Scrapes anesl, seriousteachers, eslcafe, ajarn, tefl into a local SQLite job ledger. Parses each listing into a label/value field map.",
+      "owns": "Scrapes anesl, seriousteachers, eslcafe, ajarn, tefl into .jobkit/jobs.sqlite. Parses each listing into a label/value field map.",
       "target": "collectors"
     },
     {
-      "path": "cli",
-      "name": "Operator CLI",
-      "stage": "platform",
-      "status": "moving",
-      "owns": "Verbs for inventory sync, agent runner, quality gates. Currently also holds model-calling logic that belongs in src/model.",
-      "target": "cli + src/model"
-    },
-    {
-      "path": "worker",
-      "name": "Server and pipeline",
-      "stage": "platform",
-      "status": "moving",
-      "owns": "All backend behaviour: ingestion, extraction, matching, message composition, campaigns, Gmail delivery and reply handling, the public catalog projection, and the database layer.",
-      "target": "src/pipeline/* + src/server + src/db"
-    },
-    {
       "path": "src",
-      "name": "Web app and shared contracts",
+      "name": "Application source",
       "stage": "platform",
       "status": "moving",
-      "owns": "React app plus schemas and helpers the server imports. Shared code currently lives under src/features and is reached into by the worker.",
-      "target": "src/web + src/shared + src/model"
+      "owns": "The pipeline stages plus the schemas and helpers they share. Contains no React app; every view is quarantined.",
+      "target": "src"
     },
     {
       "path": "src/pipeline/01_ingest",
       "name": "Ingest",
       "stage": "01_ingest",
       "status": "active",
-      "owns": "Reads the Go collector's SQLite ledger, validates each listing against the inventory schema, and upserts job_listings and job_listing_versions. Owns material hashing and versioning, run/batch bookkeeping, run reconciliation, and application route lifecycle on ingest. Writes job_listings.source_fields_json, the collector's label/value map, so later stages read source facts instead of inferring them.",
+      "owns": "Reads the collector ledger, validates each listing, upserts job_listings and job_listing_versions with the source field map, and runs deterministic extraction in the same pass.",
       "target": "src/pipeline/01_ingest"
     },
     {
@@ -57,39 +30,80 @@
       "name": "Extract",
       "stage": "02_extract",
       "status": "active",
-      "owns": "Turns a listing into structured facts. Boards that publish a label/value map are read deterministically from job_listings.source_fields_json with no model call; anesl is covered, which is 59% of inventory. Boards without structured fields still go through the model path in worker/services/agent-tasks.",
+      "owns": "Turns a listing into structured match facts. Boards publishing a label/value map are read with no model call; anesl is covered at 100 percent of 4,005 listings.",
       "target": "src/pipeline/02_extract"
+    },
+    {
+      "path": "src/pipeline/03_match",
+      "name": "Match",
+      "stage": "03_match",
+      "status": "moving",
+      "owns": "Scores a job against a candidate profile, preferences, qualification claims, and converted salary, returning per-criterion match, partial, or conflict. Profile is a parameter, so several profiles can be scored against the same jobs. Pulled back from quarantine; no tests yet.",
+      "target": "src/pipeline/03_match"
+    },
+    {
+      "path": "src/features",
+      "name": "Shared contracts",
+      "stage": "platform",
+      "status": "moving",
+      "owns": "Schemas and pure helpers the pipeline stages share: job types and economics, inventory contracts, profile, preferences, documents, organizations, agents.",
+      "target": "src/shared"
     },
     {
       "path": "src/db",
       "name": "Database client",
       "stage": "platform",
       "status": "active",
-      "owns": "The only module that opens a connection. Defines the Database query surface the application uses, and adapts bun:sqlite to it. Cloudflare D1 satisfies the same interface, which is what keeps the hosting choice reversible. Drizzle schema and generated migrations land here next.",
+      "owns": "The only module that opens a connection. Defines the query surface and adapts bun:sqlite to it; D1 satisfies the same interface.",
       "target": "src/db"
+    },
+    {
+      "path": "src/model",
+      "name": "Model registry",
+      "stage": "platform",
+      "status": "active",
+      "owns": "One place to choose a model per task type, and one shared OpenAI-compatible call.",
+      "target": "src/model"
+    },
+    {
+      "path": "src/lib",
+      "name": "Shared utilities",
+      "stage": "platform",
+      "status": "moving",
+      "owns": "Country routing, site origin, and small helpers the stages depend on.",
+      "target": "src/shared"
+    },
+    {
+      "path": "worker",
+      "name": "Server remnant",
+      "stage": "platform",
+      "status": "moving",
+      "owns": "What the pipeline still reaches into: Drizzle schema, the D1 client, extraction helpers, the application-routes repository, and the match-facts recorder. Everything else is quarantined.",
+      "target": "src/db + src/pipeline",
+      "language": "typescript"
+    },
+    {
+      "path": "cli",
+      "name": "Operator CLI",
+      "stage": "platform",
+      "status": "moving",
+      "owns": "Inventory sync against the collector ledger, the agent client, and the quality gates.",
+      "target": "cli"
     },
     {
       "path": "migrations",
-      "name": "SQL migration history",
+      "name": "Schema baseline",
       "stage": "platform",
-      "status": "moving",
-      "owns": "One baseline schema dumped from a verified production restore, plus the seed rows the incremental migrations installed. Drizzle generates every migration from here.",
+      "status": "active",
+      "owns": "One baseline dumped from a verified production restore, plus the seed rows the incremental migrations installed.",
       "target": "src/db/migrations"
-    },
-    {
-      "path": "drizzle",
-      "name": "Drizzle metadata",
-      "stage": "platform",
-      "status": "moving",
-      "owns": "drizzle-kit journal and schema snapshots.",
-      "target": "src/db"
     },
     {
       "path": "tests",
       "name": "Test suite",
       "stage": "ops",
       "status": "active",
-      "owns": "176 integration tests against a real database and real routes, no mocks. Every suite is declared in tests/manifest.jsonc and enforced by check:tests.",
+      "owns": "Rebuilt from scratch alongside the pipeline. Every suite is declared in tests/manifest.jsonc and enforced by check:tests.",
       "target": "tests"
     },
     {
@@ -97,24 +111,16 @@
       "name": "Documentation",
       "stage": "ops",
       "status": "active",
-      "owns": "Architecture, per-capability docs, benchmark write-ups.",
+      "owns": "Architecture and research write-ups.",
       "target": "docs"
     },
     {
-      "path": "public",
-      "name": "Static assets",
-      "stage": "ops",
-      "status": "active",
-      "owns": "Cloudflare _headers and static files served with the app.",
-      "target": "public"
-    },
-    {
-      "path": ".maestro",
-      "name": "UI flow tests",
+      "path": "old",
+      "name": "Quarantine",
       "stage": "ops",
       "status": "dormant",
-      "owns": "Mobile-style end-to-end UI flows. Kept for later use.",
-      "target": ".maestro"
+      "owns": "Everything not yet reviewed. Excluded from tsconfig, lint, and the test configs, so nothing here can fail a build or be imported by live code. Readmitted one piece at a time.",
+      "target": "old"
     }
   ]
 }

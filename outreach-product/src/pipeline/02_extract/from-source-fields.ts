@@ -1,7 +1,4 @@
-import {
-  type JobMatchFacts,
-  JobMatchFactsSchema,
-} from "../../features/matching/schema";
+import { type JobMatchFacts, JobMatchFactsSchema } from "../03_match/schema";
 import { extractAneslFacts, type SourceFields } from "./anesl-fields";
 
 export const DETERMINISTIC_EXTRACTION_PROVIDER = "deterministic";

@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "check": "wrangler types --check && ultracite check && bun run check:lines && bun run check:migrations && bun run check:modules && bun run check:tests && tsc --noEmit && vitest run --config tests/vitest.config.ts && vitest run --config tests/start-vitest.config.ts",
+    "check": "wrangler types --check && ultracite check && bun run check:lines && bun run check:migrations && bun run check:modules && bun run check:tests && tsc --noEmit && bun test ./tests",
     "check:lines": "bun cli/quality/check-file-lines.ts",
     "check:migrations": "bun cli/quality/check-migration-triggers.ts",
     "check:modules": "bun cli/quality/check-modules.ts",

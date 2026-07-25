@@ -4,8 +4,8 @@ import {
 } from "../../src/features/jobs/content-analysis";
 import type { JobPositionAnalysis } from "../../src/features/jobs/position-variants";
 import { JOB_POSITION_ANALYSIS_SCHEMA_VERSION } from "../../src/features/jobs/position-variants";
-import type { JobMatchFacts } from "../../src/features/matching/schema";
-import { JOB_MATCH_FACTS_SCHEMA_VERSION } from "../../src/features/matching/version";
+import type { JobMatchFacts } from "../../src/pipeline/03_match/schema";
+import { JOB_MATCH_FACTS_SCHEMA_VERSION } from "../../src/pipeline/03_match/version";
 import { unsupportedContentEvidence } from "../ai/job-content-extraction";
 import {
   jobFactSource,

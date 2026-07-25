@@ -1,3 +1,5 @@
+import type { Job } from "../../features/jobs/types";
+import { restrictedMarketSegments } from "../../features/organizations/market-segments";
 import type {
   JobMatch,
   MatchCriterion,
@@ -5,8 +7,6 @@ import type {
   Profile,
   StoredDocument,
 } from "../../profile-types";
-import type { Job } from "../jobs/types";
-import { restrictedMarketSegments } from "../organizations/market-segments";
 import { type QualificationClaims, qualificationClaimKey } from "./claims";
 import {
   audienceLabel,

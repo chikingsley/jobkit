@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractAneslFacts } from "../../../src/pipeline/02_extract/anesl-fields";
+import { extractAneslFacts } from "../../src/pipeline/02_extract/anesl-fields";
 
 const REAL_LISTING = {
   Age: "From:20 To: 60 years old",
@@ -66,7 +66,7 @@ describe("anesl source field extraction", () => {
     expect(facts.compensation).toMatchObject({
       amountMaximum: 20_000,
       amountMinimum: 17_000,
-      currency: "RMB",
+      currency: "CNY",
       period: "month",
     });
     expect(facts.workload).toMatchObject({

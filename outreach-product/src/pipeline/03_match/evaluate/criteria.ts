@@ -1,3 +1,4 @@
+import type { Job } from "../../../features/jobs/types";
 import type {
   JobMatch,
   MatchCriterion,
@@ -5,7 +6,6 @@ import type {
   Preferences,
   Profile,
 } from "../../../profile-types";
-import type { Job } from "../../jobs/types";
 import { hasConcept } from "./requirements";
 
 export function benefitCriteria(job: Job, preferences: Preferences) {

@@ -5,14 +5,14 @@ import {
   JobPositionLocationSchema,
   JobPositionRoleFamilySchema,
 } from "../../src/features/jobs/position-variants";
+import { DegreeLevelSchema } from "../../src/features/profile/schema";
 import {
   JobAudienceSchema,
   JobEmploymentTypeSchema,
   JobRequirementKindSchema,
   RequirementImportanceSchema,
   RequirementLanguageLevelSchema,
-} from "../../src/features/matching/schema";
-import { DegreeLevelSchema } from "../../src/features/profile/schema";
+} from "../../src/pipeline/03_match/schema";
 import { evidenceIsPresent, foldEvidencePunctuation } from "./evidence-text";
 
 const ProviderRequirementSchema = z

@@ -1,4 +1,4 @@
-import type { JobRequirement } from "@/features/matching/schema";
+import type { JobRequirement } from "@/pipeline/03_match/schema";
 
 export type QualificationClaimAnswer = "yes" | "no";
 

@@ -125,8 +125,8 @@ export interface JobListItem {
 
 export type MarketSegment = JobMarketSegment;
 
-import type { JobMatchFacts } from "@/features/matching/schema";
 import type { JobMarketSegment } from "@/features/organizations/market-segments";
+import type { JobMatchFacts } from "@/pipeline/03_match/schema";
 import type { JobContentAnalysis } from "./content-analysis";
 import type { Compensation, StatedHourlyValue } from "./economics";
 import type { JobPositionAnalysis } from "./position-variants";

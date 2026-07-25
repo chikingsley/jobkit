@@ -14,6 +14,7 @@ const excludedDirectories = new Set([
   "coverage",
   "dist",
   "node_modules",
+  "old",
 ]);
 
 function physicalLineCount(source: string) {

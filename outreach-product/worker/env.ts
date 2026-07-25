@@ -1,9 +1,4 @@
-import type { AgentTaskMaintenanceQueueMessage } from "./services/agent-task-maintenance-queue";
-import type { CountryMaterializationQueueMessage } from "./services/country-materialization/queue";
-
 export interface AppEnv extends Env {
-  AGENT_MAINTENANCE_QUEUE: Queue<AgentTaskMaintenanceQueueMessage>;
-  COUNTRY_MATERIALIZATION_QUEUE: Queue<CountryMaterializationQueueMessage>;
   FX_RATES_JSON?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
