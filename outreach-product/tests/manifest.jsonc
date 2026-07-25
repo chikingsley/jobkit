@@ -1,10 +1,10 @@
 {
   "suites": [
     {
-      "path": "tests/03_match/rank.test.ts",
+      "path": "tests/03_match/candidates.test.ts",
       "stage": "03_match",
       "category": "contract",
-      "protects": "Ranking a real corpus: an implausible weekly teaching load is dropped rather than divided by, repeated benefit entries collapse, yearly and weekly and hourly figures convert to monthly, an unconvertible currency is dropped rather than ranked at zero, and the same agency posting repeated at the same pay collapses to one row. Written against the top of the live emailable inventory, where one listing claimed eighty-five teaching hours a week."
+      "protects": "The one read every downstream stage uses, against the real 166-table schema: all five boards are returned rather than anesl alone, a platform-apply route is carried the same as an email one, a route the board closed resolves to none, stored values are normalised on the way out, and a listing whose pay the board never stated is kept. Written after the product's only candidate reader was found hardcoded to anesl email, hiding 1,617 Serious Teachers jobs, and after a pay filter hid a further 1,032 of them."
     },
     {
       "path": "tests/02_extract/normalize.test.ts",
@@ -22,7 +22,7 @@
       "path": "tests/03_match/rank.test.ts",
       "stage": "03_match",
       "category": "contract",
-      "protects": "Ranking reads canonical listings only and holds no correction logic: pay order with a deterministic tie-break, listings without established pay omitted, and one employer reposting at the same pay collapsing to a single row that records its reposts."
+      "protects": "Ranking reads canonical listings only and holds no correction logic: pay order with a deterministic tie-break, every priced listing ahead of every unpriced one, and one employer reposting at the same pay collapsing to a single row that records its reposts. A listing whose pay is unknown is marked and ordered last, never dropped, because dropping it hid two thirds of a board."
     },
     {
       "path": "tests/03_match/scoring.test.ts",

@@ -38,7 +38,7 @@
       "name": "Match",
       "stage": "03_match",
       "status": "moving",
-      "owns": "Scores a job against a candidate profile, preferences, qualification claims, and converted salary, returning per-criterion match, partial, or conflict. Profile is a parameter, so several profiles can be scored against the same jobs. Pulled back from quarantine; no tests yet.",
+      "owns": "The one canonical read of the inventory, plus scoring. readCandidates returns every active listing on every board with its best live application route, whether that route is an email address or a platform form, and normalises each row on the way out so nothing downstream sees a stored raw value. rankCandidates orders by pay and keeps listings whose pay the board never stated. Scoring compares a job against a candidate profile, preferences, qualification claims, and converted salary, returning per-criterion match, partial, or conflict; the profile is a parameter, so several can be scored against the same jobs.",
       "target": "src/pipeline/03_match"
     },
     {

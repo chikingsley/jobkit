@@ -1,33 +1,50 @@
 import type { CanonicalListing } from "../02_extract/normalize";
 
 export interface RankedListing extends CanonicalListing {
-  monthlyUsd: number;
+  payKnown: boolean;
   repostedAs: string[];
+}
+
+const UNPRICED_BAND = -1;
+const PAY_BAND_USD = 50;
+
+function payBand(listing: RankedListing) {
+  return listing.monthlyUsd === null
+    ? UNPRICED_BAND
+    : Math.round(listing.monthlyUsd / PAY_BAND_USD);
 }
 
 function duplicateKey(listing: RankedListing) {
   return [
     listing.company.toLocaleLowerCase("en"),
     listing.country.toLocaleLowerCase("en"),
-    Math.round(listing.monthlyUsd / 50),
+    payBand(listing),
   ].join("|");
 }
 
+function byPayThenIdentifier(first: RankedListing, second: RankedListing) {
+  if (first.payKnown !== second.payKnown) {
+    return first.payKnown ? -1 : 1;
+  }
+  if (first.monthlyUsd !== null && second.monthlyUsd !== null) {
+    return second.monthlyUsd === first.monthlyUsd
+      ? first.id.localeCompare(second.id)
+      : second.monthlyUsd - first.monthlyUsd;
+  }
+  return first.id.localeCompare(second.id);
+}
+
 export function rankListings(listings: CanonicalListing[]): RankedListing[] {
-  const priced = listings
-    .filter(
-      (listing): listing is CanonicalListing & { monthlyUsd: number } =>
-        listing.monthlyUsd !== null
-    )
-    .map((listing) => ({ ...listing, repostedAs: [] as string[] }))
-    .sort((first, second) =>
-      second.monthlyUsd === first.monthlyUsd
-        ? first.id.localeCompare(second.id)
-        : second.monthlyUsd - first.monthlyUsd
-    );
+  const ordered = listings
+    .map((listing) => ({
+      ...listing,
+      payKnown: listing.monthlyUsd !== null,
+      repostedAs: [] as string[],
+    }))
+    .sort(byPayThenIdentifier);
   const kept: RankedListing[] = [];
   const byKey = new Map<string, RankedListing>();
-  for (const listing of priced) {
+  for (const listing of ordered) {
     if (listing.company === "") {
       kept.push(listing);
       continue;
