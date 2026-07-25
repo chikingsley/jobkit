@@ -6,7 +6,6 @@ type Segment = JobMatchFacts["marketSegments"][number]["value"];
 type DegreeLevel = JobMatchFacts["requirements"][number]["minimumDegreeLevel"];
 
 const SALARY_PATTERN = /([\d,]+(?:\.\d+)?)\s*([A-Z]{3})\b/u;
-const NEGOTIABLE_PATTERN = /negotiable|competitive|doe|depending/iu;
 const LIST_SEPARATOR = /\s*,\s*/u;
 const MAX_EXPERTISE_ENTRIES = 40;
 const MAX_VALUE_LENGTH = 200;
@@ -125,18 +124,7 @@ function compensation(fields: SourceFields) {
   }
   const matched = SALARY_PATTERN.exec(raw);
   if (!(matched?.[1] && matched[2])) {
-    return NEGOTIABLE_PATTERN.test(raw)
-      ? {
-          amountMaximum: null,
-          amountMinimum: null,
-          currency: null,
-          evidence: [`Salary: ${raw.slice(0, MAX_VALUE_LENGTH)}`],
-          kind: "negotiable" as const,
-          period: null,
-          qualifier: null,
-          taxBasis: "unspecified" as const,
-        }
-      : null;
+    return null;
   }
   const amount = Number(matched[1].replaceAll(",", ""));
   if (!Number.isFinite(amount) || amount <= 0) {

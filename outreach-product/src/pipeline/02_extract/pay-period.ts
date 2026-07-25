@@ -1,4 +1,12 @@
-export const PAY_PERIODS = ["hour", "week", "month", "year"] as const;
+export const PAY_PERIODS = [
+  "hour",
+  "day",
+  "week",
+  "fortnight",
+  "month",
+  "year",
+  "contract",
+] as const;
 
 export type PayPeriod = (typeof PAY_PERIODS)[number];
 
@@ -58,7 +66,7 @@ export function quoteIsGrounded(quote: string, question: PayPeriodQuestion) {
 }
 
 const PERIOD_EVIDENCE =
-  /per\s+(hour|lesson|class|day|week|month|year|annum)|\/\s*(hr|hour|wk|week|mo|month|yr|year)\b|hourly|daily|weekly|monthly|yearly|annual|annually|a\s+(month|week|year)|an\s+hour|every\s+\d|\d+(st|th)\s+(and|&)/iu;
+  /per\s+(hour|lesson|class|day|week|fortnight|month|year|annum|contract)|\/\s*(hr|hour|day|wk|week|mo|month|yr|year)\b|hourly|daily|weekly|monthly|yearly|annual|annually|a\s+(day|month|week|year)|an\s+hour|every\s+\d|\d+(st|th)\s+(and|&)/iu;
 
 const BENEFIT_CONTEXT =
   /stipend|allowance|bonus|ticket|flight|airfare|holiday|vacation|insurance|reimburse|gratuity|pension|utilities|deposit/iu;

@@ -14,13 +14,10 @@ describe("Serious Teachers salary field", () => {
     ).toMatchObject({ amountMinimum: 55_000, currency: "THB" });
   });
 
-  it("records a negotiable salary as stated rather than as an amount", () => {
-    const pay = extractSeriousTeachersFacts({
-      Salary: "Negotiable",
-    }).compensation;
-    expect(pay?.kind).toBe("negotiable");
-    expect(pay?.amountMinimum).toBeNull();
-    expect(pay?.currency).toBeNull();
+  it("records no pay when the board states only that pay is negotiable", () => {
+    expect(
+      extractSeriousTeachersFacts({ Salary: "Negotiable" }).compensation
+    ).toBeNull();
   });
 
   it("never states a period, because the board does not", () => {
