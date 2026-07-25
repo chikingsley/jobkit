@@ -15,6 +15,7 @@ const WEEKLY_HOUR_CEILING = 168;
 const NO_DEGREE_PATTERN = /^nothing/iu;
 const ANY_NATIONALITY_PATTERN = /unrequired|any/iu;
 const LIST_SEPARATOR = /\s*,\s*/u;
+const MAX_VALUE_LENGTH = 160;
 const EMPTY_BENEFIT_PATTERN = /^(no|none|0)$/iu;
 const ALLOWANCE_PATTERN = /allowance|\/year|\/month/iu;
 
@@ -44,16 +45,20 @@ function degreeRequirement(fields: SourceFields) {
   if (!matched) {
     return null;
   }
+  // A handful of listings run the degree line into unrelated prose past the
+  // field's length cap. The matched level is the fact; the raw text is not.
+  const label =
+    value.length <= MAX_VALUE_LENGTH ? value : (matched[1] ?? value);
   return {
     alternativeGroup: null,
     evidence: `Degree: ${raw}`,
     importance: "required" as const,
     kind: "degree" as const,
-    label: value,
+    label,
     minimumDegreeLevel: matched[1],
     minimumLanguageLevel: null,
     minimumYears: null,
-    values: [value],
+    values: [label],
   };
 }
 
@@ -82,7 +87,11 @@ function nationalityRequirement(fields: SourceFields) {
   if (!(raw && value) || ANY_NATIONALITY_PATTERN.test(value)) {
     return null;
   }
-  const countries = value.split(LIST_SEPARATOR).filter(Boolean);
+  // One listing states its accepted nationalities as a single unsplit run of
+  // text past the field's length cap. A value that long is not a country name.
+  const countries = value
+    .split(LIST_SEPARATOR)
+    .filter((country) => country && country.length <= MAX_VALUE_LENGTH);
   if (countries.length === 0) {
     return null;
   }
@@ -186,6 +195,10 @@ function compensation(fields: SourceFields) {
   }
   const minimum = Number(matched[2].replaceAll(",", ""));
   const maximum = matched[3] ? Number(matched[3].replaceAll(",", "")) : minimum;
+  // A zero lower bound is a placeholder, not a wage.
+  if (minimum <= 0) {
+    return null;
+  }
   // The board emits truncated upper bounds such as "From RMB: 17000 To RMB:
   // 1700"; an upper bound below the lower one is not a real range.
   const credible = maximum >= minimum ? maximum : null;
