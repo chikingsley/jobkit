@@ -1,6 +1,3 @@
-// Head metadata for the public site pages: landing, privacy, terms,
-// methodology, corrections. The job-catalog heads live with the catalog in
-// old/src/features/public/seo.ts and come back if that projection does.
 import { CANONICAL_SITE_ORIGIN } from "../../lib/site-origin";
 
 export const PUBLIC_SITE_ORIGIN = CANONICAL_SITE_ORIGIN;

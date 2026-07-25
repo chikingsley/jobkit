@@ -1,6 +1,3 @@
-// Fails when tests/ and tests/manifest.jsonc disagree: a test file with no
-// entry, or an entry naming a file that no longer exists. A test that cannot
-// say what it protects does not get to stay.
 import { readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { Glob } from "bun";

@@ -40,8 +40,6 @@ export async function consumeAgentTaskMaintenanceQueue(
     }
 
     try {
-      // The queue is configured for one message and one consumer invocation so
-      // this reaper owns its complete D1 statement budget.
       // biome-ignore lint/performance/noAwaitInLoops: Queue delivery is deliberately sequential.
       const result = await reapAgentTasks(env);
       if (result.selected > 0) {

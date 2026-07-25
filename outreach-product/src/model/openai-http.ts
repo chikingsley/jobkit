@@ -1,7 +1,3 @@
-// The one OpenAI-compatible chat call. Every openai-http provider (Mistral, the
-// local llama server, any future hosted model) goes through this. The caller
-// resolves the API key so the same code runs in the Worker and the CLI runner.
-
 export interface ModelUsage {
   completionTokens: number;
   promptTokens: number;

@@ -123,7 +123,6 @@ function BoardApplicationAction({
   );
 }
 
-// Bulk-imported jobs have no draft until the user asks for one.
 function GenerateApplicationAction({
   busy,
   job,

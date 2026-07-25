@@ -22,8 +22,6 @@ import {
 const ProviderEvidenceFactSchema = <Schema extends z.ZodType>(value: Schema) =>
   z.object({ evidence: z.string(), value }).strict();
 
-// The companion-facing schema describes shape only; JobMatchFactsSchema
-// enforces every persisted limit after the paired Codex result returns.
 export const ProviderJobMatchFactsSchema = z
   .object({
     audiences: z.array(ProviderEvidenceFactSchema(JobAudienceSchema)),
@@ -86,8 +84,6 @@ export function jobSourceHash(job: JobFactSourceFields) {
   return hashSource(jobFactSource(job));
 }
 
-// Post-parse guard for facts computed outside this worker: every quoted
-// evidence string must still be a literal substring of the stored listing.
 export function unsupportedEvidence(facts: JobMatchFacts, source: string) {
   const missing = <Value extends { evidence: string }>(
     values: readonly Value[]
@@ -215,11 +211,6 @@ function normalizeRequirements(requirements: ProviderRequirement[]) {
   );
 }
 
-// A single listing clause like "TEFL or CELTA" often arrives as separate
-// ungrouped required requirements, which would wrongly demand every one of
-// them (a required CELTA alone disqualifies most American applicants). When
-// same-kind required requirements quote identical evidence that reads as an
-// either/or, they are alternatives.
 const ALTERNATIVE_EVIDENCE_MARKER = /\bor\b|\/|\band\/or\b/iu;
 
 type NormalizedRequirement = ReturnType<typeof normalizeRequirementValues>;

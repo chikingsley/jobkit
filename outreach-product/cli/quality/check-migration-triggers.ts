@@ -2,18 +2,6 @@ import { readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { file } from "bun";
 
-/**
- * The D1 HTTP API's statement splitter (api-version 2026-07-23) fails on
- * CASE...END expressions inside CREATE TRIGGER bodies: it mistakes the END of
- * the CASE expression for the END of the trigger. Trigger guards must use the
- * single-statement form instead:
- *
- *   SELECT RAISE(ABORT,'message') WHERE condition;
- *
- * Migrations written before this guard existed already shipped to production
- * through a compatible apply path and stay grandfathered; every new migration
- * must use the splitter-safe form.
- */
 const GRANDFATHERED_MIGRATIONS = new Set([
   "0048_public_job_entities.sql",
   "0049_public_projection_runs.sql",
@@ -42,7 +30,6 @@ function stripSqlNoise(sql: string) {
     .replace(/'(?:[^']|'')*'/gu, "''");
 }
 
-/** Returns the body of every CREATE TRIGGER statement in the migration. */
 function triggerBodies(sql: string) {
   const cleaned = stripSqlNoise(sql);
   const bodies: string[] = [];

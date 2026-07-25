@@ -1,14 +1,8 @@
-// The single place that defines every model backend and which model runs each
-// task. Switch a model by editing one MODEL_ASSIGNMENTS line, or override
-// without code via JOBKIT_MODEL_<task>="provider:model" (for example
-// JOBKIT_MODEL_application.message="localLlama:qwen35-9b-ud-q4-k-xl").
-
 export type ProviderKind = "openai-http" | "cli";
 
 export interface ModelProvider {
-  // openai-http providers
   baseUrl?: string;
-  // cli providers (runner-only)
+
   command?: string;
   keyEnv?: string;
   keyFile?: string;
@@ -33,8 +27,6 @@ export const MODEL_PROVIDERS = {
 
 export type ProviderName = keyof typeof MODEL_PROVIDERS;
 
-// Which model runs each task. "default" catches anything unlisted; a
-// "country_sweep." task falls back to "country_sweep.default".
 const DEFAULT_ASSIGNMENT = "mistral:mistral-medium-latest";
 
 export const MODEL_ASSIGNMENTS: Record<string, string> = {

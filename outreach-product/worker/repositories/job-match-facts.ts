@@ -33,8 +33,6 @@ export async function readJobMatchFacts(
   };
 }
 
-// Statement builder used inside multi-statement D1 batches; the atomicity of
-// those batches depends on prepared-statement ordering, so it stays raw SQL.
 export function jobMatchFactsStatement(
   db: D1Database,
   jobId: string,

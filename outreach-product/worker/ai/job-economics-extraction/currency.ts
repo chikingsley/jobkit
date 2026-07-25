@@ -1,5 +1,3 @@
-// Common non-ISO codes seen in listings, mapped to the ISO code the FX
-// rates table actually carries.
 const CURRENCY_CODE_ALIASES: Record<string, string> = {
   MXP: "MXN",
   NTD: "TWD",

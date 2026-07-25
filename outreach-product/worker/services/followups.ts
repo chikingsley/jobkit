@@ -34,8 +34,6 @@ export async function queueDueFollowUps(env: AppEnv) {
   const candidates = await followUpCandidates(env.DB);
   let queued = 0;
   for (const candidate of candidates) {
-    // D1 serializes each durable scheduling decision. Processing candidates in
-    // order also makes the resulting audit trail stable across cron retries.
     // biome-ignore lint/performance/noAwaitInLoops: Each candidate is a separate transactional scheduling decision.
     const created = await queueDueCandidate(env.DB, candidate, new Date());
     queued += Number(created);

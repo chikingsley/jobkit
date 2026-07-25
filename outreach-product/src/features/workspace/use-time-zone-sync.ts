@@ -16,8 +16,8 @@ function storedTimeZone(): string | null {
 function rememberTimeZone(timeZone: string) {
   try {
     window.localStorage.setItem(TIME_ZONE_STORAGE_KEY, timeZone);
-  } catch {
-    // Ignore storage failures; the next mount retries the sync.
+  } catch (ignored) {
+    void ignored;
   }
 }
 

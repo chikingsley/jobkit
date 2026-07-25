@@ -7,10 +7,6 @@ import {
   type StructuredAgentOptions,
 } from "./structured-agent";
 
-// One dispatch for every provider. The registry (src/model/registry.ts) decides
-// which model runs a task; this routes that resolved model to the provider that
-// serves it. HTTP providers (local, Mistral) and CLI providers (Codex,
-// OpenCode) are selected the same way: one MODEL_ASSIGNMENTS line.
 export function runTaskAgent(
   assignment: ResolvedModel,
   options: StructuredAgentOptions

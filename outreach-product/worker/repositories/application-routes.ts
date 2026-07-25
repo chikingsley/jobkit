@@ -96,9 +96,7 @@ async function upsertEmailContactChannel(
     job.board === "anesl" && destination === "hr@anesl.com"
       ? "board_intermediary"
       : "unknown";
-  // Ordered two-statement D1 batch (the channel insert references the contact
-  // through a foreign key) with a CASE guard in the contact upsert; batch
-  // atomicity depends on statement ordering, so it stays raw SQL.
+
   await db.batch([
     db
       .prepare(
@@ -147,8 +145,6 @@ async function upsertEmailContactChannel(
   return channel.id;
 }
 
-// Correlated aggregate subqueries with CASE guards inside the SET clause are
-// beyond the drizzle DSL; the statement stays raw SQL.
 async function refreshContactMetadata(
   db: D1Database,
   contactChannelId: string,

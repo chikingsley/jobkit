@@ -24,9 +24,6 @@ function normalizeNode(value: unknown): unknown {
     Object.entries(value).map(([key, entry]) => [key, normalizeNode(entry)])
   ) as JsonObject;
 
-  // Codex structured output rejects the JSON Schema `uri` format. The Worker
-  // still validates returned URLs with the source Zod schema before accepting
-  // a task result.
   if (normalized.format === "uri") {
     Reflect.deleteProperty(normalized, "format");
   }

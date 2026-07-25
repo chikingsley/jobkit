@@ -37,8 +37,7 @@ export function consumeJobKitQueue(
       env
     );
   }
-  // An unrecognised body is acknowledged rather than retried forever. The only
-  // producer of such messages was the paused catalog projection.
+
   for (const unrecognised of batch.messages) {
     unrecognised.ack();
   }

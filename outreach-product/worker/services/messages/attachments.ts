@@ -87,7 +87,7 @@ export async function getThreadAttachment(
   if (!object?.body) {
     throw new MessageThreadError("Attachment data not found");
   }
-  // Serve the as-sent snapshot only; refuse if the object changed since send.
+
   if (row.r2_version && object.version !== row.r2_version) {
     throw new MessageThreadError("Attachment changed since it was sent", 409);
   }

@@ -26,8 +26,8 @@ export const apiRequest: ApiRequest = async (path, init) => {
       const { message: responseMessage } = body;
       message = responseMessage;
     }
-  } catch {
-    // Preserve the status-based fallback for non-JSON responses.
+  } catch (ignored) {
+    void ignored;
   }
   throw new Error(message);
 };

@@ -1,6 +1,5 @@
 import { resolveAssignment } from "../../../../src/model/registry";
 
-// The recorded model must be whatever the registry assigns, not a fixed name.
 const MESSAGE_MODEL = resolveAssignment("application.message");
 
 import { applyD1Migrations } from "cloudflare:test";

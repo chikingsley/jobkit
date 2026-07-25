@@ -16,8 +16,6 @@ export const JOB_CONTENT_PROMPT_VERSION = "job-content-analysis-v1";
 export const JOB_POSITION_TASK_TYPE = "job.position_analysis";
 export const JOB_POSITION_PROMPT_VERSION = "job-position-analysis-v3";
 
-// Which model runs a task is decided by src/model/registry.ts, not here. This
-// list only names the analysis task types.
 export const JOB_ANALYSIS_TASK_TYPES = [
   JOB_CONTENT_TASK_TYPE,
   JOB_MATCH_FACTS_TASK_TYPE,

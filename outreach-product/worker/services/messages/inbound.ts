@@ -5,10 +5,6 @@ import {
   type MessageThreadOutcome,
 } from "./model";
 
-// Fail closed: accept replies only when they match one of the user's real
-// application threads or a recorded bundle test send. Test replies may have a
-// mailbox-specific thread ID, so their durable authorization is the test-send
-// record selected by Gmail reconciliation.
 export async function recordInboundMessage(
   db: D1Database,
   userId: string,

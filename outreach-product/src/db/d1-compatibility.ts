@@ -1,12 +1,3 @@
-// Keeps the Cloudflare path real rather than merely intended.
-//
-// A D1 prepared statement satisfies `BoundStatement` structurally, so repository
-// code written against this module runs unchanged on D1. `D1Database` itself is
-// not assignable to `Database` because its `batch` accepts only D1 statements,
-// which is narrower than the interface; `fromD1` bridges exactly that gap.
-//
-// The type assertion below is the guarantee: if D1 ever changes shape, `tsc`
-// fails here instead of at a call site months later.
 import type { BoundStatement, Database, QueryResult } from "./client";
 
 type D1StatementSatisfiesBoundStatement =

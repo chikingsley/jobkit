@@ -171,8 +171,8 @@ export async function publishInventorySnapshot(
       await client.post(`/api/inventory/runs/${run.id}/fail`, {
         error: message.slice(0, 4000),
       });
-    } catch {
-      // Preserve the publishing error; the hosted run may already be terminal.
+    } catch (ignored) {
+      void ignored;
     }
     throw error;
   }

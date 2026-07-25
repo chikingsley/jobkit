@@ -99,8 +99,6 @@ export async function markOutboundRecipientSent(
   }
 }
 
-// Statement builder used inside multi-statement D1 batches; batch atomicity
-// depends on prepared-statement ordering, so it stays raw SQL.
 export function outboundRecipientSentStatement(
   db: D1Database,
   sourceKind: OutboundClaimSourceKind,

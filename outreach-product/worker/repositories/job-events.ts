@@ -1,8 +1,5 @@
 import type { AgentTaskCompletionFence } from "../services/agent-tasks/run-store";
 
-// Statement builder used inside multi-statement D1 batches (optionally behind
-// a completion-fence clause); batch atomicity depends on prepared-statement
-// ordering, so it stays raw SQL.
 export function jobEventStatement(
   db: D1Database,
   userJobId: string,

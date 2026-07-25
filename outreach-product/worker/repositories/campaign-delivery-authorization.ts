@@ -101,8 +101,6 @@ export async function listCampaignDeliveryAuthorizationEvents(
   }));
 }
 
-// Ordered two-statement D1 batch (authorization upsert plus audit event);
-// batch atomicity depends on statement ordering, so it stays raw SQL.
 export async function writeCampaignDeliveryAuthorization(
   db: D1Database,
   input: CampaignDeliveryAuthorizationWrite

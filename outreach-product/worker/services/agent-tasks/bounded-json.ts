@@ -1,9 +1,5 @@
 import { AgentTaskError } from "./contracts";
 
-// A canonical country chunk is capped at 1,000,000 bytes. The remaining
-// 100,000 bytes cover its lease, digest, counters, and JSON envelope. The same
-// bound keeps the legacy small-output completion path available without
-// restoring an unbounded in-memory request parser.
 export const MAX_AGENT_TASK_JSON_BODY_BYTES = 1_100_000;
 
 export async function readBoundedAgentTaskJson(

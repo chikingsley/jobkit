@@ -11,8 +11,6 @@ export interface MessageExemplar {
   subject: string;
 }
 
-// Prefer exemplars from the same country, then the best outcomes, then the
-// most recent voice. An empty table simply yields no examples.
 export function readMessageExemplars(
   db: D1Database,
   userId: string,

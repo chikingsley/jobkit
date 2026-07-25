@@ -35,9 +35,6 @@ async function readPacketSeedDocuments(db: D1Database, userId: string) {
   return documentByCategory;
 }
 
-// Ordered multi-statement D1 batch (packet inserts followed by item inserts
-// that reference them); batch atomicity depends on statement ordering, so it
-// stays raw SQL.
 function buildDocumentPacketStatements(
   db: D1Database,
   userId: string,
@@ -206,8 +203,6 @@ export async function listDocumentPackets(
   return [...packets.values()];
 }
 
-// Ordered two-statement D1 batch (clear the previous default, then set the
-// new one); batch atomicity depends on statement ordering, so it stays raw.
 export async function setDefaultDocumentPacket(
   db: D1Database,
   userId: string,

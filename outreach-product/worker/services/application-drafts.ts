@@ -79,8 +79,6 @@ export async function messageContext(
     ]);
   const audiences = audiencesFrom(factsRow?.facts_json);
   const shape = shapeOverride ?? {
-    // Young-learner shape only when the listing is exclusively about young
-    // audiences; board-form submissions get the short template.
     audience:
       audiences.length > 0 &&
       audiences.every((value) => value === "preschool" || value === "primary")
@@ -136,9 +134,6 @@ export async function importJobs(
   }
 }
 
-// On-demand draft creation for a single job that has none yet — the
-// "Generate application" button. Bulk-imported jobs deliberately skip
-// pre-generation; a draft is written only when the user asks for one.
 export async function queueJobDraftGeneration(
   env: AppEnv,
   userId: string,

@@ -2,11 +2,6 @@ import type { InventoryJob } from "./schema";
 
 export const INVENTORY_JOB_MATERIAL_HASH_VERSION = 1;
 
-/**
- * Serializes the complete collector-to-host envelope. The inventory publisher
- * uses this for immutable snapshot and batch identity, so freshness evidence
- * such as lastSeenAt intentionally remains present.
- */
 export function serializeInventoryJob(job: InventoryJob) {
   return JSON.stringify(job);
 }
@@ -15,11 +10,6 @@ export function inventoryJobContentHash(job: InventoryJob) {
   return sha256(serializeInventoryJob(job));
 }
 
-/**
- * Projects durable listing material independently from crawl/run freshness.
- * Raw source-date evidence remains available on the read model, while only a
- * board-published normalized date can change the material version.
- */
 export function inventoryJobMaterial(job: InventoryJob) {
   return {
     applyEmail: job.applyEmail,

@@ -32,8 +32,6 @@ import { reconcileRecentReplies } from "./gmail-replies";
 
 const SCOPE_SEPARATOR_PATTERN = /[\s,]+/u;
 
-// Consecutive auth-classified renewal failures before a watch is parked in
-// the terminal 'revoked' status and the cron stops calling Google for it.
 export const GMAIL_WATCH_AUTH_FAILURE_LIMIT = 5;
 const GMAIL_WATCH_BACKOFF_CAP_MINUTES = 360;
 
@@ -282,8 +280,7 @@ function isGmailAuthFailure(error: unknown) {
   if (error instanceof GmailApiError) {
     return error.status === 401 || error.status === 403;
   }
-  // getGoogleAccessToken wraps every token acquisition failure (missing
-  // account, revoked refresh token) in a 409 GmailIntegrationError.
+
   return error instanceof GmailIntegrationError && error.status === 409;
 }
 
@@ -432,8 +429,8 @@ async function recordPreSendFailure(
       "gmail_draft_create",
       gmailErrorMessage(error)
     );
-  } catch {
-    // Preserve the original Gmail failure if state changed concurrently.
+  } catch (ignored) {
+    void ignored;
   }
 }
 

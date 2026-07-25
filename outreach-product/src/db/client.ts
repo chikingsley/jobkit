@@ -1,9 +1,3 @@
-// The one module that opens a database connection.
-//
-// `Database` is the exact query surface the application uses. Cloudflare D1
-// satisfies it structurally, and `createSqliteDatabase` adapts bun:sqlite to
-// it, so the same repository code runs against a local file or a D1 binding.
-// Every stage takes a `Database`; nothing else imports a driver.
 import { Database as BunDatabase } from "bun:sqlite";
 
 export interface QueryMeta {
@@ -19,9 +13,6 @@ export interface QueryResult<Row = Record<string, unknown>> {
   success: boolean;
 }
 
-// `first` is an intersection rather than two overload signatures so the shape
-// stays a property signature: bare returns the row, with a column name returns
-// that column's value.
 export interface BoundStatement {
   all: <Row = Record<string, unknown>>() => Promise<QueryResult<Row>>;
   bind: (...values: unknown[]) => BoundStatement;
@@ -43,8 +34,6 @@ function emptyMeta(): QueryMeta {
   return { changes: 0, last_row_id: 0, rows_read: 0, rows_written: 0 };
 }
 
-// bun:sqlite rejects undefined and booleans as bound values; D1 accepts both.
-// Normalising here keeps call sites identical across the two drivers.
 function normalizeValue(value: unknown) {
   if (value === undefined) {
     return null;
@@ -66,7 +55,6 @@ class SqliteStatement implements BoundStatement {
     this.#values = values;
   }
 
-  // D1 returns a new bound statement rather than mutating the prepared one.
   bind(...values: unknown[]): BoundStatement {
     return new SqliteStatement(this.#database, this.#sql, values);
   }
@@ -75,8 +63,6 @@ class SqliteStatement implements BoundStatement {
     return this.#values.map(normalizeValue) as never[];
   }
 
-  // The synchronous core. batch() needs results inside a sqlite transaction,
-  // which cannot await, so the promise-returning methods wrap these.
   allSync<Row = Record<string, unknown>>(): QueryResult<Row> {
     const results = this.#database
       .prepare(this.#sql)
@@ -149,9 +135,6 @@ class SqliteDatabase implements Database {
     return Promise.resolve({ count: 0, duration: 0 });
   }
 
-  // D1 applies a batch atomically; a local transaction gives the same guarantee.
-  // Failures surface as a rejected promise, never a synchronous throw, because
-  // callers await this the way they await D1.
   // biome-ignore lint/suspicious/useAwait: the transaction is synchronous; async makes throws reject.
   async batch<Row = Record<string, unknown>>(
     statements: BoundStatement[]

@@ -295,9 +295,6 @@ describe("hosted inventory runs", () => {
       { source_fields_json: "" }
     );
 
-    // Identical material, so this takes the freshness path rather than the
-    // upsert. The fields must still land, otherwise a collector that starts
-    // emitting them can never backfill an already-ingested listing.
     const fields = { "Contact Person": "Mr.Corey Yang", Degree: "Bachelors" };
     await publishSingleJobRun(runner.token, sourceId, "fields-2", {
       ...withoutFields,
@@ -309,7 +306,6 @@ describe("hosted inventory runs", () => {
     );
     expect(afterFreshness?.material_version).toBe(1);
 
-    // A genuine material change goes through the upsert and keeps them.
     await publishSingleJobRun(runner.token, sourceId, "fields-3", {
       ...withoutFields,
       fields,

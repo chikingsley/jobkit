@@ -34,9 +34,6 @@ export interface StoredProfileImport {
 
 export class OnboardingIncompleteError extends Error {}
 
-// Ordered two-statement D1 batch (the second insert references the first
-// through a foreign key); batch atomicity depends on statement ordering, so
-// it stays raw SQL.
 export async function createProfileImportRecords(
   db: D1Database,
   input: {

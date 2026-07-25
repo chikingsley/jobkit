@@ -187,9 +187,6 @@ function contactNameFor(fields: Record<string, string | undefined>) {
   );
 }
 
-// The ledger folds the full listing text into fields under body/raw, and
-// description/company/apply_url are already promoted to their own columns.
-// Keeping them here would duplicate the whole listing on every row.
 const REDUNDANT_FIELD_KEYS = new Set([
   "apply_url",
   "body",

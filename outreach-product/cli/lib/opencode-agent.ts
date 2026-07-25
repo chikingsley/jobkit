@@ -6,8 +6,6 @@ import { captureProcess, filteredEnvironment } from "./agent-process";
 import type { StructuredAgentOptions } from "./structured-agent";
 import { extractJsonObjectText, structuredJsonPrompt } from "./structured-json";
 
-// A denied tool call makes `opencode run` exit 2 even when the final
-// assistant message is complete, so exit 2 with usable text is accepted.
 const ACCEPTED_EXIT_CODES = new Set([0, 2]);
 
 export async function runOpencodeStructuredAgent(

@@ -1,6 +1,3 @@
-// Fails when the repository and modules.jsonc disagree: a directory with no
-// manifest entry, or an entry naming a path that no longer exists. Without this
-// the manifest silently becomes fiction.
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
@@ -8,7 +5,6 @@ const REPOSITORY_ROOT = resolve(import.meta.dir, "../..");
 const MANIFEST_PATH = join(REPOSITORY_ROOT, "modules.jsonc");
 const LINE_COMMENT_PATTERN = /^\s*\/\//u;
 
-// Generated, vendored, or tool-owned directories are not modules.
 const UNTRACKED_DIRECTORIES = new Set([
   ".claude",
   ".git",
@@ -44,8 +40,6 @@ function repositoryDirectories(): string[] {
     .filter((entry) => statSync(join(REPOSITORY_ROOT, entry)).isDirectory());
 }
 
-// Pipeline stages are the modules that matter most, so they are declared
-// individually rather than being covered by a single src/ entry.
 function pipelineStages(): string[] {
   const pipelineRoot = join(REPOSITORY_ROOT, "src/pipeline");
   try {

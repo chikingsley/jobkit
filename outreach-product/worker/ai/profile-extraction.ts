@@ -130,8 +130,6 @@ function supports(source: string, evidence: string, values: string[]) {
     return false;
   }
 
-  // Resume headings often put employer, title, location, and dates on nearby
-  // lines. Validate proposed values against that local source context.
   const contextStart = Math.max(0, quoteStart - 320);
   const contextEnd = Math.min(source.length, quoteStart + quote.length + 320);
   const context = source.slice(contextStart, contextEnd);

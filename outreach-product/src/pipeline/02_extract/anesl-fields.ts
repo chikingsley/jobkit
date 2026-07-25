@@ -5,8 +5,7 @@ export type SourceFields = Record<string, string | undefined>;
 const ONLY_PREFIX = /^only\s+/iu;
 const YEARS_PATTERN = /at least\s+(\d+)\s+years?/iu;
 const AGE_RANGE_PATTERN = /from:\s*(\d+)\s*to:\s*(\d+)/iu;
-// The upper bound sometimes drops the colon after the currency, as in
-// "From RMB: 6500 To RMB 6500", so the colon is optional on the second currency.
+
 const SALARY_PATTERN =
   /from\s+([A-Z]{2,4}):\s*([\d,]+)(?:\s*to\s+(?:[A-Z]{2,4}:?\s*)?([\d,]+))?/iu;
 const TEACHING_HOURS_PATTERN = /teaching hours:\s*(\d+)/iu;
@@ -45,8 +44,7 @@ function degreeRequirement(fields: SourceFields) {
   if (!matched) {
     return null;
   }
-  // A handful of listings run the degree line into unrelated prose past the
-  // field's length cap. The matched level is the fact; the raw text is not.
+
   const label =
     value.length <= MAX_VALUE_LENGTH ? value : (matched[1] ?? value);
   return {
@@ -87,8 +85,7 @@ function nationalityRequirement(fields: SourceFields) {
   if (!(raw && value) || ANY_NATIONALITY_PATTERN.test(value)) {
     return null;
   }
-  // One listing states its accepted nationalities as a single unsplit run of
-  // text past the field's length cap. A value that long is not a country name.
+
   const countries = value
     .split(LIST_SEPARATOR)
     .filter((country) => country && country.length <= MAX_VALUE_LENGTH);
@@ -108,9 +105,6 @@ function nationalityRequirement(fields: SourceFields) {
   };
 }
 
-// The board states the learner age range rather than a named group, so the
-// group is derived from the range. Ranges routinely straddle boundaries, and
-// every band the range touches is reported.
 type Audience = JobMatchFacts["audiences"][number]["value"];
 const AUDIENCE_BANDS: [number, number, Audience][] = [
   [0, 6, "preschool"],
@@ -195,12 +189,11 @@ function compensation(fields: SourceFields) {
   }
   const minimum = Number(matched[2].replaceAll(",", ""));
   const maximum = matched[3] ? Number(matched[3].replaceAll(",", "")) : minimum;
-  // A zero lower bound is a placeholder, not a wage.
+
   if (minimum <= 0) {
     return null;
   }
-  // The board emits truncated upper bounds such as "From RMB: 17000 To RMB:
-  // 1700"; an upper bound below the lower one is not a real range.
+
   const credible = maximum >= minimum ? maximum : null;
   return {
     amountMaximum: credible,
@@ -214,9 +207,6 @@ function compensation(fields: SourceFields) {
   };
 }
 
-// The board states teaching hours and office hours separately. Their sum is
-// the contact obligation, so the basis is teaching-plus-office whenever office
-// hours are stated above zero, and teaching alone otherwise.
 function workload(fields: SourceFields) {
   const period = fields["Period/week"];
   const teaching = TEACHING_HOURS_PATTERN.exec(period ?? "");

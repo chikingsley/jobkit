@@ -60,8 +60,6 @@ export async function currentFxData(env: AppEnv): Promise<FxData> {
     const result = await fetchExchangeRates();
     return { rates: result.rates, updatedAt: result.updatedAt };
   } catch {
-    // Matching remains available when the currency feed is temporarily down.
-    // The null timestamp makes the missing conversion explicit in the snapshot.
     return { rates: { USD: 1 }, updatedAt: null };
   }
 }

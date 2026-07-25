@@ -43,9 +43,6 @@ export async function processGmailPush(
     .bind(input.emailAddress)
     .first<GmailWatchRow>();
   if (!watch) {
-    // The notification has already passed Google OIDC verification. Unknown
-    // mailboxes have no state to synchronize, so acknowledge them instead of
-    // making Pub/Sub retry an unprocessable event for the retention window.
     return {
       duplicate: false,
       ignored: true,
@@ -130,9 +127,6 @@ function preserveNumericHistoryId(
   context?: { source: string }
 ) {
   if (key === "historyId" && typeof value === "number") {
-    // Gmail documents historyId as a JSON string, but live push delivery has
-    // also emitted an integer. Preserve the source token so an int64 is never
-    // rounded through JavaScript Number before it becomes our canonical string.
     if (!context) {
       throw new Error("JSON source context is unavailable");
     }

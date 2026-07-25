@@ -28,9 +28,6 @@ function dispatch(url: string, init?: RequestInit) {
   );
 }
 
-// robots.txt, sitemap.xml, and the job-catalog pages are served by the public
-// catalog projection, which is paused. Their coverage sits with that code in
-// old/tests. What remains here is the canonical origin itself.
 describe("canonical origin", () => {
   it("emits the canonical link and OG URL on public documents", async () => {
     const response = await dispatch("https://jobkit.peacockery.studio/terms");

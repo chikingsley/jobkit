@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { extractAneslFacts } from "../../../src/pipeline/02_extract/anesl-fields";
 
-// Every value below is copied verbatim from the collector ledger.
 const REAL_LISTING = {
   Age: "From:20 To: 60 years old",
   Airfare: "RMB 8000 /Year",
@@ -102,13 +101,11 @@ describe("anesl source field extraction", () => {
   });
 
   it("tolerates the malformed values the board actually emits", () => {
-    // A missing colon on the upper bound appears once in 4,005 listings.
     expect(
       extractAneslFacts({ "Salary/M": "From RMB: 6500 To RMB 6500" })
         .compensation
     ).toMatchObject({ amountMaximum: 6500, amountMinimum: 6500 });
 
-    // An upper bound below the lower one is not a credible range.
     expect(
       extractAneslFacts({ "Salary/M": "From RMB: 17000 To RMB: 1700" })
         .compensation

@@ -1,9 +1,6 @@
 import type { MessageThreadDetail } from "../../../src/features/messages/types";
 import type { CampaignReplyClassification } from "../campaign-replies";
 
-// Hosted Gmail replies land keyed by gmail_thread_id and stitch into the same
-// thread. Statuses represent attempts that produced a real outbound message:
-// sent, in-flight (sending), or send-attempted-but-unverified.
 export const THREAD_STATUSES = ["sent", "sending", "uncertain"] as const;
 
 export const ATTEMPT_THREAD_PREFIX = "attempt:";

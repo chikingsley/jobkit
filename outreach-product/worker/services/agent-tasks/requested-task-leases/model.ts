@@ -5,10 +5,6 @@ const LEASE_MINUTES = AGENT_TASK_LEASE_MS / 60_000;
 
 export const LEASE_SQL_MODIFIER = `+${LEASE_MINUTES.toString()} minutes`;
 
-// A claim request may also prepare and atomically claim one queued task. Reap
-// one expired pair per poll so expiry work and the most expensive task-family
-// preparation remain inside the Workers Free 50-query invocation limit.
-// Scheduled polls and subsequent runner polls drain additional expired pairs.
 export const AGENT_TASK_REAPER_LIMIT = 1;
 
 export type RequestedAgentTaskSpecification = Omit<

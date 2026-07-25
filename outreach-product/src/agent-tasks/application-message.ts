@@ -144,8 +144,6 @@ function messageAction(mode: ApplicationMessageTaskMode | "follow_up") {
   return "Write a new application message.";
 }
 
-// Prompt version and effort are per-mode; the model comes from the registry so
-// the recorded model is the one that actually ran.
 export function applicationMessageTaskConfig(
   mode: ApplicationMessageTaskMode | "follow_up"
 ) {

@@ -60,15 +60,10 @@ export function completeJobContentTask(
   return completeJobContentTaskImpl(env, runner, run, runId, rawOutput);
 }
 
-// Polling returns at most one task. Two candidates keep each autonomous
-// analysis-family race bounded; request-backed claim races stop broker traversal,
-// and lease reaping runs through scheduled maintenance instead of this route.
 const CLAIM_CANDIDATE_LIMIT = 2;
-// A malformed model response may be retried, while a consistently invalid
-// response must eventually leave a visible terminal failure. This bounds task
-// execution attempts only; it does not limit inventory breadth or analysis.
+
 const JOB_ANALYSIS_MAX_ATTEMPTS_PER_VERSION = 3;
-// Effort applies only to CLI engines; the registry carries no effort concept.
+
 const JOB_ANALYSIS_REASONING_EFFORT = "medium" as const;
 const JOB_ANALYSIS_RETRY_GUIDANCE = `
 
@@ -387,8 +382,7 @@ async function claimJobCandidate(
   if (history.results.length >= JOB_ANALYSIS_MAX_ATTEMPTS_PER_VERSION) {
     return null;
   }
-  // The registry is the single source of truth for model choice, and the runner
-  // resolves the same assignment, so the recorded model is what actually ran.
+
   const assignment = resolveAssignment(task.taskType);
   try {
     return await createAgentTaskRun(db, runner, {

@@ -147,9 +147,6 @@ async function fetchSyncableMessage(accessToken: string, messageId: string) {
   try {
     return await getGmailMessage(accessToken, messageId, "full");
   } catch (error) {
-    // Listings lag deletions: a message removed after it was listed returns
-    // 404 forever, and failing the whole sync would make Pub/Sub redeliver
-    // the notification indefinitely. Skip the tombstone instead.
     if (error instanceof GmailApiError && error.status === 404) {
       return null;
     }

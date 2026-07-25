@@ -191,8 +191,6 @@ export function messageProfile(profile: Profile) {
   };
 }
 
-// Preferences relevant to how the candidate frames interest in a message;
-// compensation floors and benefit demands never belong in an application.
 function messagePreferences(preferences: Preferences | null | undefined) {
   if (!preferences) {
     return null;

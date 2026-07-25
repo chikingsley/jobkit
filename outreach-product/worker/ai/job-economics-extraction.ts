@@ -177,8 +177,6 @@ function requireSupportedPeriod(
   );
 }
 
-// A zero or negative amount is a placeholder, not a real salary. When no
-// positive amount survives, the compensation is downgraded to unstated.
 function downgradePlaceholderAmounts(
   compensation: ProviderJobEconomics["compensation"],
   reviewNotes: string[]

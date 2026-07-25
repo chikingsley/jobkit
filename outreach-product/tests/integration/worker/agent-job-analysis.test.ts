@@ -1,6 +1,5 @@
 import { resolveAssignment } from "../../../src/model/registry";
 
-// All three analysis tasks take their model from the registry.
 const ANALYSIS_MODEL = resolveAssignment("job.content_analysis").model;
 
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";

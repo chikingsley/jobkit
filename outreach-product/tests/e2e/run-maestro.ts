@@ -208,8 +208,8 @@ async function waitForServer(attempt = 0): Promise<void> {
     if (response.ok) {
       return;
     }
-  } catch {
-    // The server is still starting.
+  } catch (ignored) {
+    void ignored;
   }
   await sleep(250);
   return waitForServer(attempt + 1);

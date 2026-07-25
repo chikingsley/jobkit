@@ -36,7 +36,7 @@ export function registerJobMatchFactRoutes(app: JobKitApp) {
       .map((id) => id.trim())
       .filter(Boolean)
       .slice(0, PENDING_IDS_MAX);
-    // Explicit ids bypass the missing-facts filter so a job can be re-analyzed.
+
     const rows = ids.length
       ? await c.env.DB.prepare(
           `SELECT j.id,j.title,j.salary,j.description

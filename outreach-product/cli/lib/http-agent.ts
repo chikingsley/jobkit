@@ -4,10 +4,6 @@ import type { ModelProvider } from "../../src/model/registry";
 import type { StructuredAgentOptions } from "./structured-agent";
 import { extractJsonObjectText, structuredJsonPrompt } from "./structured-json";
 
-// The single runner for every openai-http model provider (local llama, Mistral,
-// any future hosted model). Engines are now just config: a provider plus a
-// model name. Codex and OpenCode remain CLI engines.
-
 export async function resolveProviderApiKey(
   provider: ModelProvider,
   env: Record<string, string | undefined> = process.env

@@ -154,8 +154,8 @@ async function gmailRequest<T>(
         error?: { message?: string };
       };
       detail = body.error?.message?.slice(0, 500) || detail;
-    } catch {
-      // Gmail occasionally returns an HTML proxy error; do not expose it.
+    } catch (ignored) {
+      void ignored;
     }
     throw new GmailApiError(detail, response.status);
   }

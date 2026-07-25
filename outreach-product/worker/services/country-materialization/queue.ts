@@ -79,9 +79,7 @@ export async function consumeCountryMaterializationQueue(
         `queue:${message.id}`,
         parsed.data.workItemId
       );
-      // A committed item creates the next durable outbox wake-up. Publishing
-      // one row here reduces latency; the scheduled dispatcher remains the
-      // recovery path when a send or acknowledgement is interrupted.
+
       const outbox = await publishCountryMaterializationOutbox(env);
       message.ack();
       console.log(
