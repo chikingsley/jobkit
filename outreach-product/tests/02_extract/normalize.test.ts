@@ -232,32 +232,6 @@ describe("gender restriction precision", () => {
   });
 });
 
-describe("annual salaries stated without a period", () => {
-  it("reads an unlabelled European figure as annual rather than monthly", () => {
-    const listing = normalizeListing(
-      raw({
-        amountMaximum: 25_000,
-        amountMinimum: 21_000,
-        country: "Italy",
-        currency: "EUR",
-        evidence: ["Salary ranges from 21000€ to 25000€"],
-        period: null,
-        teachingHours: null,
-        title: "Preschool English Teachers",
-      })
-    );
-    expect(listing.period).toBe("year");
-    expect(listing.monthlyUsd).toBeLessThan(2500);
-    expect(listing.monthlyUsd).toBeGreaterThan(1500);
-  });
-
-  it("still reads a plausible monthly figure as monthly", () => {
-    const listing = normalizeListing(raw({ period: null }));
-    expect(listing.period).toBeNull();
-    expect(listing.monthlyUsd).toBe(2660);
-  });
-});
-
 describe("pay readings that are not credible for a teaching role", () => {
   it("prefers the country currency when the stated code gives an incredible figure", () => {
     const listing = normalizeListing(

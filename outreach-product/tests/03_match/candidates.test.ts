@@ -175,19 +175,33 @@ describe("reading candidates across every board", () => {
         country: "Italy",
         currency: "EUR",
         evidence: ["Salary ranges from 21000 to 25000"],
-        id: "annual-job",
+        id: "unstated-period-job",
         period: null,
         routeKind: "board_form",
         title: "Preschool English Teachers",
+      },
+      {
+        amountMinimum: 27_500,
+        board: "seriousteachers",
+        country: "Kuwait",
+        currency: "USD",
+        evidence: ["Annual Salary between 27,500 USD to 47,500 USD"],
+        id: "stated-annual-job",
+        period: "year",
+        routeKind: "board_form",
+        title: "Teachers Wanted",
       },
     ]);
     const candidates = await readCandidates(db);
     const rmb = byId(candidates, "rmb-job");
     expect(rmb?.listing.currency).toBe("CNY");
     expect(rmb?.listing.monthlyUsd).toBe(2520);
-    const annual = byId(candidates, "annual-job");
-    expect(annual?.listing.period).toBe("year");
-    expect(annual?.listing.monthlyUsd).toBeLessThan(2500);
+    const unstated = byId(candidates, "unstated-period-job");
+    expect(unstated?.listing.period).toBeNull();
+    expect(unstated?.listing.monthlyUsd).toBeNull();
+    const stated = byId(candidates, "stated-annual-job");
+    expect(stated?.listing.period).toBe("year");
+    expect(stated?.listing.monthlyUsd).toBe(2292);
   });
 
   it("keeps a listing whose pay the board never stated", async () => {

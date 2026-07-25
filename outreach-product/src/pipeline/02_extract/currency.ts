@@ -188,23 +188,3 @@ export function inferPeriod(
 }
 
 export const CREDIBLE_MONTHLY_USD_CEILING = 9000;
-const PLAUSIBLE_ANNUAL_FLOOR_USD = 400;
-
-export function periodFromMagnitude(
-  amount: number,
-  currency: string,
-  period: string | null
-): string | null {
-  if (period !== null) {
-    return period;
-  }
-  const rate = MONTHLY_FX_TO_USD[currency];
-  if (!rate || amount <= 0) {
-    return null;
-  }
-  const asMonthly = amount * rate;
-  if (asMonthly <= CREDIBLE_MONTHLY_USD_CEILING) {
-    return null;
-  }
-  return asMonthly / 12 >= PLAUSIBLE_ANNUAL_FLOOR_USD ? "year" : null;
-}

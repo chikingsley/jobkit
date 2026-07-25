@@ -4,7 +4,6 @@ import {
   currencyForCountry,
   inferPeriod,
   MONTHLY_FX_TO_USD,
-  periodFromMagnitude,
   resolveCurrency,
 } from "./currency";
 
@@ -222,10 +221,7 @@ function readPay(
   }
   const ranged =
     raw.amountMaximum !== null && raw.amountMaximum >= raw.amountMinimum;
-  const midpoint = ranged
-    ? (raw.amountMinimum + (raw.amountMaximum as number)) / 2
-    : raw.amountMinimum;
-  const period = periodFromMagnitude(midpoint, currency, statedPeriod);
+  const period = statedPeriod;
   const low = correctMagnitude(raw.amountMinimum, currency, period);
   const high = ranged
     ? correctMagnitude(raw.amountMaximum as number, currency, period)
