@@ -36,16 +36,6 @@
       "assist": { "enabled": false }
     },
     {
-      "includes": ["src/db/schema/index.ts"],
-      "linter": {
-        "rules": {
-          "performance": {
-            "noBarrelFile": "off"
-          }
-        }
-      }
-    },
-    {
       "includes": ["tests/unit/schema-drift/support.ts"],
       "linter": {
         "rules": {
