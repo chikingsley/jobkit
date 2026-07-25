@@ -28,36 +28,21 @@ function dispatch(url: string, init?: RequestInit) {
   );
 }
 
+// robots.txt, sitemap.xml, and the job-catalog pages are served by the public
+// catalog projection, which is paused. Their coverage sits with that code in
+// old/tests. What remains here is the canonical origin itself.
 describe("canonical origin", () => {
-  it("serves robots and the sitemap index from the canonical origin", async () => {
-    const robots = await dispatch(
-      "https://jobkit.peacockery.studio/robots.txt"
-    );
-    const sitemap = await dispatch(
-      "https://jobkit.peacockery.studio/sitemap.xml"
-    );
-
-    expect(robots.status).toBe(200);
-    expect(await robots.text()).toContain(
-      "Sitemap: https://jobkit.peacockery.studio/sitemap.xml"
-    );
-    expect(sitemap.status).toBe(200);
-    expect(await sitemap.text()).toContain(
-      "<loc>https://jobkit.peacockery.studio/sitemaps/jobs.xml</loc>"
-    );
-  });
-
   it("emits the canonical link and OG URL on public documents", async () => {
-    const response = await dispatch("https://jobkit.peacockery.studio/jobs");
+    const response = await dispatch("https://jobkit.peacockery.studio/terms");
     const html = await response.text();
-    const canonicalLink = html.match(CANONICAL_LINK_PATTERN)?.[0];
-    const ogUrl = html.match(OG_URL_PATTERN)?.[0];
 
     expect(response.status).toBe(200);
-    expect(canonicalLink).toContain(
-      'href="https://jobkit.peacockery.studio/jobs"'
+    expect(html.match(CANONICAL_LINK_PATTERN)?.[0]).toContain(
+      'href="https://jobkit.peacockery.studio/terms"'
     );
-    expect(ogUrl).toContain('content="https://jobkit.peacockery.studio/jobs"');
+    expect(html.match(OG_URL_PATTERN)?.[0]).toContain(
+      'content="https://jobkit.peacockery.studio/terms"'
+    );
   });
 
   it("accepts auth traffic on the canonical origin", async () => {

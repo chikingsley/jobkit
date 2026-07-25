@@ -7,8 +7,8 @@ import {
   type InventoryJob,
   InventoryJobSchema,
 } from "../../src/features/inventory/schema";
+import { readSourceInventory } from "../../src/pipeline/01_ingest/ledger";
 import type { AgentConfig } from "../agent/config";
-import { readSourceInventory } from "./source";
 
 const TRAILING_SLASH_PATTERN = /\/$/u;
 const INVENTORY_REQUEST_MAX_ATTEMPTS = 4;

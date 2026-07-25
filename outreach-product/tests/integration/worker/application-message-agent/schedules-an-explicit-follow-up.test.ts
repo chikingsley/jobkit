@@ -1,3 +1,8 @@
+import { resolveAssignment } from "../../../../src/model/registry";
+
+// The recorded model must be whatever the registry assigns, not a fixed name.
+const MESSAGE_MODEL = resolveAssignment("application.message");
+
 import { applyD1Migrations } from "cloudflare:test";
 import { exports } from "cloudflare:workers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -88,7 +93,7 @@ describe("Codex application message tasks", () => {
     const token = await pairAgent(cookie);
     const generation = await claimTask(token);
     expect(generation).toMatchObject({
-      model: "gpt-5.6-luna",
+      model: MESSAGE_MODEL.model,
       taskType: "application.message",
     });
     const question = advertisedPositionQuestion(new Date(), "UTC");
@@ -248,7 +253,7 @@ describe("Codex application message tasks", () => {
     const token = await pairAgent(cookie);
     const generation = await claimTask(token);
     expect(generation).toMatchObject({
-      model: "gpt-5.6-luna",
+      model: MESSAGE_MODEL.model,
       promptVersion: "application-message-generate-v3",
       taskType: "application.message",
       webSearch: "disabled",
@@ -276,8 +281,8 @@ describe("Codex application message tasks", () => {
     });
     await expect(latestDraft(jobId, userId)).resolves.toMatchObject({
       message: firstMessage,
-      model_id: "gpt-5.6-luna",
-      model_provider: "codex",
+      model_id: MESSAGE_MODEL.model,
+      model_provider: MESSAGE_MODEL.provider,
       revision_source: "generated",
       version: 1,
     });
@@ -290,7 +295,7 @@ describe("Codex application message tasks", () => {
     expect(revisionQueued.status).toBe(202);
     const revision = await claimTask(token);
     expect(revision).toMatchObject({
-      model: "gpt-5.6-terra",
+      model: MESSAGE_MODEL.model,
       promptVersion: "application-message-revise-v3",
       taskType: "application.message",
     });
@@ -304,8 +309,8 @@ describe("Codex application message tasks", () => {
     });
     await expect(latestDraft(jobId, userId)).resolves.toMatchObject({
       message: revisedMessage,
-      model_id: "gpt-5.6-terra",
-      model_provider: "codex",
+      model_id: MESSAGE_MODEL.model,
+      model_provider: MESSAGE_MODEL.provider,
       revision_source: "ai_revision",
       version: 2,
     });

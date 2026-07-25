@@ -1,6 +1,6 @@
 import { applyD1Migrations } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
-import { isTransientInventoryStorageError } from "../../../../worker/services/inventory-runs/run-ingestion";
+import { isTransientInventoryStorageError } from "../../../../src/pipeline/01_ingest/run-ingestion";
 import { createAuthenticatedUser } from ".././auth";
 import {
   agentPost,

@@ -10,7 +10,6 @@ import {
   JOB_POSITION_TASK_TYPE,
   type JobAnalysisTaskSource,
   type JobAnalysisTaskType,
-  jobAnalysisModel,
   jobContentAnalysisPrompt,
   jobMatchFactsPrompt,
   jobPositionAnalysisPrompt,
@@ -18,6 +17,7 @@ import {
 import { JOB_CONTENT_ANALYSIS_SCHEMA_VERSION } from "../../../src/features/jobs/content-analysis";
 import { JOB_POSITION_ANALYSIS_SCHEMA_VERSION } from "../../../src/features/jobs/position-variants";
 import { JOB_MATCH_FACTS_SCHEMA_VERSION } from "../../../src/features/matching/version";
+import { resolveAssignment } from "../../../src/model/registry";
 import { jobSourceHash } from "../../ai/job-fact-extraction";
 import type { AgentRunnerContext } from "../../app-types";
 import type { AppEnv } from "../../env";
@@ -68,6 +68,8 @@ const CLAIM_CANDIDATE_LIMIT = 2;
 // response must eventually leave a visible terminal failure. This bounds task
 // execution attempts only; it does not limit inventory breadth or analysis.
 const JOB_ANALYSIS_MAX_ATTEMPTS_PER_VERSION = 3;
+// Effort applies only to CLI engines; the registry carries no effort concept.
+const JOB_ANALYSIS_REASONING_EFFORT = "medium" as const;
 const JOB_ANALYSIS_RETRY_GUIDANCE = `
 
 A prior attempt for this exact source and task contract failed deterministic validation. Correct the response instead of repeating it. In particular, copy every evidence value directly from the listing with identical case, punctuation, and spacing. Never paraphrase, repair, or combine source fragments in an evidence field.`;
@@ -385,17 +387,19 @@ async function claimJobCandidate(
   if (history.results.length >= JOB_ANALYSIS_MAX_ATTEMPTS_PER_VERSION) {
     return null;
   }
-  const model = jobAnalysisModel(task.taskType);
+  // The registry is the single source of truth for model choice, and the runner
+  // resolves the same assignment, so the recorded model is what actually ran.
+  const assignment = resolveAssignment(task.taskType);
   try {
     return await createAgentTaskRun(db, runner, {
       leaseExpiresAt: new Date(Date.now() + AGENT_TASK_LEASE_MS).toISOString(),
-      model: model.model,
+      model: assignment.model,
       outputSchema: task.outputSchema,
       prompt: previous
         ? `${task.prompt}${JOB_ANALYSIS_RETRY_GUIDANCE}`
         : task.prompt,
       promptVersion: task.promptVersion,
-      reasoningEffort: model.reasoningEffort,
+      reasoningEffort: JOB_ANALYSIS_REASONING_EFFORT,
       sourceHash,
       sourceTaskId: candidate.id,
       taskType: task.taskType,

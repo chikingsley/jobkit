@@ -8,6 +8,16 @@ import {
   InventoryRunStartSchema,
   InventorySourceScheduleSchema,
 } from "../../src/features/inventory/schema";
+import { InventoryRunError } from "../../src/pipeline/01_ingest/contracts";
+import {
+  beginInventoryRun,
+  ingestInventoryBatch,
+} from "../../src/pipeline/01_ingest/run-ingestion";
+import {
+  failInventoryRun,
+  finishInventoryRun,
+} from "../../src/pipeline/01_ingest/run-reconciliation";
+import { listInventoryStatus } from "../../src/pipeline/01_ingest/status";
 import type { AgentRunnerContext, JobKitApp } from "../app-types";
 import { agentRunnerHasCapability } from "../services/agent-runners";
 import {
@@ -18,16 +28,6 @@ import {
   requestInventoryRefresh,
   updateInventorySourceSchedule,
 } from "../services/inventory-refreshes";
-import { InventoryRunError } from "../services/inventory-runs/contracts";
-import {
-  beginInventoryRun,
-  ingestInventoryBatch,
-} from "../services/inventory-runs/run-ingestion";
-import {
-  failInventoryRun,
-  finishInventoryRun,
-} from "../services/inventory-runs/run-reconciliation";
-import { listInventoryStatus } from "../services/inventory-runs/status";
 
 export function registerInventoryRoutes(app: JobKitApp) {
   app.get("/api/inventory/status", async (c) =>

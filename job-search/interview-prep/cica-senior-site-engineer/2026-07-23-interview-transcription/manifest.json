@@ -1,0 +1,98 @@
+{
+  "chunks": [
+    {
+      "chunk": 0,
+      "duration_seconds": 750.037333,
+      "job_file": "chunk-00.json",
+      "job_id": "job_a6d2439dbbf347f69daee588c503f624",
+      "offset_seconds": 0.0,
+      "sha256": "ba886315b4ffc8a6be7a68f7669d592c3ef776fc02d3347c24d54d1569b0287a",
+      "speaker_word_counts": {
+        "speaker_0": 1506,
+        "speaker_1": 93,
+        "speaker_2": 91,
+        "speaker_3": 116,
+        "speaker_4": 16
+      },
+      "status": "succeeded",
+      "text_characters": 9882,
+      "word_count": 1822
+    },
+    {
+      "chunk": 1,
+      "duration_seconds": 749.994667,
+      "job_file": "chunk-01.json",
+      "job_id": "job_7ee5cb9ef707418994f43e5a0e3c1f78",
+      "offset_seconds": 750.037333,
+      "sha256": "4612ce289790c6ee6ee72f08dbd1c871381614b0ef7b8abe4e9402ac3572e24e",
+      "speaker_word_counts": {
+        "speaker_0": 2012,
+        "speaker_1": 190,
+        "speaker_2": 74
+      },
+      "status": "succeeded",
+      "text_characters": 11976,
+      "word_count": 2276
+    },
+    {
+      "chunk": 2,
+      "duration_seconds": 749.994667,
+      "job_file": "chunk-02.json",
+      "job_id": "job_cb6f4f392a5c4c1fb0d03f700026cd76",
+      "offset_seconds": 1500.0320000000002,
+      "sha256": "1beb8a451fa47e22c35cb9917a1e866ceb85bbf2d477f47dd010d9b750666d40",
+      "speaker_word_counts": {
+        "speaker_0": 2124,
+        "speaker_1": 36,
+        "speaker_2": 61
+      },
+      "status": "succeeded",
+      "text_characters": 11514,
+      "word_count": 2221
+    },
+    {
+      "chunk": 3,
+      "duration_seconds": 749.994667,
+      "job_file": "chunk-03.json",
+      "job_id": "job_5b19f564b9f44845ad1343ad3f96794f",
+      "offset_seconds": 2250.026667,
+      "sha256": "f498667f072015cb65d3dff0f9aa7408688f4679df9bac65111372cbe6d723c0",
+      "speaker_word_counts": {
+        "speaker_0": 1807,
+        "speaker_1": 246
+      },
+      "status": "succeeded",
+      "text_characters": 11242,
+      "word_count": 2053
+    },
+    {
+      "chunk": 4,
+      "duration_seconds": 606.825333,
+      "job_file": "chunk-04.json",
+      "job_id": "job_f239fddb53864089869fceb920a2502e",
+      "offset_seconds": 3000.021334,
+      "sha256": "19ff6175d72b11a0828eea2414d22bbc5f5ef26cee324619a54eb1181389a526",
+      "speaker_word_counts": {
+        "speaker_0": 1156,
+        "speaker_1": 455
+      },
+      "status": "succeeded",
+      "text_characters": 8607,
+      "word_count": 1611
+    }
+  ],
+  "full_transcription_source": {
+    "duration_seconds": 3606.804,
+    "path": "full-transcription-source.m4a",
+    "sha256": "21d1686f954f04e9df00860983da71de555e63857de3e88065cc9776f1b8c320",
+    "size_bytes": 22289918
+  },
+  "model": "elevenlabs-scribe_v2",
+  "original": {
+    "duration_seconds": 3606.848,
+    "path": "../2026-07-23-cica-senior-site-engineer-interview.m4a",
+    "sha256": "47678feddf631c7953203752268d6d5a85170d85a48a127eca0072f1f6758f00",
+    "size_bytes": 31745953
+  },
+  "transcription_environment": "voice-lab"
+}

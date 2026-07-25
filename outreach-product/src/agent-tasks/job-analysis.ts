@@ -16,22 +16,15 @@ export const JOB_CONTENT_PROMPT_VERSION = "job-content-analysis-v1";
 export const JOB_POSITION_TASK_TYPE = "job.position_analysis";
 export const JOB_POSITION_PROMPT_VERSION = "job-position-analysis-v3";
 
-export const JOB_ANALYSIS_MODELS = {
-  [JOB_CONTENT_TASK_TYPE]: {
-    model: "gpt-5.6-terra",
-    reasoningEffort: "medium" as const,
-  },
-  [JOB_MATCH_FACTS_TASK_TYPE]: {
-    model: "gpt-5.6-luna",
-    reasoningEffort: "medium" as const,
-  },
-  [JOB_POSITION_TASK_TYPE]: {
-    model: "gpt-5.6-terra",
-    reasoningEffort: "medium" as const,
-  },
-} as const;
+// Which model runs a task is decided by src/model/registry.ts, not here. This
+// list only names the analysis task types.
+export const JOB_ANALYSIS_TASK_TYPES = [
+  JOB_CONTENT_TASK_TYPE,
+  JOB_MATCH_FACTS_TASK_TYPE,
+  JOB_POSITION_TASK_TYPE,
+] as const;
 
-export type JobAnalysisTaskType = keyof typeof JOB_ANALYSIS_MODELS;
+export type JobAnalysisTaskType = (typeof JOB_ANALYSIS_TASK_TYPES)[number];
 
 export const JOB_MATCH_FACTS_OUTPUT_JSON_SCHEMA =
   codexOutputJsonSchema(JobMatchFactsSchema);
@@ -80,8 +73,4 @@ ${JOB_POSITION_EXTRACTION_INSTRUCTIONS}
 <job-listing>
 ${jobFactSource(job)}
 </job-listing>`;
-}
-
-export function jobAnalysisModel(taskType: JobAnalysisTaskType) {
-  return JOB_ANALYSIS_MODELS[taskType];
 }

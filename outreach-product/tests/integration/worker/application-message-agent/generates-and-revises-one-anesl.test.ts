@@ -1,3 +1,8 @@
+import { resolveAssignment } from "../../../../src/model/registry";
+
+// The recorded model must be whatever the registry assigns, not a fixed name.
+const MESSAGE_MODEL = resolveAssignment("application.message");
+
 import { applyD1Migrations } from "cloudflare:test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defaultProfile } from "../../../../src/features/profile/schema";
@@ -56,7 +61,7 @@ describe("Codex application message tasks", () => {
     const token = await pairAgent(cookie);
     const generation = await claimTask(token);
     expect(generation).toMatchObject({
-      model: "gpt-5.6-luna",
+      model: MESSAGE_MODEL.model,
       taskType: "application.message",
     });
     const firstMessage = aneslMessageFor(
@@ -70,8 +75,8 @@ describe("Codex application message tasks", () => {
       latestBundleDraft(queuedPayload.applicationSet.id)
     ).resolves.toMatchObject({
       message: firstMessage,
-      model_id: "gpt-5.6-luna",
-      model_provider: "codex",
+      model_id: MESSAGE_MODEL.model,
+      model_provider: MESSAGE_MODEL.provider,
       revision_source: "generated",
     });
 
@@ -82,7 +87,7 @@ describe("Codex application message tasks", () => {
     );
     expect(revisionQueued.status).toBe(202);
     const revision = await claimTask(token);
-    expect(revision).toMatchObject({ model: "gpt-5.6-terra" });
+    expect(revision).toMatchObject({ model: MESSAGE_MODEL.model });
     const revisedMessage = aneslMessageFor(
       "I am interested in positions BJ1001 and SH2002 and would be glad to discuss which location is the strongest current match."
     );
@@ -94,8 +99,8 @@ describe("Codex application message tasks", () => {
       latestBundleDraft(queuedPayload.applicationSet.id)
     ).resolves.toMatchObject({
       message: revisedMessage,
-      model_id: "gpt-5.6-terra",
-      model_provider: "codex",
+      model_id: MESSAGE_MODEL.model,
+      model_provider: MESSAGE_MODEL.provider,
       revision_source: "ai_revision",
       version: 2,
     });

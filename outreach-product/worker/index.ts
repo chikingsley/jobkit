@@ -5,6 +5,7 @@ import {
   localDevelopmentAuthEnabled,
   localDevelopmentUser,
 } from "../src/features/auth/local-development";
+import { InventoryRunError } from "../src/pipeline/01_ingest/contracts";
 import type { AgentRunnerContext, AuthUser, JobKitApp } from "./app-types";
 import { createAuth } from "./auth";
 import type { AppEnv } from "./env";
@@ -32,7 +33,6 @@ import { registerJobRoutes } from "./routes/jobs";
 import { registerMessagePreviewRoutes } from "./routes/message-preview";
 import { registerMessageRoutes } from "./routes/messages";
 import { registerOnboardingRoutes } from "./routes/onboarding";
-import { registerPublicProjectionRoutes } from "./routes/public-projection";
 import { registerTestLabRoutes } from "./routes/test-lab";
 import { registerUserSettingsRoutes } from "./routes/user-settings";
 import { ImportSchema, SubmitSchema } from "./schemas";
@@ -54,26 +54,18 @@ import { runCampaignMatchingPass } from "./services/campaign-matching";
 import { runCampaignScheduler } from "./services/campaign-scheduler";
 import { CampaignError } from "./services/campaigns";
 import { CountryMarketError } from "./services/country-markets";
-import { cleanupAbandonedCountrySweepOutputObjects } from "./services/country-materialization/cleanup";
-import { reapExpiredCountryMaterializationItems } from "./services/country-materialization/materializer";
-import { publishCountryMaterializationOutbox } from "./services/country-materialization/queue";
 import { DocumentConversionError } from "./services/document-text";
 import { EmailAttemptError } from "./services/email-attempts";
 import { FollowUpError, queueDueFollowUps } from "./services/followups";
 import { GmailIntegrationError } from "./services/gmail-errors";
 import { renewExpiringGmailWatches } from "./services/gmail-integration";
-import { processGoogleIndexingOutbox } from "./services/google-indexing";
 import { queueDueInventoryRefreshes } from "./services/inventory-refreshes";
-import { InventoryRunError } from "./services/inventory-runs/contracts";
 import { JobAnalysisRecordError } from "./services/job-analysis-records";
 import { approveAndSubmitApplication } from "./services/job-submission";
 import { ensureLocalDevelopmentUser } from "./services/local-development-user";
 import { searchLocations, searchUniversities } from "./services/lookups";
 import { currentFxData } from "./services/matching-engine";
 import { ResumeUploadError } from "./services/profile-imports";
-import { PublicProjectionPromotionError } from "./services/public-projection/promotion/model";
-import { queuePublicProjectionAdvance } from "./services/public-projection/queue";
-import { PublicProjectionRunError } from "./services/public-projection/runs";
 import { TestLabError } from "./services/test-lab/errors";
 
 const app: JobKitApp = new OpenAPIHono<{
@@ -123,10 +115,10 @@ function carriedErrorStatus(error: Error): ContentfulStatusCode | null {
   if (error instanceof FollowUpError) {
     return error.status;
   }
-  if (error instanceof CountryMarketError) {
+  if (error instanceof CampaignError) {
     return error.status;
   }
-  if (error instanceof CampaignError) {
+  if (error instanceof CountryMarketError) {
     return error.status;
   }
   if (error instanceof AgentTaskError) {
@@ -136,12 +128,6 @@ function carriedErrorStatus(error: Error): ContentfulStatusCode | null {
     return error.status;
   }
   if (error instanceof InventoryRunError) {
-    return error.status;
-  }
-  if (error instanceof PublicProjectionRunError) {
-    return error.status;
-  }
-  if (error instanceof PublicProjectionPromotionError) {
     return error.status;
   }
   return null;
@@ -284,13 +270,12 @@ registerOnboardingRoutes(app);
 registerApplicationBundleRoutes(app);
 registerApplicationDraftRoutes(app);
 registerCampaignRoutes(app);
+registerCountryRoutes(app);
 registerInventoryRoutes(app);
-registerPublicProjectionRoutes(app);
 registerJobRoutes(app);
 registerJobMatchFactRoutes(app);
 registerJobPositionAnalysisRoutes(app);
 registerDocumentRoutes(app);
-registerCountryRoutes(app);
 registerDeliveryAuthorizationRoutes(app);
 registerEmailAttemptRoutes(app);
 registerGmailRoutes(app);
@@ -439,44 +424,22 @@ export default {
     ctx.waitUntil(
       Promise.all([
         renewExpiringGmailWatches(env),
-        processGoogleIndexingOutbox(env),
         queueDueFollowUps(env),
         runCampaignMatchingPass(env),
         runCampaignScheduler(env),
         queueDueInventoryRefreshes(env.DB),
-        queuePublicProjectionAdvance(env),
         queueAgentTaskMaintenance(env),
-        publishCountryMaterializationOutbox(env),
-        reapExpiredCountryMaterializationItems(env.DB),
-        cleanupAbandonedCountrySweepOutputObjects(env),
       ]).then(
-        ([
-          gmail,
-          indexing,
-          followUps,
-          matching,
-          campaigns,
-          inventory,
-          projectionWake,
-          agentTaskWake,
-          countryMaterializationWake,
-          countryMaterializationLeases,
-          countryOutputCleanup,
-        ]) => {
+        ([gmail, followUps, matching, campaigns, inventory, agentTaskWake]) => {
           console.log(
             JSON.stringify({
               agentTaskWake,
               campaigns,
-              countryMaterializationLeases,
-              countryMaterializationWake,
-              countryOutputCleanup,
               event: "scheduled_maintenance",
               followUps,
               gmail,
-              indexing,
               inventory,
               matching,
-              projectionWake,
             })
           );
         }

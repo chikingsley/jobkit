@@ -1,3 +1,8 @@
+import { resolveAssignment } from "../../../src/model/registry";
+
+// All three analysis tasks take their model from the registry.
+const ANALYSIS_MODEL = resolveAssignment("job.content_analysis").model;
+
 import { applyD1Migrations, type D1Migration } from "cloudflare:test";
 import { env, exports } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -196,17 +201,17 @@ describe("Codex job analysis tasks", () => {
       .all();
     expect(analyses.results).toEqual([
       {
-        model: "gpt-5.6-terra",
+        model: ANALYSIS_MODEL,
         status: "completed",
         task_type: "job.position_analysis",
       },
       {
-        model: "gpt-5.6-luna",
+        model: ANALYSIS_MODEL,
         status: "completed",
         task_type: "job.match_facts",
       },
       {
-        model: "gpt-5.6-terra",
+        model: ANALYSIS_MODEL,
         status: "completed",
         task_type: "job.content_analysis",
       },
@@ -216,7 +221,7 @@ describe("Codex job analysis tasks", () => {
         "SELECT model_provider,model_id FROM job_match_facts WHERE job_id='agent-analysis-job'"
       ).first()
     ).resolves.toEqual({
-      model_id: "gpt-5.6-luna",
+      model_id: ANALYSIS_MODEL,
       model_provider: "codex",
     });
     await expect(
@@ -225,7 +230,7 @@ describe("Codex job analysis tasks", () => {
       ).first()
     ).resolves.toEqual({
       content_json: JSON.stringify(contentOutput()),
-      model_id: "gpt-5.6-terra",
+      model_id: ANALYSIS_MODEL,
       model_provider: "codex",
     });
 

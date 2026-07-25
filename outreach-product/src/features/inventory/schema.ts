@@ -70,6 +70,7 @@ export const InventoryJobSchema = z
     country: z.string().max(160),
     description: z.string().max(50_000),
     employerId: z.string().max(500),
+    fields: z.record(z.string().max(160), z.string().max(4000)).optional(),
     id: z.string().min(1).max(500),
     lastSeenAt: z.iso.datetime(),
     location: z.string().max(300),

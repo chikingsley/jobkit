@@ -1,1 +1,0 @@
-ALTER TABLE jobs ADD COLUMN source_reference TEXT NOT NULL DEFAULT '';

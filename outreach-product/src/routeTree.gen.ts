@@ -19,7 +19,6 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppJobsRouteImport } from './routes/app/jobs'
 import { Route as AppMessagesRouteImport } from './routes/app/messages'
-import { Route as JobsIndexRouteImport } from './routes/jobs/index'
 import { Route as AppCampaignsIndexRouteImport } from './routes/app/campaigns/index'
 import { Route as AppCampaignsCampaignIdRouteImport } from './routes/app/campaigns/$campaignId'
 import { Route as AppCampaignsNewRouteImport } from './routes/app/campaigns/new'
@@ -31,9 +30,6 @@ import { Route as AppSettingsDocumentsRouteImport } from './routes/app/settings/
 import { Route as AppSettingsPreferencesRouteImport } from './routes/app/settings/preferences'
 import { Route as AppSettingsProfileRouteImport } from './routes/app/settings/profile'
 import { Route as AppSettingsWritingStyleRouteImport } from './routes/app/settings/writing-style'
-import { Route as JobPublicIdSlugRouteImport } from './routes/job/$publicId/$slug'
-import { Route as JobsCountrySlugIndexRouteImport } from './routes/jobs/$countrySlug/index'
-import { Route as JobsCountrySlugCitySlugRouteImport } from './routes/jobs/$countrySlug/$citySlug'
 import { Route as AppCampaignsMarketsIndexRouteImport } from './routes/app/campaigns/markets/index'
 import { Route as AppCampaignsMarketsCountryCodeRouteImport } from './routes/app/campaigns/markets/$countryCode'
 
@@ -86,11 +82,6 @@ const AppMessagesRoute = AppMessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
   getParentRoute: () => AppRoute,
-} as any)
-const JobsIndexRoute = JobsIndexRouteImport.update({
-  id: '/jobs/',
-  path: '/jobs/',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AppCampaignsIndexRoute = AppCampaignsIndexRouteImport.update({
   id: '/campaigns/',
@@ -147,21 +138,6 @@ const AppSettingsWritingStyleRoute = AppSettingsWritingStyleRouteImport.update({
   path: '/settings/writing-style',
   getParentRoute: () => AppRoute,
 } as any)
-const JobPublicIdSlugRoute = JobPublicIdSlugRouteImport.update({
-  id: '/job/$publicId/$slug',
-  path: '/job/$publicId/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JobsCountrySlugIndexRoute = JobsCountrySlugIndexRouteImport.update({
-  id: '/jobs/$countrySlug/',
-  path: '/jobs/$countrySlug/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JobsCountrySlugCitySlugRoute = JobsCountrySlugCitySlugRouteImport.update({
-  id: '/jobs/$countrySlug/$citySlug',
-  path: '/jobs/$countrySlug/$citySlug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AppCampaignsMarketsIndexRoute =
   AppCampaignsMarketsIndexRouteImport.update({
     id: '/campaigns/markets/',
@@ -186,7 +162,6 @@ export interface FileRoutesByFullPath {
   '/app/jobs': typeof AppJobsRoute
   '/app/messages': typeof AppMessagesRoute
   '/app/': typeof AppIndexRoute
-  '/jobs/': typeof JobsIndexRoute
   '/app/campaigns/$campaignId': typeof AppCampaignsCampaignIdRoute
   '/app/campaigns/new': typeof AppCampaignsNewRoute
   '/app/operator/test-lab': typeof AppOperatorTestLabRoute
@@ -195,12 +170,9 @@ export interface FileRoutesByFullPath {
   '/app/settings/preferences': typeof AppSettingsPreferencesRoute
   '/app/settings/profile': typeof AppSettingsProfileRoute
   '/app/settings/writing-style': typeof AppSettingsWritingStyleRoute
-  '/job/$publicId/$slug': typeof JobPublicIdSlugRoute
-  '/jobs/$countrySlug/$citySlug': typeof JobsCountrySlugCitySlugRoute
   '/app/campaigns/': typeof AppCampaignsIndexRoute
   '/app/operator/': typeof AppOperatorIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
-  '/jobs/$countrySlug/': typeof JobsCountrySlugIndexRoute
   '/app/campaigns/markets/$countryCode': typeof AppCampaignsMarketsCountryCodeRoute
   '/app/campaigns/markets/': typeof AppCampaignsMarketsIndexRoute
 }
@@ -214,7 +186,6 @@ export interface FileRoutesByTo {
   '/app/jobs': typeof AppJobsRoute
   '/app/messages': typeof AppMessagesRoute
   '/app': typeof AppIndexRoute
-  '/jobs': typeof JobsIndexRoute
   '/app/campaigns/$campaignId': typeof AppCampaignsCampaignIdRoute
   '/app/campaigns/new': typeof AppCampaignsNewRoute
   '/app/operator/test-lab': typeof AppOperatorTestLabRoute
@@ -223,12 +194,9 @@ export interface FileRoutesByTo {
   '/app/settings/preferences': typeof AppSettingsPreferencesRoute
   '/app/settings/profile': typeof AppSettingsProfileRoute
   '/app/settings/writing-style': typeof AppSettingsWritingStyleRoute
-  '/job/$publicId/$slug': typeof JobPublicIdSlugRoute
-  '/jobs/$countrySlug/$citySlug': typeof JobsCountrySlugCitySlugRoute
   '/app/campaigns': typeof AppCampaignsIndexRoute
   '/app/operator': typeof AppOperatorIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
-  '/jobs/$countrySlug': typeof JobsCountrySlugIndexRoute
   '/app/campaigns/markets/$countryCode': typeof AppCampaignsMarketsCountryCodeRoute
   '/app/campaigns/markets': typeof AppCampaignsMarketsIndexRoute
 }
@@ -244,7 +212,6 @@ export interface FileRoutesById {
   '/app/jobs': typeof AppJobsRoute
   '/app/messages': typeof AppMessagesRoute
   '/app/': typeof AppIndexRoute
-  '/jobs/': typeof JobsIndexRoute
   '/app/campaigns/$campaignId': typeof AppCampaignsCampaignIdRoute
   '/app/campaigns/new': typeof AppCampaignsNewRoute
   '/app/operator/test-lab': typeof AppOperatorTestLabRoute
@@ -253,12 +220,9 @@ export interface FileRoutesById {
   '/app/settings/preferences': typeof AppSettingsPreferencesRoute
   '/app/settings/profile': typeof AppSettingsProfileRoute
   '/app/settings/writing-style': typeof AppSettingsWritingStyleRoute
-  '/job/$publicId/$slug': typeof JobPublicIdSlugRoute
-  '/jobs/$countrySlug/$citySlug': typeof JobsCountrySlugCitySlugRoute
   '/app/campaigns/': typeof AppCampaignsIndexRoute
   '/app/operator/': typeof AppOperatorIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
-  '/jobs/$countrySlug/': typeof JobsCountrySlugIndexRoute
   '/app/campaigns/markets/$countryCode': typeof AppCampaignsMarketsCountryCodeRoute
   '/app/campaigns/markets/': typeof AppCampaignsMarketsIndexRoute
 }
@@ -275,7 +239,6 @@ export interface FileRouteTypes {
     | '/app/jobs'
     | '/app/messages'
     | '/app/'
-    | '/jobs/'
     | '/app/campaigns/$campaignId'
     | '/app/campaigns/new'
     | '/app/operator/test-lab'
@@ -284,12 +247,9 @@ export interface FileRouteTypes {
     | '/app/settings/preferences'
     | '/app/settings/profile'
     | '/app/settings/writing-style'
-    | '/job/$publicId/$slug'
-    | '/jobs/$countrySlug/$citySlug'
     | '/app/campaigns/'
     | '/app/operator/'
     | '/app/settings/'
-    | '/jobs/$countrySlug/'
     | '/app/campaigns/markets/$countryCode'
     | '/app/campaigns/markets/'
   fileRoutesByTo: FileRoutesByTo
@@ -303,7 +263,6 @@ export interface FileRouteTypes {
     | '/app/jobs'
     | '/app/messages'
     | '/app'
-    | '/jobs'
     | '/app/campaigns/$campaignId'
     | '/app/campaigns/new'
     | '/app/operator/test-lab'
@@ -312,12 +271,9 @@ export interface FileRouteTypes {
     | '/app/settings/preferences'
     | '/app/settings/profile'
     | '/app/settings/writing-style'
-    | '/job/$publicId/$slug'
-    | '/jobs/$countrySlug/$citySlug'
     | '/app/campaigns'
     | '/app/operator'
     | '/app/settings'
-    | '/jobs/$countrySlug'
     | '/app/campaigns/markets/$countryCode'
     | '/app/campaigns/markets'
   id:
@@ -332,7 +288,6 @@ export interface FileRouteTypes {
     | '/app/jobs'
     | '/app/messages'
     | '/app/'
-    | '/jobs/'
     | '/app/campaigns/$campaignId'
     | '/app/campaigns/new'
     | '/app/operator/test-lab'
@@ -341,12 +296,9 @@ export interface FileRouteTypes {
     | '/app/settings/preferences'
     | '/app/settings/profile'
     | '/app/settings/writing-style'
-    | '/job/$publicId/$slug'
-    | '/jobs/$countrySlug/$citySlug'
     | '/app/campaigns/'
     | '/app/operator/'
     | '/app/settings/'
-    | '/jobs/$countrySlug/'
     | '/app/campaigns/markets/$countryCode'
     | '/app/campaigns/markets/'
   fileRoutesById: FileRoutesById
@@ -359,10 +311,6 @@ export interface RootRouteChildren {
   MethodologyRoute: typeof MethodologyRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
-  JobsIndexRoute: typeof JobsIndexRoute
-  JobPublicIdSlugRoute: typeof JobPublicIdSlugRoute
-  JobsCountrySlugCitySlugRoute: typeof JobsCountrySlugCitySlugRoute
-  JobsCountrySlugIndexRoute: typeof JobsCountrySlugIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -436,13 +384,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/messages'
       preLoaderRoute: typeof AppMessagesRouteImport
       parentRoute: typeof AppRoute
-    }
-    '/jobs/': {
-      id: '/jobs/'
-      path: '/jobs'
-      fullPath: '/jobs/'
-      preLoaderRoute: typeof JobsIndexRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/app/campaigns/': {
       id: '/app/campaigns/'
@@ -521,27 +462,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsWritingStyleRouteImport
       parentRoute: typeof AppRoute
     }
-    '/job/$publicId/$slug': {
-      id: '/job/$publicId/$slug'
-      path: '/job/$publicId/$slug'
-      fullPath: '/job/$publicId/$slug'
-      preLoaderRoute: typeof JobPublicIdSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/jobs/$countrySlug/': {
-      id: '/jobs/$countrySlug/'
-      path: '/jobs/$countrySlug'
-      fullPath: '/jobs/$countrySlug/'
-      preLoaderRoute: typeof JobsCountrySlugIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/jobs/$countrySlug/$citySlug': {
-      id: '/jobs/$countrySlug/$citySlug'
-      path: '/jobs/$countrySlug/$citySlug'
-      fullPath: '/jobs/$countrySlug/$citySlug'
-      preLoaderRoute: typeof JobsCountrySlugCitySlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/app/campaigns/markets/': {
       id: '/app/campaigns/markets/'
       path: '/campaigns/markets'
@@ -607,10 +527,6 @@ const rootRouteChildren: RootRouteChildren = {
   MethodologyRoute: MethodologyRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
-  JobsIndexRoute: JobsIndexRoute,
-  JobPublicIdSlugRoute: JobPublicIdSlugRoute,
-  JobsCountrySlugCitySlugRoute: JobsCountrySlugCitySlugRoute,
-  JobsCountrySlugIndexRoute: JobsCountrySlugIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

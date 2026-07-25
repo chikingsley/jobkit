@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { APPLICATION_MESSAGE_INSTRUCTIONS } from "../../worker/ai/application-message-policy";
+import { resolveAssignment } from "../model/registry";
 import { codexOutputJsonSchema } from "./json-schema";
 
 export const APPLICATION_MESSAGE_TASK_TYPE = "application.message";
@@ -143,24 +144,27 @@ function messageAction(mode: ApplicationMessageTaskMode | "follow_up") {
   return "Write a new application message.";
 }
 
+// Prompt version and effort are per-mode; the model comes from the registry so
+// the recorded model is the one that actually ran.
 export function applicationMessageTaskConfig(
   mode: ApplicationMessageTaskMode | "follow_up"
 ) {
+  const { model } = resolveAssignment(APPLICATION_MESSAGE_TASK_TYPE);
   if (mode === "follow_up") {
     return {
-      model: "gpt-5.6-luna",
+      model,
       promptVersion: "application-message-follow-up-v2",
       reasoningEffort: "low" as const,
     };
   }
   return mode === "revise"
     ? {
-        model: "gpt-5.6-terra",
+        model,
         promptVersion: "application-message-revise-v3",
         reasoningEffort: "medium" as const,
       }
     : {
-        model: "gpt-5.6-luna",
+        model,
         promptVersion: "application-message-generate-v3",
         reasoningEffort: "medium" as const,
       };

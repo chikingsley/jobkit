@@ -17,9 +17,6 @@ export function PublicSiteShell({ children }: PropsWithChildren) {
             aria-label="Primary"
             className="flex min-w-0 items-center gap-4 text-sm"
           >
-            <Link activeProps={{ className: "text-foreground" }} to="/jobs">
-              Jobs
-            </Link>
             <Link
               activeProps={{ className: "text-foreground" }}
               className="hidden text-muted-foreground hover:text-foreground sm:inline"

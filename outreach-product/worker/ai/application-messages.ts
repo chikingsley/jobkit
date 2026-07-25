@@ -1,7 +1,11 @@
 import { parsePhoneNumberFromString } from "libphonenumber-js";
-import { ApplicationMessageTaskOutputSchema } from "../../src/agent-tasks/application-message";
+import {
+  APPLICATION_MESSAGE_TASK_TYPE,
+  ApplicationMessageTaskOutputSchema,
+} from "../../src/agent-tasks/application-message";
 import type { Preferences } from "../../src/features/preferences/schema";
 import type { Profile } from "../../src/features/profile/schema";
+import { type ProviderName, resolveAssignment } from "../../src/model/registry";
 import type { MessageExemplar } from "../repositories/message-exemplars";
 import type { ActiveMessageFoundation } from "../repositories/message-foundations";
 import type { ApplicationMessageRoute, JobImport } from "../schemas";
@@ -18,7 +22,7 @@ const TRAILING_PERIOD_PATTERN = /\.$/u;
 export interface GeneratedApplicationMessage
   extends ReturnType<typeof ApplicationMessageTaskOutputSchema.parse> {
   modelId: string;
-  provider: "codex";
+  provider: ProviderName;
 }
 
 export interface MessageContext extends ActiveMessageFoundation {
@@ -116,7 +120,7 @@ export function prepareApplicationMessageRevision(
   };
 }
 
-export function validateCodexApplicationMessage(
+export function validateGeneratedApplicationMessage(
   rawOutput: unknown,
   prepared: PreparedApplicationMessage,
   modelId: string
@@ -137,7 +141,7 @@ export function validateCodexApplicationMessage(
     guidance: output.guidance,
     message,
     modelId,
-    provider: "codex",
+    provider: resolveAssignment(APPLICATION_MESSAGE_TASK_TYPE).provider,
     summary: output.summary.trim(),
   };
 }

@@ -1,7 +1,7 @@
 import { APPLICATION_MESSAGE_TASK_TYPE } from "../../../src/agent-tasks/application-message";
 import {
   openingFor,
-  validateCodexApplicationMessage,
+  validateGeneratedApplicationMessage,
 } from "../../ai/application-messages";
 import type { AppEnv } from "../../env";
 import { defaultPacketSnapshotWrites } from "../../repositories/draft-attachments";
@@ -40,7 +40,7 @@ export async function buildAneslBundleTaskCompletion(
   fence: AgentTaskCompletionFence
 ) {
   const state = await prepareAneslBundleTask(env, userId, input);
-  const generated = validateCodexApplicationMessage(
+  const generated = validateGeneratedApplicationMessage(
     rawOutput,
     state.prepared,
     modelId

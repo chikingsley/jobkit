@@ -68,6 +68,7 @@ export const jobListings = sqliteTable(
       .default("unknown")
       .notNull(),
     sourceExpiryDateRaw: text("source_expiry_date_raw").default("").notNull(),
+    sourceFieldsJson: text("source_fields_json").default("").notNull(),
     sourceLastSeenAt: text("source_last_seen_at"),
     sourcePostedDate: text("source_posted_date"),
     sourcePostedDateProvenance: text("source_posted_date_provenance")

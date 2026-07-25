@@ -36,10 +36,12 @@ jobs:
         run: bun cli/quality/check-file-lines.ts
       - name: Migration trigger guard
         run: bun cli/quality/check-migration-triggers.ts
+      - name: Module manifest
+        run: bun cli/quality/check-modules.ts
+      - name: Test accounting
+        run: bun cli/quality/check-tests.ts
       - name: Typecheck
         run: bunx tsc --noEmit
-      - name: Unit tests
-        run: bun test tests/unit
       - name: Worker integration tests
         run: bunx vitest run --config tests/vitest.config.ts
       - name: Start integration tests

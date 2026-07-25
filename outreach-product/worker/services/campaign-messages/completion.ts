@@ -1,4 +1,4 @@
-import { validateCodexApplicationMessage } from "../../ai/application-messages";
+import { validateGeneratedApplicationMessage } from "../../ai/application-messages";
 import type { AppEnv } from "../../env";
 import type {
   AgentTaskCompletionCondition,
@@ -24,7 +24,7 @@ export async function buildCampaignDispatchTaskCompletion(
   fence: AgentTaskCompletionFence
 ) {
   const state = await prepareCampaignDispatchTask(env, userId, input);
-  const generated = validateCodexApplicationMessage(
+  const generated = validateGeneratedApplicationMessage(
     rawOutput,
     state.prepared,
     modelId

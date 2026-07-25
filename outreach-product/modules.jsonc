@@ -1,0 +1,120 @@
+// Every directory in the repository has an entry here. `bun run check:modules`
+// fails when a directory is missing an entry, or an entry points at a path that
+// does not exist. Status values:
+//
+//   active    load-bearing today
+//   dormant   kept, not running, not depended on
+//   moving    being relocated to `target` during the reorganisation
+//
+// `stage` places a module in the product flow: collect, extract, match,
+// compose, campaigns, deliver, respond. Modules that serve every stage use
+// "platform"; developer tooling uses "ops".
+{
+  "modules": [
+    {
+      "path": "collectors",
+      "name": "Board collectors",
+      "stage": "collect",
+      "status": "active",
+      "language": "go",
+      "owns": "Scrapes anesl, seriousteachers, eslcafe, ajarn, tefl into a local SQLite job ledger. Parses each listing into a label/value field map.",
+      "target": "collectors"
+    },
+    {
+      "path": "cli",
+      "name": "Operator CLI",
+      "stage": "platform",
+      "status": "moving",
+      "owns": "Verbs for inventory sync, agent runner, quality gates. Currently also holds model-calling logic that belongs in src/model.",
+      "target": "cli + src/model"
+    },
+    {
+      "path": "worker",
+      "name": "Server and pipeline",
+      "stage": "platform",
+      "status": "moving",
+      "owns": "All backend behaviour: ingestion, extraction, matching, message composition, campaigns, Gmail delivery and reply handling, the public catalog projection, and the database layer.",
+      "target": "src/pipeline/* + src/server + src/db"
+    },
+    {
+      "path": "src",
+      "name": "Web app and shared contracts",
+      "stage": "platform",
+      "status": "moving",
+      "owns": "React app plus schemas and helpers the server imports. Shared code currently lives under src/features and is reached into by the worker.",
+      "target": "src/web + src/shared + src/model"
+    },
+    {
+      "path": "src/pipeline/01_ingest",
+      "name": "Ingest",
+      "stage": "01_ingest",
+      "status": "active",
+      "owns": "Reads the Go collector's SQLite ledger, validates each listing against the inventory schema, and upserts job_listings and job_listing_versions. Owns material hashing and versioning, run/batch bookkeeping, run reconciliation, and application route lifecycle on ingest. Writes job_listings.source_fields_json, the collector's label/value map, so later stages read source facts instead of inferring them.",
+      "target": "src/pipeline/01_ingest"
+    },
+    {
+      "path": "src/db",
+      "name": "Database client",
+      "stage": "platform",
+      "status": "active",
+      "owns": "The only module that opens a connection. Defines the Database query surface the application uses, and adapts bun:sqlite to it. Cloudflare D1 satisfies the same interface, which is what keeps the hosting choice reversible. Drizzle schema and generated migrations land here next.",
+      "target": "src/db"
+    },
+    {
+      "path": "migrations",
+      "name": "SQL migration history",
+      "stage": "platform",
+      "status": "moving",
+      "owns": "74 hand-written migrations. Retained as history; superseded by drizzle-kit generation.",
+      "target": "src/db/migrations"
+    },
+    {
+      "path": "drizzle",
+      "name": "Drizzle metadata",
+      "stage": "platform",
+      "status": "moving",
+      "owns": "drizzle-kit journal and schema snapshots.",
+      "target": "src/db"
+    },
+    {
+      "path": "tests",
+      "name": "Test suite",
+      "stage": "ops",
+      "status": "active",
+      "owns": "477 tests against a real database and real routes. No mocks.",
+      "target": "tests"
+    },
+    {
+      "path": "docs",
+      "name": "Documentation",
+      "stage": "ops",
+      "status": "active",
+      "owns": "Architecture, per-capability docs, benchmark write-ups.",
+      "target": "docs"
+    },
+    {
+      "path": "public",
+      "name": "Static assets",
+      "stage": "ops",
+      "status": "active",
+      "owns": "Cloudflare _headers and static files served with the app.",
+      "target": "public"
+    },
+    {
+      "path": "old",
+      "name": "Quarantine",
+      "stage": "ops",
+      "status": "dormant",
+      "owns": "Code and tests that are kept but not running. Currently holds 57 test files covering the public catalog projection and country materialisation: the SEO subsystem, which is paused. Excluded from tsconfig, from both vitest configs, and from linting, so nothing here can fail a build or be imported by live code.",
+      "target": "old"
+    },
+    {
+      "path": ".maestro",
+      "name": "UI flow tests",
+      "stage": "ops",
+      "status": "dormant",
+      "owns": "Mobile-style end-to-end UI flows. Kept for later use.",
+      "target": ".maestro"
+    }
+  ]
+}

@@ -9,15 +9,10 @@ import {
   CountryMaterializationQueueMessageSchema,
   consumeCountryMaterializationQueue,
 } from "./country-materialization/queue";
-import {
-  consumePublicProjectionQueue,
-  type PublicProjectionQueueMessage,
-} from "./public-projection/queue";
 
 export type JobKitQueueMessage =
   | AgentTaskMaintenanceQueueMessage
-  | CountryMaterializationQueueMessage
-  | PublicProjectionQueueMessage;
+  | CountryMaterializationQueueMessage;
 
 export function consumeJobKitQueue(
   batch: MessageBatch<JobKitQueueMessage>,
@@ -42,8 +37,10 @@ export function consumeJobKitQueue(
       env
     );
   }
-  return consumePublicProjectionQueue(
-    batch as MessageBatch<PublicProjectionQueueMessage>,
-    env
-  );
+  // An unrecognised body is acknowledged rather than retried forever. The only
+  // producer of such messages was the paused catalog projection.
+  for (const unrecognised of batch.messages) {
+    unrecognised.ack();
+  }
+  return Promise.resolve();
 }

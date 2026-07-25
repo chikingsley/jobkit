@@ -1,0 +1,296 @@
+// Every test file in tests/ is declared here. `bun run check:tests` fails when a
+// test file has no entry, or an entry names a file that does not exist.
+//
+// category:
+//   regression  pins a bug that actually happened; names it
+//   contract    pins a boundary others depend on (auth, atomicity, schema, API)
+//   seam        proves one stage does its job against a real database and routes
+//
+// stage: 01_ingest .. 07_respond, or platform / ops.
+{
+  "suites": [
+    // ---------------------------------------------------------------- platform
+    {
+      "path": "tests/integration/start/canonical-origin.test.ts",
+      "stage": "platform",
+      "category": "contract",
+      "protects": "The canonical origin after the domain cutover: robots, sitemap, canonical link, OG URL, and auth traffic all answer on jobkit.peacockery.studio."
+    },
+    {
+      "path": "tests/integration/worker/index.test.ts",
+      "stage": "platform",
+      "category": "contract",
+      "protects": "The Worker entrypoint: health, OpenAPI contract, unknown routes staying inside the JSON boundary, private routes requiring a session, D1-backed sessions, and each profile scoped to its owner. Cross-tenant leaks fail here."
+    },
+    {
+      "path": "tests/integration/worker/agent-runners.test.ts",
+      "stage": "platform",
+      "category": "contract",
+      "protects": "Runner authentication: session auth rejected on runner routes, one-time pairing code exchange, token scope restriction, expired code rejection."
+    },
+    {
+      "path": "tests/integration/worker/operator-gates.test.ts",
+      "stage": "platform",
+      "category": "contract",
+      "protects": "Authorization: members cannot mutate inventory, sweep, or analysis state, while the operator flows keep working."
+    },
+    {
+      "path": "tests/integration/worker/onboarding.test.ts",
+      "stage": "platform",
+      "category": "seam",
+      "protects": "New-user setup: owned neutral profile proposal, both sections required before completion, resume format rejection before storage, paired extraction runner required."
+    },
+    {
+      "path": "tests/integration/worker/profile-import-agent.test.ts",
+      "stage": "platform",
+      "category": "seam",
+      "protects": "Resume upload queues a task and applies only a schema-validated agent result."
+    },
+    {
+      "path": "tests/integration/worker/agent-task-json-schema.test.ts",
+      "stage": "platform",
+      "category": "contract",
+      "protects": "Every task schema stays inside the strict structured-output subset models can satisfy. One of its two cases covers Test Lab, which is dormant."
+    },
+    {
+      "path": "tests/integration/worker/jobs-list-pagination.test.ts",
+      "stage": "platform",
+      "category": "contract",
+      "protects": "List paging: page size, cursor stability under insertion, country filter combined with sort, exact totals when rows drop, malformed cursor falling back to offset."
+    },
+    {
+      "path": "tests/integration/worker/user-settings.test.ts",
+      "stage": "platform",
+      "category": "regression",
+      "protects": "Profile settings that feed a message: version-4 work history upgrades into safe application evidence rather than unverified claims, time zones validate before storage, attachment presets do not treat a missing file as a held qualification, and qualification answers reverse cleanly."
+    },
+    {
+      "path": "tests/integration/worker/protected-email.test.ts",
+      "stage": "platform",
+      "category": "contract",
+      "protects": "Cloudflare data-cfemail decoding and placeholder recognition. This is how a contact address is recovered from obfuscated listing HTML, so breaking it silently costs contacts."
+    },
+
+    // -------------------------------------------------- shared task machinery
+    {
+      "path": "tests/integration/worker/agent-task-completion-fence.test.ts",
+      "stage": "platform",
+      "category": "contract",
+      "protects": "A revoked or expired runner publishes nothing, another actor terminalizing a run publishes nothing, and a failed D1 batch rolls domain and completion writes back together."
+    },
+    {
+      "path": "tests/integration/worker/requested-agent-task-completion-fence/heartbeats-the-shared-pair-with.test.ts",
+      "stage": "platform",
+      "category": "contract",
+      "protects": "Lease heartbeats with one database-authored expiry, immutable failure history, retry budget exhaustion, and reaping of expired or revoked attempts."
+    },
+    {
+      "path": "tests/integration/worker/requested-agent-task-completion-fence/publishes-the-domain-result-and.test.ts",
+      "stage": "platform",
+      "category": "contract",
+      "protects": "Domain results publish exactly once and never after a lease expires, a run disappears, or a request is requeued. Zero-row writes and later SQL failures roll the whole batch back."
+    },
+    {
+      "path": "tests/integration/worker/requested-agent-task-completion-fence/surfaces-a-domain-constraint-and.test.ts",
+      "stage": "platform",
+      "category": "contract",
+      "protects": "A domain constraint rolls claim, run, and attempt back together; only one of two racing runners consumes an attempt; queued work survives R2 preparation failure."
+    },
+    {
+      "path": "tests/integration/worker/attachment-copy-completion-fence/rolls-back-a-fault-attachment.test.ts",
+      "stage": "platform",
+      "category": "contract",
+      "protects": "An incomplete document packet stays out of a revision, and a packet going stale before the batch rolls back."
+    },
+
+    // -------------------------------------------------------------- 01_ingest
+    {
+      "path": "tests/integration/worker/inventory-runs/versions-material-changes-while-freshness.test.ts",
+      "stage": "01_ingest",
+      "category": "contract",
+      "protects": "The upsert semantics: material changes bump a version while freshness-only observations preserve analysis freshness, legacy hash history upgrades without advancing material time, append-only sources never close missing records. This is what guards the Drizzle upsert conversion."
+    },
+    {
+      "path": "tests/integration/worker/inventory-runs/classifies-transport-failures-separately-from.test.ts",
+      "stage": "01_ingest",
+      "category": "contract",
+      "protects": "Transport failures are classified separately from source-data failures, an operations runner must be explicitly paired, and batches resume idempotently while closing genuinely missing jobs."
+    },
+    {
+      "path": "tests/integration/worker/inventory-runs/resumes-a-failed-immutable-snapshot.test.ts",
+      "stage": "01_ingest",
+      "category": "contract",
+      "protects": "A failed run resumes from its completed batches instead of restarting, keeping the snapshot immutable."
+    },
+    {
+      "path": "tests/integration/worker/inventory-refreshes.test.ts",
+      "stage": "01_ingest",
+      "category": "seam",
+      "protects": "Refresh requests need source-operator access, deduplicate while active, lease only to that operator's runner, complete only with their linked run, and a due schedule queues once then advances."
+    },
+
+    // ------------------------------------------------------------- 02_extract
+    {
+      "path": "tests/integration/worker/agent-job-analysis.test.ts",
+      "stage": "02_extract",
+      "category": "contract",
+      "protects": "Every runner transition requires the exact lease token, position/match-fact/content work round-robins, and a deterministically rejected analysis retries with correction guidance. Also pins that the recorded model is the registry's assignment, not a hardcoded name."
+    },
+    {
+      "path": "tests/integration/worker/job-analysis-evidence.test.ts",
+      "stage": "02_extract",
+      "category": "regression",
+      "protects": "The evidence-quote rejection bug: curly punctuation and model-added quotation marks made valid evidence look absent and blocked most analysis tasks. Pins exact-quote preservation, source casing recovery, quote stripping, and retention of genuinely unsupported evidence."
+    },
+    {
+      "path": "tests/integration/worker/job-position-analyses.test.ts",
+      "stage": "02_extract",
+      "category": "seam",
+      "protects": "A multi-role listing records evidence-backed child positions."
+    },
+
+    // --------------------------------------------------------------- 03_match
+    {
+      "path": "tests/integration/worker/job-matching.test.ts",
+      "stage": "03_match",
+      "category": "seam",
+      "protects": "Global listing facts return with profile-specific match summaries. This is the ONLY coverage of matching, the stage that decides whether a job is worth applying to."
+    },
+
+    // ------------------------------------------------------------- 04_compose
+    {
+      "path": "tests/integration/worker/message-foundations.test.ts",
+      "stage": "04_compose",
+      "category": "contract",
+      "protects": "The active user's stored template is used verbatim, the closing question is computed from their calendar, and a structured contact's honorific and last name are used rather than invented."
+    },
+    {
+      "path": "tests/integration/worker/application-message-agent/schedules-an-explicit-follow-up.test.ts",
+      "stage": "04_compose",
+      "category": "seam",
+      "protects": "Follow-up scheduling into a threaded Gmail draft, and immutable job drafts generated then revised through the paired agent. Also pins registry-assigned model provenance."
+    },
+    {
+      "path": "tests/integration/worker/application-message-agent/generates-and-revises-one-anesl.test.ts",
+      "stage": "04_compose",
+      "category": "seam",
+      "protects": "One ANESL bundle generates and revises through the same durable task path, and campaign dispatch calibration persists reusable feedback."
+    },
+    {
+      "path": "tests/integration/worker/draft-editing.test.ts",
+      "stage": "04_compose",
+      "category": "contract",
+      "protects": "A manual edit saves as a new version and restoring the preceding message never reuses a version number."
+    },
+
+    // ----------------------------------------------------------- 05_campaigns
+    {
+      "path": "tests/integration/worker/campaign-lifecycle/holds-an-unanalyzed-listing-and.test.ts",
+      "stage": "05_campaigns",
+      "category": "contract",
+      "protects": "An unanalyzed listing is held until authoritative facts arrive; delivery stays locked, sends only on a configured day, and PAUSES ON A HUMAN REPLY. The pause is the behaviour that stops the system emailing someone who already answered."
+    },
+    {
+      "path": "tests/integration/worker/campaign-lifecycle/routes-the-five-highest-ranked.test.ts",
+      "stage": "05_campaigns",
+      "category": "seam",
+      "protects": "The five highest-ranked ANESL positions route through one campaign dispatch rather than five separate emails."
+    },
+    {
+      "path": "tests/integration/worker/automation-policy.test.ts",
+      "stage": "05_campaigns",
+      "category": "contract",
+      "protects": "Automation starts in review, and channel-specific pacing and freshness persist as the user set them without a hidden product ceiling."
+    },
+
+    // ------------------------------------------------------------- 06_deliver
+    {
+      "path": "tests/integration/worker/email-attempts.test.ts",
+      "stage": "06_deliver",
+      "category": "regression",
+      "protects": "Send safety. Prevents a SECOND initial application to the same canonical recipient, keeps approval/drafting/verified-sending as explicit states, verifies a Gmail draft independently, makes a reserved-but-unverified send non-retryable, requires explicit reapproval after a pre-send failure, and blocks reading another user's attempt or MIME payload."
+    },
+    {
+      "path": "tests/integration/worker/delivery-authorization.test.ts",
+      "stage": "06_deliver",
+      "category": "contract",
+      "protects": "The gate that must be explicitly enabled before anything sends: members cannot read or write it, a reason is required, and operator enable/disable is audited."
+    },
+    {
+      "path": "tests/integration/worker/job-submission.test.ts",
+      "stage": "06_deliver",
+      "category": "seam",
+      "protects": "The Serious Teachers board path: approve, submit, and verify in one request; a failed submission stays retryable and returns the real error; a pre-existing board application reconciles without falsely claiming this draft was sent."
+    },
+    {
+      "path": "tests/integration/worker/application-bundles.test.ts",
+      "stage": "06_deliver",
+      "category": "regression",
+      "protects": "ANESL agency bundling: global inventory lists without creating user records until selected, selected positions send as ONE attempt, a later batch to an already-contacted recipient is blocked, and a reply is recorded when Gmail uses a recipient-side thread ID."
+    },
+    {
+      "path": "tests/integration/worker/application-bundle-test-send.test.ts",
+      "stage": "06_deliver",
+      "category": "contract",
+      "protects": "Test sends cannot reach a stranger: recipients outside the account email and verified allowlist are rejected."
+    },
+    {
+      "path": "tests/integration/worker/document-delivery.test.ts",
+      "stage": "06_deliver",
+      "category": "seam",
+      "protects": "The exact visa packet is snapshotted and built into a Gmail multipart payload."
+    },
+    {
+      "path": "tests/integration/worker/gmail.test.ts",
+      "stage": "06_deliver",
+      "category": "contract",
+      "protects": "Linked scope reporting, wrapped Pub/Sub notification decoding, Gmail's numeric history ID compatibility form, and rejection of non-decimal history IDs."
+    },
+
+    // ------------------------------------------------------------- 07_respond
+    {
+      "path": "tests/integration/worker/messages.test.ts",
+      "stage": "07_respond",
+      "category": "contract",
+      "protects": "Follow-ups do not queue while automation is paused, and are cancelled by a human reply or a bounce. Replies stitch into the sent thread with unread tracking, and inbound messages for unknown threads are rejected."
+    },
+    {
+      "path": "tests/integration/worker/gmail-push-sync.test.ts",
+      "stage": "07_respond",
+      "category": "regression",
+      "protects": "The Pub/Sub webhook 500 loop: a single message deleted between listing and fetch returned 404 inside Promise.all, failing the whole sync so Google retried forever. Pins per-message 404 tolerance while still rethrowing other failures."
+    },
+    {
+      "path": "tests/integration/worker/gmail-watch-renewal.test.ts",
+      "stage": "07_respond",
+      "category": "regression",
+      "protects": "The dead mailbox watch: transient failures back off and reset on success, consecutive auth failures terminalize instead of retrying forever, and a revoked watch resets when the user reconnects."
+    },
+
+    // --------------------------------- contact discovery (country sweep half)
+    {
+      "path": "tests/integration/worker/countries/claims-discovery-work-and-persists.test.ts",
+      "stage": "01_ingest",
+      "category": "seam",
+      "protects": "Discovery claims work and persists a VERIFIED SCHOOL CONTACT. This is the organization_contact_points path, school-direct outreach independent of job boards, not SEO."
+    },
+    {
+      "path": "tests/integration/worker/countries/creates-distinct-city-scoped-discovery.test.ts",
+      "stage": "01_ingest",
+      "category": "contract",
+      "protects": "City-scoped discovery does not duplicate cities, a broad sweep stays inside one bounded D1 batch and the 1,000-task envelope, a coverage audit stops when no novel scope remains, and historical research imports without presenting stale rows as open jobs. Mixed: its multi-market campaign case belongs to the paused SEO half."
+    },
+    {
+      "path": "tests/integration/worker/country-sweep-task-leases/atomically-claims-one-task-and.test.ts",
+      "stage": "01_ingest",
+      "category": "contract",
+      "protects": "Sweep lease atomicity: one task claimed and one attempt consumed under a race, stale tokens rejected while both leases extend together, migrated input hashes pinned, transient retries fencing earlier attempts, exhaustion recording exact gaps, and expired attempts reaped."
+    },
+    {
+      "path": "tests/integration/worker/country-sweep-task-leases/fences-a-revoked-runner-and.test.ts",
+      "stage": "01_ingest",
+      "category": "contract",
+      "protects": "A revoked runner is fenced and its exact attempt requeued, and immutable output is accepted before domain work while a guarded materialization rolls back."
+    }
+  ]
+}

@@ -5,6 +5,9 @@
     "ultracite/biome/react",
     "ultracite/biome/vitest"
   ],
+  // Quarantine is kept, not maintained. Nothing there runs or is imported by
+  // live code, so it must not be able to fail a build.
+  "files": { "includes": ["!old"] },
   "linter": {
     "rules": {
       "complexity": {

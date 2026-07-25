@@ -7,7 +7,7 @@ import {
   openingFor,
   prepareApplicationMessageRevision,
   signatureFor,
-  validateCodexApplicationMessage,
+  validateGeneratedApplicationMessage,
 } from "../ai/application-messages";
 import type { AppEnv } from "../env";
 import { readMessageStyleGuidance } from "../repositories/message-style";
@@ -162,7 +162,11 @@ export async function completeMessagePreviewTask(
   modelId: string
 ) {
   const prepared = await prepareMessagePreviewTask(env, userId, input);
-  const revised = validateCodexApplicationMessage(rawOutput, prepared, modelId);
+  const revised = validateGeneratedApplicationMessage(
+    rawOutput,
+    prepared,
+    modelId
+  );
   return {
     changeSummary: revised.summary,
     message: revised.message,

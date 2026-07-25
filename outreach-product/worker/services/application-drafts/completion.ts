@@ -3,7 +3,7 @@ import {
   messageRouteFor,
   openingFor,
   signatureFor,
-  validateCodexApplicationMessage,
+  validateGeneratedApplicationMessage,
 } from "../../ai/application-messages";
 import type { AppEnv } from "../../env";
 import { defaultPacketSnapshotWrites } from "../../repositories/draft-attachments";
@@ -32,7 +32,7 @@ export async function buildJobDraftTaskCompletion(
   fence: AgentTaskCompletionFence
 ) {
   const state = await prepareJobDraftTask(env, userId, input);
-  const generated = validateCodexApplicationMessage(
+  const generated = validateGeneratedApplicationMessage(
     rawOutput,
     state.prepared,
     modelId
@@ -64,7 +64,7 @@ async function buildGeneratedJobDraftPlan(
   env: AppEnv,
   userId: string,
   state: PreparedJobDraftTask,
-  generated: ReturnType<typeof validateCodexApplicationMessage>,
+  generated: ReturnType<typeof validateGeneratedApplicationMessage>,
   fence: AgentTaskCompletionFence
 ) {
   const draftId = crypto.randomUUID();
