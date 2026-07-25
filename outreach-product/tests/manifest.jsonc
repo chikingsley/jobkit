@@ -20,6 +20,13 @@
       "target": "tests/02_extract"
     },
     {
+      "path": "tests/02_extract/pay-period.test.ts",
+      "stage": "02_extract",
+      "category": "contract",
+      "protects": "The guard on the one place a model is allowed to decide something: which listings get asked about at all, that a quote must be copied from the advert, and that the quote must itself establish a period. A bare amount proves nothing and is refused. A period attached to a benefit is refused, because a monthly food stipend, a yearly return ticket and an annual flight are not pay. Every accepted and refused quote here was taken from a live listing during a run over the 208 ambiguous ones.",
+      "target": "tests/02_extract"
+    },
+    {
       "path": "tests/02_extract/currency.test.ts",
       "stage": "02_extract",
       "category": "contract",
