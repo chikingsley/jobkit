@@ -5,21 +5,33 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/chikingsley/jobkit/outreach-product/collectors/internal/inventory"
 )
 
-func TestFullDiscoveryWalksCountrySubjectMatrix(t *testing.T) {
+func TestFullDiscoveryWalksSubjectsOnlyForFilledCountryPages(t *testing.T) {
 	t.Parallel()
+	filled := make([]string, 0, pageSize)
+	for id := 100; id < 100+pageSize; id++ {
+		filled = append(filled, fmt.Sprintf(`<a href="/job_details/%d/0/filled">Job</a>`, id))
+	}
+	subjectWalks := 0
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		switch request.URL.Path {
 		case "/jobs/0/0/all":
-			_, _ = fmt.Fprint(writer, `<select><option value="0">List all</option><option value="7">Georgia</option></select><a href="/job_details/1/0/home">Job</a>`)
+			_, _ = fmt.Fprint(writer, `<select><option value="0">List all</option><option value="7">Georgia</option><option value="8">Chile</option></select>`)
 		case "/jobs/0/7/all":
-			_, _ = fmt.Fprint(writer, `<a href="/job_details/1/0/home">Existing job</a><a href="/job_details/2/0/country">Job</a>`)
+			_, _ = fmt.Fprint(writer, strings.Join(filled, ""))
 		case "/jobs/1/7/all":
-			_, _ = fmt.Fprint(writer, `<a href="/job_details/3/0/subject">Job</a>`)
+			subjectWalks++
+			_, _ = fmt.Fprint(writer, `<a href="/job_details/999/0/subject">Hidden job</a>`)
+		case "/jobs/0/8/all":
+			_, _ = fmt.Fprint(writer, `<a href="/job_details/2000/0/small">Job</a>`)
+		case "/jobs/1/8/all":
+			subjectWalks++
+			_, _ = fmt.Fprint(writer, `<a href="/job_details/2001/0/never">Never fetched</a>`)
 		default:
 			http.NotFound(writer, request)
 		}
@@ -34,14 +46,19 @@ func TestFullDiscoveryWalksCountrySubjectMatrix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !discovery.Complete || len(discovery.Items) != 3 {
+	if !discovery.Complete {
 		t.Fatalf("discovery = %#v", discovery)
 	}
-	if discovery.Items[0].Metadata["country"] != "Georgia" {
-		t.Fatalf("duplicate metadata = %#v", discovery.Items[0].Metadata)
+	if len(discovery.Items) != pageSize+2 {
+		t.Fatalf("expected %d items, got %d", pageSize+2, len(discovery.Items))
 	}
-	if discovery.Items[2].Metadata["country"] != "Georgia" {
-		t.Fatalf("subject metadata = %#v", discovery.Items[2].Metadata)
+	if subjectWalks != 1 {
+		t.Fatalf("expected one subject walk for the filled country, got %d", subjectWalks)
+	}
+	for _, item := range discovery.Items {
+		if item.ID == "2001" {
+			t.Fatal("walked subjects for a country that did not fill its page")
+		}
 	}
 }
 

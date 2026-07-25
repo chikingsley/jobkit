@@ -22,6 +22,7 @@ const (
 	Board         = "seriousteachers"
 	loginPath     = "/te2/login"
 	latestDefault = 15
+	pageSize      = 20
 )
 
 var (
@@ -118,13 +119,21 @@ func (client *Client) Discover(ctx context.Context, mode inventory.Mode) (invent
 		}, nil
 	}
 
+	// A country page returns at most pageSize listings. Only a country that
+	// fills the page can be hiding more, so the subject matrix is walked for
+	// those alone. Walking all fourteen subjects for all countries is roughly
+	// 2,900 requests, which Cloudflare escalates against partway through.
 	for _, country := range countries {
 		response, err := client.optionalGet(ctx, listPath(country.ID, 0))
 		if err != nil {
 			return inventory.Discovery{}, err
 		}
 		pagesChecked++
-		appendItems(&items, seen, jobIDs(response), country.metadata(0))
+		found := jobIDs(response)
+		appendItems(&items, seen, found, country.metadata(0))
+		if len(found) < pageSize {
+			continue
+		}
 		for _, subjectID := range client.subjectIDs {
 			response, err := client.optionalGet(ctx, listPath(country.ID, subjectID))
 			if err != nil {
