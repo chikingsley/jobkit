@@ -26,3 +26,4 @@ tefl-course/sources/state-dept-shaping/*
 !tefl-course/sources/state-dept-shaping/SHA256SUMS
 
 .claude/worktrees/
+job-search/job-data/*.sqlite
