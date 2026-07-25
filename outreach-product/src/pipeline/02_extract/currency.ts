@@ -98,6 +98,7 @@ const COUNTRY_CURRENCY: Record<string, string> = {
 };
 
 const ALIASES: Record<string, string> = {
+  MXP: "MXN",
   NTD: "TWD",
   RMB: "CNY",
   RNB: "CNY",

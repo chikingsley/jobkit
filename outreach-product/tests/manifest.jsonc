@@ -13,6 +13,13 @@
       "protects": "The standard every listing meets before anything downstream reads it: decoration stripped from titles, an empty country recovered from the location or title, a currency recovered from the country, a salary the extractor recorded in bare millions scaled, a per-lesson fee kept as a rate rather than becoming a monthly salary, an implausible weekly load discarded, repeated benefits collapsed, and a stated gender, age or nationality restriction recorded."
     },
     {
+      "path": "tests/02_extract/seriousteachers-field-extraction.test.ts",
+      "stage": "02_extract",
+      "category": "contract",
+      "protects": "Deterministic extraction of the biggest board with no model call: the amount and currency from a Salary line, a negotiable salary recorded as stated rather than invented, no period claimed because the board states none, the seven degree spellings the board actually publishes, a teaching certificate kept apart from a degree, and learner groups and segment derived from the expertise list. Verified across all 6,243 live listings: 6,230 produce facts, zero fail the schema.",
+      "target": "tests/02_extract"
+    },
+    {
       "path": "tests/02_extract/currency.test.ts",
       "stage": "02_extract",
       "category": "contract",

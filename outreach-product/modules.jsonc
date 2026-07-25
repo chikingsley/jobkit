@@ -54,7 +54,7 @@
       "name": "Database client",
       "stage": "platform",
       "status": "active",
-      "owns": "The only module that opens a connection. Defines the query surface and adapts bun:sqlite to it; a compiler-enforced assertion holds D1 to the same interface. Also holds the Drizzle client and the seventeen table modules that describe the schema, moved here when the worker directory was dissolved.",
+      "owns": "The only module that opens a connection: Drizzle over bun:sqlite, and a schema declaring just the three tables the pipeline reads. The database itself is described by migrations/0000_baseline.sql; this schema is a typed view onto the columns we use, proven against the real baseline by the candidates suite. Adding a table here means the pipeline reads it.",
       "target": "src/db"
     },
     {

@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
-import { createSqliteDatabase, type Database } from "../../src/db/client";
+import { sql } from "drizzle-orm";
+import { type Database, openDatabase } from "../../src/db/client";
+import {
+  applicationRoutes,
+  jobListings,
+  jobMatchFacts,
+} from "../../src/db/schema";
 import {
   type Candidate,
   rankCandidates,
@@ -46,73 +52,66 @@ let db: Database;
 let schemaVersion: number;
 
 function seed(entries: Seed[]) {
-  const statements = entries.flatMap((entry) => {
-    const rows = [
-      db
-        .prepare(
-          `INSERT INTO job_listings
-             (id,board,title,company,country,location,description,apply_url,
-              inventory_status,first_seen_at,updated_at,market_segments_json)
-           VALUES (?,?,?,?,?,'','','https://example.test/apply','active',?,?,'[]')`
-        )
-        .bind(
-          entry.id,
-          entry.board,
-          entry.title,
-          entry.company ?? "Example School",
-          entry.country ?? "China",
-          NOW,
-          NOW
-        ),
-      db
-        .prepare(
-          `INSERT INTO job_match_facts (job_id,facts_json,schema_version,updated_at)
-           VALUES (?,?,?,?)`
-        )
-        .bind(entry.id, factsJson(entry), schemaVersion, NOW),
-    ];
-    if (entry.routeKind) {
-      rows.push(
-        db
-          .prepare(
-            `INSERT INTO application_routes
-               (id,job_id,kind,destination,status,created_at,updated_at)
-             VALUES (?,?,?,?,?,?,?)`
-          )
-          .bind(
-            `route-${entry.id}`,
-            entry.id,
-            entry.routeKind,
-            entry.routeDestination ?? "",
-            entry.routeStatus ?? "active",
-            NOW,
-            NOW
-          )
-      );
-    }
-    return rows;
-  });
-  return db.batch(statements);
+  db.insert(jobListings)
+    .values(
+      entries.map((entry) => ({
+        applyUrl: "https://example.test/apply",
+        board: entry.board,
+        company: entry.company ?? "Example School",
+        country: entry.country ?? "China",
+        description: "",
+        firstSeenAt: NOW,
+        id: entry.id,
+        inventoryStatus: "active",
+        location: "",
+        title: entry.title,
+        updatedAt: NOW,
+      }))
+    )
+    .run();
+  db.insert(jobMatchFacts)
+    .values(
+      entries.map((entry) => ({
+        factsJson: factsJson(entry),
+        jobId: entry.id,
+        schemaVersion,
+        updatedAt: NOW,
+      }))
+    )
+    .run();
+  const routes = entries
+    .filter((entry) => entry.routeKind)
+    .map((entry) => ({
+      createdAt: NOW,
+      destination: entry.routeDestination ?? "",
+      id: `route-${entry.id}`,
+      jobId: entry.id,
+      kind: entry.routeKind as string,
+      status: entry.routeStatus ?? "active",
+      updatedAt: NOW,
+    }));
+  if (routes.length > 0) {
+    db.insert(applicationRoutes).values(routes).run();
+  }
 }
 
 function byId(candidates: Candidate[], id: string) {
   return candidates.find((candidate) => candidate.listing.id === id);
 }
 
-beforeEach(async () => {
-  db = createSqliteDatabase(":memory:");
-  await db.exec(BASELINE);
-  const stored = await db
-    .prepare(
-      "SELECT dflt_value v FROM pragma_table_info('job_match_facts') WHERE name='schema_version'"
-    )
-    .first<{ v: string | null }>();
-  schemaVersion = Number(stored?.v ?? 1);
+beforeEach(() => {
+  const opened = openDatabase(":memory:");
+  opened.exec(BASELINE);
+  ({ db } = opened);
+  const stored = db.all<{ dflt_value: string | null }>(
+    sql`SELECT dflt_value FROM pragma_table_info('job_match_facts') WHERE name='schema_version'`
+  );
+  schemaVersion = Number(stored[0]?.dflt_value ?? 1);
 });
 
 describe("reading candidates across every board", () => {
   it("returns platform-apply listings alongside email ones", async () => {
-    await seed([
+    seed([
       {
         amountMinimum: 18_000,
         board: "anesl",
@@ -159,7 +158,7 @@ describe("reading candidates across every board", () => {
   });
 
   it("normalises pay on the way out rather than leaving stored values raw", async () => {
-    await seed([
+    seed([
       {
         amountMinimum: 18_000,
         board: "anesl",
@@ -192,7 +191,7 @@ describe("reading candidates across every board", () => {
   });
 
   it("keeps a listing whose pay the board never stated", async () => {
-    await seed([
+    seed([
       {
         board: "seriousteachers",
         id: "negotiable-job",
@@ -210,7 +209,7 @@ describe("reading candidates across every board", () => {
   });
 
   it("restricts to the boards and route kinds the caller asks for", async () => {
-    await seed([
+    seed([
       {
         board: "anesl",
         id: "email-job",
@@ -234,7 +233,7 @@ describe("reading candidates across every board", () => {
   });
 
   it("ignores a route the board has closed", async () => {
-    await seed([
+    seed([
       {
         board: "seriousteachers",
         id: "closed-route-job",
@@ -249,7 +248,7 @@ describe("reading candidates across every board", () => {
   });
 
   it("carries the route through ranking for every listing", async () => {
-    await seed([
+    seed([
       {
         amountMinimum: 3000,
         board: "anesl",
