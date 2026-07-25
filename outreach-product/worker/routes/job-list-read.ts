@@ -38,6 +38,12 @@ const CURSOR_KEY_COLUMNS: KeyColumn[] = [
 ];
 
 const SORT_KEY_ORDER: Record<JobSort, [KeyColumn, "ASC" | "DESC"][]> = {
+  "match-score": [
+    ["priority", "DESC"],
+    ["status_rank", "ASC"],
+    ["recency", "DESC"],
+    ["id", "ASC"],
+  ],
   "monthly-pay": [
     ["mn", "ASC"],
     ["mk", "DESC"],

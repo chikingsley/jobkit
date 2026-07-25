@@ -54,6 +54,7 @@ export interface PrivateJobListQuery {
 
 const jobSorts = new Set<JobSort>([
   "monthly-pay",
+  "match-score",
   "review-order",
   "stated-hourly",
 ]);

@@ -25,6 +25,7 @@ const fitFilterOptions = [
 const sortOptions = [
   { label: "USD/hour", value: "stated-hourly" },
   { label: "Monthly USD", value: "monthly-pay" },
+  { label: "Best match", value: "match-score" },
   { label: "Queue order", value: "review-order" },
 ];
 

@@ -2,15 +2,38 @@ import { monthlyCompensationUsd } from "./compensation";
 import { listedHourlyValueUsd } from "./economics";
 import type { FxData, JobListItem } from "./types";
 
-export type JobSort = "monthly-pay" | "review-order" | "stated-hourly";
+export type JobSort =
+  | "match-score"
+  | "monthly-pay"
+  | "review-order"
+  | "stated-hourly";
 
 export function sortJobs(
   jobs: JobListItem[],
   fx: FxData,
-  sort: JobSort
+  sort: JobSort,
+  scoreOf?: (job: JobListItem) => number | null
 ): JobListItem[] {
   if (sort === "review-order") {
     return jobs;
+  }
+  if (sort === "match-score") {
+    return jobs
+      .map((job, index) => ({
+        index,
+        job,
+        monthly: monthlyCompensationUsd(job.compensation, fx) ?? null,
+        score: scoreOf?.(job) ?? null,
+      }))
+      .toSorted((first, second) => {
+        const primary = compareDescending(first.score, second.score);
+        if (primary !== 0) {
+          return primary;
+        }
+        const secondary = compareDescending(first.monthly, second.monthly);
+        return secondary === 0 ? first.index - second.index : secondary;
+      })
+      .map((entry) => entry.job);
   }
   return jobs
     .map((job, index) => {

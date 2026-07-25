@@ -161,6 +161,26 @@ export function preferenceCriterion(
   return criterion(label, "match", evidence);
 }
 
+const REQUIRED_WEIGHT = 3;
+const PREFERRED_WEIGHT = 1;
+const UNKNOWN_CREDIT = 0.35;
+const STRONG_SCORE = 80;
+const SCORE_CEILING = 100;
+
+function weightOf(item: MatchCriterion) {
+  return item.importance === "preferred" ? PREFERRED_WEIGHT : REQUIRED_WEIGHT;
+}
+
+function creditOf(item: MatchCriterion) {
+  if (item.state === "match") {
+    return 1;
+  }
+  if (item.state === "unknown") {
+    return UNKNOWN_CREDIT;
+  }
+  return 0;
+}
+
 export function summarize(criteria: MatchCriterion[]): JobMatch {
   const counts = {
     conflict: criteria.filter((item) => item.state === "conflict").length,
@@ -168,29 +188,28 @@ export function summarize(criteria: MatchCriterion[]): JobMatch {
     preference: criteria.filter((item) => item.state === "preference").length,
     unknown: criteria.filter((item) => item.state === "unknown").length,
   };
-  const score = Math.round((counts.match / Math.max(1, criteria.length)) * 100);
+  const scored = criteria.filter((item) => item.state !== "preference");
+  const possible = scored.reduce((total, item) => total + weightOf(item), 0);
+  const earned = scored.reduce(
+    (total, item) => total + weightOf(item) * creditOf(item),
+    0
+  );
+  const score =
+    possible === 0
+      ? 0
+      : Math.min(SCORE_CEILING, Math.round((earned / possible) * 100));
   if (counts.conflict > 0) {
-    return { criteria, label: "Ineligible", score, tone: "negative" };
+    return { criteria, label: "Ineligible", score: 0, tone: "negative" };
   }
   if (counts.preference > 0) {
-    return {
-      criteria,
-      label: "Preference mismatch",
-      score,
-      tone: "warning",
-    };
+    return { criteria, label: "Preference mismatch", score, tone: "warning" };
   }
   if (counts.unknown > 0) {
-    return {
-      criteria,
-      label: "Needs verification",
-      score,
-      tone: "neutral",
-    };
+    return { criteria, label: "Needs verification", score, tone: "neutral" };
   }
   return {
     criteria,
-    label: counts.match >= 3 ? "Strong match" : "Likely match",
+    label: score >= STRONG_SCORE ? "Strong match" : "Likely match",
     score,
     tone: "positive",
   };

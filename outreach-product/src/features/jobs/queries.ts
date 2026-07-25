@@ -73,6 +73,7 @@ export function useJobList(filters: JobListFilters, enabled = true) {
 
 const privateJobSorts: readonly JobSort[] = [
   "monthly-pay",
+  "match-score",
   "review-order",
   "stated-hourly",
 ];

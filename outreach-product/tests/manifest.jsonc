@@ -1,6 +1,12 @@
 {
   "suites": [
     {
+      "path": "tests/03_match/scoring.test.ts",
+      "stage": "03_match",
+      "category": "regression",
+      "protects": "Scores compare across jobs. The score divided by however many facts a listing happened to state, so a sparse listing outranked a detailed one and ranking meant nothing. Pins the fixed-weight model, required outweighing preferred, partial credit for an unknown, and an ineligible job scoring zero so it can never outrank an eligible one."
+    },
+    {
       "path": "tests/02_extract/teacherhorizons-field-extraction.test.ts",
       "stage": "02_extract",
       "category": "contract",

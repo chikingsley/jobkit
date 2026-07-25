@@ -46,14 +46,7 @@ function profileEvidenceRequirement(
   documents: StoredDocument[]
 ): MatchState {
   if (requirement.kind === "workAuthorization") {
-    const values = [
-      profile.citizenship,
-      ...profile.workAuthorization.flatMap((entry) => [
-        entry.country,
-        `${entry.country} ${entry.status}`,
-      ]),
-    ];
-    return hasCountry(values, requirement.values) ? "match" : "unknown";
+    return workAuthorizationRequirement(requirement, profile);
   }
   if (requirement.kind === "citizenship") {
     return citizenshipRequirement(requirement, profile);
@@ -337,4 +330,21 @@ function yearsFromLabel(label: string) {
   }
   const years = values.map(Number).find((value) => value >= 0 && value <= 80);
   return years ?? null;
+}
+
+function workAuthorizationRequirement(
+  requirement: JobRequirement,
+  profile: Profile
+): MatchState {
+  const values = [
+    profile.citizenship,
+    ...profile.workAuthorization.flatMap((entry) => [
+      entry.country,
+      `${entry.country} ${entry.status}`,
+    ]),
+  ];
+  if (hasCountry(values, requirement.values)) {
+    return "match";
+  }
+  return requirement.importance === "required" ? "conflict" : "unknown";
 }

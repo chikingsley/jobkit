@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 	"time"
@@ -116,11 +117,16 @@ func (client *Client) Get(ctx context.Context, reference, accept string) (Respon
 		if err != nil {
 			return Response{}, err
 		}
-		if response.StatusCode != http.StatusTooManyRequests {
+		challenged := response.StatusCode == http.StatusForbidden &&
+			isChallenge(response.Body)
+		if response.StatusCode != http.StatusTooManyRequests && !challenged {
 			break
 		}
 		if attempt == rateLimitRetries {
 			break
+		}
+		if challenged {
+			refreshClearance(ctx, client.Resolve(reference))
 		}
 		if waitErr := sleep(ctx, rateLimitBackoff*time.Duration(attempt+1)); waitErr != nil {
 			return Response{}, waitErr
@@ -180,10 +186,6 @@ func (client *Client) Request(
 	for name, value := range browserHeaders {
 		request.Header.Set(name, value)
 	}
-	// A source behind a Cloudflare challenge only answers a client that carries
-	// the clearance a real browser earned. The cookie is bound to the egress
-	// address and the user agent above, so both must match the browser that
-	// obtained it.
 	if cookie := clearanceCookie(request.URL.Host); cookie != "" {
 		request.Header.Set("Cookie", cookie)
 	}
@@ -256,14 +258,58 @@ func abbreviate(data []byte, limit int) string {
 	return text[:limit] + "..."
 }
 
-// clearanceCookie reads a per-host cookie from the environment. A host such as
-// www.seriousteachers.com is read from JOBKIT_COOKIE_WWW_SERIOUSTEACHERS_COM.
+func clearanceKey(host string) string {
+	return "JOBKIT_COOKIE_" + strings.ToUpper(
+		strings.NewReplacer(".", "_", "-", "_", ":", "_").Replace(host),
+	)
+}
+
 func clearanceCookie(host string) string {
 	if host == "" {
 		return ""
 	}
-	key := "JOBKIT_COOKIE_" + strings.ToUpper(
-		strings.NewReplacer(".", "_", "-", "_", ":", "_").Replace(host),
-	)
-	return strings.TrimSpace(os.Getenv(key))
+	return strings.TrimSpace(os.Getenv(clearanceKey(host)))
+}
+
+var challengeMarkers = []string{
+	"Just a moment...",
+	"Attention Required! | Cloudflare",
+	"cf-browser-verification",
+	"challenges.cloudflare.com",
+}
+
+func isChallenge(body []byte) bool {
+	text := string(body)
+	for _, marker := range challengeMarkers {
+		if strings.Contains(text, marker) {
+			return true
+		}
+	}
+	return false
+}
+
+var clearanceMu sync.Mutex
+
+func refreshClearance(ctx context.Context, reference string) {
+	command := strings.TrimSpace(os.Getenv("JOBKIT_CLEARANCE_REFRESH_CMD"))
+	if command == "" {
+		return
+	}
+	clearanceMu.Lock()
+	defer clearanceMu.Unlock()
+	parsed, err := url.Parse(reference)
+	if err != nil {
+		return
+	}
+	execution := exec.CommandContext(ctx, "sh", "-c", command)
+	execution.Env = append(os.Environ(), "JOBKIT_CLEARANCE_HOST="+parsed.Host)
+	output, err := execution.Output()
+	if err != nil {
+		return
+	}
+	cookie := strings.TrimSpace(string(output))
+	if cookie == "" || !strings.Contains(cookie, "=") {
+		return
+	}
+	_ = os.Setenv(clearanceKey(parsed.Host), cookie)
 }

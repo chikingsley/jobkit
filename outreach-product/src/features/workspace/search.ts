@@ -31,7 +31,7 @@ export const jobsSearchSchema = z
     publicJob: optionalSearchString,
     signup: optionalSearchBoolean,
     sort: z
-      .enum(["monthly-pay", "review-order", "stated-hourly"])
+      .enum(["match-score", "monthly-pay", "review-order", "stated-hourly"])
       .optional()
       .catch(undefined),
   })
