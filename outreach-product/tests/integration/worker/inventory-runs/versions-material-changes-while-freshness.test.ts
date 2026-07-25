@@ -277,6 +277,49 @@ describe("hosted inventory runs", () => {
     expect(changedState?.updated_at).not.toBe(legacyMaterialTime);
   });
 
+  it("stores collector source fields on both the material and freshness paths", async () => {
+    const sourceId = `inventory-fields-${crypto.randomUUID()}`;
+    await createInventorySource(sourceId, "complete_snapshot");
+    const runner = await pairRunner("inventory-fields@example.test", [
+      "operations",
+    ]);
+    const withoutFields = inventoryJob(`${sourceId}:first`);
+
+    await publishSingleJobRun(
+      runner.token,
+      sourceId,
+      "fields-1",
+      withoutFields
+    );
+    await expect(listingMaterialState(withoutFields.id)).resolves.toMatchObject(
+      { source_fields_json: "" }
+    );
+
+    // Identical material, so this takes the freshness path rather than the
+    // upsert. The fields must still land, otherwise a collector that starts
+    // emitting them can never backfill an already-ingested listing.
+    const fields = { "Contact Person": "Mr.Corey Yang", Degree: "Bachelors" };
+    await publishSingleJobRun(runner.token, sourceId, "fields-2", {
+      ...withoutFields,
+      fields,
+    });
+    const afterFreshness = await listingMaterialState(withoutFields.id);
+    expect(JSON.parse(afterFreshness?.source_fields_json ?? "{}")).toEqual(
+      fields
+    );
+    expect(afterFreshness?.material_version).toBe(1);
+
+    // A genuine material change goes through the upsert and keeps them.
+    await publishSingleJobRun(runner.token, sourceId, "fields-3", {
+      ...withoutFields,
+      fields,
+      title: "Changed Title",
+    });
+    const afterUpsert = await listingMaterialState(withoutFields.id);
+    expect(JSON.parse(afterUpsert?.source_fields_json ?? "{}")).toEqual(fields);
+    expect(afterUpsert?.material_version).toBe(2);
+  });
+
   it("does not close missing records for an append-only source", async () => {
     const sourceId = `inventory-append-${crypto.randomUUID()}`;
     await createInventorySource(sourceId, "append_only");

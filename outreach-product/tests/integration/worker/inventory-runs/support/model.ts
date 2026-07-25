@@ -168,7 +168,7 @@ export function listingMaterialState(jobId: string) {
     `SELECT material_hash,material_hash_version,material_version,
             material_changed_at,source_content_hash,source_last_seen_at,
             source_posted_date,source_posted_date_raw,
-            source_expiry_date_raw,updated_at
+            source_expiry_date_raw,source_fields_json,updated_at
        FROM job_listings WHERE id=?`
   )
     .bind(jobId)
@@ -179,6 +179,7 @@ export function listingMaterialState(jobId: string) {
       material_version: number;
       source_content_hash: string;
       source_expiry_date_raw: string;
+      source_fields_json: string;
       source_last_seen_at: string;
       source_posted_date: string | null;
       source_posted_date_raw: string;

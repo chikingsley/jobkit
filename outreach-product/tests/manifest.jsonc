@@ -14,7 +14,7 @@
       "path": "tests/integration/start/canonical-origin.test.ts",
       "stage": "platform",
       "category": "contract",
-      "protects": "The canonical origin after the domain cutover: robots, sitemap, canonical link, OG URL, and auth traffic all answer on jobkit.peacockery.studio."
+      "protects": "The canonical origin after the domain cutover: the canonical link, OG URL, and auth traffic all answer on jobkit.peacockery.studio. Robots and sitemap coverage moved with the paused catalog projection."
     },
     {
       "path": "tests/integration/worker/index.test.ts",
@@ -108,7 +108,7 @@
       "path": "tests/integration/worker/inventory-runs/versions-material-changes-while-freshness.test.ts",
       "stage": "01_ingest",
       "category": "contract",
-      "protects": "The upsert semantics: material changes bump a version while freshness-only observations preserve analysis freshness, legacy hash history upgrades without advancing material time, append-only sources never close missing records. This is what guards the Drizzle upsert conversion."
+      "protects": "The upsert semantics: material changes bump a version while freshness-only observations preserve analysis freshness, legacy hash history upgrades without advancing material time, append-only sources never close missing records. Also pins that collector source fields land on BOTH the upsert and freshness paths, since fields are excluded from the material hash and an unchanged listing would otherwise never receive them. This is what guards the Drizzle upsert conversion."
     },
     {
       "path": "tests/integration/worker/inventory-runs/classifies-transport-failures-separately-from.test.ts",

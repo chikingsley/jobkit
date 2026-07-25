@@ -125,7 +125,8 @@ async function updateInventoryFreshness(
               source_last_seen_at=?,source_content_hash=?,inventory_run_id=?,
               source_posted_date=?,source_posted_date_raw=?,
               source_posted_date_provenance=?,source_expiry_date=?,
-              source_expiry_date_raw=?,source_expiry_date_provenance=?
+              source_expiry_date_raw=?,source_expiry_date_provenance=?,
+              source_fields_json=?
         WHERE id=?`
     )
     .bind(
@@ -139,6 +140,7 @@ async function updateInventoryFreshness(
       job.sourceDates.expires.date,
       job.sourceDates.expires.raw,
       job.sourceDates.expires.provenance,
+      job.fields ? JSON.stringify(job.fields) : "",
       job.id
     )
     .run();

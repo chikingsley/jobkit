@@ -26,7 +26,11 @@ const batchWorkers = z.coerce
   .parse(args["batch-workers"]);
 const sourcePath = args.source
   ? resolve(args.source)
-  : resolve(import.meta.dir, "../../../job-search/job-data/jobs.sqlite");
+  : resolve(
+      import.meta.dir,
+      "../..",
+      process.env.JOBKIT_JOBS_DB_PATH ?? ".jobkit/jobs.sqlite"
+    );
 const snapshot = await prepareInventorySnapshot(sourcePath);
 
 if (!args.apply) {

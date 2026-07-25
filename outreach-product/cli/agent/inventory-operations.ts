@@ -15,7 +15,8 @@ const SOURCE_NAME = "Job search source inventory";
 const collectorPath = resolve(import.meta.dir, "../../collectors");
 const sourceDatabasePath = resolve(
   import.meta.dir,
-  "../../../job-search/job-data/jobs.sqlite"
+  "../..",
+  process.env.JOBKIT_JOBS_DB_PATH ?? ".jobkit/jobs.sqlite"
 );
 
 export async function claimAndRunInventoryOperation(
