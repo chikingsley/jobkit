@@ -65,7 +65,7 @@
       "name": "SQL migration history",
       "stage": "platform",
       "status": "moving",
-      "owns": "74 hand-written migrations. Retained as history; superseded by drizzle-kit generation.",
+      "owns": "One baseline schema dumped from a verified production restore, plus the seed rows the incremental migrations installed. Drizzle generates every migration from here.",
       "target": "src/db/migrations"
     },
     {
@@ -81,7 +81,7 @@
       "name": "Test suite",
       "stage": "ops",
       "status": "active",
-      "owns": "477 tests against a real database and real routes. No mocks.",
+      "owns": "176 integration tests against a real database and real routes, no mocks. Every suite is declared in tests/manifest.jsonc and enforced by check:tests.",
       "target": "tests"
     },
     {
@@ -99,14 +99,6 @@
       "status": "active",
       "owns": "Cloudflare _headers and static files served with the app.",
       "target": "public"
-    },
-    {
-      "path": "old",
-      "name": "Quarantine",
-      "stage": "ops",
-      "status": "dormant",
-      "owns": "Code and tests that are kept but not running. Currently holds 57 test files covering the public catalog projection and country materialisation: the SEO subsystem, which is paused. Excluded from tsconfig, from both vitest configs, and from linting, so nothing here can fail a build or be imported by live code.",
-      "target": "old"
     },
     {
       "path": ".maestro",
