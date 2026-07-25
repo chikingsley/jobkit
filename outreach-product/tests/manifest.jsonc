@@ -131,6 +131,12 @@
 
     // ------------------------------------------------------------- 02_extract
     {
+      "path": "tests/integration/worker/anesl-field-extraction.test.ts",
+      "stage": "02_extract",
+      "category": "contract",
+      "protects": "Deterministic extraction of anesl source fields with no model call: degree level, minimum years, accepted nationalities, learner bands derived from the stated age range, market segment, benefits, monthly pay, and teaching hours. Covers the malformed values the board actually emits, and pins that an absent fact is omitted rather than invented. Verified against all 4,005 active anesl listings."
+    },
+    {
       "path": "tests/integration/worker/agent-job-analysis.test.ts",
       "stage": "02_extract",
       "category": "contract",

@@ -53,6 +53,14 @@
       "target": "src/pipeline/01_ingest"
     },
     {
+      "path": "src/pipeline/02_extract",
+      "name": "Extract",
+      "stage": "02_extract",
+      "status": "active",
+      "owns": "Turns a listing into structured facts. Boards that publish a label/value map are read deterministically from job_listings.source_fields_json with no model call; anesl is covered, which is 59% of inventory. Boards without structured fields still go through the model path in worker/services/agent-tasks.",
+      "target": "src/pipeline/02_extract"
+    },
+    {
       "path": "src/db",
       "name": "Database client",
       "stage": "platform",
