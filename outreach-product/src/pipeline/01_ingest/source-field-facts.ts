@@ -1,9 +1,9 @@
-import { jobSourceHash } from "../../../worker/ai/job-fact-extraction";
+import type { InventoryJob } from "../../features/inventory/schema";
+import { jobSourceHash } from "../02_extract/ai/job-fact-extraction";
 import {
   readJobListingSource,
   recordJobMatchFacts,
-} from "../../../worker/services/job-analysis-records";
-import type { InventoryJob } from "../../features/inventory/schema";
+} from "../02_extract/facts-records";
 import {
   DETERMINISTIC_EXTRACTION_MODEL,
   DETERMINISTIC_EXTRACTION_PROVIDER,

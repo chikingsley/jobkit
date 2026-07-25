@@ -1,8 +1,8 @@
 import { and, eq } from "drizzle-orm";
-import { excluded, getDb } from "../db/client";
-import { applicationRoutes } from "../db/schema/applications";
-import { contactChannels } from "../db/schema/organizations";
-import type { JobImport } from "../schemas";
+import { excluded, getDb } from "../../db/drizzle";
+import { applicationRoutes } from "../../db/schema/applications";
+import { contactChannels } from "../../db/schema/organizations";
+import type { JobImport } from "../../features/listing-schemas";
 
 export async function upsertApplicationRoutes(
   db: D1Database,

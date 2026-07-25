@@ -1,2 +1,0 @@
-export const JOB_MATCH_FACTS_SCHEMA_VERSION = 5;
-export const MATCHING_ENGINE_VERSION = 1;

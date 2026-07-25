@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { StatedHourlyBasisSchema } from "../../../src/features/jobs/economics";
+import type { StatedHourlyBasisSchema } from "../../../../features/jobs/economics";
 import type { ProviderJobEconomics } from "./model";
 
 export function supportedWorkload(

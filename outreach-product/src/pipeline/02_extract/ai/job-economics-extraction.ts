@@ -1,7 +1,7 @@
 import {
   type JobEconomics,
   JobEconomicsSchema,
-} from "../../src/features/jobs/economics";
+} from "../../../features/jobs/economics";
 import {
   isAsciiDigit,
   normalizeCurrency,

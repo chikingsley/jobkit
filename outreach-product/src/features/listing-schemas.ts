@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { InventoryMarketSegmentSchema } from "../src/features/inventory/schema";
-import type { JobPositionAnalysis } from "../src/features/jobs/position-variants";
-import type { Compensation } from "../src/features/jobs/types";
+import { InventoryMarketSegmentSchema } from "./inventory/schema";
+import type { JobPositionAnalysis } from "./jobs/position-variants";
+import type { Compensation } from "./jobs/types";
 
 export const MarketSegmentSchema = InventoryMarketSegmentSchema;
 

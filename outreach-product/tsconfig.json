@@ -22,12 +22,5 @@
       "vite/client"
     ]
   },
-  "include": [
-    "auth.config.ts",
-    "cli",
-    "src",
-    "tests",
-    "worker",
-    "vite.config.ts"
-  ]
+  "include": ["cli", "src", "tests", "vite.config.ts"]
 }

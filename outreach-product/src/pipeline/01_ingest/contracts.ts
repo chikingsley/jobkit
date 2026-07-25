@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { AgentRunnerContext } from "../../../worker/app-types";
+import type { AgentRunnerContext } from "../../features/agents/runner";
 import type {
   InventoryRunBatchSchema,
   InventoryRunFailureSchema,

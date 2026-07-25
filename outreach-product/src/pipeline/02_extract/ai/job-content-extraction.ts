@@ -1,4 +1,4 @@
-import type { JobContentAnalysis } from "../../src/features/jobs/content-analysis";
+import type { JobContentAnalysis } from "../../../features/jobs/content-analysis";
 import { evidenceIsPresent } from "./evidence-text";
 import { canonicalEvidenceQuote } from "./job-position-extraction";
 

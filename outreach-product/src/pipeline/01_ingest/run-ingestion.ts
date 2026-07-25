@@ -1,4 +1,4 @@
-import type { AgentRunnerContext } from "../../../worker/app-types";
+import type { AgentRunnerContext } from "../../features/agents/runner";
 import {
   assertRefreshOperationLease,
   assertRunCounts,

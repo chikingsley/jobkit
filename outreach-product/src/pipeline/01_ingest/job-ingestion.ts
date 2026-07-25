@@ -1,10 +1,5 @@
-import { excluded, getDb } from "../../../worker/db/client";
-import {
-  jobListings,
-  jobListingVersions,
-} from "../../../worker/db/schema/jobs";
-import { upsertApplicationRoutes } from "../../../worker/repositories/application-routes";
-import type { JobImport } from "../../../worker/schemas";
+import { excluded, getDb } from "../../db/drizzle";
+import { jobListings, jobListingVersions } from "../../db/schema/jobs";
 import {
   INVENTORY_JOB_MATERIAL_HASH_VERSION,
   inventoryJobContentHash,
@@ -12,6 +7,8 @@ import {
   serializeInventoryJobMaterial,
 } from "../../features/inventory/content";
 import type { InventoryJob } from "../../features/inventory/schema";
+import type { JobImport } from "../../features/listing-schemas";
+import { upsertApplicationRoutes } from "./application-routes";
 import {
   type InventoryItemStatus,
   InventoryRunError,

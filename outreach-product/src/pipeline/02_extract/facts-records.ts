@@ -1,18 +1,20 @@
 import {
   JOB_CONTENT_ANALYSIS_SCHEMA_VERSION,
   type JobContentAnalysis,
-} from "../../src/features/jobs/content-analysis";
-import type { JobPositionAnalysis } from "../../src/features/jobs/position-variants";
-import { JOB_POSITION_ANALYSIS_SCHEMA_VERSION } from "../../src/features/jobs/position-variants";
-import type { JobMatchFacts } from "../../src/pipeline/03_match/schema";
-import { JOB_MATCH_FACTS_SCHEMA_VERSION } from "../../src/pipeline/03_match/version";
-import { unsupportedContentEvidence } from "../ai/job-content-extraction";
+} from "../../features/jobs/content-analysis";
+import type { JobPositionAnalysis } from "../../features/jobs/position-variants";
+import { JOB_POSITION_ANALYSIS_SCHEMA_VERSION } from "../../features/jobs/position-variants";
+import {
+  JOB_MATCH_FACTS_SCHEMA_VERSION,
+  type JobMatchFacts,
+} from "../03_match/schema";
+import { unsupportedContentEvidence } from "./ai/job-content-extraction";
 import {
   jobFactSource,
   jobSourceHash,
   unsupportedEvidence,
-} from "../ai/job-fact-extraction";
-import { unsupportedPositionEvidence } from "../ai/job-position-extraction";
+} from "./ai/job-fact-extraction";
+import { unsupportedPositionEvidence } from "./ai/job-position-extraction";
 
 interface JobContentAnalysisInput {
   content: JobContentAnalysis;

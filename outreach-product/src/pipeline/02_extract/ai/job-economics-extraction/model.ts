@@ -6,7 +6,7 @@ import {
   StatedHourlyBasisSchema,
   TaxBasisSchema,
   WorkloadPeriodSchema,
-} from "../../../src/features/jobs/economics";
+} from "../../../../features/jobs/economics";
 
 export const ProviderWorkloadSchema = z
   .object({

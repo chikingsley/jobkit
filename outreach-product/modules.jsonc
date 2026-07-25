@@ -54,17 +54,8 @@
       "name": "Database client",
       "stage": "platform",
       "status": "active",
-      "owns": "The only module that opens a connection. Defines the query surface and adapts bun:sqlite to it; a compiler-enforced assertion holds D1 to the same interface.",
+      "owns": "The only module that opens a connection. Defines the query surface and adapts bun:sqlite to it; a compiler-enforced assertion holds D1 to the same interface. Also holds the Drizzle client and the seventeen table modules that describe the schema, moved here when the worker directory was dissolved.",
       "target": "src/db"
-    },
-    {
-      "path": "worker",
-      "name": "Server remnant",
-      "stage": "platform",
-      "status": "moving",
-      "owns": "What the three live stages still reach into: the Drizzle schema, the D1 client, the extraction schemas, the application-routes repository, and the match-facts recorder. Nothing else remains. This is the last directory outside the numbered structure and its contents belong in src/db and src/pipeline.",
-      "target": "src/db + src/pipeline",
-      "language": "typescript"
     },
     {
       "path": "cli",

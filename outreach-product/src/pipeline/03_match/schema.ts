@@ -3,6 +3,8 @@ import { JobEconomicsSchema } from "../../features/jobs/economics";
 import { JobMarketSegmentSchema } from "../../features/organizations/market-segments";
 import { DegreeLevelSchema } from "../../features/profile/schema";
 
+export const JOB_MATCH_FACTS_SCHEMA_VERSION = 5;
+
 export const JobAudienceSchema = z.enum([
   "preschool",
   "primary",

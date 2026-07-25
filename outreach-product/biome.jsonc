@@ -36,7 +36,7 @@
       "assist": { "enabled": false }
     },
     {
-      "includes": ["worker/db/schema/index.ts"],
+      "includes": ["src/db/schema/index.ts"],
       "linter": {
         "rules": {
           "performance": {
