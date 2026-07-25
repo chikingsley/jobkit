@@ -75,7 +75,7 @@ func (client *Client) Partitions() []string { return nil }
 // Discover samples newest/featured jobs or exhausts the finite
 // country-by-subject matrix exposed by the source.
 func (client *Client) Discover(ctx context.Context, mode inventory.Mode) (inventory.Discovery, error) {
-	home, err := client.http.Get(ctx, "/", "text/html")
+	home, err := client.http.Get(ctx, countryListPath(), "text/html")
 	if err != nil {
 		return inventory.Discovery{}, err
 	}
@@ -84,7 +84,7 @@ func (client *Client) Discover(ctx context.Context, mode inventory.Mode) (invent
 		return inventory.Discovery{}, err
 	}
 	if len(countries) == 0 {
-		return inventory.Discovery{}, fmt.Errorf("SeriousTeachers homepage exposed no Jobs by Country inventory")
+		return inventory.Discovery{}, fmt.Errorf("SeriousTeachers listing page exposed no Jobs by Country inventory")
 	}
 	items := make([]inventory.Item, 0)
 	seen := make(map[string]int)
@@ -319,8 +319,19 @@ func jobIDs(body []byte) []string {
 	return result
 }
 
+// The legacy /0/{country}/{subject} route truncates a country's listings; the
+// /jobs/ route returns them all. Brazil serves ten on the legacy route and
+// twenty here, and its country dropdown carries 192 countries against the
+// homepage's 43.
 func listPath(countryID, subjectID int) string {
-	return fmt.Sprintf("/0/%d/%d", countryID, subjectID)
+	if subjectID > 0 {
+		return fmt.Sprintf("/jobs/%d/%d/all", subjectID, countryID)
+	}
+	return fmt.Sprintf("/jobs/0/%d/all", countryID)
+}
+
+func countryListPath() string {
+	return "/jobs/0/0/all"
 }
 
 func detailPath(jobID string) string {

@@ -14,11 +14,11 @@ func TestFullDiscoveryWalksCountrySubjectMatrix(t *testing.T) {
 	t.Parallel()
 	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		switch request.URL.Path {
-		case "/":
+		case "/jobs/0/0/all":
 			_, _ = fmt.Fprint(writer, `<select><option value="0">List all</option><option value="7">Georgia</option></select><a href="/job_details/1/0/home">Job</a>`)
-		case "/0/7/0":
+		case "/jobs/0/7/all":
 			_, _ = fmt.Fprint(writer, `<a href="/job_details/1/0/home">Existing job</a><a href="/job_details/2/0/country">Job</a>`)
-		case "/0/7/1":
+		case "/jobs/1/7/all":
 			_, _ = fmt.Fprint(writer, `<a href="/job_details/3/0/subject">Job</a>`)
 		default:
 			http.NotFound(writer, request)
