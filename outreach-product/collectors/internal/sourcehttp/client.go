@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -25,7 +26,7 @@ var browserHeaders = map[string]string{
 	"Sec-Fetch-Site":            "none",
 	"Sec-Fetch-User":            "?1",
 	"Upgrade-Insecure-Requests": "1",
-	"User-Agent":                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+	"User-Agent":                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
 }
 
 // Doer is the part of http.Client used by source clients.
@@ -179,6 +180,13 @@ func (client *Client) Request(
 	for name, value := range browserHeaders {
 		request.Header.Set(name, value)
 	}
+	// A source behind a Cloudflare challenge only answers a client that carries
+	// the clearance a real browser earned. The cookie is bound to the egress
+	// address and the user agent above, so both must match the browser that
+	// obtained it.
+	if cookie := clearanceCookie(request.URL.Host); cookie != "" {
+		request.Header.Set("Cookie", cookie)
+	}
 	for name, value := range headers {
 		request.Header.Set(name, value)
 	}
@@ -246,4 +254,16 @@ func abbreviate(data []byte, limit int) string {
 		return text
 	}
 	return text[:limit] + "..."
+}
+
+// clearanceCookie reads a per-host cookie from the environment. A host such as
+// www.seriousteachers.com is read from JOBKIT_COOKIE_WWW_SERIOUSTEACHERS_COM.
+func clearanceCookie(host string) string {
+	if host == "" {
+		return ""
+	}
+	key := "JOBKIT_COOKIE_" + strings.ToUpper(
+		strings.NewReplacer(".", "_", "-", "_", ":", "_").Replace(host),
+	)
+	return strings.TrimSpace(os.Getenv(key))
 }
