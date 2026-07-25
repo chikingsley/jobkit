@@ -142,11 +142,12 @@ function compensation(fields: SourceFields) {
   if (!Number.isFinite(amount) || amount <= 0) {
     return null;
   }
+  const evidence = [`Salary: ${raw.slice(0, MAX_VALUE_LENGTH)}`];
   return {
     amountMaximum: null,
     amountMinimum: amount,
     currency: matched[2].toUpperCase(),
-    evidence: [`Salary: ${raw.slice(0, MAX_VALUE_LENGTH)}`],
+    evidence,
     kind: "amount" as const,
     period: null,
     qualifier: null,
