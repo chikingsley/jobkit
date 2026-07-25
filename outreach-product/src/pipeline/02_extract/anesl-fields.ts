@@ -34,6 +34,15 @@ function fact<Value>(value: Value, evidence: string) {
 }
 
 type DegreeLevel = JobMatchFacts["requirements"][number]["minimumDegreeLevel"];
+const DEGREE_LABELS: Record<string, string> = {
+  associate: "Associate degree or above",
+  bachelor: "Bachelor's degree or above",
+  certificate: "Certificate or above",
+  diploma: "Diploma or above",
+  doctorate: "Doctorate or above",
+  master: "Master's degree or above",
+  other: "Degree or above",
+};
 const DEGREE_LEVELS: [RegExp, DegreeLevel][] = [
   [/phd|doctorate/iu, "doctorate"],
   [/master|post graduate/iu, "master"],
@@ -51,9 +60,7 @@ function degreeRequirement(fields: SourceFields) {
   if (!matched) {
     return null;
   }
-
-  const label =
-    value.length <= MAX_VALUE_LENGTH ? value : (matched[1] ?? value);
+  const label = DEGREE_LABELS[matched[1] ?? "other"];
   return {
     alternativeGroup: null,
     evidence: `Degree: ${raw}`,
@@ -73,12 +80,15 @@ function experienceRequirement(fields: SourceFields) {
   if (!(raw && years?.[1])) {
     return null;
   }
+  if (Number(years[1]) <= 0) {
+    return null;
+  }
   return {
     alternativeGroup: null,
     evidence: `Work Experience: ${raw}`,
     importance: "required" as const,
     kind: "experience" as const,
-    label: `At least ${years[1]} years of experience`,
+    label: `At least ${years[1]} ${Number(years[1]) === 1 ? "year" : "years"} of experience`,
     minimumDegreeLevel: null,
     minimumLanguageLevel: null,
     minimumYears: Number(years[1]),

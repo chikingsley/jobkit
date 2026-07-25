@@ -30,11 +30,11 @@ describe("anesl source field extraction", () => {
         evidence: "Degree: Only Bachelors/ Degree or Above",
         importance: "required",
         kind: "degree",
-        label: "Bachelors/ Degree or Above",
+        label: "Bachelor's degree or above",
         minimumDegreeLevel: "bachelor",
         minimumLanguageLevel: null,
         minimumYears: null,
-        values: ["Bachelors/ Degree or Above"],
+        values: ["Bachelor's degree or above"],
       },
       {
         alternativeGroup: null,
