@@ -1,6 +1,12 @@
 {
   "suites": [
     {
+      "path": "tests/03_match/rank.test.ts",
+      "stage": "03_match",
+      "category": "contract",
+      "protects": "Ranking a real corpus: an implausible weekly teaching load is dropped rather than divided by, repeated benefit entries collapse, yearly and weekly and hourly figures convert to monthly, an unconvertible currency is dropped rather than ranked at zero, and the same agency posting repeated at the same pay collapses to one row. Written against the top of the live emailable inventory, where one listing claimed eighty-five teaching hours a week."
+    },
+    {
       "path": "tests/03_match/scoring.test.ts",
       "stage": "03_match",
       "category": "regression",
