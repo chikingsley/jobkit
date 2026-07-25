@@ -1,6 +1,13 @@
 {
   "suites": [
     {
+      "path": "tests/02_extract/remaining-board-extraction.test.ts",
+      "stage": "02_extract",
+      "category": "contract",
+      "protects": "The three boards that had no extractor. ajarn prints amount, currency, period and employment type on one line, so all 162 are read deterministically. tefl publishes schema.org JobPosting with country, locality and description but no baseSalary, so it yields structure and never pay. eslcafe hides labelled sections in prose, and 132 of its 355 posts are agency digests advertising many schools at once, so a post carrying more than one salary yields none rather than an arbitrary pick. Pins that SALARY and EMPLOYMENT are not currency codes and a stated NTD beats the dollar sign beside it, both of which produced fabricated pay on the first run.",
+      "target": "tests/02_extract"
+    },
+    {
       "path": "tests/01_ingest/from-ledger.test.ts",
       "stage": "01_ingest",
       "category": "contract",

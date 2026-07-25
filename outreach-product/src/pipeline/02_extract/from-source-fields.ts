@@ -1,7 +1,10 @@
 import { type JobMatchFacts, JobMatchFactsSchema } from "../03_match/schema";
+import { extractAjarnFacts } from "./ajarn-fields";
 import { extractAneslFacts, type SourceFields } from "./anesl-fields";
+import { extractEslCafeFacts } from "./eslcafe-fields";
 import { extractSeriousTeachersFacts } from "./seriousteachers-fields";
 import { extractTeacherHorizonsFacts } from "./teacherhorizons-fields";
+import { extractTeflFacts } from "./tefl-fields";
 
 export const DETERMINISTIC_EXTRACTION_PROVIDER = "deterministic";
 export const DETERMINISTIC_EXTRACTION_MODEL = "source-fields";
@@ -10,9 +13,12 @@ const BOARD_EXTRACTORS: Record<
   string,
   (fields: SourceFields) => JobMatchFacts | null
 > = {
+  ajarn: ajarnMatchFacts,
   anesl: aneslMatchFacts,
+  "eslcafe-modern": eslCafeMatchFacts,
   seriousteachers: seriousTeachersMatchFacts,
   teacherhorizons: teacherHorizonsMatchFacts,
+  tefl: teflMatchFacts,
 };
 
 export function supportsDeterministicExtraction(board: string) {
@@ -121,6 +127,74 @@ function seriousTeachersMatchFacts(fields: SourceFields): JobMatchFacts | null {
     employmentTypes: [],
     marketSegments: extracted.marketSegments,
     requirements: extracted.requirements,
+    reviewNotes: [],
+  });
+}
+
+const UNSTATED_PAY = {
+  amountMaximum: null,
+  amountMinimum: null,
+  currency: null,
+  evidence: [],
+  kind: "unstated" as const,
+  period: null,
+  qualifier: null,
+  taxBasis: "unspecified" as const,
+};
+
+function ajarnMatchFacts(fields: SourceFields): JobMatchFacts | null {
+  const extracted = extractAjarnFacts(fields);
+  if (!extracted.compensation && extracted.employmentTypes.length === 0) {
+    return null;
+  }
+  return JobMatchFactsSchema.parse({
+    audiences: [],
+    benefits: [],
+    economics: {
+      compensation: extracted.compensation ?? UNSTATED_PAY,
+      workload: null,
+    },
+    employmentTypes: extracted.employmentTypes,
+    marketSegments: [],
+    requirements: [],
+    reviewNotes: [],
+  });
+}
+
+function eslCafeMatchFacts(fields: SourceFields): JobMatchFacts | null {
+  const extracted = extractEslCafeFacts(fields);
+  if (!extracted.compensation && extracted.audiences.length === 0) {
+    return null;
+  }
+  return JobMatchFactsSchema.parse({
+    audiences: extracted.audiences,
+    benefits: [],
+    economics: {
+      compensation: extracted.compensation ?? UNSTATED_PAY,
+      workload: null,
+    },
+    employmentTypes: [],
+    marketSegments: [],
+    requirements: [],
+    reviewNotes: [],
+  });
+}
+
+function teflMatchFacts(fields: SourceFields): JobMatchFacts | null {
+  const extracted = extractTeflFacts(fields);
+  if (
+    extracted.audiences.length === 0 &&
+    extracted.marketSegments.length === 0
+  ) {
+    return null;
+  }
+  return JobMatchFactsSchema.parse({
+    audiences: extracted.audiences,
+    benefits: [],
+    economics: { compensation: UNSTATED_PAY, workload: null },
+    employmentTypes: [],
+    marketSegments: extracted.marketSegments,
+    requirements: [],
     reviewNotes: [],
   });
 }
