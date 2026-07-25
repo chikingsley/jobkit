@@ -5,6 +5,7 @@ import {
   inferPeriod,
   isoCurrencyCode,
   MONTHLY_FX_TO_USD,
+  periodFromMagnitude,
   resolveCurrency,
 } from "../../src/pipeline/02_extract/currency";
 
@@ -108,5 +109,25 @@ describe("period inference", () => {
     expect(correctMagnitude(19.5, "USD", "hour")).toBe(19.5);
     expect(correctMagnitude(19.5, "USD", "month")).toBe(19.5);
     expect(correctMagnitude(1000, "JPY", null)).toBe(1000);
+  });
+});
+
+describe("period inference from magnitude", () => {
+  it("reads a figure that is only plausible as an annual salary", () => {
+    expect(periodFromMagnitude(21_000, "EUR", null)).toBe("year");
+    expect(periodFromMagnitude(17_500, "GBP", null)).toBe("year");
+    expect(periodFromMagnitude(420_000, "MXN", null)).toBe("year");
+  });
+
+  it("leaves a figure that is plausible as a monthly salary alone", () => {
+    expect(periodFromMagnitude(20_000, "CNY", null)).toBeNull();
+    expect(periodFromMagnitude(3_500_000, "KRW", null)).toBeNull();
+    expect(periodFromMagnitude(4500, "USD", null)).toBeNull();
+    expect(periodFromMagnitude(60_000, "TWD", null)).toBeNull();
+  });
+
+  it("never overrides a period the listing stated", () => {
+    expect(periodFromMagnitude(21_000, "EUR", "month")).toBe("month");
+    expect(periodFromMagnitude(120_000, "USD", "year")).toBe("year");
   });
 });

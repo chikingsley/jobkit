@@ -231,3 +231,82 @@ describe("gender restriction precision", () => {
     ]);
   });
 });
+
+describe("annual salaries stated without a period", () => {
+  it("reads an unlabelled European figure as annual rather than monthly", () => {
+    const listing = normalizeListing(
+      raw({
+        amountMaximum: 25_000,
+        amountMinimum: 21_000,
+        country: "Italy",
+        currency: "EUR",
+        evidence: ["Salary ranges from 21000€ to 25000€"],
+        period: null,
+        teachingHours: null,
+        title: "Preschool English Teachers",
+      })
+    );
+    expect(listing.period).toBe("year");
+    expect(listing.monthlyUsd).toBeLessThan(2500);
+    expect(listing.monthlyUsd).toBeGreaterThan(1500);
+  });
+
+  it("still reads a plausible monthly figure as monthly", () => {
+    const listing = normalizeListing(raw({ period: null }));
+    expect(listing.period).toBeNull();
+    expect(listing.monthlyUsd).toBe(2660);
+  });
+});
+
+describe("pay readings that are not credible for a teaching role", () => {
+  it("prefers the country currency when the stated code gives an incredible figure", () => {
+    const listing = normalizeListing(
+      raw({
+        amountMaximum: null,
+        amountMinimum: 250_000,
+        country: "Japan",
+        currency: "USD",
+        evidence: ["$250,000 USD"],
+        period: null,
+        teachingHours: null,
+        title: "Preschool & afterschool Teacher",
+      })
+    );
+    expect(listing.currency).toBe("JPY");
+    expect(listing.monthlyUsd).toBeLessThan(2000);
+    expect(listing.monthlyUsd).toBeGreaterThan(1000);
+  });
+
+  it("leaves pay unset when no reading of the figure is credible", () => {
+    const listing = normalizeListing(
+      raw({
+        amountMaximum: null,
+        amountMinimum: 210_000,
+        country: "United Kingdom",
+        currency: null,
+        evidence: ["210,000 per annum"],
+        period: "year",
+        teachingHours: null,
+        title: "Teachers/Admin Officers Wanted.",
+      })
+    );
+    expect(listing.monthlyUsd).toBeNull();
+    expect(listing.currency).toBe("GBP");
+  });
+
+  it("keeps a genuinely high international salary", () => {
+    const listing = normalizeListing(
+      raw({
+        amountMaximum: 100_000,
+        amountMinimum: 75_000,
+        country: "China",
+        currency: "USD",
+        evidence: ["USD 75k-100k per year"],
+        period: "year",
+        teachingHours: null,
+        title: "Director of Curriculum Center",
+      })
+    );
+    expect(listing.monthlyUsd).toBe(7292);
+  });
+});

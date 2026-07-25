@@ -1,8 +1,10 @@
 import {
+  CREDIBLE_MONTHLY_USD_CEILING,
   correctMagnitude,
   currencyForCountry,
   inferPeriod,
   MONTHLY_FX_TO_USD,
+  periodFromMagnitude,
   resolveCurrency,
 } from "./currency";
 
@@ -40,7 +42,6 @@ export interface CanonicalListing {
 }
 
 export const CREDIBLE_WEEKLY_HOURS = 40;
-export const CREDIBLE_MONTHLY_USD_CEILING = 25_000;
 const WEEKS_PER_MONTH = 4.33;
 const MONTHS_PER_YEAR = 12;
 const ASSUMED_WEEKLY_HOURS = 20;
@@ -203,27 +204,70 @@ function monthlyAmount(
   return midpoint;
 }
 
+interface PayReading {
+  currency: string;
+  monthlyUsd: number;
+  period: string | null;
+}
+
+function readPay(
+  raw: RawListing,
+  currency: string,
+  statedPeriod: string | null,
+  hours: number | null
+): PayReading | null {
+  const rate = MONTHLY_FX_TO_USD[currency];
+  if (!rate || raw.amountMinimum === null || raw.amountMinimum <= 0) {
+    return null;
+  }
+  const ranged =
+    raw.amountMaximum !== null && raw.amountMaximum >= raw.amountMinimum;
+  const midpoint = ranged
+    ? (raw.amountMinimum + (raw.amountMaximum as number)) / 2
+    : raw.amountMinimum;
+  const period = periodFromMagnitude(midpoint, currency, statedPeriod);
+  const low = correctMagnitude(raw.amountMinimum, currency, period);
+  const high = ranged
+    ? correctMagnitude(raw.amountMaximum as number, currency, period)
+    : low;
+  const monthlyUsd = Math.round(monthlyAmount(low, high, period, hours) * rate);
+  if (monthlyUsd <= 0 || monthlyUsd > CREDIBLE_MONTHLY_USD_CEILING) {
+    return null;
+  }
+  return { currency, monthlyUsd, period };
+}
+
+function crediblePay(
+  raw: RawListing,
+  country: string,
+  statedPeriod: string | null,
+  hours: number | null
+): PayReading | null {
+  const stated = resolveCurrency(raw.currency, country);
+  if (!stated) {
+    return null;
+  }
+  const fromCountry = currencyForCountry(country);
+  const candidates =
+    fromCountry && fromCountry !== stated ? [stated, fromCountry] : [stated];
+  for (const candidate of candidates) {
+    const reading = readPay(raw, candidate, statedPeriod, hours);
+    if (reading) {
+      return reading;
+    }
+  }
+  return null;
+}
+
 export function normalizeListing(raw: RawListing): CanonicalListing {
   const title = cleanTitle(raw.title);
   const country = canonicalCountry(raw.country, raw.location, title);
-  const currency = resolveCurrency(raw.currency, country);
-  const period = inferPeriod(raw.period, raw.evidence);
+  const statedPeriod = inferPeriod(raw.period, raw.evidence);
   const hours = credibleTeachingHours(raw.teachingHours);
-  const rate = currency ? MONTHLY_FX_TO_USD[currency] : undefined;
-  let monthlyUsd: number | null = null;
-  if (currency && rate && raw.amountMinimum !== null && raw.amountMinimum > 0) {
-    const low = correctMagnitude(raw.amountMinimum, currency, period);
-    const high =
-      raw.amountMaximum !== null && raw.amountMaximum >= raw.amountMinimum
-        ? correctMagnitude(raw.amountMaximum, currency, period)
-        : low;
-    const candidate = Math.round(
-      monthlyAmount(low, high, period, hours) * rate
-    );
-    if (candidate > 0 && candidate <= CREDIBLE_MONTHLY_USD_CEILING) {
-      monthlyUsd = candidate;
-    }
-  }
+  const pay = crediblePay(raw, country, statedPeriod, hours);
+  const currency = pay ? pay.currency : resolveCurrency(raw.currency, country);
+  const period = pay ? pay.period : statedPeriod;
+  const monthlyUsd = pay ? pay.monthlyUsd : null;
   return {
     benefits: [...new Set(raw.benefits.filter(Boolean))].sort(),
     board: raw.board,

@@ -24,3 +24,5 @@ tefl-course/sources/las-vegas-teaching-archive/
 # Bulk public-domain downloads — re-fetchable, see tefl-course/docs/SOURCES.md (SHA256SUMS is committed)
 tefl-course/sources/state-dept-shaping/*
 !tefl-course/sources/state-dept-shaping/SHA256SUMS
+
+.claude/worktrees/
