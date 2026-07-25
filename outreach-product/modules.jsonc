@@ -50,6 +50,38 @@
       "target": "src/shared"
     },
     {
+      "path": "src/pipeline/04_compose",
+      "name": "Compose",
+      "stage": "04_compose",
+      "status": "moving",
+      "owns": "Turns a matched job into a message: the policy that governs voice and structure, the approved template per route, draft creation and revision, message preview, and campaign message bodies.",
+      "target": "src/pipeline/04_compose"
+    },
+    {
+      "path": "src/pipeline/05_campaigns",
+      "name": "Campaigns",
+      "stage": "05_campaigns",
+      "status": "moving",
+      "owns": "Orchestration at scale: campaign creation and lifecycle, the matching pass that admits listings, the scheduler that paces sends, and the matching engine that scores a job against the candidate.",
+      "target": "src/pipeline/05_campaigns"
+    },
+    {
+      "path": "src/pipeline/06_deliver",
+      "name": "Deliver",
+      "stage": "06_deliver",
+      "status": "moving",
+      "owns": "Getting a message out and proving it went: the email attempt state machine, Gmail transport and drafting, the SeriousTeachers form submitter, and ANESL agency bundles.",
+      "target": "src/pipeline/06_deliver"
+    },
+    {
+      "path": "src/pipeline/07_respond",
+      "name": "Respond",
+      "stage": "07_respond",
+      "status": "moving",
+      "owns": "What happens after a send: reply ingestion from Gmail, thread stitching, follow-up scheduling, and cancelling queued follow-ups on a human reply or a bounce.",
+      "target": "src/pipeline/07_respond"
+    },
+    {
       "path": "src/db",
       "name": "Database client",
       "stage": "platform",
