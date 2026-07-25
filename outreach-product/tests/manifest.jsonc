@@ -7,6 +7,24 @@
       "protects": "Ranking a real corpus: an implausible weekly teaching load is dropped rather than divided by, repeated benefit entries collapse, yearly and weekly and hourly figures convert to monthly, an unconvertible currency is dropped rather than ranked at zero, and the same agency posting repeated at the same pay collapses to one row. Written against the top of the live emailable inventory, where one listing claimed eighty-five teaching hours a week."
     },
     {
+      "path": "tests/02_extract/normalize.test.ts",
+      "stage": "02_extract",
+      "category": "contract",
+      "protects": "The standard every listing meets before anything downstream reads it: decoration stripped from titles, an empty country recovered from the location or title, a currency recovered from the country, a salary the extractor recorded in bare millions scaled, a per-lesson fee kept as a rate rather than becoming a monthly salary, an implausible weekly load discarded, repeated benefits collapsed, and a stated gender, age or nationality restriction recorded."
+    },
+    {
+      "path": "tests/02_extract/currency.test.ts",
+      "stage": "02_extract",
+      "category": "contract",
+      "protects": "Currency and period resolution: board codes such as RMB and NTD map to ISO, a country supplies the currency a listing omits, a period is read from the pay evidence when unstated, and an amount plausible as an hourly rate is never scaled into a monthly salary."
+    },
+    {
+      "path": "tests/03_match/rank.test.ts",
+      "stage": "03_match",
+      "category": "contract",
+      "protects": "Ranking reads canonical listings only and holds no correction logic: pay order with a deterministic tie-break, listings without established pay omitted, and one employer reposting at the same pay collapsing to a single row that records its reposts."
+    },
+    {
       "path": "tests/03_match/scoring.test.ts",
       "stage": "03_match",
       "category": "regression",
