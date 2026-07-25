@@ -13,8 +13,8 @@
       "path": "src",
       "name": "Application source",
       "stage": "platform",
-      "status": "moving",
-      "owns": "The pipeline stages plus the schemas and helpers they share. Contains no React app; every view is quarantined.",
+      "status": "active",
+      "owns": "Three numbered pipeline stages, the database client, the shared contracts they import, and the candidate profile and match types at the root. No React, no HTTP server, no view layer.",
       "target": "src"
     },
     {
@@ -30,96 +30,48 @@
       "name": "Extract",
       "stage": "02_extract",
       "status": "active",
-      "owns": "Turns a listing into structured match facts. Boards publishing a label/value map are read with no model call; anesl is covered at 100 percent of 4,005 listings.",
+      "owns": "Turns a listing into structured match facts, then normalises it to the one standard everything downstream reads. Boards publishing a label/value map are read with no model call; anesl is covered at 100 percent of 4,005 listings.",
       "target": "src/pipeline/02_extract"
     },
     {
       "path": "src/pipeline/03_match",
       "name": "Match",
       "stage": "03_match",
-      "status": "moving",
-      "owns": "The one canonical read of the inventory, plus scoring. readCandidates returns every active listing on every board with its best live application route, whether that route is an email address or a platform form, and normalises each row on the way out so nothing downstream sees a stored raw value. rankCandidates orders by pay and keeps listings whose pay the board never stated. Scoring compares a job against a candidate profile, preferences, qualification claims, and converted salary, returning per-criterion match, partial, or conflict; the profile is a parameter, so several can be scored against the same jobs.",
+      "status": "active",
+      "owns": "The one canonical read of the inventory, plus scoring. readCandidates returns every active listing on every board with its best live application route, whether that route is an email address or a platform form, and normalises each row on the way out so nothing downstream sees a stored raw value. rankCandidates orders by pay and keeps listings whose pay the board never stated. Scoring compares a job against a candidate profile, preferences, qualification claims, and converted salary, returning per-criterion match, partial, or conflict.",
       "target": "src/pipeline/03_match"
     },
     {
       "path": "src/features",
       "name": "Shared contracts",
       "stage": "platform",
-      "status": "moving",
-      "owns": "Schemas and pure helpers the pipeline stages share: job types and economics, inventory contracts, profile, preferences, documents, organizations, agents.",
+      "status": "active",
+      "owns": "The eleven schema and pure-helper files the three live stages import: job types, economics, content analysis, position variants, protected email, inventory contracts, market segments, profile, preferences, agents.",
       "target": "src/shared"
-    },
-    {
-      "path": "src/pipeline/04_compose",
-      "name": "Compose",
-      "stage": "04_compose",
-      "status": "moving",
-      "owns": "Turns a matched job into a message: the policy that governs voice and structure, the approved template per route, draft creation and revision, message preview, and campaign message bodies.",
-      "target": "src/pipeline/04_compose"
-    },
-    {
-      "path": "src/pipeline/05_campaigns",
-      "name": "Campaigns",
-      "stage": "05_campaigns",
-      "status": "moving",
-      "owns": "Orchestration at scale: campaign creation and lifecycle, the matching pass that admits listings, the scheduler that paces sends, and the matching engine that scores a job against the candidate.",
-      "target": "src/pipeline/05_campaigns"
-    },
-    {
-      "path": "src/pipeline/06_deliver",
-      "name": "Deliver",
-      "stage": "06_deliver",
-      "status": "moving",
-      "owns": "Getting a message out and proving it went: the email attempt state machine, Gmail transport and drafting, the SeriousTeachers form submitter, and ANESL agency bundles.",
-      "target": "src/pipeline/06_deliver"
-    },
-    {
-      "path": "src/pipeline/07_respond",
-      "name": "Respond",
-      "stage": "07_respond",
-      "status": "moving",
-      "owns": "What happens after a send: reply ingestion from Gmail, thread stitching, follow-up scheduling, and cancelling queued follow-ups on a human reply or a bounce.",
-      "target": "src/pipeline/07_respond"
     },
     {
       "path": "src/db",
       "name": "Database client",
       "stage": "platform",
       "status": "active",
-      "owns": "The only module that opens a connection. Defines the query surface and adapts bun:sqlite to it; D1 satisfies the same interface.",
+      "owns": "The only module that opens a connection. Defines the query surface and adapts bun:sqlite to it; a compiler-enforced assertion holds D1 to the same interface.",
       "target": "src/db"
-    },
-    {
-      "path": "src/model",
-      "name": "Model registry",
-      "stage": "platform",
-      "status": "active",
-      "owns": "One place to choose a model per task type, and one shared OpenAI-compatible call.",
-      "target": "src/model"
-    },
-    {
-      "path": "src/lib",
-      "name": "Shared utilities",
-      "stage": "platform",
-      "status": "moving",
-      "owns": "Country routing, site origin, and small helpers the stages depend on.",
-      "target": "src/shared"
     },
     {
       "path": "worker",
       "name": "Server remnant",
       "stage": "platform",
       "status": "moving",
-      "owns": "What the pipeline still reaches into: Drizzle schema, the D1 client, extraction helpers, the application-routes repository, and the match-facts recorder. Everything else is quarantined.",
+      "owns": "What the three live stages still reach into: the Drizzle schema, the D1 client, the extraction schemas, the application-routes repository, and the match-facts recorder. Nothing else remains. This is the last directory outside the numbered structure and its contents belong in src/db and src/pipeline.",
       "target": "src/db + src/pipeline",
       "language": "typescript"
     },
     {
       "path": "cli",
-      "name": "Operator CLI",
-      "stage": "platform",
-      "status": "moving",
-      "owns": "Inventory sync against the collector ledger, the agent client, and the quality gates.",
+      "name": "Quality gates",
+      "stage": "ops",
+      "status": "active",
+      "owns": "Four checks and nothing else: file length, migration triggers that would break the D1 HTTP API, the module accounting in this file, and the test accounting in tests/manifest.jsonc. All four run in bun run check and in CI. No logic lives here; the agent plumbing and inventory commands are quarantined.",
       "target": "cli"
     },
     {
@@ -151,7 +103,7 @@
       "name": "Quarantine",
       "stage": "ops",
       "status": "dormant",
-      "owns": "Everything not yet reviewed. Excluded from tsconfig, lint, and the test configs, so nothing here can fail a build or be imported by live code. Readmitted one piece at a time.",
+      "owns": "Everything not reviewed, including the whole front end, the HTTP API and services, and pipeline stages 04 through 07. Excluded from tsconfig, lint, and the test configs, so nothing here can fail a build or be imported by live code. Readmitted one piece at a time, or rewritten with it as reference.",
       "target": "old"
     }
   ]
