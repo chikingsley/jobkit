@@ -11,17 +11,21 @@ import (
 	"time"
 )
 
-const maxResponseBytes = 10 << 20
+const (
+	maxResponseBytes = 10 << 20
+	rateLimitRetries = 4
+	rateLimitBackoff = 8 * time.Second
+)
 
 var browserHeaders = map[string]string{
-	"Accept":          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-	"Accept-Language": "en-US,en;q=0.9",
-	"Sec-Fetch-Dest":  "document",
-	"Sec-Fetch-Mode":  "navigate",
-	"Sec-Fetch-Site":  "none",
-	"Sec-Fetch-User":  "?1",
+	"Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+	"Accept-Language":           "en-US,en;q=0.9",
+	"Sec-Fetch-Dest":            "document",
+	"Sec-Fetch-Mode":            "navigate",
+	"Sec-Fetch-Site":            "none",
+	"Sec-Fetch-User":            "?1",
 	"Upgrade-Insecure-Requests": "1",
-	"User-Agent":      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+	"User-Agent":                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
 }
 
 // Doer is the part of http.Client used by source clients.
@@ -98,15 +102,41 @@ func (client *Client) Resolve(reference string) string {
 	return client.baseURL.ResolveReference(parsed).String()
 }
 
-// Get performs a successful GET request.
+// Get performs a successful GET request, retrying a rate-limited response with
+// widening backoff. A source that throttles a long full-inventory walk would
+// otherwise fail the whole run on one 429.
 func (client *Client) Get(ctx context.Context, reference, accept string) (Response, error) {
-	response, err := client.Request(ctx, http.MethodGet, reference, nil, map[string]string{
-		"Accept": accept,
-	})
-	if err != nil {
-		return Response{}, err
+	var response Response
+	var err error
+	for attempt := 0; attempt <= rateLimitRetries; attempt++ {
+		response, err = client.Request(ctx, http.MethodGet, reference, nil, map[string]string{
+			"Accept": accept,
+		})
+		if err != nil {
+			return Response{}, err
+		}
+		if response.StatusCode != http.StatusTooManyRequests {
+			break
+		}
+		if attempt == rateLimitRetries {
+			break
+		}
+		if waitErr := sleep(ctx, rateLimitBackoff*time.Duration(attempt+1)); waitErr != nil {
+			return Response{}, waitErr
+		}
 	}
 	return response, RequireSuccess(http.MethodGet, response)
+}
+
+func sleep(ctx context.Context, duration time.Duration) error {
+	timer := time.NewTimer(duration)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
 }
 
 // PostForm performs a successful form POST request.

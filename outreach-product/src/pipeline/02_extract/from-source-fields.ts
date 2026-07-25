@@ -1,5 +1,6 @@
 import { type JobMatchFacts, JobMatchFactsSchema } from "../03_match/schema";
 import { extractAneslFacts, type SourceFields } from "./anesl-fields";
+import { extractTeacherHorizonsFacts } from "./teacherhorizons-fields";
 
 export const DETERMINISTIC_EXTRACTION_PROVIDER = "deterministic";
 export const DETERMINISTIC_EXTRACTION_MODEL = "source-fields";
@@ -9,6 +10,7 @@ const BOARD_EXTRACTORS: Record<
   (fields: SourceFields) => JobMatchFacts | null
 > = {
   anesl: aneslMatchFacts,
+  teacherhorizons: teacherHorizonsMatchFacts,
 };
 
 export function supportsDeterministicExtraction(board: string) {
@@ -48,6 +50,38 @@ function aneslMatchFacts(fields: SourceFields): JobMatchFacts | null {
         taxBasis: "unspecified",
       },
       workload: extracted.workload,
+    },
+    employmentTypes: [],
+    marketSegments: extracted.marketSegments,
+    requirements: extracted.requirements,
+    reviewNotes: [],
+  });
+}
+
+function teacherHorizonsMatchFacts(fields: SourceFields): JobMatchFacts | null {
+  const extracted = extractTeacherHorizonsFacts(fields);
+  if (
+    extracted.requirements.length === 0 &&
+    extracted.audiences.length === 0 &&
+    extracted.marketSegments.length === 0
+  ) {
+    return null;
+  }
+  return JobMatchFactsSchema.parse({
+    audiences: extracted.audiences,
+    benefits: [],
+    economics: {
+      compensation: {
+        amountMaximum: null,
+        amountMinimum: null,
+        currency: null,
+        evidence: [],
+        kind: "unstated",
+        period: null,
+        qualifier: null,
+        taxBasis: "unspecified",
+      },
+      workload: null,
     },
     employmentTypes: [],
     marketSegments: extracted.marketSegments,

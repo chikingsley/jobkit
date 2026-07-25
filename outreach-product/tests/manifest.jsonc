@@ -1,6 +1,12 @@
 {
   "suites": [
     {
+      "path": "tests/02_extract/teacherhorizons-field-extraction.test.ts",
+      "stage": "02_extract",
+      "category": "contract",
+      "protects": "Deterministic extraction of TeacherHorizons source fields with no model call: learner group derived from the role, international-school segment, start date as an availability requirement, and subject as a skill. Pins that leadership roles publish no learner group and placeholder subjects are skipped rather than recorded. Verified against all 363 active listings."
+    },
+    {
       "path": "tests/02_extract/anesl-field-extraction.test.ts",
       "stage": "02_extract",
       "category": "contract",
