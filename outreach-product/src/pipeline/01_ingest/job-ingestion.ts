@@ -1,3 +1,4 @@
+import { jobSourceHash } from "../../../worker/ai/job-fact-extraction";
 import { excluded, getDb } from "../../../worker/db/client";
 import {
   jobListings,
@@ -6,12 +7,22 @@ import {
 import { upsertApplicationRoutes } from "../../../worker/repositories/application-routes";
 import type { JobImport } from "../../../worker/schemas";
 import {
+  readJobListingSource,
+  recordJobMatchFacts,
+} from "../../../worker/services/job-analysis-records";
+import {
   INVENTORY_JOB_MATERIAL_HASH_VERSION,
   inventoryJobContentHash,
   inventoryJobMaterialHash,
   serializeInventoryJobMaterial,
 } from "../../features/inventory/content";
 import type { InventoryJob } from "../../features/inventory/schema";
+import {
+  DETERMINISTIC_EXTRACTION_MODEL,
+  DETERMINISTIC_EXTRACTION_PROVIDER,
+  matchFactsFromSourceFields,
+  supportsDeterministicExtraction,
+} from "../02_extract/from-source-fields";
 import {
   type InventoryItemStatus,
   InventoryRunError,
@@ -101,6 +112,7 @@ export async function ingestInventoryJob(
     timestamp
   );
   await closeSupersededRoutes(db, job.id, routeIds, timestamp);
+  await extractFactsFromSourceFields(db, job);
   await recordInventoryItemOutcome(
     db,
     run.id,
@@ -110,6 +122,40 @@ export async function ingestInventoryJob(
     outcome,
     previousItem
   );
+}
+
+// Boards that publish a label/value map need no model to produce match facts.
+// Extraction runs here because ingest already holds the fields, so a sync
+// backfills facts in the same pass. A failure never fails the ingest: the
+// listing is still valid inventory, it simply falls back to the model path.
+async function extractFactsFromSourceFields(db: D1Database, job: InventoryJob) {
+  if (!(job.fields && supportsDeterministicExtraction(job.board))) {
+    return;
+  }
+  const facts = matchFactsFromSourceFields(job.board, job.fields);
+  if (!facts) {
+    return;
+  }
+  try {
+    // The hash must describe the row as stored, which is what the recorder
+    // compares against, not the incoming payload.
+    const stored = await readJobListingSource(db, job.id);
+    await recordJobMatchFacts(db, {
+      facts,
+      jobId: job.id,
+      modelId: DETERMINISTIC_EXTRACTION_MODEL,
+      provider: DETERMINISTIC_EXTRACTION_PROVIDER,
+      sourceHash: await jobSourceHash(stored),
+    });
+  } catch (error) {
+    console.warn(
+      JSON.stringify({
+        event: "deterministic_extraction_skipped",
+        jobId: job.id,
+        message: error instanceof Error ? error.message : String(error),
+      })
+    );
+  }
 }
 
 async function updateInventoryFreshness(

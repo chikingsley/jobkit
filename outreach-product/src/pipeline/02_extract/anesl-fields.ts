@@ -10,6 +10,8 @@ const AGE_RANGE_PATTERN = /from:\s*(\d+)\s*to:\s*(\d+)/iu;
 const SALARY_PATTERN =
   /from\s+([A-Z]{2,4}):\s*([\d,]+)(?:\s*to\s+(?:[A-Z]{2,4}:?\s*)?([\d,]+))?/iu;
 const TEACHING_HOURS_PATTERN = /teaching hours:\s*(\d+)/iu;
+const OFFICE_HOURS_PATTERN = /office working hours:\s*(\d+)/iu;
+const WEEKLY_HOUR_CEILING = 168;
 const NO_DEGREE_PATTERN = /^nothing/iu;
 const ANY_NATIONALITY_PATTERN = /unrequired|any/iu;
 const LIST_SEPARATOR = /\s*,\s*/u;
@@ -192,22 +194,35 @@ function compensation(fields: SourceFields) {
     amountMinimum: minimum,
     currency: matched[1].toUpperCase(),
     evidence: [`Salary/M: ${raw}`],
-    kind: "range" as const,
+    kind: "amount" as const,
     period: "month" as const,
     qualifier: null,
     taxBasis: "unspecified" as const,
   };
 }
 
+// The board states teaching hours and office hours separately. Their sum is
+// the contact obligation, so the basis is teaching-plus-office whenever office
+// hours are stated above zero, and teaching alone otherwise.
 function workload(fields: SourceFields) {
   const period = fields["Period/week"];
-  const hours = TEACHING_HOURS_PATTERN.exec(period ?? "");
-  if (!(hours?.[1] && period)) {
+  const teaching = TEACHING_HOURS_PATTERN.exec(period ?? "");
+  if (!(teaching?.[1] && period)) {
+    return null;
+  }
+  const office = Number(OFFICE_HOURS_PATTERN.exec(period)?.[1] ?? 0);
+  const teachingHours = Number(teaching[1]);
+  const total = teachingHours + office;
+  if (total <= 0 || total > WEEKLY_HOUR_CEILING) {
     return null;
   }
   return {
+    basis:
+      office > 0 ? ("teaching-plus-office" as const) : ("teaching" as const),
     evidence: [`Period/week: ${period}`],
-    teachingHoursPerWeek: Number(hours[1]),
+    maximum: total,
+    minimum: total,
+    period: "week" as const,
   };
 }
 

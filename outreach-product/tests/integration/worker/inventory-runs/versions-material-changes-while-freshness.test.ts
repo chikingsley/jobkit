@@ -320,6 +320,58 @@ describe("hosted inventory runs", () => {
     expect(afterUpsert?.material_version).toBe(2);
   });
 
+  it("writes anesl match facts from source fields without a model", async () => {
+    const sourceId = `inventory-anesl-${crypto.randomUUID()}`;
+    await createInventorySource(sourceId, "complete_snapshot");
+    const runner = await pairRunner("inventory-anesl@example.test", [
+      "operations",
+    ]);
+    const fields = {
+      Degree: "Only Bachelors/ Degree or Above",
+      "Employer’s Type": "Public University",
+      "Period/week": "Teaching hours: 15 Office working Hours: 0",
+      "Salary/M": "From RMB: 17000 To RMB: 20000",
+      "Student’s age": "from: 18 to: 25 years old",
+      "Work Experience": "Only at least 2 years",
+    };
+    const job = inventoryJob(`${sourceId}:anesl`, {
+      board: "anesl",
+      description: Object.entries(fields)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join("\n"),
+      fields,
+    });
+
+    await publishSingleJobRun(runner.token, sourceId, "anesl-1", job);
+
+    const stored = await testEnv.DB.prepare(
+      "SELECT facts_json,model_provider,model_id FROM job_match_facts WHERE job_id=?"
+    )
+      .bind(job.id)
+      .first<{
+        facts_json: string;
+        model_id: string;
+        model_provider: string;
+      }>();
+
+    expect(stored?.model_provider).toBe("deterministic");
+    expect(stored?.model_id).toBe("source-fields");
+    const facts = JSON.parse(stored?.facts_json ?? "{}");
+    expect(facts.requirements.map((r: { kind: string }) => r.kind)).toEqual([
+      "degree",
+      "experience",
+    ]);
+    expect(facts.audiences.map((a: { value: string }) => a.value)).toEqual([
+      "college",
+      "adults",
+    ]);
+    expect(facts.economics.compensation).toMatchObject({
+      amountMaximum: 20_000,
+      amountMinimum: 17_000,
+      currency: "RMB",
+    });
+  });
+
   it("does not close missing records for an append-only source", async () => {
     const sourceId = `inventory-append-${crypto.randomUUID()}`;
     await createInventorySource(sourceId, "append_only");

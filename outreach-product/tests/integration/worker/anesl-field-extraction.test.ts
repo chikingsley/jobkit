@@ -70,7 +70,12 @@ describe("anesl source field extraction", () => {
       currency: "RMB",
       period: "month",
     });
-    expect(facts.workload).toMatchObject({ teachingHoursPerWeek: 14 });
+    expect(facts.workload).toMatchObject({
+      basis: "teaching-plus-office",
+      maximum: 19,
+      minimum: 19,
+      period: "week",
+    });
     expect(facts.benefits.map((benefit) => benefit.value).sort()).toEqual([
       "airfare",
       "healthInsurance",
