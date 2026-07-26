@@ -1,6 +1,8 @@
 import type { CanonicalListing } from "../02_extract/normalize";
+import { disqualifying } from "../04_compose/candidate";
 
 export interface RankedListing extends CanonicalListing {
+  disqualifiedBy: string[];
   payKnown: boolean;
   repostedAs: string[];
 }
@@ -38,6 +40,7 @@ export function rankListings(listings: CanonicalListing[]): RankedListing[] {
   const ordered = listings
     .map((listing) => ({
       ...listing,
+      disqualifiedBy: disqualifying(listing.restrictions, listing.country),
       payKnown: listing.monthlyUsd !== null,
       repostedAs: [] as string[],
     }))

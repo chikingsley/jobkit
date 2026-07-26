@@ -42,6 +42,22 @@
       "target": "src/pipeline/03_match"
     },
     {
+      "path": "src/pipeline/04_compose",
+      "name": "Compose",
+      "stage": "04_compose",
+      "status": "active",
+      "owns": "Turns a ranked listing into one message. Three files: the candidate facts, each carrying the resume line it came from; the variant pools drawn from 113 outreach emails actually sent, selected by a seed off the job id so two schools never receive the same wording; and the assembler, which also normalises a free-text board title into a role name and refuses any listing whose restrictions rule the candidate out. The model writes no prose - it names the role and nothing else, and only from words already in the title.",
+      "target": "src/pipeline/04_compose"
+    },
+    {
+      "path": "src/pipeline/06_deliver",
+      "name": "Deliver",
+      "stage": "06_deliver",
+      "status": "active",
+      "owns": "Sends an application and records that it went. SeriousTeachers submission runs through the Go collector, which already holds the login and the Cloudflare clearance; this side records the attempt against the shared application_attempts table so a listing is never applied to twice and follow-ups have something to hang off.",
+      "target": "src/pipeline/06_deliver"
+    },
+    {
       "path": "src/features",
       "name": "Shared contracts",
       "stage": "platform",

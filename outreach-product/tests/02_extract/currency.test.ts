@@ -110,3 +110,17 @@ describe("period inference", () => {
     expect(correctMagnitude(1000, "JPY", null)).toBe(1000);
   });
 });
+
+describe("scaling only where a bare number cannot be the real amount", () => {
+  it("never scales a currency whose unit is worth about a dollar", () => {
+    expect(correctMagnitude(1, "USD", null)).toBe(1);
+    expect(correctMagnitude(10, "USD", null)).toBe(10);
+    expect(correctMagnitude(1, "EUR", null)).toBe(1);
+    expect(correctMagnitude(1, "GBP", null)).toBe(1);
+  });
+
+  it("still scales a currency written in bare millions", () => {
+    expect(correctMagnitude(2.5, "KRW", "month")).toBe(2_500_000);
+    expect(correctMagnitude(1.7, "KRW", "month")).toBe(1_700_000);
+  });
+});

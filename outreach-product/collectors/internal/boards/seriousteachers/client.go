@@ -346,3 +346,75 @@ func countryListPath() string {
 func detailPath(jobID string) string {
 	return "/job_details/" + url.PathEscape(jobID) + "/0/"
 }
+
+// Outcome reports what happened when an application was submitted.
+type Outcome struct {
+	Detail string
+	Status string
+	URL    string
+}
+
+// Respond submits one application to a job, reusing the authenticated session
+// and Cloudflare clearance the crawler already holds.
+func (client *Client) Respond(ctx context.Context, jobID, employerID, comments string) (Outcome, error) {
+	if !client.hasCredentials() {
+		return Outcome{}, fmt.Errorf("SeriousTeachers credentials are required to apply")
+	}
+	if strings.TrimSpace(comments) == "" {
+		return Outcome{}, fmt.Errorf("an application needs a message")
+	}
+	if err := client.login(ctx); err != nil {
+		return Outcome{}, err
+	}
+	respondPath := fmt.Sprintf("/te2/respond/%s/%s", jobID, employerID)
+	response, err := client.http.Get(ctx, respondPath, "text/html")
+	if err != nil {
+		return Outcome{}, err
+	}
+	if strings.Contains(strings.ToLower(response.URL), "/te2/login") {
+		return Outcome{}, fmt.Errorf("SeriousTeachers apply page returned to login")
+	}
+	document, err := sourcehtml.Parse(response.Body)
+	if err != nil {
+		return Outcome{}, err
+	}
+	if document.Find(`textarea[name="Comments"]`).Length() == 0 {
+		body := strings.ToLower(document.Text())
+		if strings.Contains(body, "already applied") || strings.Contains(body, "already responded") {
+			return Outcome{Status: "already-applied"}, nil
+		}
+		return Outcome{}, fmt.Errorf("SeriousTeachers apply page exposed no comments field")
+	}
+	token := sourcehtml.Attr(document.Find(`input[name="__RequestVerificationToken"]`).First(), "value")
+	if token == "" {
+		return Outcome{}, fmt.Errorf("SeriousTeachers apply page exposed no request-verification token")
+	}
+	locatedIn := sourcehtml.Attr(document.Find(`select[name="locatedin"] option[selected]`).First(), "value")
+	if locatedIn == "" {
+		locatedIn = "United States of America"
+	}
+	values := url.Values{
+		"Comments":                   []string{comments},
+		"Teacher.Abroad":             []string{""},
+		"Teacher.euteacher":          []string{"1"},
+		"__RequestVerificationToken": []string{token},
+		"locatedin":                  []string{locatedIn},
+	}
+	sent, err := client.http.PostForm(ctx, respondPath, values)
+	if err != nil {
+		return Outcome{}, err
+	}
+	confirmed, err := sourcehtml.Parse(sent.Body)
+	if err != nil {
+		return Outcome{}, err
+	}
+	body := strings.ToLower(confirmed.Text())
+	switch {
+	case strings.Contains(body, "application submitted successfully"):
+		return Outcome{Status: "submitted", URL: sent.URL}, nil
+	case strings.Contains(body, "already applied"), strings.Contains(body, "already responded"):
+		return Outcome{Status: "already-applied", URL: sent.URL}, nil
+	default:
+		return Outcome{Detail: "no confirmation banner", Status: "failed", URL: sent.URL}, nil
+	}
+}

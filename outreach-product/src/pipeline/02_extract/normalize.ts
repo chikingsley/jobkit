@@ -1,11 +1,13 @@
 import {
   CREDIBLE_MONTHLY_USD_CEILING,
+  CREDIBLE_MONTHLY_USD_FLOOR,
   correctMagnitude,
   currencyForCountry,
   inferPeriod,
   MONTHLY_FX_TO_USD,
   resolveCurrency,
 } from "./currency";
+import { needsPeriodReading } from "./pay-period";
 
 export interface RawListing {
   amountMaximum: number | null;
@@ -30,6 +32,7 @@ export interface CanonicalListing {
   company: string;
   country: string;
   currency: string | null;
+  description?: string;
   id: string;
   location: string;
   monthlyUsd: number | null;
@@ -41,6 +44,7 @@ export interface CanonicalListing {
 }
 
 export const CREDIBLE_WEEKLY_HOURS = 40;
+export const CREDIBLE_HOURLY_USD_CEILING = 60;
 const WEEKS_PER_MONTH = 4.33;
 const MONTHS_PER_YEAR = 12;
 const ASSUMED_WEEKLY_HOURS = 20;
@@ -119,8 +123,13 @@ const RESTRICTIONS: [RegExp, string][] = [
     "native-speaker-only",
   ],
   [
-    /\blocal (candidates?|hires?) only\b|\balready in\b/iu,
+    /\blocal (candidates?|hires?|applicants?)? ?only\b|\balready in\b|\bnationals? only\b/iu,
     "local-candidates-only",
+  ],
+  [/\bgoverness\b|\bnann(y|ies)\b|\bau ?pair\b|\bmaid\b/iu, "female-only"],
+  [
+    /\brecruiter\b|\bsales\b|\breceptionist\b|\bdriver\b|\bcleaner\b|\bchef\b|\bcook\b|\bhousekeep|\bbabysit|\bcaregiver\b|\bnurse\b|\bmarketing\b|\baccountant\b/iu,
+    "not-teaching",
   ],
 ];
 
@@ -209,26 +218,43 @@ interface PayReading {
   period: string | null;
 }
 
+type PayRejection = "impossible" | "unknown";
+
 function readPay(
   raw: RawListing,
   currency: string,
   statedPeriod: string | null,
-  hours: number | null
-): PayReading | null {
+  hours: number | null,
+  country: string
+): PayReading | PayRejection {
   const rate = MONTHLY_FX_TO_USD[currency];
   if (!rate || raw.amountMinimum === null || raw.amountMinimum <= 0) {
-    return null;
+    return "impossible";
   }
   const ranged =
     raw.amountMaximum !== null && raw.amountMaximum >= raw.amountMinimum;
   const period = statedPeriod;
-  const low = correctMagnitude(raw.amountMinimum, currency, period);
-  const high = ranged
-    ? correctMagnitude(raw.amountMaximum as number, currency, period)
-    : low;
+  const scalable = currency === currencyForCountry(country);
+  const low = scalable
+    ? correctMagnitude(raw.amountMinimum, currency, period)
+    : raw.amountMinimum;
+  const maximum = raw.amountMaximum ?? raw.amountMinimum;
+  const scaledMaximum = scalable
+    ? correctMagnitude(maximum, currency, period)
+    : maximum;
+  const high = ranged ? scaledMaximum : low;
+  if (period === "hour" && low * rate > CREDIBLE_HOURLY_USD_CEILING) {
+    return "impossible";
+  }
   const monthlyUsd = Math.round(monthlyAmount(low, high, period, hours) * rate);
-  if (monthlyUsd <= 0 || monthlyUsd > CREDIBLE_MONTHLY_USD_CEILING) {
-    return null;
+  if (
+    monthlyUsd < CREDIBLE_MONTHLY_USD_FLOOR ||
+    monthlyUsd > CREDIBLE_MONTHLY_USD_CEILING
+  ) {
+    return "impossible";
+  }
+  if (period === null && needsPeriodReading(monthlyUsd)) {
+    return "unknown";
   }
   return { currency, monthlyUsd, period };
 }
@@ -243,16 +269,16 @@ function crediblePay(
   if (!stated) {
     return null;
   }
-  const fromCountry = currencyForCountry(country);
-  const candidates =
-    fromCountry && fromCountry !== stated ? [stated, fromCountry] : [stated];
-  for (const candidate of candidates) {
-    const reading = readPay(raw, candidate, statedPeriod, hours);
-    if (reading) {
-      return reading;
-    }
+  const first = readPay(raw, stated, statedPeriod, hours, country);
+  if (typeof first !== "string") {
+    return first;
   }
-  return null;
+  const fromCountry = currencyForCountry(country);
+  if (first === "unknown" || !fromCountry || fromCountry === stated) {
+    return null;
+  }
+  const second = readPay(raw, fromCountry, statedPeriod, hours, country);
+  return typeof second === "string" ? null : second;
 }
 
 export function normalizeListing(raw: RawListing): CanonicalListing {

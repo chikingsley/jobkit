@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { MONTHLY_FX_TO_USD } from "./currency";
 export const PAY_PERIODS = [
   "hour",
   "day",
@@ -133,4 +135,82 @@ export async function readPayPeriod(
   };
   const reply = payload.choices?.[0]?.message?.content ?? "";
   return parseReply(reply, question);
+}
+
+export const DEFAULT_READER: PayPeriodReader = {
+  baseUrl: "http://127.0.0.1:8030/v1",
+  key: "",
+  maxTokens: 250,
+  model: "qwen35-9b-ud-q4-k-xl",
+  timeoutMs: 120_000,
+};
+
+export const DEFAULT_KEY_FILE =
+  "/home/simon/docker/llamacpp-llm/secrets/llamacpp-api-key";
+
+export interface PeriodQuestion {
+  amount: number;
+  body: string;
+  country: string;
+  currency: string;
+  id: string;
+  salary: string;
+}
+
+export interface PeriodResolution {
+  evidence: string;
+  period: PayPeriod;
+}
+
+export function readerFromKeyFile(path = DEFAULT_KEY_FILE): PayPeriodReader {
+  return { ...DEFAULT_READER, key: readFileSync(path, "utf8").trim() };
+}
+
+export function needsResolving(amount: number, currency: string) {
+  const rate = MONTHLY_FX_TO_USD[currency];
+  return rate ? needsPeriodReading(amount * rate) : false;
+}
+
+const CONCURRENCY = 4;
+
+async function readChunk(
+  chunk: PeriodQuestion[],
+  reader: PayPeriodReader
+): Promise<[string, PeriodResolution][]> {
+  const readings = await Promise.all(
+    chunk.map((question) =>
+      readPayPeriod(
+        {
+          body: question.body,
+          country: question.country,
+          salary: question.salary,
+        },
+        reader
+      ).then((reading) => [question.id, reading] as const)
+    )
+  );
+  return readings.flatMap(([id, reading]) =>
+    reading ? [[id, reading] as [string, PeriodResolution]] : []
+  );
+}
+
+export async function resolvePeriods(
+  questions: PeriodQuestion[],
+  reader: PayPeriodReader,
+  onProgress?: (done: number, total: number) => void
+): Promise<Map<string, PeriodResolution>> {
+  const chunks: PeriodQuestion[][] = [];
+  for (let start = 0; start < questions.length; start += CONCURRENCY) {
+    chunks.push(questions.slice(start, start + CONCURRENCY));
+  }
+  const resolved = new Map<string, PeriodResolution>();
+  let done = 0;
+  for (const chunk of chunks) {
+    for (const [id, reading] of await readChunk(chunk, reader)) {
+      resolved.set(id, reading);
+    }
+    done += chunk.length;
+    onProgress?.(done, questions.length);
+  }
+  return resolved;
 }

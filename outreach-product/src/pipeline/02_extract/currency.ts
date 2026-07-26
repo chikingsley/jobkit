@@ -106,9 +106,10 @@ const ALIASES: Record<string, string> = {
   YUAN: "CNY",
 };
 
-const PLAUSIBLE_MONTHLY_USD_FLOOR = 150;
+const PLAUSIBLE_MONTHLY_USD_FLOOR = 400;
 const PLAUSIBLE_HOURLY_USD_FLOOR = 2;
 const MAGNITUDE_STEPS = [1000, 1_000_000];
+const SCALABLE_RATE_CEILING = 0.01;
 
 export function isoCurrencyCode(code: string | null): string | null {
   if (!code) {
@@ -146,7 +147,10 @@ export function correctMagnitude(
   if (!rate || amount <= 0) {
     return amount;
   }
-  if (amount * rate >= PLAUSIBLE_HOURLY_USD_FLOOR) {
+  if (
+    amount * rate >= PLAUSIBLE_HOURLY_USD_FLOOR ||
+    rate >= SCALABLE_RATE_CEILING
+  ) {
     return amount;
   }
   for (const step of MAGNITUDE_STEPS) {
@@ -188,3 +192,4 @@ export function inferPeriod(
 }
 
 export const CREDIBLE_MONTHLY_USD_CEILING = 9000;
+export const CREDIBLE_MONTHLY_USD_FLOOR = 200;

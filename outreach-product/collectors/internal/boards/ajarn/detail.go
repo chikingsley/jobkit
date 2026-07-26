@@ -19,9 +19,9 @@ func ParseDetail(jobID, slug, sourceURL string, body []byte) (inventory.Record, 
 		return inventory.Record{}, err
 	}
 	document.Find("script,style,noscript").Remove()
-	title := sourcehtml.Clean(document.Find("h1").First().Text())
+	title := strings.Split(sourcehtml.Clean(document.Find("title").First().Text()), " job in ")[0]
 	if title == "" {
-		title = strings.Split(sourcehtml.Clean(document.Find("title").First().Text()), " job in ")[0]
+		title = sourcehtml.Clean(document.Find("h1").First().Text())
 	}
 	rows := summaryRows(document)
 	company, location, salary := "", "", ""

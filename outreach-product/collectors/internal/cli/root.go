@@ -21,5 +21,6 @@ func newRootCommand() *cobra.Command {
 	command.AddCommand(newRefreshCommand())
 	command.AddCommand(newRunsCommand())
 	command.AddCommand(newJobsCommand())
+	command.AddCommand(newServeCommand())
 	return command
 }

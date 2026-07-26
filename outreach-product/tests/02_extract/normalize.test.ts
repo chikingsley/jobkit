@@ -7,6 +7,8 @@ import {
   type RawListing,
   statedRestrictions,
 } from "../../src/pipeline/02_extract/normalize";
+import { disqualifying } from "../../src/pipeline/04_compose/candidate";
+import { placeFrom } from "../../src/pipeline/04_compose/message";
 
 function raw(overrides: Partial<RawListing> = {}): RawListing {
   return {
@@ -282,5 +284,196 @@ describe("pay readings that are not credible for a teaching role", () => {
       })
     );
     expect(listing.monthlyUsd).toBe(7292);
+  });
+});
+
+describe("hourly rates that are not credible for teaching", () => {
+  it("keeps an ordinary hourly rate and converts it", () => {
+    const listing = normalizeListing(
+      raw({
+        amountMaximum: null,
+        amountMinimum: 8,
+        country: "",
+        currency: "USD",
+        location: "Remote",
+        period: "hour",
+        teachingHours: null,
+        title: "Online Business English Teacher",
+      })
+    );
+    expect(listing.monthlyUsd).toBe(693);
+  });
+
+  it("refuses a rate no teaching job pays by the hour", () => {
+    const listing = normalizeListing(
+      raw({
+        amountMaximum: null,
+        amountMinimum: 15_000,
+        country: "Japan",
+        currency: "JPY",
+        period: "hour",
+        teachingHours: null,
+        title: "Part-Time Eikaiwa Native English Teacher",
+      })
+    );
+    expect(listing.monthlyUsd).toBeNull();
+  });
+});
+
+describe("falling back to the country currency", () => {
+  it("uses the country currency when the stated one gives an impossible figure", () => {
+    const listing = normalizeListing(
+      raw({
+        amountMaximum: null,
+        amountMinimum: 20_000,
+        country: "Mexico",
+        currency: "USD",
+        period: null,
+        teachingHours: null,
+        title: "Kindergarten Teacher",
+      })
+    );
+    expect(listing.currency).toBe("MXN");
+    expect(listing.monthlyUsd).toBe(1100);
+  });
+
+  it("never reinterprets a stated currency merely because the period is unknown", () => {
+    const listing = normalizeListing(
+      raw({
+        amountMaximum: null,
+        amountMinimum: 300,
+        country: "Kuwait",
+        currency: "USD",
+        period: null,
+        teachingHours: null,
+        title: "teacher",
+      })
+    );
+    expect(listing.monthlyUsd).toBeNull();
+  });
+});
+
+describe("monthly figures too small to be a wage", () => {
+  it("refuses a figure no monthly salary could be, even with a stated period", () => {
+    for (const [amount, currency] of [
+      [30, "CNY"],
+      [260_000, "KRW"],
+      [2500, "TRY"],
+    ] as [number, string][]) {
+      const listing = normalizeListing(
+        raw({
+          amountMaximum: null,
+          amountMinimum: amount,
+          country: "",
+          currency,
+          location: "",
+          period: "month",
+          teachingHours: null,
+        })
+      );
+      expect(listing.monthlyUsd).toBeNull();
+    }
+  });
+
+  it("keeps a low but real salary", () => {
+    const listing = normalizeListing(
+      raw({
+        amountMaximum: null,
+        amountMinimum: 400,
+        country: "Ecuador",
+        currency: "USD",
+        period: "month",
+        teachingHours: null,
+      })
+    );
+    expect(listing.monthlyUsd).toBe(400);
+  });
+});
+
+describe("place naming", () => {
+  it("names the country rather than a mangled city list", () => {
+    expect(
+      placeFrom("United States", "United States of America, Sarasota")
+    ).toBe("United States");
+  });
+
+  it("removes a country the location already repeats", () => {
+    expect(placeFrom("Bermuda", "Bermuda, Devonshire")).toBe(
+      "Devonshire, Bermuda"
+    );
+  });
+});
+
+describe("scaling a bare amount", () => {
+  it("scales when the currency belongs to the country", () => {
+    expect(
+      normalizeListing(
+        raw({
+          amountMaximum: null,
+          amountMinimum: 2.5,
+          country: "South Korea",
+          currency: "KRW",
+          period: "month",
+          teachingHours: null,
+        })
+      ).monthlyUsd
+    ).toBe(1825);
+  });
+
+  it("never scales a currency the country does not use", () => {
+    expect(
+      normalizeListing(
+        raw({
+          amountMaximum: null,
+          amountMinimum: 1200,
+          country: "Brazil",
+          currency: "KRW",
+          period: null,
+          teachingHours: null,
+        })
+      ).monthlyUsd
+    ).toBeNull();
+  });
+});
+
+describe("place naming with messy locations", () => {
+  it("drops a list of cities and names the country", () => {
+    expect(
+      placeFrom("United Arab Emirates", "UAE, Dubai, Abu Dhabi, Shahrja")
+    ).toBe("United Arab Emirates");
+    expect(placeFrom("Malaysia", "Malaysia, Pahang, Johor, Terengganu")).toBe(
+      "Malaysia"
+    );
+  });
+
+  it("keeps a single city", () => {
+    expect(placeFrom("Japan", "Nagoya")).toBe("Nagoya, Japan");
+  });
+});
+
+describe("who a restriction actually rules out", () => {
+  it("does not rule a man out of a job that says male", () => {
+    expect(disqualifying(["male-only"], "Qatar")).toEqual([]);
+  });
+
+  it("rules a man out of a job that says female", () => {
+    expect(disqualifying(["female-only"], "Qatar")).toEqual(["female-only"]);
+  });
+
+  it("does not rule a native speaker out of a native-speaker job", () => {
+    expect(disqualifying(["native-speaker-only"], "Japan")).toEqual([]);
+  });
+
+  it("rules out local-only jobs abroad but not at home", () => {
+    expect(disqualifying(["local-candidates-only"], "Japan")).toEqual([
+      "local-candidates-only",
+    ]);
+    expect(disqualifying(["local-candidates-only"], "United States")).toEqual(
+      []
+    );
+  });
+
+  it("rules out anything that is not a teaching job", () => {
+    expect(disqualifying(["not-teaching"], "Qatar")).toEqual(["not-teaching"]);
   });
 });

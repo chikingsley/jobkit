@@ -2,6 +2,11 @@ import { Database as BunDatabase } from "bun:sqlite";
 import type { Database } from "../../db/client";
 import { applicationRoutes, jobListings, jobMatchFacts } from "../../db/schema";
 import { matchFactsFromSourceFields } from "../02_extract/from-source-fields";
+import {
+  needsResolving,
+  type PeriodQuestion,
+  type PeriodResolution,
+} from "../02_extract/pay-period";
 import type { RouteKind } from "../03_match/candidates";
 import {
   JOB_MATCH_FACTS_SCHEMA_VERSION,
@@ -75,16 +80,66 @@ export function routeFor(row: LedgerRow): {
     : null;
 }
 
-function facts(row: LedgerRow): JobMatchFacts | null {
+function facts(
+  row: LedgerRow,
+  periods?: Map<string, PeriodResolution>
+): JobMatchFacts | null {
   const fields = sourceFields(row.raw_json);
   if (Object.keys(fields).length === 0) {
     return null;
   }
+  let extracted: JobMatchFacts | null;
   try {
-    return matchFactsFromSourceFields(row.board, fields);
+    extracted = matchFactsFromSourceFields(row.board, fields);
   } catch {
     return null;
   }
+  const resolved = periods?.get(listingId(row.board, row.job_id));
+  if (!(extracted && resolved)) {
+    return extracted;
+  }
+  const { compensation } = extracted.economics;
+  return {
+    ...extracted,
+    economics: {
+      ...extracted.economics,
+      compensation: {
+        ...compensation,
+        evidence: [...compensation.evidence, resolved.evidence],
+        period: resolved.period,
+      },
+    },
+  };
+}
+
+export function periodQuestions(rows: LedgerRow[]): PeriodQuestion[] {
+  return rows.flatMap((row) => {
+    if (row.status !== "active") {
+      return [];
+    }
+    const found = facts(row);
+    const pay = found?.economics.compensation;
+    if (
+      pay?.kind !== "amount" ||
+      pay.period !== null ||
+      pay.amountMinimum === null ||
+      !pay.currency ||
+      !needsResolving(pay.amountMinimum, pay.currency)
+    ) {
+      return [];
+    }
+    const fields = sourceFields(row.raw_json);
+    return [
+      {
+        amount: pay.amountMinimum,
+        body: fields.body || fields.Details || row.description,
+        country: row.country,
+        currency: pay.currency,
+        id: listingId(row.board, row.job_id),
+        salary: fields.Salary || fields.source_salary || "",
+      },
+    ];
+  });
 }
 
 export function readLedger(path: string): LedgerRow[] {
@@ -102,7 +157,8 @@ export function readLedger(path: string): LedgerRow[] {
 
 export function ingestLedgerRows(
   db: Database,
-  rows: LedgerRow[]
+  rows: LedgerRow[],
+  periods?: Map<string, PeriodResolution>
 ): IngestionReport {
   const report: IngestionReport = { listings: 0, routes: {}, withFacts: 0 };
   for (let start = 0; start < rows.length; start += BATCH_SIZE) {
@@ -121,7 +177,7 @@ export function ingestLedgerRows(
       updatedAt: row.last_seen_at || row.first_seen_at,
     }));
     const extracted = batch.flatMap((row) => {
-      const found = facts(row);
+      const found = facts(row, periods);
       return found
         ? [
             {
